@@ -1,16 +1,19 @@
 import express from "express";
 import cors from "cors";
-
+import routes from "./routes/routes";
+import { errorHandler } from "./middleware/errorHandling";
 const app = express();
 
-app.use(cors());
+app.use(cors({
+origin:"http://localhost:5173",
+credentials:true
+}));
 app.use(express.json());
 
-app.get("/test", (req, res) => {
-  res.json({
-    success: true,
-    message: "Backend is working!"
-  });
-});
+routes(app)
+
+
+app.use(errorHandler)
+
 
 export default app;
