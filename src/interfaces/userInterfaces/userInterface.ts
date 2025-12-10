@@ -1,5 +1,11 @@
 export type Gender = "male" | "female" | "other" | "prefer_not_say";
-export type UserRole = "user" | "trainer" | "admin";
+export const ROLES={
+  USER:"user",
+  ADMIN:"admin",
+  TRAINER:"trainer",
+} as const;
+
+export type UserRoles= typeof ROLES[keyof typeof ROLES]
 
 export interface IUser {
   id?: string;
@@ -10,7 +16,7 @@ export interface IUser {
   password: string;
   profilePic?: string | null;
   gender?: Gender | null;
-  role: UserRole;
+  role: UserRoles;
   dateOfBirth?: Date | null;
   isBlocked: boolean;
   createdAt?: Date;
