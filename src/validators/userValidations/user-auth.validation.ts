@@ -29,3 +29,19 @@ export const registerUserSchema = z.object({
 });
 
 export type RegisterUserInput = z.infer<typeof registerUserSchema>["body"];
+
+
+
+export const loginUserSchema=z.object({
+  body:z.object({
+    email:z
+    .string()
+    .email("Invalid Email address")
+    .max(100,"Email too long"),
+
+    password:z
+    .string()
+    .min(6,"Password must be at least 6 character")
+    .max(50,"Password is too long"),
+  }),
+});

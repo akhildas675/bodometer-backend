@@ -8,7 +8,7 @@ export const ROLES={
 export type UserRoles= typeof ROLES[keyof typeof ROLES]
 
 export interface IUser {
-  id?: string;
+  id: string;
   name: string;
   userName: string;
   email: string;
@@ -21,4 +21,19 @@ export interface IUser {
   isBlocked: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+
+export interface AccessTokenPayload {
+  sub: string;
+  role: UserRoles;
+  iat?: number;
+  exp?: number;
+}
+
+export interface RefreshTokenPayload {
+  role: UserRoles;
+  sub: string;
+  iat?: number;
+  exp?: number;
 }

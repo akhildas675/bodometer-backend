@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
-import { Gender, UserRole } from "../interfaces/userInterfaces/userInterface";
+import { Gender, UserRoles } from "../interfaces/userInterfaces/userInterface";
 
 export interface IUserDocument extends Document {
     name: string;
@@ -9,7 +9,7 @@ export interface IUserDocument extends Document {
     password: string;
     profilePic?: string | null;
     gender?: Gender | null;
-    role: UserRole;
+    role: UserRoles;
     dateOfBirth?: Date | null;
     isBlocked: boolean;
     createdAt: Date;
