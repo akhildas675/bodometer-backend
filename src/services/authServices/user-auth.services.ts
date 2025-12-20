@@ -7,36 +7,51 @@ import { STATUS } from "../../constants/statuscode";
 import { MESSAGES } from "../../constants/messages";
 import { Jwt } from "../../utils/jwt.utils";
 import { AccessTokenPayload, RefreshTokenPayload } from "../../interfaces/userInterfaces/userInterface";
+import { OtpService } from "../otp/otp.services";
+import { success } from "zod";
 
 
 export class AuthUserService implements IAuthService {
-  constructor(private userRepo: IUserRepository) { }
 
-  async registerUser(data: RegisterUserDto): Promise<RegisterResponseDto> {
-    if (!data.email) {
-      throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.REGISTER.INVALID_EMAIL_FORMAT);
-    }
+  constructor(private userRepo: IUserRepository,
+    private otpService: OtpService
+  ) { }
 
-    const existing = await this.userRepo.findByEmail(data.email);
+
+
+  async initiateRegister(data: RegisterUserDto): Promise<void> {
+    const existing = await this.userRepo.findByEmail(
+      data.email.toLowerCase().trim()
+    );
+
     if (existing) {
       throw new AppError(409, "Email already registered");
     }
 
+    await this.otpService.generateAndSendOtp(
+      data.email,
+      "USER_REGISTER"
+    );
+  }
+
+  async registerUser(
+    data: RegisterUserDto
+  ): Promise<RegisterResponseDto> {
+
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
     const normalizedEmail = data.email.toLowerCase().trim();
-    const parts = normalizedEmail.split("@");
-    if (!parts[0]) {
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.REGISTER.INVALID_EMAIL_FORMAT);
+    const baseUsername = normalizedEmail.split("@")[0];
+
+    if (!baseUsername) {
+      throw new AppError(400, "Invalid email format");
     }
 
-    const baseUsername = parts[0];
     let username = baseUsername;
     let counter = 1;
 
     while (await this.userRepo.findByUsername(username)) {
-      username = `${baseUsername}${counter}`;
-      counter++;
+      username = `${baseUsername}${counter++}`;
     }
 
     const user = await this.userRepo.createUser({
@@ -46,12 +61,13 @@ export class AuthUserService implements IAuthService {
       phoneNumber: data.phoneNumber,
       password: hashedPassword,
       role: "user",
+      isVerified: true,
       isBlocked: false,
       id: ""
     });
 
     return {
-      id: user.id,
+      id: user.id!,
       name: user.name,
       email: user.email,
       userName: user.userName,
@@ -60,6 +76,22 @@ export class AuthUserService implements IAuthService {
       profilePic: user.profilePic ?? null,
     };
   }
+
+
+  async resendOtp(email: string): Promise<void> {
+    const existing = await this.userRepo.findByEmail(email);
+    if (existing) {
+      throw new AppError(404, "User already have account please Login")
+    }
+    await this.otpService.generateAndSendOtp(
+      email,
+      "USER_REGISTER"
+    );
+  }
+
+
+
+
 
   async loginUser(data: LoginUserDto): Promise<LoginResponseDto> {
     if (!data.email || !data.password) {
@@ -102,17 +134,22 @@ export class AuthUserService implements IAuthService {
 
 
   async refreshToken(refreshToken: string): Promise<{ accessToken: string }> {
-  const payload = Jwt.verifyRefresh(refreshToken);
+    const payload = Jwt.verifyRefresh(refreshToken);
 
-  const accessPayload: AccessTokenPayload = {
-    sub: payload.sub,
-    role: payload.role,
-  };
+    const accessPayload: AccessTokenPayload = {
+      sub: payload.sub,
+      role: payload.role,
+    };
 
-  const newAccessToken = Jwt.signAccess(accessPayload);
+    const newAccessToken = Jwt.signAccess(accessPayload);
 
-  return { accessToken: newAccessToken };
-}
+    return { accessToken: newAccessToken };
+  }
+
+
+
+
+
 
 
 }

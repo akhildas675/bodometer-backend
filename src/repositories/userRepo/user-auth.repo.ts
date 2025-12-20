@@ -30,6 +30,7 @@ export default class UserRepository implements IUserRepository {
       profilePic: doc.profilePic ?? null,
       gender: doc.gender ?? null,
       role: doc.role,
+      isVerified:doc.isVerified,
       dateOfBirth: doc.dateOfBirth ?? null,
       isBlocked: doc.isBlocked,
       createdAt: doc.createdAt,

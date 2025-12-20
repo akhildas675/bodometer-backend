@@ -10,6 +10,7 @@ export interface IUserDocument extends Document {
     profilePic?: string | null;
     gender?: Gender | null;
     role: UserRoles;
+    isVerified: boolean;
     dateOfBirth?: Date | null;
     isBlocked: boolean;
     createdAt: Date;
@@ -57,6 +58,11 @@ const UserSchema = new Schema<IUserDocument>(
             enum: ["user", "trainer", "admin"],
             default: "user"
         },
+        isVerified:{
+            type:Boolean,
+            default:false
+        },
+        
         dateOfBirth: { type: Date, default: null },
         isBlocked: { type: Boolean, default: false }
     },

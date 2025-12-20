@@ -10,7 +10,7 @@ export interface RegisterResponseDto {
   id: string;
   name: string;
   email: string;
-  userName:string;
+  userName:string | null;
   phoneNumber: string;
   role: "user" | "trainer" | "admin";
   profilePic: string | null;
@@ -34,3 +34,5 @@ export interface LoginResponseDto {
     profilePic?: string | null;
   };
 }
+
+

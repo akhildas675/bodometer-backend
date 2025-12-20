@@ -17,6 +17,7 @@ export interface IUser {
   profilePic?: string | null;
   gender?: Gender | null;
   role: UserRoles;
+  isVerified:boolean;
   dateOfBirth?: Date | null;
   isBlocked: boolean;
   createdAt?: Date;

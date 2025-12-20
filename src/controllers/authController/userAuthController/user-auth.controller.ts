@@ -4,32 +4,79 @@ import { LoginUserDto, RegisterUserDto } from "../../../dto/user/user-auth.dto";
 import { AppError } from "../../../utils/appError";
 import { STATUS } from "../../../constants/statuscode";
 import { MESSAGES } from "../../../constants/messages";
+import { OtpService } from "../../../services/otp/otp.services";
+import { email } from "zod";
 
 
 export class UserAuthController {
 
-  constructor(private authService: IAuthService) { }
 
-  register = async (req: Request, res: Response, next: NextFunction) => {
+  constructor(private authService: IAuthService,
+    private otpService:OtpService
+  ) { }
+
+ register = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const body = req.body as unknown as RegisterUserDto;
-      console.log("User Register data........", body)
-      const user = await this.authService.registerUser(body);
+      const body = req.body as RegisterUserDto;
 
-      res.status(201).json({
+      await this.authService.initiateRegister(body);
+
+      return res.status(200).json({
+        success: true,
+        message: "OTP sent to email",
+        data: { email: body.email },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  verifyRegisterOtp = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { email, otp, userData } = req.body;
+
+      await this.otpService.verifyOtp(
+        email,
+        otp,
+        "USER_REGISTER"
+      );
+
+      const user = await this.authService.registerUser(userData);
+
+      return res.status(201).json({
         success: true,
         message: "User registered successfully",
         data: {
           id: user.id,
-          name: user.name,
           email: user.email,
         },
       });
-
     } catch (error) {
-      next(error)
+      next(error);
     }
+  };
+
+
+  resendOtp = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = req.body;
+
+    await this.authService.resendOtp(email);
+
+    return res.status(STATUS.OK).json({
+      success: true,
+      message: "OTP sent successfully",
+    });
+  } catch (error) {
+    next(error);
   }
+};
+
+
 
   login = async (req: Request, res: Response, next: NextFunction) => {
     try {
