@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { IAuthService } from "../../../interfaces/user/IAuthServices";
+import { IAuthService } from "../../../interfaces/user/IAuthService";
 import { LoginUserDto, RegisterUserDto } from "../../../dto/user/user-auth.dto";
 import { AppError } from "../../../utils/appError";
 import { STATUS } from "../../../constants/statuscode";

@@ -6,9 +6,6 @@ import { validate } from "../../middleware/validate";
 import { loginUserSchema, registerUserSchema } from "../../validators/userValidations/user-auth.validation";
 import { OtpService } from "../../services/otp/otp.services";
 
-
-
-
 const userRouter = Router();
 
 

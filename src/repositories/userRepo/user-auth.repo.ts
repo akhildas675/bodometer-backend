@@ -1,4 +1,5 @@
-import { IUserRepository } from "../../interfaces/user/IUserInterface";
+
+import { IUserRepository } from "../../interfaces/user/IUserRepository";
 import { IUser } from "../../interfaces/userInterfaces/userInterface";
 import { IUserDocument, UserModel } from "../../models/userModel";
 

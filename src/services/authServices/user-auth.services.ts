@@ -1,6 +1,4 @@
 import { LoginUserDto, RegisterUserDto, RegisterResponseDto, LoginResponseDto } from "../../dto/user/user-auth.dto";
-import { IAuthService } from "../../interfaces/user/IAuthServices";
-import { IUserRepository } from "../../interfaces/user/IUserInterface";
 import bcrypt from "bcrypt";
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
@@ -9,9 +7,14 @@ import { Jwt } from "../../utils/jwt.utils";
 import { AccessTokenPayload, RefreshTokenPayload } from "../../interfaces/userInterfaces/userInterface";
 import { OtpService } from "../otp/otp.services";
 import { success } from "zod";
+import { IUserRepository } from "../../interfaces/user/IUserRepository";
+import { IAuthServices } from "../../interfaces/user/IAuthService";
 
 
-export class AuthUserService implements IAuthService {
+
+
+
+export class AuthUserService implements IAuthServices {
 
   constructor(private userRepo: IUserRepository,
     private otpService: OtpService

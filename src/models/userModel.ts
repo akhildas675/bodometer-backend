@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
-import { Gender, UserRoles } from "../interfaces/userInterfaces/userInterface";
+import { Gender, UserRoles } from "../constants/identity.constants";
+
 
 export interface IUserDocument extends Document {
     name: string;
