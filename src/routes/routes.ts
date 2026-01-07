@@ -1,10 +1,11 @@
 
 import { Application } from "express";
-import userRouter from "./user/userRoutes";
+import authRoute from "./auth/auth.routes";
+
 
 const routes = (app: Application) => {
-  
-  app.use("/api/user", userRouter);
+  app.use("/api", authRoute);
+ 
 };
 
 export default routes;

@@ -8,4 +8,4 @@ export const ROLES = {
   TRAINER: "trainer",
 } as const;
 
-export type UserRoles = typeof ROLES[keyof typeof ROLES];
+export type Role = typeof ROLES[keyof typeof ROLES];

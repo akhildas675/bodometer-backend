@@ -1,76 +1,94 @@
-import { Request,Response,NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import { Jwt } from "../utils/jwt.utils";
 import { AppError } from "../utils/appError";
-import { AccessTokenPayload, RefreshTokenPayload } from "../interfaces/userInterfaces/userInterface";
 import { STATUS } from "../constants/statuscode";
+import { redis } from "../config/redis";
+import { AccessTokenPayload, RefreshTokenPayload } from "../interfaces/auth/auth.interface";
 
-export interface AuthRequest extends Request{
-    user?:{
-        id:string;
-        role:"user" | "trainer" | "admin";
-    };
+export interface AuthRequest extends Request {
+  user?: {
+    id: string;
+    role: "user" | "trainer" | "admin";
+  };
 }
 
+type Role = "user" | "trainer" | "admin";
 
-export const authGuard = (allowedRoles: ("user" | "trainer" | "admin")[] = []) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authGuard = (allowedRoles: Role[] = []) => {
+  return async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const authHeader = req.headers.authorization;
-      const accessToken = authHeader?.startsWith("Bearer")
-        ? authHeader.split(" ")[1]
-        : null;
+      const accessToken =
+        authHeader?.startsWith("Bearer ")
+          ? authHeader.split(" ")[1]
+          : null;
 
-      if (!accessToken) {
-        return tryRefresh(req, res, next, allowedRoles);
-      }
+      if (accessToken) {
+        try {
+          const payload = Jwt.verifyAccess(accessToken) as AccessTokenPayload;
 
-      try {
-        const payload: AccessTokenPayload = Jwt.verifyAccess(accessToken);
+          if (allowedRoles.length && !allowedRoles.includes(payload.role)) {
+            return next(
+              new AppError(STATUS.FORBIDDEN, "Access denied")
+            );
+          }
 
-        req.user = { id: payload.sub, role: payload.role };
-
-        if (allowedRoles.length > 0 && !allowedRoles.includes(payload.role)) {
-          throw new AppError(STATUS.UNAUTHORIZED, "Access denied");
+          req.user = { id: payload.sub, role: payload.role };
+          return next();
+        } catch {
+          
         }
-
-        return next();
-      } catch (err) {
-        return tryRefresh(req, res, next, allowedRoles);
       }
-    } catch (err) {
-      next(err);
+
+      return await handleRefresh(req, res, next, allowedRoles);
+    } catch (error) {
+      return next(error);
     }
   };
 };
-function tryRefresh(
+
+async function handleRefresh(
   req: AuthRequest,
   res: Response,
   next: NextFunction,
-  allowedRoles: ("user" | "trainer" | "admin")[]
+  allowedRoles: Role[]
 ) {
   const refreshToken = req.cookies.refreshToken;
 
   if (!refreshToken) {
-    throw new AppError(STATUS.UNAUTHORIZED, "Authentication required");
+    return next(
+      new AppError(STATUS.UNAUTHORIZED, "Authentication required")
+    );
   }
 
   try {
-    const payload: RefreshTokenPayload = Jwt.verifyRefresh(refreshToken);
+    const payload = Jwt.verifyRefresh(refreshToken) as RefreshTokenPayload;
+
+    const storedToken = await redis.get(`refresh:${payload.sub}`);
+    if (!storedToken || storedToken !== refreshToken) {
+      return next(
+        new AppError(STATUS.UNAUTHORIZED, "Session expired. Login again.")
+      );
+    }
+
+    if (allowedRoles.length && !allowedRoles.includes(payload.role)) {
+      return next(
+        new AppError(STATUS.FORBIDDEN, "Access denied")
+      );
+    }
 
     const newAccessToken = Jwt.signAccess({
       sub: payload.sub,
       role: payload.role,
     });
 
-   
+    res.setHeader("x-access-token", newAccessToken);
+
     req.user = { id: payload.sub, role: payload.role };
-
-    if (allowedRoles.length > 0 && !allowedRoles.includes(payload.role)) {
-      throw new AppError(STATUS.UNAUTHORIZED, "Access denied");
-    }
-
     return next();
-  } catch (err) {
-    throw new AppError(STATUS.UNAUTHORIZED, "Session expired. Login again.");
+  } catch {
+    return next(
+      new AppError(STATUS.UNAUTHORIZED, "Session expired. Login again.")
+    );
   }
 }

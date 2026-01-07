@@ -1,7 +1,8 @@
-import { Gender, UserRoles } from "../../constants/identity.constants";
+import { Gender, Role } from "../../constants/identity.constants";
+import { OtpPurpose } from "../../constants/otp.constants";
 
 
-export interface IUser {
+export interface UserInterface {
   id: string;
   name: string;
   userName: string;
@@ -10,7 +11,7 @@ export interface IUser {
   password: string;
   profilePic?: string | null;
   gender?: Gender | null;
-  role: UserRoles;
+  role: Role;
   isVerified:boolean;
   dateOfBirth?: Date | null;
   isBlocked: boolean;
@@ -21,14 +22,15 @@ export interface IUser {
 
 export interface AccessTokenPayload {
   sub: string;
-  role: UserRoles;
+  role: Role;
   iat?: number;
   exp?: number;
 }
 
 export interface RefreshTokenPayload {
-  role: UserRoles;
+  role: Role;
   sub: string;
   iat?: number;
   exp?: number;
 }
+

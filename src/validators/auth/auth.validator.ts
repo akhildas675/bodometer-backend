@@ -1,6 +1,8 @@
 import { z } from "zod";
+import { ROLES } from "../../constants/identity.constants";
+import { OTP_PURPOSE } from "../../constants/otp.constants";
 
-export const registerUserSchema = z.object({
+export const registerSchema = z.object({
   body: z.object({
     name: z
       .string()
@@ -25,14 +27,15 @@ export const registerUserSchema = z.object({
       .string()
       .min(6, "Password must be at least 6 characters")
       .max(100, "Password is too long"),
+      role: z.enum([ROLES.USER, ROLES.TRAINER]),
   }),
 });
 
-export type RegisterUserInput = z.infer<typeof registerUserSchema>["body"];
+export type RegisterUserInput = z.infer<typeof registerSchema>["body"];
 
 
 
-export const loginUserSchema=z.object({
+export const loginSchema=z.object({
   body:z.object({
     email:z
     .string()
@@ -45,3 +48,17 @@ export const loginUserSchema=z.object({
     .max(50,"Password is too long"),
   }),
 });
+
+export const otpSchema=z.object({
+  body:z.object({
+    email:z
+    .string()
+    .email("Invalid Email address")
+    .max(100,"Email too long"),
+    purpose: z.enum([
+      OTP_PURPOSE.USER_REGISTER,
+      OTP_PURPOSE.TRAINER_REGISTER,
+      OTP_PURPOSE.FORGET_PASSWORD,
+    ]),
+  })
+})
