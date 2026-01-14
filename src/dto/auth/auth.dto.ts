@@ -52,3 +52,16 @@ export interface ForgotPasswordDto {
 export interface ForgotPasswordResponseDto {
   role: "user" | "trainer" | "admin" | null;
 }
+
+export interface resetPasswordDto{
+  email:string,
+  password:string,
+}
+
+export interface GoogleLoginDto {
+  idToken: string;
+}
+
+export interface GoogleLoginResponseDto{
+  
+}

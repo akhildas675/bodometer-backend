@@ -186,13 +186,13 @@ export class AuthController {
 
   resetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { email, password, purpose } = req.body;
+      const { email,purpose } = req.body;
 
       if (purpose !== "FORGET_PASSWORD") {
         throw new AppError(400, "Invalid reset purpose");
       }
 
-      await this.authService.resetPassword(email, password);
+      await this.authService.resetPassword(email);
 
       res.status(200).json({
         success: true,
@@ -203,5 +203,25 @@ export class AuthController {
     }
   };
 
+
+  googleLogin = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { idToken } = req.body;
+
+      if (!idToken) {
+        throw new AppError(STATUS.BAD_REQUEST, "Google token is required");
+      }
+
+      const result = await this.authService.googleLogin({ idToken });
+
+      res.status(STATUS.OK).json({
+        success: true,
+        message: "Google login successful",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 
 }

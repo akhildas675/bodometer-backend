@@ -4,15 +4,16 @@ import { AppError } from "../utils/appError";
 import { STATUS } from "../constants/statuscode";
 import { redis } from "../config/redis";
 import { AccessTokenPayload, RefreshTokenPayload } from "../interfaces/auth/auth.interface";
+import { Role } from "../constants/identity.constants";
 
 export interface AuthRequest extends Request {
   user?: {
     id: string;
-    role: "user" | "trainer" | "admin";
+    role: Role
   };
 }
 
-type Role = "user" | "trainer" | "admin";
+
 
 export const authGuard = (allowedRoles: Role[] = []) => {
   return async (req: AuthRequest, res: Response, next: NextFunction) => {

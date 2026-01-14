@@ -1,7 +1,8 @@
+import { googleClient } from "../../config/google";
 import { redis } from "../../config/redis";
 import { ROLES } from "../../constants/identity.constants";
 import { STATUS } from "../../constants/statuscode";
-import { ForgotPasswordResponseDto, LoginDto, LoginResponseDto, RegisterDto, RegisterResponseDto } from "../../dto/auth/auth.dto";
+import { ForgotPasswordResponseDto, GoogleLoginDto, LoginDto, LoginResponseDto, RegisterDto, RegisterResponseDto, resetPasswordDto } from "../../dto/auth/auth.dto";
 import { ResendOtpDto, VerifyOtpDto } from "../../dto/otp/otp.dto";
 import { AuthServiceInterface } from "../../interfaces/auth/auth-service.interface";
 import AuthRepository from "../../repositories/auth/auth.repository";
@@ -180,8 +181,8 @@ export class AuthService implements AuthServiceInterface {
         };
     }
 
-    async resetPassword(email: string, password: string): Promise<void> {
-        const normalizedEmail = email.toLowerCase().trim();
+    async resetPassword(data:resetPasswordDto): Promise<void> {
+        const normalizedEmail = data.email.toLowerCase().trim();
 
         const redisKey = `otp_verified:FORGET_PASSWORD:${normalizedEmail}`;
         const verified = await redis.get(redisKey);
@@ -196,12 +197,74 @@ export class AuthService implements AuthServiceInterface {
             throw new AppError(STATUS.NOT_FOUND, "User not found");
         }
 
-        const hashedPassword = await hashPassword(password);
+        const hashedPassword = await hashPassword(data.password);
 
         await this.authRepo.updatePassword(user.id!, hashedPassword);
 
         await redis.del(redisKey);
     }
+
+async googleLogin({ idToken }: GoogleLoginDto): Promise<LoginResponseDto> {
+  const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+
+  if (!GOOGLE_CLIENT_ID) {
+    throw new Error("GOOGLE_CLIENT_ID is not defined");
+  }
+
+  const ticket = await googleClient.verifyIdToken({
+    idToken,
+    audience: GOOGLE_CLIENT_ID,
+  });
+
+  const payload = ticket.getPayload();
+
+  if (!payload || !payload.email || !payload.email_verified) {
+    throw new AppError(STATUS.UNAUTHORIZED, "Invalid Google token");
+  }
+
+  const email = payload.email.toLowerCase().trim();
+
+  const user = await this.authRepo.findByEmail(email);
+
+  if (!user) {
+    throw new AppError(
+      STATUS.NOT_FOUND,
+      "No account found. Please register first."
+    );
+  }
+
+  if (user.isBlocked) {
+    throw new AppError(STATUS.FORBIDDEN, "Account is blocked");
+  }
+
+  const accessToken = Jwt.signAccess({
+    sub: user.id!,
+    role: user.role,
+  });
+
+  const refreshToken = crypto.randomUUID();
+
+  await redis.set(
+    `refresh:${user.id}`,
+    refreshToken,
+    "EX",
+    60 * 60 * 24 * 7
+  );
+
+  return {
+    user: {
+      id: user.id!,
+      email: user.email,
+      role: user.role,
+      phoneNumber: user.phoneNumber,
+      name: user.name,
+    },
+    accessToken,
+    refreshToken,
+  };
+}
+
+
 
 
 }

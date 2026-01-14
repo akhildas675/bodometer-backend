@@ -31,6 +31,8 @@ authRoute.post("/auth/forgot-password", authController.forgotPassword);
 
 authRoute.post("/auth/reset-password", authController.resetPassword);
 
+authRoute.post("/auth/google-login",authController.googleLogin)
+
 
 
 export default authRoute;

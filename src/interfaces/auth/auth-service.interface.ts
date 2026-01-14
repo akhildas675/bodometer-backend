@@ -1,4 +1,4 @@
-import { LoginResponseDto, LoginDto, OtpVerifyDto, RegisterDto, RegisterResponseDto, ForgotPasswordDto, ForgotPasswordResponseDto } from "../../dto/auth/auth.dto";
+import { LoginResponseDto, LoginDto, OtpVerifyDto, RegisterDto, RegisterResponseDto, ForgotPasswordDto, ForgotPasswordResponseDto, GoogleLoginDto, GoogleLoginResponseDto, resetPasswordDto } from "../../dto/auth/auth.dto";
 import { ResendOtpDto } from "../../dto/otp/otp.dto";
 
 export interface AuthServiceInterface {
@@ -8,6 +8,7 @@ export interface AuthServiceInterface {
     resendOtp(data:ResendOtpDto): Promise<void>;
     login(data: LoginDto): Promise<LoginResponseDto>
     forgotPassword(data: ForgotPasswordDto): Promise<ForgotPasswordResponseDto>;
-    resetPassword(email: string, password: string): Promise<void>;
+    resetPassword(data:resetPasswordDto): Promise<void>;
+    googleLogin(data:GoogleLoginDto):Promise<GoogleLoginResponseDto>
 
 }
