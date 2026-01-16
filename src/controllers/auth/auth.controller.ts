@@ -1,5 +1,3 @@
-// src/controllers/auth/auth.controller.ts
-
 import { NextFunction, Request, Response } from "express";
 import { AuthServiceInterface } from "../../interfaces/auth/auth-service.interface";
 import { LoginDto, OtpVerifyDto, RegisterDto } from "../../dto/auth/auth.dto";
@@ -132,15 +130,8 @@ export class AuthController {
   //Login 
   login = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const data = req.body as LoginDto;
-
-      console.debug(
-        "controller login email:",
-        data.email
-      );
-
-      const { user, accessToken, refreshToken } =
-        await this.authService.login(data);
+      const { response, refreshToken } =
+        await this.authService.login(req.body);
 
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
@@ -149,18 +140,16 @@ export class AuthController {
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "Login successful",
-        data: {
-          user,
-          accessToken,
-        },
+        data: response,
       });
-    } catch (error) {
-      next(error);
+    } catch (err) {
+      next(err);
     }
   };
+
 
   forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -186,7 +175,7 @@ export class AuthController {
 
   resetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { email,purpose } = req.body;
+      const { email, purpose } = req.body;
 
       if (purpose !== "FORGET_PASSWORD") {
         throw new AppError(400, "Invalid reset purpose");

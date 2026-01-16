@@ -23,18 +23,16 @@ export interface RegisterResponseDto {
 export interface LoginDto{
   email:string;
   password:string;
-  role: Role;
 }
 
 export interface LoginResponseDto {
   accessToken: string;
-  refreshToken?: string;  
   user: {
     id: string;
     name: string;
     email: string;
     phoneNumber: string;
-    role:Role;
+    role: Role;
   };
 }
 
@@ -53,7 +51,7 @@ export interface ForgotPasswordResponseDto {
   role: "user" | "trainer" | "admin" | null;
 }
 
-export interface resetPasswordDto{
+export interface ResetPasswordDto{
   email:string,
   password:string,
 }

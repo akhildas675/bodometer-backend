@@ -2,9 +2,10 @@ import { googleClient } from "../../config/google";
 import { redis } from "../../config/redis";
 import { ROLES } from "../../constants/identity.constants";
 import { STATUS } from "../../constants/statuscode";
-import { ForgotPasswordResponseDto, GoogleLoginDto, LoginDto, LoginResponseDto, RegisterDto, RegisterResponseDto, resetPasswordDto } from "../../dto/auth/auth.dto";
+import { ForgotPasswordResponseDto, GoogleLoginDto, LoginDto, LoginResponseDto, RegisterDto, RegisterResponseDto, ResetPasswordDto, } from "../../dto/auth/auth.dto";
 import { ResendOtpDto, VerifyOtpDto } from "../../dto/otp/otp.dto";
 import { AuthServiceInterface } from "../../interfaces/auth/auth-service.interface";
+import { AuthMapper } from "../../mappers/auth.mappers";
 import AuthRepository from "../../repositories/auth/auth.repository";
 import { AppError } from "../../utils/appError";
 import { Jwt } from "../../utils/jwt.utils";
@@ -97,46 +98,23 @@ export class AuthService implements AuthServiceInterface {
             id: ""
         });
 
-        return {
-            id: user.id!,
-            name: user.name,
-            email: user.email,
-            userName: user.userName,
-            phoneNumber: user.phoneNumber,
-            role: user.role,
-            profilePic: user.profilePic ?? null
-        }
+        return AuthMapper.toRegisterResponse(user)
     }
 
-    async login(data: LoginDto): Promise<LoginResponseDto> {
-        const { email, password } = data;
+    async login(data: LoginDto): Promise<{
+        response: LoginResponseDto;
+        refreshToken: string;
+    }> {
+        const user = await this.authRepo.findByEmail(data.email.toLowerCase().trim());
+        if (!user) throw new AppError(401, "Invalid credentials");
 
-        console.log("Login data in service", data)
+        const match = await bcrypt.compare(data.password, user.password);
+        if (!match) throw new AppError(401, "Invalid credentials");
 
-        const user = await this.authRepo.findByEmail(email.toLowerCase().trim());
-        if (!user) {
-            throw new AppError(STATUS.UNAUTHORIZED, "Invalid credentials");
-        }
-
-        if (user.isBlocked) {
-            throw new AppError(STATUS.FORBIDDEN, "Account is blocked");
-        }
-
-        if (!user.isVerified) {
-            throw new AppError(STATUS.FORBIDDEN, "Account not verified");
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            throw new AppError(STATUS.UNAUTHORIZED, "Invalid credentials");
-        }
-
-        //Access token
         const accessToken = Jwt.signAccess({
             sub: user.id,
             role: user.role,
         });
-
 
         const refreshToken = crypto.randomUUID();
 
@@ -148,17 +126,11 @@ export class AuthService implements AuthServiceInterface {
         );
 
         return {
-            user: {
-                id: user.id,
-                email: user.email,
-                role: user.role,
-                phoneNumber: user.phoneNumber,
-                name: user.name,
-            },
-            accessToken,
+            response: AuthMapper.toLoginResponse(user, accessToken),
             refreshToken,
         };
     }
+
 
     async forgotPassword(data: { email: string }): Promise<ForgotPasswordResponseDto> {
 
@@ -181,7 +153,7 @@ export class AuthService implements AuthServiceInterface {
         };
     }
 
-    async resetPassword(data:resetPasswordDto): Promise<void> {
+    async resetPassword(data: ResetPasswordDto): Promise<void> {
         const normalizedEmail = data.email.toLowerCase().trim();
 
         const redisKey = `otp_verified:FORGET_PASSWORD:${normalizedEmail}`;
@@ -204,67 +176,55 @@ export class AuthService implements AuthServiceInterface {
         await redis.del(redisKey);
     }
 
-async googleLogin({ idToken }: GoogleLoginDto): Promise<LoginResponseDto> {
-  const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+    async googleLogin({ idToken }: GoogleLoginDto): Promise<LoginResponseDto> {
+        const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 
-  if (!GOOGLE_CLIENT_ID) {
-    throw new Error("GOOGLE_CLIENT_ID is not defined");
-  }
+        if (!GOOGLE_CLIENT_ID) {
+            throw new Error("GOOGLE_CLIENT_ID is not defined");
+        }
 
-  const ticket = await googleClient.verifyIdToken({
-    idToken,
-    audience: GOOGLE_CLIENT_ID,
-  });
+        const ticket = await googleClient.verifyIdToken({
+            idToken,
+            audience: GOOGLE_CLIENT_ID,
+        });
 
-  const payload = ticket.getPayload();
+        const payload = ticket.getPayload();
 
-  if (!payload || !payload.email || !payload.email_verified) {
-    throw new AppError(STATUS.UNAUTHORIZED, "Invalid Google token");
-  }
+        if (!payload || !payload.email || !payload.email_verified) {
+            throw new AppError(STATUS.UNAUTHORIZED, "Invalid Google token");
+        }
 
-  const email = payload.email.toLowerCase().trim();
+        const email = payload.email.toLowerCase().trim();
 
-  const user = await this.authRepo.findByEmail(email);
+        const user = await this.authRepo.findByEmail(email);
 
-  if (!user) {
-    throw new AppError(
-      STATUS.NOT_FOUND,
-      "No account found. Please register first."
-    );
-  }
+        if (!user) {
+            throw new AppError(
+                STATUS.NOT_FOUND,
+                "No account found. Please register first."
+            );
+        }
 
-  if (user.isBlocked) {
-    throw new AppError(STATUS.FORBIDDEN, "Account is blocked");
-  }
+        if (user.isBlocked) {
+            throw new AppError(STATUS.FORBIDDEN, "Account is blocked");
+        }
 
-  const accessToken = Jwt.signAccess({
-    sub: user.id!,
-    role: user.role,
-  });
+        const accessToken = Jwt.signAccess({
+            sub: user.id!,
+            role: user.role,
+        });
 
-  const refreshToken = crypto.randomUUID();
+        const refreshToken = crypto.randomUUID();
 
-  await redis.set(
-    `refresh:${user.id}`,
-    refreshToken,
-    "EX",
-    60 * 60 * 24 * 7
-  );
+        await redis.set(
+            `refresh:${user.id}`,
+            refreshToken,
+            "EX",
+            60 * 60 * 24 * 7
+        );
 
-  return {
-    user: {
-      id: user.id!,
-      email: user.email,
-      role: user.role,
-      phoneNumber: user.phoneNumber,
-      name: user.name,
-    },
-    accessToken,
-    refreshToken,
-  };
-}
+        return AuthMapper.toLoginResponse(user, accessToken);
 
-
-
+    }
 
 }
