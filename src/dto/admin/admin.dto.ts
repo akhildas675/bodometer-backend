@@ -18,3 +18,7 @@ export interface AdminGetUsersResponseDto{
     createdAt:string,
     profilePic?:string | null;
 }
+
+export interface AdminBlockUnBlockDto{
+    userId:string;
+}

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { AdminServiceInterface } from "../../interfaces/admin/admin-service.interface";
-import { AdminGetUsersDto } from "../../dto/admin/admin.dto";
+import { AdminBlockUnBlockDto, AdminGetUsersDto } from "../../dto/admin/admin.dto";
 
 
 export class AdminController{
@@ -22,7 +22,7 @@ export class AdminController{
 
 blockUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { userId } = req.params;
+    const { userId } = req.params as unknown as AdminBlockUnBlockDto
 
     console.log("This is the user id for backend....",userId)
 
@@ -39,7 +39,7 @@ blockUser = async (req: Request, res: Response, next: NextFunction) => {
 
 unblockUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { userId } = req.params;
+    const { userId } = req.params as unknown as AdminBlockUnBlockDto
 
     await this.adminService.unblockUser(userId);
 
