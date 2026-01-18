@@ -21,6 +21,7 @@ export interface RegisterResponseDto {
 
 
 export interface LoginDto{
+  id:string;
   email:string;
   password:string;
 }

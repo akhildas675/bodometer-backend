@@ -5,7 +5,7 @@ import { STATUS } from "../../constants/statuscode";
 import { ForgotPasswordResponseDto, GoogleLoginDto, LoginDto, LoginResponseDto, RegisterDto, RegisterResponseDto, ResetPasswordDto, } from "../../dto/auth/auth.dto";
 import { ResendOtpDto, VerifyOtpDto } from "../../dto/otp/otp.dto";
 import { AuthServiceInterface } from "../../interfaces/auth/auth-service.interface";
-import { AuthMapper } from "../../mappers/auth.mappers";
+import { AuthMapper } from "../../mappers/auth/auth.mappers";
 import AuthRepository from "../../repositories/auth/auth.repository";
 import { AppError } from "../../utils/appError";
 import { Jwt } from "../../utils/jwt.utils";
@@ -226,5 +226,7 @@ export class AuthService implements AuthServiceInterface {
         return AuthMapper.toLoginResponse(user, accessToken);
 
     }
+
+    
 
 }
