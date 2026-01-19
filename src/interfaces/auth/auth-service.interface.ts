@@ -7,8 +7,10 @@ export interface AuthServiceInterface {
     register(data: RegisterDto): Promise<RegisterResponseDto>
     resendOtp(data:ResendOtpDto): Promise<void>;
     login(data: LoginDto): Promise<{ response: LoginResponseDto; refreshToken: string }>;
+    googleLogin(data:GoogleLoginDto):Promise<GoogleLoginResponseDto>
+    refreshAccessToken(refreshToken: string): Promise<LoginResponseDto>;
+    logout(refreshToken: string): Promise<void>; 
     forgotPassword(data: ForgotPasswordDto): Promise<ForgotPasswordResponseDto>;
     resetPassword(data:ResetPasswordDto): Promise<void>;
-    googleLogin(data:GoogleLoginDto):Promise<GoogleLoginResponseDto>
 
 }

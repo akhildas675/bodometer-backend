@@ -172,6 +172,52 @@ export class AuthController {
     }
   };
 
+ 
+
+refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      throw new AppError(STATUS.UNAUTHORIZED, "No refresh token provided");
+    }
+
+    const result = await this.authService.refreshAccessToken(refreshToken);
+
+    res.status(200).json({
+      success: true,
+      message: "Token refreshed successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+logout = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (refreshToken) {
+      await this.authService.logout(refreshToken);
+    }
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
   resetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {

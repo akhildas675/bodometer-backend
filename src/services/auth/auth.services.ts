@@ -5,6 +5,7 @@ import { STATUS } from "../../constants/statuscode";
 import { ForgotPasswordResponseDto, GoogleLoginDto, LoginDto, LoginResponseDto, RegisterDto, RegisterResponseDto, ResetPasswordDto, } from "../../dto/auth/auth.dto";
 import { ResendOtpDto, VerifyOtpDto } from "../../dto/otp/otp.dto";
 import { AuthServiceInterface } from "../../interfaces/auth/auth-service.interface";
+import { UserInterface } from "../../interfaces/auth/auth.interface";
 import { AuthMapper } from "../../mappers/auth/auth.mappers";
 import AuthRepository from "../../repositories/auth/auth.repository";
 import { AppError } from "../../utils/appError";
@@ -118,11 +119,25 @@ export class AuthService implements AuthServiceInterface {
 
         const refreshToken = crypto.randomUUID();
 
+        // Store refresh token
         await redis.set(
             `refresh:${user.id}`,
             refreshToken,
             "EX",
-            60 * 60 * 24 * 7
+            60 * 60 * 24 * 7 
+        );
+
+        // Store user data for refresh token validation
+        await redis.set(
+            `user:${user.id}`,
+            JSON.stringify({
+                id: user.id,
+                email: user.email,
+                role: user.role,
+                isBlocked: user.isBlocked,
+            }),
+            "EX",
+            60 * 60 * 24 * 7 // 7 days
         );
 
         return {
@@ -130,52 +145,6 @@ export class AuthService implements AuthServiceInterface {
             refreshToken,
         };
     }
-
-
-    async forgotPassword(data: { email: string }): Promise<ForgotPasswordResponseDto> {
-
-        const email = data.email.toLowerCase().trim();
-
-        const user = await this.authRepo.findByEmail(email);
-
-
-        if (!user) {
-            return { role: null };
-        }
-
-        await this.otpService.generateAndSendOtp({
-            email,
-            purpose: "FORGET_PASSWORD",
-        });
-
-        return {
-            role: user.role,
-        };
-    }
-
-    async resetPassword(data: ResetPasswordDto): Promise<void> {
-        const normalizedEmail = data.email.toLowerCase().trim();
-
-        const redisKey = `otp_verified:FORGET_PASSWORD:${normalizedEmail}`;
-        const verified = await redis.get(redisKey);
-
-        if (!verified) {
-            throw new AppError(STATUS.FORBIDDEN, "OTP not verified");
-        }
-
-        const user = await this.authRepo.findByEmail(normalizedEmail);
-
-        if (!user) {
-            throw new AppError(STATUS.NOT_FOUND, "User not found");
-        }
-
-        const hashedPassword = await hashPassword(data.password);
-
-        await this.authRepo.updatePassword(user.id!, hashedPassword);
-
-        await redis.del(redisKey);
-    }
-
     async googleLogin({ idToken }: GoogleLoginDto): Promise<LoginResponseDto> {
         const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 
@@ -227,6 +196,121 @@ export class AuthService implements AuthServiceInterface {
 
     }
 
-    
+    async refreshAccessToken(refreshToken: string): Promise<LoginResponseDto> {
+        try {
+           
+            if (!refreshToken) {
+                throw new AppError(STATUS.UNAUTHORIZED, "Invalid refresh token");
+            }
+
+            // Find which user this refresh token belongs to
+            const keys = await redis.keys("refresh:*");
+            let userId: string | null = null;
+
+            for (const key of keys) {
+                const storedToken = await redis.get(key);
+                if (storedToken === refreshToken) {
+                    userId = key.replace("refresh:", "");
+                    break;
+                }
+            }
+
+            if (!userId) {
+                throw new AppError(STATUS.UNAUTHORIZED, "Invalid or expired refresh token");
+            }
+
+            // Verify the stored token matches
+            const storedToken = await redis.get(`refresh:${userId}`);
+
+            if (!storedToken || storedToken !== refreshToken) {
+                throw new AppError(STATUS.UNAUTHORIZED, "Invalid refresh token");
+            }
+
+            // Get user data from Redis 
+            const userData = await redis.get(`user:${userId}`);
+
+            if (!userData) {
+                throw new AppError(STATUS.UNAUTHORIZED, "Session expired");
+            }
+
+            const user = JSON.parse(userData) as UserInterface;
+
+            if (user.isBlocked) {
+                throw new AppError(STATUS.FORBIDDEN, "Account is blocked");
+            }
+
+            // Generate new access token
+            const accessToken = Jwt.signAccess({
+                sub: user.id!,
+                role: user.role,
+            });
+
+            return AuthMapper.toLoginResponse(user, accessToken);
+        } catch (error) {
+            throw new AppError(STATUS.UNAUTHORIZED, "Invalid or expired refresh token");
+        }
+    }
+
+    async logout(refreshToken: string): Promise<void> {
+        // Find and delete the refresh token from Redis
+        const keys = await redis.keys("refresh:*");
+
+        for (const key of keys) {
+            const storedToken = await redis.get(key);
+            if (storedToken === refreshToken) {
+                const userId = key.replace("refresh:", "");
+                await redis.del(key);
+                await redis.del(`user:${userId}`);
+                break;
+            }
+        }
+    }
+
+    async forgotPassword(data: { email: string }): Promise<ForgotPasswordResponseDto> {
+
+        const email = data.email.toLowerCase().trim();
+
+        const user = await this.authRepo.findByEmail(email);
+
+
+        if (!user) {
+            return { role: null };
+        }
+
+        await this.otpService.generateAndSendOtp({
+            email,
+            purpose: "FORGET_PASSWORD",
+        });
+
+        return {
+            role: user.role,
+        };
+    }
+
+    async resetPassword(data: ResetPasswordDto): Promise<void> {
+        const normalizedEmail = data.email.toLowerCase().trim();
+
+        const redisKey = `otp_verified:FORGET_PASSWORD:${normalizedEmail}`;
+        const verified = await redis.get(redisKey);
+
+        if (!verified) {
+            throw new AppError(STATUS.FORBIDDEN, "OTP not verified");
+        }
+
+        const user = await this.authRepo.findByEmail(normalizedEmail);
+
+        if (!user) {
+            throw new AppError(STATUS.NOT_FOUND, "User not found");
+        }
+
+        const hashedPassword = await hashPassword(data.password);
+
+        await this.authRepo.updatePassword(user.id!, hashedPassword);
+
+        await redis.del(redisKey);
+    }
+
+
+
 
 }

@@ -18,6 +18,11 @@ export default class AuthRepository implements AuthRepositoryInterface {
         const doc = await UserModel.findOne({ email }).exec();
         return doc ? this.toUserInterface(doc) : null;
     }
+    async findById(id: string): Promise<UserInterface | null> {
+        const doc = await UserModel.findById(id).exec();
+        return doc ? this.toUserInterface(doc) : null;
+    }
+
 
 
     private toUserInterface(doc: IUserDocument): UserInterface {

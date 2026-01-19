@@ -5,4 +5,6 @@ export interface AuthRepositoryInterface {
     findByEmail(email: string): Promise<UserInterface  | null>;
     create(data: UserInterface): Promise<UserInterface >
     updatePassword(userId: string, password: string): Promise<void>;
+    findById(id: string): Promise<UserInterface | null>;
+
 }

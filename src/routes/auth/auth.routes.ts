@@ -32,6 +32,8 @@ authRoute.post("/auth/forgot-password", authController.forgotPassword);
 authRoute.post("/auth/reset-password", authController.resetPassword);
 
 authRoute.post("/auth/google-login",authController.googleLogin)
+authRoute.post("/auth/refresh-token", authController.refreshToken);
+authRoute.post("/auth/logout", authController.logout);
 
 
 
