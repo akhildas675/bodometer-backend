@@ -3,9 +3,9 @@ import { loginSchema, otpSchema, registerSchema } from "../../validators/auth/au
 import { AuthController } from "../../controllers/auth/auth.controller";
 import { validate } from "../../middleware/validate";
 import { AuthService } from "../../services/auth/auth.services";
-import { OtpService } from "../../services/otp/otp.services";
+import { OtpService } from "../../services/auth/otp/otp.services";
 import AuthRepository from "../../repositories/auth/auth.repository";
-import { MailService } from "../../services/otp/mail.services";
+import { MailService } from "../../services/auth/otp/mail.services";
 
 const authRoute = Router()
 

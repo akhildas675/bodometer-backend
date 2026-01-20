@@ -34,3 +34,9 @@ export interface RefreshTokenPayload {
   exp?: number;
 }
 
+export interface SessionData {
+  id: string;
+  email: string;
+  role: string;
+  isBlocked: boolean;
+}

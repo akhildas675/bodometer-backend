@@ -1,13 +1,11 @@
-import { redis } from "../../config/redis";
-import { AppError } from "../../utils/appError";
-import { STATUS } from "../../constants/statuscode";
-import { MailService } from "./mail.services";
-import { generateOtp } from "../../utils/generateOtp";
-import { OtpPurpose } from "../../constants/otp.constants";
-import { AuthServiceInterface } from "../../interfaces/auth/auth-service.interface";
-import { OtpServiceInterface } from "../../interfaces/otp/otp-service.interface";
-import { GenerateOtpDto, VerifyOtpDto } from "../../dto/otp/otp.dto";
-import { MailServiceInterface } from "../../interfaces/otp/mail-service.interface";
+import { redis } from "../../../config/redis";
+import { AppError } from "../../../utils/appError";
+import { STATUS } from "../../../constants/statuscode";
+import { generateOtp } from "../../../utils/generateOtp";
+import { OtpPurpose } from "../../../constants/otp.constants";
+import { OtpServiceInterface } from "../../../interfaces/otp/otp-service.interface";
+import { MailServiceInterface } from "../../../interfaces/otp/mail-service.interface";
+import { GenerateOtpPayload, VerifyOtpPayload } from "../../../interfaces/otp/otp.interface";
 
 
 export class OtpService implements OtpServiceInterface {
@@ -27,7 +25,7 @@ export class OtpService implements OtpServiceInterface {
   }
 
   async generateAndSendOtp(
-    { email, purpose }: GenerateOtpDto
+    { email, purpose }: GenerateOtpPayload
   ): Promise<void> {
 
     const otp = generateOtp(6);
@@ -39,7 +37,7 @@ export class OtpService implements OtpServiceInterface {
     await this.mailService.sendOtpEmail(email, otp);
   }
 
-  async verifyOtp({ email, otp, purpose }: VerifyOtpDto): Promise<void> {
+  async verifyOtp({ email, otp, purpose }: VerifyOtpPayload): Promise<void> {
   const otpKey = this.otpKey(email, purpose);
   const attemptsKey = this.attemptsKey(email, purpose);
   const verifiedKey = `otp_verified:${purpose}:${email}`;

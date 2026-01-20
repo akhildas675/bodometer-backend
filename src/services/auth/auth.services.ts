@@ -1,37 +1,42 @@
 import { googleClient } from "../../config/google";
-import { redis } from "../../config/redis";
 import { ROLES } from "../../constants/identity.constants";
 import { STATUS } from "../../constants/statuscode";
-import { ForgotPasswordResponseDto, GoogleLoginDto, LoginDto, LoginResponseDto, RegisterDto, RegisterResponseDto, ResetPasswordDto, } from "../../dto/auth/auth.dto";
+import {
+    ForgotPasswordResponseDto,
+    GoogleLoginDto,
+    LoginDto,
+    LoginResponseDto,
+    RegisterDto,
+    RegisterResponseDto,
+    ResetPasswordDto
+} from "../../dto/auth/auth.dto";
 import { ResendOtpDto, VerifyOtpDto } from "../../dto/otp/otp.dto";
 import { AuthServiceInterface } from "../../interfaces/auth/auth-service.interface";
-import { UserInterface } from "../../interfaces/auth/auth.interface";
 import { AuthMapper } from "../../mappers/auth/auth.mappers";
-import AuthRepository from "../../repositories/auth/auth.repository";
 import { AppError } from "../../utils/appError";
 import { Jwt } from "../../utils/jwt.utils";
 import { hashPassword } from "../../utils/password";
-import { OtpService } from "../otp/otp.services";
-import bcrypt from "bcrypt"
-import crypto from "crypto"
+import bcrypt from "bcrypt";
+import { AuthRepositoryInterface } from "../../interfaces/auth/auth-repository.interface";
+import { OtpServiceInterface } from "../../interfaces/otp/otp-service.interface";
+import { SessionServiceInterface } from "../../interfaces/auth/session-service.interface";
 
 export class AuthService implements AuthServiceInterface {
     constructor(
-        private authRepo: AuthRepository,
-        private otpService: OtpService
+        private authRepo: AuthRepositoryInterface,
+        private otpService: OtpServiceInterface,
+        private sessionService: SessionServiceInterface,
     ) { }
 
-
     async initiateRegister(data: RegisterDto): Promise<void> {
-
         const role = data.role;
 
         if (role == ROLES.ADMIN) {
-            throw new AppError(403, "Admin register is not allowed")
+            throw new AppError(403, "Admin register is not allowed");
         }
 
         if (![ROLES.USER, ROLES.TRAINER].includes(role)) {
-            throw new AppError(400, "Invalid role for registration")
+            throw new AppError(400, "Invalid role for registration");
         }
 
         const existing = await this.authRepo.findByEmail(
@@ -42,8 +47,6 @@ export class AuthService implements AuthServiceInterface {
             throw new AppError(409, "Email already registered");
         }
 
-
-
         const otpPurpose =
             role === ROLES.TRAINER ? "TRAINER_REGISTER" : "USER_REGISTER";
 
@@ -51,11 +54,7 @@ export class AuthService implements AuthServiceInterface {
             email: data.email,
             purpose: otpPurpose,
         });
-
     }
-
-
-    //otp verify
 
     async verifyOtp(data: VerifyOtpDto): Promise<void> {
         await this.otpService.verifyOtp(data);
@@ -64,12 +63,12 @@ export class AuthService implements AuthServiceInterface {
     async resendOtp(data: ResendOtpDto): Promise<void> {
         await this.otpService.generateAndSendOtp({
             email: data.email,
-            purpose: data.purpose
+            purpose: data.purpose,
         });
     }
 
     async register(data: RegisterDto): Promise<RegisterResponseDto> {
-        console.log("The data from register service", data)
+        console.log("The data from register service", data);
         const role = data.role;
         const hashedPassword = await hashPassword(data.password);
 
@@ -77,7 +76,7 @@ export class AuthService implements AuthServiceInterface {
         const baseUsername = normalizedEmail.split("@")[0];
 
         if (!baseUsername) {
-            throw new AppError(400, "Invalid email format")
+            throw new AppError(400, "Invalid email format");
         }
 
         let userName = baseUsername;
@@ -96,24 +95,26 @@ export class AuthService implements AuthServiceInterface {
             role: data.role,
             isVerified: true,
             isBlocked: false,
-            id: ""
+            id: "",
         });
 
-        return AuthMapper.toRegisterResponse(user)
+        return AuthMapper.toRegisterResponse(user);
     }
 
     async login(data: LoginDto): Promise<{
         response: LoginResponseDto;
         refreshToken: string;
     }> {
-        const user = await this.authRepo.findByEmail(data.email.toLowerCase().trim());
+        const user = await this.authRepo.findByEmail(
+            data.email.toLowerCase().trim()
+        );
         if (!user) throw new AppError(401, "Invalid credentials");
-        console.log("User in Authservice.......",user)
+        console.log("User in Authservice.......", user);
 
         const match = await bcrypt.compare(data.password, user.password);
         if (!match) throw new AppError(401, "Invalid credentials");
 
-      if (user.isBlocked) {
+        if (user.isBlocked) {
             throw new AppError(STATUS.FORBIDDEN, "Account is blocked");
         }
 
@@ -122,34 +123,19 @@ export class AuthService implements AuthServiceInterface {
             role: user.role,
         });
 
-        const refreshToken = crypto.randomUUID();
-
-        // Store refresh token
-        await redis.set(
-            `refresh:${user.id}`,
-            refreshToken,
-            "EX",
-            60 * 60 * 24 * 7 
-        );
-
-        // Store user data for refresh token validation
-        await redis.set(
-            `user:${user.id}`,
-            JSON.stringify({
-                id: user.id,
-                email: user.email,
-                role: user.role,
-                isBlocked: user.isBlocked,
-            }),
-            "EX",
-            60 * 60 * 24 * 7 // 7 days
-        );
+        const refreshToken = await this.sessionService.createRefreshToken(user.id, {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            isBlocked: user.isBlocked,
+        });
 
         return {
             response: AuthMapper.toLoginResponse(user, accessToken),
             refreshToken,
         };
     }
+
     async googleLogin({ idToken }: GoogleLoginDto): Promise<LoginResponseDto> {
         const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 
@@ -188,95 +174,57 @@ export class AuthService implements AuthServiceInterface {
             role: user.role,
         });
 
-        const refreshToken = crypto.randomUUID();
-
-        await redis.set(
-            `refresh:${user.id}`,
-            refreshToken,
-            "EX",
-            60 * 60 * 24 * 7
-        );
+        const refreshToken = await this.sessionService.createRefreshToken(user.id!, {
+            id: user.id!,
+            email: user.email,
+            role: user.role,
+            isBlocked: user.isBlocked,
+        });
 
         return AuthMapper.toLoginResponse(user, accessToken);
-
     }
 
     async refreshAccessToken(refreshToken: string): Promise<LoginResponseDto> {
-        try {
-           
-            if (!refreshToken) {
-                throw new AppError(STATUS.UNAUTHORIZED, "Invalid refresh token");
-            }
+        if (!refreshToken) {
+            throw new AppError(STATUS.UNAUTHORIZED, "Invalid refresh token");
+        }
 
-            // Find which user this refresh token belongs to
-            const keys = await redis.keys("refresh:*");
-            let userId: string | null = null;
-
-            for (const key of keys) {
-                const storedToken = await redis.get(key);
-                if (storedToken === refreshToken) {
-                    userId = key.replace("refresh:", "");
-                    break;
-                }
-            }
-
-            if (!userId) {
-                throw new AppError(STATUS.UNAUTHORIZED, "Invalid or expired refresh token");
-            }
-
-            // Verify the stored token matches
-            const storedToken = await redis.get(`refresh:${userId}`);
-
-            if (!storedToken || storedToken !== refreshToken) {
-                throw new AppError(STATUS.UNAUTHORIZED, "Invalid refresh token");
-            }
-
-            // Get user data from Redis 
-            const userData = await redis.get(`user:${userId}`);
-
-            if (!userData) {
-                throw new AppError(STATUS.UNAUTHORIZED, "Session expired");
-            }
-
-            const user = JSON.parse(userData) as UserInterface;
-
-            if (user.isBlocked) {
-                throw new AppError(STATUS.FORBIDDEN, "Account is blocked");
-            }
-
-            // Generate new access token
-            const accessToken = Jwt.signAccess({
-                sub: user.id!,
-                role: user.role,
-            });
-
-            return AuthMapper.toLoginResponse(user, accessToken);
-        } catch (error) {
+        const userId = await this.sessionService.findUserByRefreshToken(refreshToken);
+        if (!userId) {
             throw new AppError(STATUS.UNAUTHORIZED, "Invalid or expired refresh token");
         }
-    }
 
-    async logout(refreshToken: string): Promise<void> {
-        // Find and delete the refresh token from Redis
-        const keys = await redis.keys("refresh:*");
-
-        for (const key of keys) {
-            const storedToken = await redis.get(key);
-            if (storedToken === refreshToken) {
-                const userId = key.replace("refresh:", "");
-                await redis.del(key);
-                await redis.del(`user:${userId}`);
-                break;
-            }
+        const isValid = await this.sessionService.validateRefreshToken(userId, refreshToken);
+        if (!isValid) {
+            throw new AppError(STATUS.UNAUTHORIZED, "Invalid refresh token");
         }
+
+        const sessionData = await this.sessionService.getUserSessionData(userId);
+        if (!sessionData || sessionData.isBlocked) {
+            throw new AppError(STATUS.FORBIDDEN, "Account is blocked or session expired");
+        }
+
+      
+        const user = await this.authRepo.findById(userId);
+        if (!user) {
+            throw new AppError(STATUS.UNAUTHORIZED, "User not found");
+        }
+
+        const accessToken = Jwt.signAccess({
+            sub: user.id!,
+            role: user.role,
+        });
+
+        return AuthMapper.toLoginResponse(user, accessToken);
+    }
+    async logout(refreshToken: string): Promise<void> {
+        await this.sessionService.deleteSession(refreshToken);
     }
 
     async forgotPassword(data: { email: string }): Promise<ForgotPasswordResponseDto> {
-
         const email = data.email.toLowerCase().trim();
 
         const user = await this.authRepo.findByEmail(email);
-
 
         if (!user) {
             return { role: null };
@@ -295,10 +243,12 @@ export class AuthService implements AuthServiceInterface {
     async resetPassword(data: ResetPasswordDto): Promise<void> {
         const normalizedEmail = data.email.toLowerCase().trim();
 
-        const redisKey = `otp_verified:FORGET_PASSWORD:${normalizedEmail}`;
-        const verified = await redis.get(redisKey);
+        const isVerified = await this.sessionService.isOtpVerified(
+            "FORGET_PASSWORD",
+            normalizedEmail
+        );
 
-        if (!verified) {
+        if (!isVerified) {
             throw new AppError(STATUS.FORBIDDEN, "OTP not verified");
         }
 
@@ -312,10 +262,6 @@ export class AuthService implements AuthServiceInterface {
 
         await this.authRepo.updatePassword(user.id!, hashedPassword);
 
-        await redis.del(redisKey);
+        await this.sessionService.clearOtpVerification("FORGET_PASSWORD", normalizedEmail);
     }
-
-
-
-
 }
