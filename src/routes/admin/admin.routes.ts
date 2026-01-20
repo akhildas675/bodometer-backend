@@ -16,5 +16,10 @@ adminRoute.patch("/admin/users/:userId/block",authGuard(["admin"]),adminControll
 
 adminRoute.patch("/admin/users/:userId/unblock",authGuard(["admin"]),adminController.unblockUser);
 
+adminRoute.get("/admin/get-trainers",authGuard(["admin"]),adminController.getTrainers)
+adminRoute.patch("/admin/trainer/:trainerId/block",authGuard(["admin"]),adminController.blockTrainer);
+
+adminRoute.patch("/admin/trainer/:trainerId/unblock",authGuard(["admin"]),adminController.unblockTrainer);
+
 
 export default adminRoute

@@ -1,19 +1,27 @@
+import { Role } from "../../constants/identity.constants";
 import { AdminGetUsersResponseDto } from "../../dto/admin/admin.dto";
-import { AdminUserInterface } from "../../interfaces/admin/admin.interface";
+import { AdminAccountInterface } from "../../interfaces/admin/admin.interface";
 
-export class AdminUserMapper{
-    static toResponse(user:AdminUserInterface):AdminGetUsersResponseDto{
-        return {
-            id:user.id,
-            name:user.name,
-            email:user.email,
-            role:user.role,
-            isBlocked:user.isBlocked,
-            isVerified:user.isVerified,
-            createdAt:user.createdAt
-        }
-    }
-    static toResponseList(users:AdminUserInterface[]):AdminGetUsersResponseDto[]{
-        return users.map(this.toResponse)
-    }
+export class AdminAccountMapper {
+  static toResponse<T extends Exclude<Role,"admin">>(
+    account: AdminAccountInterface<T>
+  ): AdminGetUsersResponseDto {
+    return {
+      id: account.id,
+      name: account.name,
+      email: account.email,
+      role: account.role,
+      isBlocked: account.isBlocked,
+      isVerified: account.isVerified,
+      createdAt: account.createdAt,
+    };
+  }
+
+  static toResponseList<T extends Exclude<Role,"admin">>(
+    accounts: AdminAccountInterface<T>[]
+  ): AdminGetUsersResponseDto[] {
+    return accounts.map((account) =>
+      AdminAccountMapper.toResponse(account)
+    );
+  }
 }

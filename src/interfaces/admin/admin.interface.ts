@@ -13,6 +13,7 @@ export interface AdminAccountInterface<R extends Role> {
 }
 
 export type AdminUserInterface = AdminAccountInterface<typeof ROLES.USER>;
+export type AdminTrainerInterface = AdminAccountInterface<typeof ROLES.TRAINER>;
 
 export interface AdminUserActionDto {
   userId: string;

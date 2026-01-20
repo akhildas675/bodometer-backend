@@ -108,9 +108,14 @@ export class AuthService implements AuthServiceInterface {
     }> {
         const user = await this.authRepo.findByEmail(data.email.toLowerCase().trim());
         if (!user) throw new AppError(401, "Invalid credentials");
+        console.log("User in Authservice.......",user)
 
         const match = await bcrypt.compare(data.password, user.password);
         if (!match) throw new AppError(401, "Invalid credentials");
+
+      if (user.isBlocked) {
+            throw new AppError(STATUS.FORBIDDEN, "Account is blocked");
+        }
 
         const accessToken = Jwt.signAccess({
             sub: user.id,

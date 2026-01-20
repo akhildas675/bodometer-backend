@@ -22,3 +22,11 @@ export interface AdminGetUsersResponseDto{
 export interface AdminBlockUnBlockDto{
     userId:string;
 }
+
+export interface AdminGetTrainersDto extends AdminGetUsersDto{}
+
+export interface AdminGetTrainersResponseDto extends AdminGetUsersResponseDto{}
+
+export interface AdminBlockUnblockTrainerDto {
+  trainerId: string;
+}
