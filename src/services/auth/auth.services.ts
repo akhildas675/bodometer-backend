@@ -17,15 +17,17 @@ import { AppError } from "../../utils/appError";
 import { Jwt } from "../../utils/jwt.utils";
 import { hashPassword } from "../../utils/password";
 import bcrypt from "bcrypt";
-import { AuthRepositoryInterface } from "../../interfaces/auth/auth-repository.interface";
 import { OtpServiceInterface } from "../../interfaces/otp/otp-service.interface";
 import { SessionServiceInterface } from "../../interfaces/auth/session-service.interface";
+import AuthRepository from "../../repositories/auth/auth.repository";
+import { OtpService } from "./otp/otp.services";
+import { SessionService } from "./session/session.services";
 
 export class AuthService implements AuthServiceInterface {
     constructor(
-        private authRepo: AuthRepositoryInterface,
-        private otpService: OtpServiceInterface,
-        private sessionService: SessionServiceInterface,
+        private authRepo: AuthRepository,
+        private otpService: OtpService,
+        private sessionService: SessionService,
     ) { }
 
     async initiateRegister(data: RegisterDto): Promise<void> {

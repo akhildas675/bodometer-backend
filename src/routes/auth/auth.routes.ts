@@ -6,13 +6,15 @@ import { AuthService } from "../../services/auth/auth.services";
 import { OtpService } from "../../services/auth/otp/otp.services";
 import AuthRepository from "../../repositories/auth/auth.repository";
 import { MailService } from "../../services/auth/otp/mail.services";
+import { SessionService } from "../../services/auth/session/session.services";
 
 const authRoute = Router()
 
 const mailService = new MailService()
 const otpService = new OtpService(mailService)
+const sessionService = new SessionService()
 const authRepository = new AuthRepository()
-const authService = new AuthService(authRepository, otpService);
+const authService = new AuthService(authRepository, otpService,sessionService);
 const authController = new AuthController(authService)
 
 
