@@ -4,12 +4,12 @@ import { Gender, Role } from "../constants/identity.constants";
 
 export interface IUserDocument extends Document {
     name: string;
-    userName?:string;
+    userName:string;
     email: string;
     phoneNumber: string;
     password: string;
     profilePic?: string | null;
-    gender?: Gender | null;
+    gender: Gender,
     role: Role;
     isVerified: boolean;
     dateOfBirth?: Date | null;

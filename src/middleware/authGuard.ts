@@ -7,31 +7,27 @@ import { AccessTokenPayload, RefreshTokenPayload } from "../interfaces/auth/auth
 import { Role } from "../constants/identity.constants";
 
 export interface AuthRequest extends Request {
+  file?: Express.Multer.File | undefined;
   user?: {
     id: string;
-    role: Role
+    role: Role;
   };
 }
-
-
 
 export const authGuard = (allowedRoles: Role[] = []) => {
   return async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const authHeader = req.headers.authorization;
-      const accessToken =
-        authHeader?.startsWith("Bearer ")
-          ? authHeader.split(" ")[1]
-          : null;
+      const accessToken = authHeader?.startsWith("Bearer ")
+        ? authHeader.split(" ")[1]
+        : null;
 
       if (accessToken) {
         try {
           const payload = Jwt.verifyAccess(accessToken) as AccessTokenPayload;
 
           if (allowedRoles.length && !allowedRoles.includes(payload.role)) {
-            return next(
-              new AppError(STATUS.FORBIDDEN, "Access denied")
-            );
+            return next(new AppError(STATUS.FORBIDDEN, "Access denied"));
           }
 
           req.user = { id: payload.sub, role: payload.role };
@@ -57,9 +53,7 @@ async function handleRefresh(
   const refreshToken = req.cookies.refreshToken;
 
   if (!refreshToken) {
-    return next(
-      new AppError(STATUS.UNAUTHORIZED, "Authentication required")
-    );
+    return next(new AppError(STATUS.UNAUTHORIZED, "Authentication required"));
   }
 
   try {
@@ -67,15 +61,11 @@ async function handleRefresh(
 
     const storedToken = await redis.get(`refresh:${payload.sub}`);
     if (!storedToken || storedToken !== refreshToken) {
-      return next(
-        new AppError(STATUS.UNAUTHORIZED, "Session expired. Login again.")
-      );
+      return next(new AppError(STATUS.UNAUTHORIZED, "Session expired. Login again."));
     }
 
     if (allowedRoles.length && !allowedRoles.includes(payload.role)) {
-      return next(
-        new AppError(STATUS.FORBIDDEN, "Access denied")
-      );
+      return next(new AppError(STATUS.FORBIDDEN, "Access denied"));
     }
 
     const newAccessToken = Jwt.signAccess({
@@ -88,8 +78,6 @@ async function handleRefresh(
     req.user = { id: payload.sub, role: payload.role };
     return next();
   } catch {
-    return next(
-      new AppError(STATUS.UNAUTHORIZED, "Session expired. Login again.")
-    );
+    return next(new AppError(STATUS.UNAUTHORIZED, "Session expired. Login again."));
   }
 }

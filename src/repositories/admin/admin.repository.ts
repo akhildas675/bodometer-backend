@@ -8,7 +8,7 @@ import {
   AdminTrainerInterface,
   AdminUserInterface,
 } from "../../interfaces/admin/admin.interface";
-import { IUserDocument, UserModel } from "../../models/userModel";
+import { IUserDocument, UserModel } from "../../models/user.model";
 
 export default class AdminRepository implements AdminRepositoryInterface {
   async findUsers(_query: AdminGetUsersDto): Promise<AdminUserInterface[]> {

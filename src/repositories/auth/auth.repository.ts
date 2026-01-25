@@ -1,6 +1,6 @@
 import { AuthRepositoryInterface } from "../../interfaces/auth/auth-repository.interface";
 import { UserInterface } from "../../interfaces/auth/auth.interface";
-import { IUserDocument, UserModel } from "../../models/userModel";
+import { IUserDocument, UserModel } from "../../models/user.model";
 
 
 export default class AuthRepository implements AuthRepositoryInterface {
