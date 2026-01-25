@@ -30,3 +30,25 @@ export interface AdminGetTrainersResponseDto extends AdminGetUsersResponseDto{}
 export interface AdminBlockUnblockTrainerDto {
   trainerId: string;
 }
+
+
+export interface AddWorkoutDto {
+  workoutName: string;
+  workoutDescription: string;
+  file: Express.Multer.File;
+}
+
+export interface AddWorkoutResponseDto {
+  id: string;
+  workoutName: string;
+  workoutDescription: string;
+  workoutImage: string;
+}
+
+export interface GetWorkoutsResponseDto {
+  id: string;
+  workoutName: string;
+  workoutDescription: string;
+  workoutImage: string;
+  isActive: boolean;
+}

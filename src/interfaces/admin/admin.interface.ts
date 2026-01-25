@@ -18,3 +18,11 @@ export type AdminTrainerInterface = AdminAccountInterface<typeof ROLES.TRAINER>;
 export interface AdminUserActionDto {
   userId: string;
 }
+
+export interface Workout {
+  id?:string;
+  workoutName: string;
+  workoutDescription: string;
+  workoutImage: string;
+  isActive: boolean;
+}
