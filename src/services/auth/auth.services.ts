@@ -20,16 +20,15 @@ import bcrypt from "bcrypt";
 import AuthRepository from "../../repositories/auth/auth.repository";
 import { OtpService } from "./otp/otp.services";
 import { SessionService } from "./session/session.services";
-import { TrainerRepositoryInterface } from "../../interfaces/trainer/trainer-repository.interface";
-import TrainerProfileRepository from "../../repositories/trainer/trainer-profile.repository";
 import { VerificationStatus } from "../../constants/verification.constants";
+import { TrainerProfileRepositoryInterface } from "../../interfaces/trainer/trainer.profile-repository.interface";
 
 export class AuthService implements AuthServiceInterface {
     constructor(
         private authRepo: AuthRepository,
         private otpService: OtpService,
         private sessionService: SessionService,
-        private trainerProfileRepo: TrainerProfileRepository
+        private trainerProfileRepo: TrainerProfileRepositoryInterface
     ) { }
 
     async initiateRegister(data: RegisterDto): Promise<void> {
@@ -112,6 +111,8 @@ export class AuthService implements AuthServiceInterface {
         const user = await this.authRepo.findByEmail(
             data.email.toLowerCase().trim()
         );
+
+        console.log("user on service....",user)
         if (!user) throw new AppError(401, "Invalid credentials");
 
         const match = await bcrypt.compare(data.password, user.password);

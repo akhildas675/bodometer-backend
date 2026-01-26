@@ -11,3 +11,12 @@ export interface TrainerProfile {
   rejectionReason?: string | null;
 }
 
+export interface TrainerProfileDataInterface {
+  userId: string;
+  experienceInYears: number;
+  certifications: string[]; 
+  bio: string;
+  verificationStatus: VerificationStatus;
+  rejectionReason?: string | null;
+}
+

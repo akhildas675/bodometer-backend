@@ -128,27 +128,29 @@ export class AuthController {
   };
 
   //Login 
-  login = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { response, refreshToken } =
-        await this.authService.login(req.body);
+ login = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const {
+      response: loginResponse,
+      refreshToken,
+    } = await this.authService.login(req.body);
 
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
-      return res.status(200).json({
-        success: true,
-        message: "Login successful",
-        data: response,
-      });
-    } catch (err) {
-      next(err);
-    }
-  };
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      data: loginResponse,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 
   forgotPassword = async (req: Request, res: Response, next: NextFunction) => {

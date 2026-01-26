@@ -1,4 +1,4 @@
-import { TrainerProfile } from "../../interfaces/trainer/trainer.interface";
+import { TrainerProfile, TrainerProfileDataInterface } from "../../interfaces/trainer/trainer.interface";
 import { TrainerProfileRepositoryInterface } from "../../interfaces/trainer/trainer.profile-repository.interface";
 import { TrainerProfileModel } from "../../models/trainer-profile.model";
 
@@ -16,4 +16,17 @@ export default class TrainerProfileRepository
       rejectionReason: doc.rejectionReason ?? null,
     };
   }
+
+    async create(profile: TrainerProfileDataInterface): Promise<void> {
+    await TrainerProfileModel.create({
+      userId: profile.userId,
+      experienceInYears: profile.experienceInYears,
+      certifications: profile.certifications,
+      bio: profile.bio,
+      verificationStatus: profile.verificationStatus,
+      rejectionReason: profile.rejectionReason ?? null,
+    });
+  }
+
+
 }
