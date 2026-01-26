@@ -17,17 +17,19 @@ import { AppError } from "../../utils/appError";
 import { Jwt } from "../../utils/jwt.utils";
 import { hashPassword } from "../../utils/password";
 import bcrypt from "bcrypt";
-import { OtpServiceInterface } from "../../interfaces/otp/otp-service.interface";
-import { SessionServiceInterface } from "../../interfaces/auth/session-service.interface";
 import AuthRepository from "../../repositories/auth/auth.repository";
 import { OtpService } from "./otp/otp.services";
 import { SessionService } from "./session/session.services";
+import { TrainerRepositoryInterface } from "../../interfaces/trainer/trainer-repository.interface";
+import TrainerProfileRepository from "../../repositories/trainer/trainer-profile.repository";
+import { VerificationStatus } from "../../constants/verification.constants";
 
 export class AuthService implements AuthServiceInterface {
     constructor(
         private authRepo: AuthRepository,
         private otpService: OtpService,
         private sessionService: SessionService,
+        private trainerProfileRepo: TrainerProfileRepository
     ) { }
 
     async initiateRegister(data: RegisterDto): Promise<void> {
@@ -111,7 +113,6 @@ export class AuthService implements AuthServiceInterface {
             data.email.toLowerCase().trim()
         );
         if (!user) throw new AppError(401, "Invalid credentials");
-        console.log("User in Authservice.......", user);
 
         const match = await bcrypt.compare(data.password, user.password);
         if (!match) throw new AppError(401, "Invalid credentials");
@@ -120,23 +121,57 @@ export class AuthService implements AuthServiceInterface {
             throw new AppError(STATUS.FORBIDDEN, "Account is blocked");
         }
 
+        let trainerStatus:
+            | {
+                profileExists: boolean;
+                verificationStatus?: VerificationStatus;
+                rejectionReason?: string | null;
+            }
+            | undefined;
+
+
+        if (user.role === "trainer") {
+            const trainerProfile =
+                await this.trainerProfileRepo.findByUserId(user.id)
+
+            if (!trainerProfile) {
+                trainerStatus = {
+                    profileExists: false,
+                };
+            } else {
+                trainerStatus = {
+                    profileExists: true,
+                    verificationStatus: trainerProfile.verificationStatus,
+                    rejectionReason: trainerProfile.rejectionReason ?? null,
+                };
+            }
+        }
+
         const accessToken = Jwt.signAccess({
             sub: user.id,
             role: user.role,
         });
 
-        const refreshToken = await this.sessionService.createRefreshToken(user.id, {
-            id: user.id,
-            email: user.email,
-            role: user.role,
-            isBlocked: user.isBlocked,
-        });
+        const refreshToken = await this.sessionService.createRefreshToken(
+            user.id,
+            {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+                isBlocked: user.isBlocked,
+            }
+        );
 
         return {
-            response: AuthMapper.toLoginResponse(user, accessToken),
+            response: AuthMapper.toLoginResponse(
+                user,
+                accessToken,
+                trainerStatus
+            ),
             refreshToken,
         };
     }
+
 
     async googleLogin({ idToken }: GoogleLoginDto): Promise<LoginResponseDto> {
         const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
@@ -206,7 +241,7 @@ export class AuthService implements AuthServiceInterface {
             throw new AppError(STATUS.FORBIDDEN, "Account is blocked or session expired");
         }
 
-      
+
         const user = await this.authRepo.findById(userId);
         if (!user) {
             throw new AppError(STATUS.UNAUTHORIZED, "User not found");

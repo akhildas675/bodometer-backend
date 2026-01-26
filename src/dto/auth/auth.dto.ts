@@ -1,5 +1,6 @@
 import { Role } from "../../constants/identity.constants";
 import { OtpPurpose } from "../../constants/otp.constants";
+import { VerificationStatus } from "../../constants/verification.constants";
 
 export interface RegisterDto {
   name: string;
@@ -33,9 +34,15 @@ export interface LoginResponseDto {
     name: string;
     email: string;
     phoneNumber: string;
-    role: Role;
+    role: string;
+  };
+  trainerStatus?: {
+    profileExists: boolean;
+    verificationStatus?: VerificationStatus;
+    rejectionReason?: string | null;
   };
 }
+
 
 
 export interface OtpVerifyDto{

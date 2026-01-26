@@ -10,4 +10,5 @@ export default class TrainerRepository implements TrainerRepositoryInterface{
             workoutName:doc.workoutName
         }))
     }
+
 }
