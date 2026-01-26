@@ -1,0 +1,64 @@
+import mongoose, { Document, Schema } from "mongoose";
+import { VERIFICATION_STATUS, VerificationStatus } from "../constants/verification.constants";
+
+
+export interface ITrainerProfileDocument extends Document {
+    userId: mongoose.Types.ObjectId;
+    specializationIds: mongoose.Types.ObjectId[];
+    experienceInYears: number;
+    certifications: string[];
+    bio: string;
+    verificationStatus: VerificationStatus;
+    rejectionReason?: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+}
+const TrainerProfileSchema = new Schema<ITrainerProfileDocument>(
+    {
+        userId: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+            unique: true,
+        },
+
+        specializationIds: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: "Workout",
+            },
+        ],
+
+        experienceInYears: {
+            type: Number,
+            default: 0,
+        },
+
+        certifications: {
+            type: [String],
+            default: [],
+        },
+
+        bio: {
+            type: String,
+            default: "",
+        },
+
+        verificationStatus: {
+            type: String,
+            enum: Object.values(VERIFICATION_STATUS),
+            default: VERIFICATION_STATUS.PENDING,
+        },
+
+        rejectionReason: {
+            type: String,
+            default: null,
+        },
+    },
+    { timestamps: true }
+);
+
+export const TrainerProfileModel = mongoose.model<ITrainerProfileDocument>(
+    "TrainerProfile",
+    TrainerProfileSchema
+);
