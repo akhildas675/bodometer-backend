@@ -2,9 +2,9 @@ import { Router } from "express";
 import AdminRepository from "../../repositories/admin/admin.repository";
 import { AdminService } from "../../services/admin/admin.services";
 import { AdminController } from "../../controllers/admin/admin.controller";
-import { upload } from "../../config/multer";
 import { S3Service } from "../../services/s3/s3.service";
 import { authGuard } from "../../middleware/authGuard";
+import { imageUpload } from "../../config/multer";
 
 
 const adminRoute = Router();
@@ -52,7 +52,7 @@ adminRoute.patch(
 adminRoute.post(
   "/admin/add-workout",
   authGuard(["admin"]),
-  upload.single("workoutImage"),adminController.addWorkout
+  imageUpload.single("workoutImage"),adminController.addWorkout
 );
 adminRoute.get(
   "/admin/get-workouts",

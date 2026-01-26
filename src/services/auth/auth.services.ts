@@ -163,6 +163,8 @@ export class AuthService implements AuthServiceInterface {
             }
         );
 
+        console.log("trainer status",trainerStatus)
+
         return {
             response: AuthMapper.toLoginResponse(
                 user,
