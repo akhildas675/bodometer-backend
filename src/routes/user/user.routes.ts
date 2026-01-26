@@ -4,7 +4,8 @@ import { UserService } from "../../services/user/user.services";
 import { UserController } from "../../controllers/user/user.controller";
 import { authGuard } from "../../middleware/authGuard";
 import { S3Service } from "../../services/s3/s3.service";
-import { upload } from "../../config/multer";
+import { imageUpload } from "../../config/multer";
+
 
 const userRoute = Router();
 
@@ -25,7 +26,7 @@ userRoute.put(
 );
 userRoute.post(
   "/user/profile-picture",
-  upload.single("file"),
+  imageUpload.single("file"),
   authGuard(["user"]),
   userController.uploadProfilePicture,
 );
