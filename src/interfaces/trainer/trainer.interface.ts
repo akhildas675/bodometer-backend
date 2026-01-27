@@ -1,4 +1,6 @@
 import { VerificationStatus } from "../../constants/verification.constants";
+import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
+import { IUserDocument } from "../../models/user.model";
 
 export interface TrainerWorkoutList{
     id:string;
@@ -20,3 +22,7 @@ export interface TrainerProfileDataInterface {
   rejectionReason?: string | null;
 }
 
+export interface ITrainerWithProfile {
+  user: IUserDocument;
+  profile: ITrainerProfileDocument;
+}

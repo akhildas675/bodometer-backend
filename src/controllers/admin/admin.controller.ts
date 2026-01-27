@@ -115,7 +115,7 @@ export class AdminController {
     try {
       const { workoutName, workoutDescription } = req.body;
       const file = req.file;
-      console.log("body data",req.file);
+      console.log("body data", req.file);
 
       if (!workoutName || !workoutDescription) {
         throw new AppError(400, "Missing fields");
@@ -138,7 +138,7 @@ export class AdminController {
     }
   };
 
- getWorkout = async (req: Request, res: Response, next: NextFunction) => {
+  getWorkout = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const workouts = await this.adminService.fetchWorkouts();
       console.log(workouts)
@@ -151,6 +151,77 @@ export class AdminController {
       next(error);
     }
   };
+
+  //trainer appointment
+
+  getTrainerAppointments =
+    async (req: Request, res: Response, next: NextFunction) => {
+      const trainers = await this.adminService.getTrainerAppointments();
+
+      res.status(200).json({
+        success: true,
+        message: "Trainer appointments fetched successfully",
+        data: trainers,
+      });
+    }
+
+
+  getTrainerById = async (req: Request, res: Response, next: NextFunction) => {
+    const { userId } = req.params;
+
+    if (!userId) {
+      throw new AppError(400, "User ID is required");
+    }
+
+    const trainer = await this.adminService.getTrainerById(userId);
+
+    res.status(200).json({
+      success: true,
+      message: "Trainer details fetched successfully",
+      data: trainer,
+    });
+  }
+
+
+  approveTrainer = async (req: Request, res: Response, next: NextFunction) => {
+    const { profileId } = req.params;
+
+    if (!profileId) {
+      throw new AppError(400, "Profile ID is required");
+    }
+
+    const result = await this.adminService.approveTrainer(profileId);
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
+      data: result.profile,
+    });
+  }
+
+
+  rejectTrainer =
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { profileId } = req.params;
+      const { reason } = req.body;
+
+      if (!profileId) {
+        throw new AppError(400, "Profile ID is required");
+      }
+
+      if (!reason) {
+        throw new AppError(400, "Rejection reason is required");
+      }
+
+      const result = await this.adminService.rejectTrainer(profileId, reason);
+
+      res.status(200).json({
+        success: true,
+        message: result.message,
+        data: result.profile,
+      });
+    }
+
 }
 
 

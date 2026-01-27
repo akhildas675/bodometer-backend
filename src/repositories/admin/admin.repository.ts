@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { ROLES } from "../../constants/identity.constants";
 import {
   AddWorkoutDto,
@@ -10,6 +11,8 @@ import {
   AdminUserInterface,
   Workout,
 } from "../../interfaces/admin/admin.interface";
+import { ITrainerWithProfile } from "../../interfaces/trainer/trainer.interface";
+import { ITrainerProfileDocument, TrainerProfileModel } from "../../models/trainer-profile.model";
 import { IUserDocument, UserModel } from "../../models/user.model";
 import { IWorkoutDocument, WorkoutModel } from "../../models/workout.model";
 
@@ -79,5 +82,91 @@ export default class AdminRepository implements AdminRepositoryInterface {
       workoutImage: doc.workoutImage,
       isActive: doc.isActive,
     }));
+  }
+
+  async getAllTrainersWithProfiles(): Promise<ITrainerWithProfile[]> {
+    try {
+      // Find all trainer profiles
+      const trainerProfiles = await TrainerProfileModel.find()
+        .populate({
+          path: "userId",
+          select: "_id name userName email phoneNumber profilePic gender role isVerified dateOfBirth isBlocked createdAt updatedAt",
+        })
+        .lean();
+
+      // Map to ITrainerWithProfile format
+      const trainersWithProfiles: ITrainerWithProfile[] = trainerProfiles.map((profile) => ({
+        user: profile.userId as any,
+        profile: profile as any,
+      }));
+
+      return trainersWithProfiles;
+    } catch (error) {
+      console.error("Error in getAllTrainersWithProfiles:", error);
+      throw error;
+    }
+  }
+
+  async getTrainerByUserId(userId: string): Promise<ITrainerWithProfile | null> {
+    try {
+    
+      const trainerProfile = await TrainerProfileModel.findOne({
+        userId: new mongoose.Types.ObjectId(userId),
+      })
+        .populate({
+          path: "userId",
+          select: "_id name userName email phoneNumber profilePic gender role isVerified dateOfBirth isBlocked createdAt updatedAt",
+        })
+        .lean();
+
+      if (!trainerProfile) {
+        return null;
+      }
+
+      return {
+        user: trainerProfile.userId as any,
+        profile: trainerProfile as any,
+      };
+    } catch (error) {
+      console.error("Error in getTrainerByUserId:", error);
+      throw error;
+    }
+  }
+
+  async updateTrainerVerificationStatus(
+    profileId: string,
+    status: string,
+    rejectionReason?: string | null
+  ): Promise<ITrainerProfileDocument | null> {
+    try {
+      const updateData: any = {
+        verificationStatus: status,
+      };
+
+      if (rejectionReason !== undefined) {
+        updateData.rejectionReason = rejectionReason;
+      }
+
+      const updatedProfile = await TrainerProfileModel.findByIdAndUpdate(
+        profileId,
+        updateData,
+        { new: true }
+      ).lean();
+
+      return updatedProfile as any;
+    } catch (error) {
+      console.error("Error in updateTrainerVerificationStatus:", error);
+      throw error;
+    }
+  }
+
+  async findTrainerProfileById(profileId: string): Promise<ITrainerProfileDocument | null> {
+    try {
+      const profile = await TrainerProfileModel.findById(profileId).lean();
+      return profile as any;
+    } catch (error) {
+      console.error("Error in findTrainerProfileById:", error);
+      throw error;
+    }
   }
 }

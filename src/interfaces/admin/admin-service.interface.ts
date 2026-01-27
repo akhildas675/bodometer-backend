@@ -1,4 +1,5 @@
 import { AddWorkoutDto, AddWorkoutResponseDto, AdminGetTrainersDto, AdminGetTrainersResponseDto, AdminGetUsersDto, AdminGetUsersResponseDto } from "../../dto/admin/admin.dto";
+import { ApproveTrainerResponseDto, GetTrainerAppointmentsResponseDto, GetTrainerByIdResponseDto, RejectTrainerResponseDto } from "../../dto/trainer/trainer.dto";
 import { Workout } from "./admin.interface";
 
 export interface AdminServiceInterface {
@@ -12,4 +13,12 @@ export interface AdminServiceInterface {
 
   workoutAdd(body:AddWorkoutDto):Promise<AddWorkoutResponseDto>
   fetchWorkouts(): Promise<Workout[]>;
+
+  getTrainerAppointments(): Promise<GetTrainerAppointmentsResponseDto[]>;
+  
+  getTrainerById(userId: string): Promise<GetTrainerByIdResponseDto>;
+  
+  approveTrainer(profileId: string): Promise<ApproveTrainerResponseDto>;
+  
+  rejectTrainer(profileId: string, reason: string): Promise<RejectTrainerResponseDto>;
 }

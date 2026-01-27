@@ -10,7 +10,7 @@ import { imageUpload } from "../../config/multer";
 const adminRoute = Router();
 const adminRepository = new AdminRepository();
 const s3Service = new S3Service()
-const adminService = new AdminService(adminRepository,s3Service);
+const adminService = new AdminService(adminRepository, s3Service);
 const adminController = new AdminController(adminService);
 
 
@@ -52,11 +52,16 @@ adminRoute.patch(
 adminRoute.post(
   "/admin/add-workout",
   authGuard(["admin"]),
-  imageUpload.single("workoutImage"),adminController.addWorkout
+  imageUpload.single("workoutImage"), adminController.addWorkout
 );
 adminRoute.get(
   "/admin/get-workouts",
-  authGuard(["admin"]),adminController.getWorkout
+  authGuard(["admin"]), adminController.getWorkout
 )
+
+adminRoute.post("/get-trainer-appointments", authGuard(["admin"]), adminController.getTrainerAppointments);
+adminRoute.get("/trainers/:userId", authGuard(["admin"]), adminController.getTrainerById);
+adminRoute.patch("/trainers/:profileId/approve", authGuard(["admin"]), adminController.approveTrainer);
+adminRoute.patch("/trainers/:profileId/reject", authGuard(["admin"]), adminController.rejectTrainer);
 
 export default adminRoute;
