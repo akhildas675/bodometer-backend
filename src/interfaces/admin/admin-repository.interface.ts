@@ -14,7 +14,7 @@ export interface AdminRepositoryInterface {
     getAllTrainersWithProfiles(): Promise<ITrainerWithProfile[]>;
 
 
-    getTrainerByUserId(userId: string): Promise<ITrainerWithProfile | null>;
+    getTrainerByProfileId(userId: string): Promise<ITrainerWithProfile | null>;
 
 
     updateTrainerVerificationStatus(

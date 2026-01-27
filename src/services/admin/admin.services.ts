@@ -100,21 +100,21 @@ async getTrainerAppointments(): Promise<GetTrainerAppointmentsResponseDto[]> {
     }
   }
 
-  async getTrainerById(userId: string): Promise<GetTrainerByIdResponseDto> {
-    try {
-      const trainer = await this.adminRepo.getTrainerByUserId(userId);
+  async getTrainerByProfileId(profileId: string): Promise<GetTrainerByIdResponseDto> {
+  try {
+    const trainer = await this.adminRepo.getTrainerByProfileId(profileId); 
 
-      if (!trainer) {
-        throw new AppError(404,"Trainer not found");
-      }
-
-      return TrainerMapper.toDetailDto(trainer);
-    } catch (error) {
-      console.error("Error in getTrainerById:", error);
-      if (error instanceof AppError) throw error;
-      throw new AppError(500,"Failed to fetch trainer details");
+    if (!trainer) {
+      throw new AppError(404, "Trainer not found");
     }
+
+    return TrainerMapper.toDetailDto(trainer);
+  } catch (error) {
+    console.error("Error in getTrainerByProfileId:", error);
+    if (error instanceof AppError) throw error;
+    throw new AppError(500, "Failed to fetch trainer details");
   }
+}
 
   async approveTrainer(profileId: string): Promise<ApproveTrainerResponseDto> {
     try {

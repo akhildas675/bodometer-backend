@@ -166,22 +166,21 @@ export class AdminController {
     }
 
 
-  getTrainerById = async (req: Request, res: Response, next: NextFunction) => {
-    const { userId } = req.params;
+getTrainerById = async (req: Request, res: Response, next: NextFunction) => {
+  const { profileId } = req.params; 
 
-    if (!userId) {
-      throw new AppError(400, "User ID is required");
-    }
-
-    const trainer = await this.adminService.getTrainerById(userId);
-
-    res.status(200).json({
-      success: true,
-      message: "Trainer details fetched successfully",
-      data: trainer,
-    });
+  if (!profileId) {
+    throw new AppError(400, "Profile ID is required");
   }
 
+  const trainer = await this.adminService.getTrainerByProfileId(profileId); 
+
+  res.status(200).json({
+    success: true,
+    message: "Trainer details fetched successfully",
+    data: trainer,
+  });
+}
 
   approveTrainer = async (req: Request, res: Response, next: NextFunction) => {
     const { profileId } = req.params;

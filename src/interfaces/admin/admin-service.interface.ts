@@ -16,7 +16,7 @@ export interface AdminServiceInterface {
 
   getTrainerAppointments(): Promise<GetTrainerAppointmentsResponseDto[]>;
   
-  getTrainerById(userId: string): Promise<GetTrainerByIdResponseDto>;
+ getTrainerByProfileId(profileId: string): Promise<GetTrainerByIdResponseDto>;
   
   approveTrainer(profileId: string): Promise<ApproveTrainerResponseDto>;
   

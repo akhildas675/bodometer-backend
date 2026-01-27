@@ -107,31 +107,28 @@ export default class AdminRepository implements AdminRepositoryInterface {
     }
   }
 
-  async getTrainerByUserId(userId: string): Promise<ITrainerWithProfile | null> {
-    try {
-    
-      const trainerProfile = await TrainerProfileModel.findOne({
-        userId: new mongoose.Types.ObjectId(userId),
+  async getTrainerByProfileId(profileId: string): Promise<ITrainerWithProfile | null> {
+  try {
+    const trainerProfile = await TrainerProfileModel.findById(profileId) 
+      .populate({
+        path: "userId",
+        select: "_id name userName email phoneNumber profilePic gender role isVerified dateOfBirth isBlocked createdAt updatedAt",
       })
-        .populate({
-          path: "userId",
-          select: "_id name userName email phoneNumber profilePic gender role isVerified dateOfBirth isBlocked createdAt updatedAt",
-        })
-        .lean();
+      .lean();
 
-      if (!trainerProfile) {
-        return null;
-      }
-
-      return {
-        user: trainerProfile.userId as any,
-        profile: trainerProfile as any,
-      };
-    } catch (error) {
-      console.error("Error in getTrainerByUserId:", error);
-      throw error;
+    if (!trainerProfile) {
+      return null;
     }
+
+    return {
+      user: trainerProfile.userId as any,
+      profile: trainerProfile as any,
+    };
+  } catch (error) {
+    console.error("Error in getTrainerByProfileId:", error);
+    throw error;
   }
+}
 
   async updateTrainerVerificationStatus(
     profileId: string,
