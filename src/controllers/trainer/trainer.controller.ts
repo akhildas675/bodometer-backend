@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-<<<<<<< HEAD
+import { ITrainerService } from "../../interfaces/trainer/trainer-service.interface";
 
->>>>>>> fix/architecture-format-backend
 
 export class TrainerController {
   constructor(private _trainerService: ITrainerService) { }
