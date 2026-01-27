@@ -1,6 +1,6 @@
 
 import { TrainerWorkoutList } from "./trainer.interface";
 
-export interface TrainerServiceInterface{
+export interface ITrainerService{
     fetchWorkoutList():Promise<TrainerWorkoutList[]>
 }

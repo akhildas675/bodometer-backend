@@ -9,18 +9,16 @@ import { AppError } from "./utils/appError";
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
-if(!MONGO_URI){
-  throw new AppError(400,"mongo uri error")
+if (!MONGO_URI) {
+  throw new AppError(400, "mongo uri error");
 }
 
-const mongoUri:string = MONGO_URI
+const mongoUri: string = MONGO_URI;
 
 async function start() {
   try {
-
     await connectDB(mongoUri);
 
- 
     connectRedis();
 
     app.listen(PORT, () => {

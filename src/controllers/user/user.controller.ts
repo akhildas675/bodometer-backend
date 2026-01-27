@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express";
-import { UserServiceInterface } from "../../interfaces/user/user-service.interface";
+import { IUserService } from "../../interfaces/user/user-service.interface";
 import { UpdateUserProfileDto } from "../../dto/user/user.dto";
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
 import { AuthRequest } from "../../middleware/authGuard";
 
 export class UserController {
-  constructor(private userService: UserServiceInterface) {}
+  constructor(private _userService: IUserService) {}
 
   getUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
@@ -15,7 +15,7 @@ export class UserController {
       }
 
       const userId = req.user.id;
-      const user = await this.userService.fetchUser(userId);
+      const user = await this._userService.fetchUser(userId);
 
       res.status(200).json({
         success: true,
@@ -39,7 +39,7 @@ export class UserController {
       const userId = req.user.id;
       const updateData: UpdateUserProfileDto = req.body;
 
-      const updatedUser = await this.userService.updateUserProfile(
+      const updatedUser = await this._userService.updateUserProfile(
         userId,
         updateData,
       );
@@ -71,7 +71,7 @@ export class UserController {
       const userId = req.user.id;
       const file = req.file;
 
-      const profilePicUrl = await this.userService.uploadProfilePicture(
+      const profilePicUrl = await this._userService.uploadProfilePicture(
         userId,
         file,
       );

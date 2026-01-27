@@ -1,10 +1,11 @@
+// trainer.interface.ts
 import { VerificationStatus } from "../../constants/verification.constants";
 import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
 import { IUserDocument } from "../../models/user.model";
 
-export interface TrainerWorkoutList{
-    id:string;
-    workoutName:string;
+export interface TrainerWorkoutList {
+  id: string;
+  workoutName: string;
 }
 
 export interface TrainerProfile {
@@ -16,10 +17,14 @@ export interface TrainerProfile {
 export interface TrainerProfileDataInterface {
   userId: string;
   experienceInYears: number;
-  certifications: string[]; 
+  certifications: string[];
   bio: string;
   verificationStatus: VerificationStatus;
   rejectionReason?: string | null;
+}
+
+export interface PopulatedTrainerProfile extends Omit<ITrainerProfileDocument, 'userId'> {
+  userId: IUserDocument;
 }
 
 export interface ITrainerWithProfile {

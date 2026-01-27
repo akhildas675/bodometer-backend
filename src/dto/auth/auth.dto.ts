@@ -7,24 +7,23 @@ export interface RegisterDto {
   email: string;
   phoneNumber: string;
   password: string;
-  role:Role;
+  role: Role;
 }
 
 export interface RegisterResponseDto {
   id: string;
   name: string;
   email: string;
-  userName:string | null;
+  userName: string | null;
   phoneNumber: string;
   role: Role;
   profilePic: string | null;
 }
 
-
-export interface LoginDto{
-  id:string;
-  email:string;
-  password:string;
+export interface LoginDto {
+  id: string;
+  email: string;
+  password: string;
 }
 
 export interface LoginResponseDto {
@@ -43,12 +42,10 @@ export interface LoginResponseDto {
   };
 }
 
-
-
-export interface OtpVerifyDto{
-  email:string;
-  otp:string;
-  purpose:OtpPurpose
+export interface OtpVerifyDto {
+  email: string;
+  otp: string;
+  purpose: OtpPurpose;
 }
 
 export interface ForgotPasswordDto {
@@ -59,13 +56,13 @@ export interface ForgotPasswordResponseDto {
   role: "user" | "trainer" | "admin" | null;
 }
 
-export interface ResetPasswordDto{
-  email:string,
-  password:string,
+export interface ResetPasswordDto {
+  email: string;
+  password: string;
 }
 
 export interface GoogleLoginDto {
   idToken: string;
 }
 
-export interface GoogleLoginResponseDto extends LoginResponseDto{}
+export interface GoogleLoginResponseDto extends LoginResponseDto {}

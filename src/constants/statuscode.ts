@@ -17,7 +17,3 @@ export const STATUS = {
   NOT_IMPLEMENTED: 501,
   SERVICE_UNAVAILABLE: 503,
 } as const;
-
-
-
-

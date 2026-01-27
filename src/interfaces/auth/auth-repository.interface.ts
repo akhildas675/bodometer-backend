@@ -1,6 +1,6 @@
 import { UserInterface } from "./auth.interface";
 
-export interface AuthRepositoryInterface {
+export interface IAuthRepository {
     findByUsername(username: string): Promise<UserInterface | null>;
     findByEmail(email: string): Promise<UserInterface  | null>;
     create(data: UserInterface): Promise<UserInterface >

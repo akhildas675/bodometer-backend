@@ -27,38 +27,30 @@ export const registerSchema = z.object({
       .string()
       .min(6, "Password must be at least 6 characters")
       .max(100, "Password is too long"),
-      role: z.enum([ROLES.USER, ROLES.TRAINER]),
+    role: z.enum([ROLES.USER, ROLES.TRAINER]),
   }),
 });
 
 export type RegisterUserInput = z.infer<typeof registerSchema>["body"];
 
+export const loginSchema = z.object({
+  body: z.object({
+    email: z.string().email("Invalid Email address").max(100, "Email too long"),
 
-
-export const loginSchema=z.object({
-  body:z.object({
-    email:z
-    .string()
-    .email("Invalid Email address")
-    .max(100,"Email too long"),
-
-    password:z
-    .string()
-    .min(6,"Password must be at least 6 character")
-    .max(50,"Password is too long"),
+    password: z
+      .string()
+      .min(6, "Password must be at least 6 character")
+      .max(50, "Password is too long"),
   }),
 });
 
-export const otpSchema=z.object({
-  body:z.object({
-    email:z
-    .string()
-    .email("Invalid Email address")
-    .max(100,"Email too long"),
+export const otpSchema = z.object({
+  body: z.object({
+    email: z.string().email("Invalid Email address").max(100, "Email too long"),
     purpose: z.enum([
       OTP_PURPOSE.USER_REGISTER,
       OTP_PURPOSE.TRAINER_REGISTER,
       OTP_PURPOSE.FORGET_PASSWORD,
     ]),
-  })
-})
+  }),
+});

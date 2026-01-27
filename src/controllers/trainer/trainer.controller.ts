@@ -1,19 +1,20 @@
 import { NextFunction, Request, Response } from "express";
-import { TrainerServiceInterface } from "../../interfaces/trainer/trainer-service.interface";
+<<<<<<< HEAD
+
+>>>>>>> fix/architecture-format-backend
 
 export class TrainerController {
-    constructor(private trainerService:TrainerServiceInterface) { }
+  constructor(private _trainerService: ITrainerService) { }
 
-    getWorkoutList = async (req:Request, res: Response, next: NextFunction) => {
-        try {
-            const workoutList = await this.trainerService.fetchWorkoutList();
-            res.status(200).json({
-                success:true,
-                data:workoutList
-            })
-
-        } catch (error) {
-            next(error)
-        }
+  getWorkoutList = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const workoutList = await this._trainerService.fetchWorkoutList();
+      res.status(200).json({
+        success: true,
+        data: workoutList,
+      });
+    } catch (error) {
+      next(error);
     }
+  };
 }

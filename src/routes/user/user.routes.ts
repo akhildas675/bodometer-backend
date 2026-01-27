@@ -6,7 +6,6 @@ import { authGuard } from "../../middleware/authGuard";
 import { S3Service } from "../../services/s3/s3.service";
 import { imageUpload } from "../../config/multer";
 
-
 const userRoute = Router();
 
 const userRepository = new UserRepository();

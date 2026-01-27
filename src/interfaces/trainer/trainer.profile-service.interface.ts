@@ -1,4 +1,4 @@
-export interface TrainerProfileServiceInterface {
+export interface ITrainerProfileService {
   createProfile(
     userId: string,
     data: {

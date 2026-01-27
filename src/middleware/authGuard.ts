@@ -3,7 +3,10 @@ import { Jwt } from "../utils/jwt.utils";
 import { AppError } from "../utils/appError";
 import { STATUS } from "../constants/statuscode";
 import { redis } from "../config/redis";
-import { AccessTokenPayload, RefreshTokenPayload } from "../interfaces/auth/auth.interface";
+import {
+  AccessTokenPayload,
+  RefreshTokenPayload,
+} from "../interfaces/auth/auth.interface";
 import { Role } from "../constants/identity.constants";
 
 export interface AuthRequest extends Request {
@@ -32,9 +35,7 @@ export const authGuard = (allowedRoles: Role[] = []) => {
 
           req.user = { id: payload.sub, role: payload.role };
           return next();
-        } catch {
-          
-        }
+        } catch {}
       }
 
       return await handleRefresh(req, res, next, allowedRoles);
@@ -48,7 +49,7 @@ async function handleRefresh(
   req: AuthRequest,
   res: Response,
   next: NextFunction,
-  allowedRoles: Role[]
+  allowedRoles: Role[],
 ) {
   const refreshToken = req.cookies.refreshToken;
 
@@ -61,7 +62,9 @@ async function handleRefresh(
 
     const storedToken = await redis.get(`refresh:${payload.sub}`);
     if (!storedToken || storedToken !== refreshToken) {
-      return next(new AppError(STATUS.UNAUTHORIZED, "Session expired. Login again."));
+      return next(
+        new AppError(STATUS.UNAUTHORIZED, "Session expired. Login again."),
+      );
     }
 
     if (allowedRoles.length && !allowedRoles.includes(payload.role)) {
@@ -78,6 +81,8 @@ async function handleRefresh(
     req.user = { id: payload.sub, role: payload.role };
     return next();
   } catch {
-    return next(new AppError(STATUS.UNAUTHORIZED, "Session expired. Login again."));
+    return next(
+      new AppError(STATUS.UNAUTHORIZED, "Session expired. Login again."),
+    );
   }
 }

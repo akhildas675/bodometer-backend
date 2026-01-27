@@ -1,6 +1,9 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { v4 as uuidv4 } from 'uuid';
-
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
+import { v4 as uuidv4 } from "uuid";
 
 export interface UploadedFile {
   fieldname: string;
@@ -10,9 +13,6 @@ export interface UploadedFile {
   size: number;
   buffer: Buffer;
 }
-
-
-
 
 export class S3Service {
   private s3Client: S3Client;
@@ -30,7 +30,7 @@ export class S3Service {
   }
 
   async uploadFile(file: Express.Multer.File, folder: string): Promise<string> {
-    const fileExtension = file.originalname.split('.').pop();
+    const fileExtension = file.originalname.split(".").pop();
     const fileName = `${folder}/${uuidv4()}.${fileExtension}`;
 
     const command = new PutObjectCommand({
@@ -48,10 +48,10 @@ export class S3Service {
   async deleteFile(fileUrl: string): Promise<void> {
     try {
       // Extract the key from the URL
-      const fileName = fileUrl.split('.com/')[1];
-      
+      const fileName = fileUrl.split(".com/")[1];
+
       if (!fileName) {
-        console.error('Invalid file URL:', fileUrl);
+        console.error("Invalid file URL:", fileUrl);
         return;
       }
 
@@ -61,9 +61,9 @@ export class S3Service {
       });
 
       await this.s3Client.send(command);
-      console.log('Successfully deleted file from S3:', fileName);
+      console.log("Successfully deleted file from S3:", fileName);
     } catch (error) {
-      console.error('Error deleting file from S3:', error);
+      console.error("Error deleting file from S3:", error);
       throw error;
     }
   }

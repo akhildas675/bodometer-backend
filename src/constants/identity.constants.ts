@@ -1,5 +1,3 @@
-
-
 export type Gender = "male" | "female" | "other" | "prefer_not_say";
 
 export const ROLES = {
@@ -8,4 +6,4 @@ export const ROLES = {
   TRAINER: "trainer",
 } as const;
 
-export type Role = typeof ROLES[keyof typeof ROLES];
+export type Role = (typeof ROLES)[keyof typeof ROLES];

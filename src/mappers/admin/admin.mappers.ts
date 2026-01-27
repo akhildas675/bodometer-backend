@@ -1,14 +1,24 @@
 import { Role } from "../../constants/identity.constants";
-import { AddWorkoutResponseDto, AdminGetUsersResponseDto, GetWorkoutsResponseDto } from "../../dto/admin/admin.dto";
-import { ApproveTrainerResponseDto, GetTrainerAppointmentsResponseDto, GetTrainerByIdResponseDto, RejectTrainerResponseDto } from "../../dto/trainer/trainer.dto";
-import { AdminAccountInterface, Workout } from "../../interfaces/admin/admin.interface";
+import {
+  AdminGetUsersResponseDto,
+  GetWorkoutsResponseDto,
+} from "../../dto/admin/admin.dto";
+import {
+  ApproveTrainerResponseDto,
+  GetTrainerAppointmentsResponseDto,
+  GetTrainerByIdResponseDto,
+  RejectTrainerResponseDto,
+} from "../../dto/trainer/trainer.dto";
+import {
+  AdminAccountInterface,
+  Workout,
+} from "../../interfaces/admin/admin.interface";
 import { ITrainerWithProfile } from "../../interfaces/trainer/trainer.interface";
 import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
-import { IWorkoutDocument } from "../../models/workout.model";
 
 export class AdminAccountMapper {
-  static toResponse<T extends Exclude<Role,"admin">>(
-    account: AdminAccountInterface<T>
+  static toResponse<T extends Exclude<Role, "admin">>(
+    account: AdminAccountInterface<T>,
   ): AdminGetUsersResponseDto {
     return {
       id: account.id,
@@ -21,12 +31,10 @@ export class AdminAccountMapper {
     };
   }
 
-  static toResponseList<T extends Exclude<Role,"admin">>(
-    accounts: AdminAccountInterface<T>[]
+  static toResponseList<T extends Exclude<Role, "admin">>(
+    accounts: AdminAccountInterface<T>[],
   ): AdminGetUsersResponseDto[] {
-    return accounts.map((account) =>
-      AdminAccountMapper.toResponse(account)
-    );
+    return accounts.map((account) => AdminAccountMapper.toResponse(account));
   }
 }
 
@@ -44,8 +52,11 @@ export class WorkoutMapper {
   static toResponseList(workouts: Workout[]): GetWorkoutsResponseDto[] {
     return workouts.map(this.toResponse);
   }
-}export class TrainerMapper {
-  static toDto(trainer: ITrainerWithProfile): GetTrainerAppointmentsResponseDto {
+}
+export class TrainerMapper {
+  static toDto(
+    trainer: ITrainerWithProfile,
+  ): GetTrainerAppointmentsResponseDto {
     return {
       user: {
         _id: trainer.user._id?.toString() || "",
@@ -76,8 +87,9 @@ export class WorkoutMapper {
     };
   }
 
-  
-  static toDtoArray(trainers: ITrainerWithProfile[]): GetTrainerAppointmentsResponseDto[] {
+  static toDtoArray(
+    trainers: ITrainerWithProfile[],
+  ): GetTrainerAppointmentsResponseDto[] {
     return trainers.map((trainer) => this.toDto(trainer));
   }
 
@@ -85,8 +97,9 @@ export class WorkoutMapper {
     return this.toDto(trainer);
   }
 
- 
-  static toApproveDto(profile: ITrainerProfileDocument): ApproveTrainerResponseDto {
+  static toApproveDto(
+    profile: ITrainerProfileDocument,
+  ): ApproveTrainerResponseDto {
     return {
       message: "Trainer approved successfully",
       profile: {
@@ -96,8 +109,9 @@ export class WorkoutMapper {
     };
   }
 
-
-  static toRejectDto(profile: ITrainerProfileDocument): RejectTrainerResponseDto {
+  static toRejectDto(
+    profile: ITrainerProfileDocument,
+  ): RejectTrainerResponseDto {
     return {
       message: "Trainer rejected successfully",
       profile: {
@@ -108,13 +122,3 @@ export class WorkoutMapper {
     };
   }
 }
-
-
-
-
-
-
-
-
-
-
