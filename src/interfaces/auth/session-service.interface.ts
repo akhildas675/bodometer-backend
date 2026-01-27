@@ -1,6 +1,6 @@
 import { SessionData } from "./auth.interface";
 
-export interface SessionServiceInterface {
+export interface ISessionService {
 
   createRefreshToken(userId: string, userData: SessionData): Promise<string>;
   

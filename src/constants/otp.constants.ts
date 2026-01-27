@@ -4,4 +4,4 @@ export const OTP_PURPOSE = {
   FORGET_PASSWORD: "FORGET_PASSWORD",
 } as const;
 
-export type OtpPurpose = typeof OTP_PURPOSE[keyof typeof OTP_PURPOSE];
+export type OtpPurpose = (typeof OTP_PURPOSE)[keyof typeof OTP_PURPOSE];

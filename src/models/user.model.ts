@@ -4,7 +4,7 @@ import { Gender, Role } from "../constants/identity.constants";
 
 export interface IUserDocument extends Document {
     name: string;
-    userName:string;
+    userName: string;
     email: string;
     phoneNumber: string;
     password: string;
@@ -30,7 +30,7 @@ const UserSchema = new Schema<IUserDocument>(
         userName: {
             type: String,
             required: false,
-            sparse:true,
+            sparse: true,
         },
         email: {
             type: String,
@@ -59,11 +59,11 @@ const UserSchema = new Schema<IUserDocument>(
             enum: ["user", "trainer", "admin"],
             default: "user"
         },
-        isVerified:{
-            type:Boolean,
-            default:false
+        isVerified: {
+            type: Boolean,
+            default: false
         },
-        
+
         dateOfBirth: { type: Date, default: null },
         isBlocked: { type: Boolean, default: false }
     },

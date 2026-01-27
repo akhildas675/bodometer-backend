@@ -1,7 +1,5 @@
 import { Role, ROLES } from "../../constants/identity.constants";
 
-
-
 export interface AdminAccountInterface<R extends Role> {
   id: string;
   name: string;
@@ -20,7 +18,7 @@ export interface AdminUserActionDto {
 }
 
 export interface Workout {
-  id?:string;
+  id?: string;
   workoutName: string;
   workoutDescription: string;
   workoutImage: string;

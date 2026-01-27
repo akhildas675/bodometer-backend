@@ -1,8 +1,9 @@
-export interface WorkoutListDto{
-    id:string;
-    workoutList:string;
-}
+import { Gender } from "../../constants/identity.constants";
 
+export interface WorkoutListDto {
+  id: string;
+  workoutList: string;
+}
 
 export interface CreateTrainerProfileDto {
   experienceInYears: number;
@@ -43,7 +44,6 @@ export interface GetTrainerAppointmentsResponseDto {
   };
 }
 
-
 export interface GetTrainerByIdRequestDto {
   userId: string;
 }
@@ -77,7 +77,6 @@ export interface GetTrainerByIdResponseDto {
   };
 }
 
-
 export interface ApproveTrainerRequestDto {
   profileId: string;
 }
@@ -89,7 +88,6 @@ export interface ApproveTrainerResponseDto {
     verificationStatus: string;
   };
 }
-
 
 export interface RejectTrainerRequestDto {
   profileId: string;
@@ -103,4 +101,24 @@ export interface RejectTrainerResponseDto {
     verificationStatus: string;
     rejectionReason: string;
   };
+}
+
+export interface UpdateTrainerProfileDto {
+  name?: string;
+  userName?: string;
+  phoneNumber?: string | null;
+  gender?: Gender;
+  dateOfBirth?: Date | null;
+  profilePic?: string;
+}
+
+export interface FindTrainerResponseDto {
+  id: string;
+  name: string;
+  email: string;
+  userName: string;
+  phoneNumber: string | null;
+  gender: Gender;
+  profilePic?: string;
+  dateOfBirth?: Date;
 }

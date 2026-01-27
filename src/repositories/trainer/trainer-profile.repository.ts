@@ -1,11 +1,11 @@
-import { TrainerProfile, TrainerProfileDataInterface } from "../../interfaces/trainer/trainer.interface";
-import { TrainerProfileRepositoryInterface } from "../../interfaces/trainer/trainer.profile-repository.interface";
+import {
+  TrainerProfile,
+  TrainerProfileDataInterface,
+} from "../../interfaces/trainer/trainer.interface";
+import { ITrainerProfileRepository } from "../../interfaces/trainer/trainer.profile-repository.interface";
 import { TrainerProfileModel } from "../../models/trainer-profile.model";
 
-
-export default class TrainerProfileRepository
-  implements TrainerProfileRepositoryInterface {
-
+export default class TrainerProfileRepository implements ITrainerProfileRepository {
   async findByUserId(userId: string): Promise<TrainerProfile | null> {
     const doc = await TrainerProfileModel.findOne({ userId });
     if (!doc) return null;
@@ -17,7 +17,7 @@ export default class TrainerProfileRepository
     };
   }
 
-    async create(profile: TrainerProfileDataInterface): Promise<void> {
+  async create(profile: TrainerProfileDataInterface): Promise<void> {
     await TrainerProfileModel.create({
       userId: profile.userId,
       experienceInYears: profile.experienceInYears,
@@ -27,6 +27,4 @@ export default class TrainerProfileRepository
       rejectionReason: profile.rejectionReason ?? null,
     });
   }
-
-
 }

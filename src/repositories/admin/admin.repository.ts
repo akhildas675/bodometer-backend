@@ -1,27 +1,32 @@
 import mongoose from "mongoose";
 import { ROLES } from "../../constants/identity.constants";
 import {
-  AddWorkoutDto,
   AdminGetTrainersDto,
   AdminGetUsersDto,
 } from "../../dto/admin/admin.dto";
-import { AdminRepositoryInterface } from "../../interfaces/admin/admin-repository.interface";
+import { IAdminRepository } from "../../interfaces/admin/admin-repository.interface";
 import {
   AdminTrainerInterface,
   AdminUserInterface,
   Workout,
 } from "../../interfaces/admin/admin.interface";
-import { ITrainerWithProfile } from "../../interfaces/trainer/trainer.interface";
-import { ITrainerProfileDocument, TrainerProfileModel } from "../../models/trainer-profile.model";
+import {
+  ITrainerWithProfile,
+  PopulatedTrainerProfile,
+} from "../../interfaces/trainer/trainer.interface";
+import {
+  ITrainerProfileDocument,
+  TrainerProfileModel,
+} from "../../models/trainer-profile.model";
 import { IUserDocument, UserModel } from "../../models/user.model";
-import { IWorkoutDocument, WorkoutModel } from "../../models/workout.model";
+import { WorkoutModel } from "../../models/workout.model";
 
-export default class AdminRepository implements AdminRepositoryInterface {
-
+export default class AdminRepository implements IAdminRepository {
   async findUsers(_query: AdminGetUsersDto): Promise<AdminUserInterface[]> {
     const docs = await UserModel.find({ role: ROLES.USER }).select("-password");
     return docs.map((doc) => this.toAdminUserInterface(doc));
   }
+
   async updateUserStatus(userId: string, isBlocked: boolean): Promise<void> {
     await UserModel.updateOne({ _id: userId }, { $set: { isBlocked } });
   }
@@ -38,9 +43,12 @@ export default class AdminRepository implements AdminRepositoryInterface {
     };
   }
 
-  async findTrainers(_query: AdminGetTrainersDto,
+  async findTrainers(
+    _query: AdminGetTrainersDto
   ): Promise<AdminTrainerInterface[]> {
-    const docs = await UserModel.find({ role: ROLES.TRAINER }).select("-password",);
+    const docs = await UserModel.find({ role: ROLES.TRAINER }).select(
+      "-password"
+    );
     return docs.map((doc) => this.toAdminTrainerInterface(doc));
   }
 
@@ -60,22 +68,22 @@ export default class AdminRepository implements AdminRepositoryInterface {
     };
   }
 
- async createWorkout(body: Workout): Promise<Workout> {
-    const doc = new WorkoutModel(body)
+  async createWorkout(body: Workout): Promise<Workout> {
+    const doc = new WorkoutModel(body);
     const saved = await doc.save();
     return {
-      id:saved._id.toString(),
-      workoutName:saved.workoutName,
-      workoutDescription:saved.workoutDescription,
-      workoutImage:saved.workoutImage,
-      isActive:saved.isActive
-    }
+      id: saved._id.toString(),
+      workoutName: saved.workoutName,
+      workoutDescription: saved.workoutDescription,
+      workoutImage: saved.workoutImage,
+      isActive: saved.isActive,
+    };
   }
 
   async getAllWorkouts(): Promise<Workout[]> {
     const docs = await WorkoutModel.find();
 
-    return docs.map(doc => ({
+    return docs.map((doc) => ({
       id: doc._id.toString(),
       workoutName: doc.workoutName,
       workoutDescription: doc.workoutDescription,
@@ -86,19 +94,30 @@ export default class AdminRepository implements AdminRepositoryInterface {
 
   async getAllTrainersWithProfiles(): Promise<ITrainerWithProfile[]> {
     try {
-      // Find all trainer profiles
+      // Find all trainer profiles and populate
       const trainerProfiles = await TrainerProfileModel.find()
-        .populate({
+        .populate<{ userId: IUserDocument }>({
           path: "userId",
-          select: "_id name userName email phoneNumber profilePic gender role isVerified dateOfBirth isBlocked createdAt updatedAt",
+          select:
+            "_id name userName email phoneNumber profilePic gender role isVerified dateOfBirth isBlocked createdAt updatedAt",
         })
-        .lean();
+        .lean<PopulatedTrainerProfile[]>();
 
-      // Map to ITrainerWithProfile format
-      const trainersWithProfiles: ITrainerWithProfile[] = trainerProfiles.map((profile) => ({
-        user: profile.userId as any,
-        profile: profile as any,
-      }));
+      // Map to ITrainerWithProfile format with proper typing
+      const trainersWithProfiles: ITrainerWithProfile[] = trainerProfiles.map(
+        (profile) => {
+          // Extract userId and rest of profile
+          const { userId, ...profileData } = profile;
+          
+          return {
+            user: userId,
+            profile: {
+              ...profileData,
+              userId: userId._id,
+            } as ITrainerProfileDocument,
+          };
+        }
+      );
 
       return trainersWithProfiles;
     } catch (error) {
@@ -107,28 +126,35 @@ export default class AdminRepository implements AdminRepositoryInterface {
     }
   }
 
-  async getTrainerByProfileId(profileId: string): Promise<ITrainerWithProfile | null> {
-  try {
-    const trainerProfile = await TrainerProfileModel.findById(profileId) 
-      .populate({
-        path: "userId",
-        select: "_id name userName email phoneNumber profilePic gender role isVerified dateOfBirth isBlocked createdAt updatedAt",
-      })
-      .lean();
+  async getTrainerByProfileId(
+    profileId: string
+  ): Promise<ITrainerWithProfile | null> {
+    try {
+      const trainerProfile = await TrainerProfileModel.findById(profileId)
+        .populate<{ userId: IUserDocument }>({
+          path: "userId",
+          select:
+            "_id name userName email phoneNumber profilePic gender role isVerified dateOfBirth isBlocked createdAt updatedAt",
+        })
+        .lean<PopulatedTrainerProfile>();
 
-    if (!trainerProfile) {
-      return null;
+      if (!trainerProfile) {
+        return null;
+      }
+      const { userId, ...profileData } = trainerProfile;
+
+      return {
+        user: userId,
+        profile: {
+          ...profileData,
+          userId: userId._id,
+        } as ITrainerProfileDocument,
+      };
+    } catch (error) {
+      console.error("Error in getTrainerByProfileId:", error);
+      throw error;
     }
-
-    return {
-      user: trainerProfile.userId as any,
-      profile: trainerProfile as any,
-    };
-  } catch (error) {
-    console.error("Error in getTrainerByProfileId:", error);
-    throw error;
   }
-}
 
   async updateTrainerVerificationStatus(
     profileId: string,
@@ -136,7 +162,10 @@ export default class AdminRepository implements AdminRepositoryInterface {
     rejectionReason?: string | null
   ): Promise<ITrainerProfileDocument | null> {
     try {
-      const updateData: any = {
+      const updateData: {
+        verificationStatus: string;
+        rejectionReason?: string | null;
+      } = {
         verificationStatus: status,
       };
 
@@ -148,19 +177,22 @@ export default class AdminRepository implements AdminRepositoryInterface {
         profileId,
         updateData,
         { new: true }
-      ).lean();
+      ).lean<ITrainerProfileDocument>();
 
-      return updatedProfile as any;
+      return updatedProfile;
     } catch (error) {
       console.error("Error in updateTrainerVerificationStatus:", error);
       throw error;
     }
   }
 
-  async findTrainerProfileById(profileId: string): Promise<ITrainerProfileDocument | null> {
+  async findTrainerProfileById(
+    profileId: string
+  ): Promise<ITrainerProfileDocument | null> {
     try {
-      const profile = await TrainerProfileModel.findById(profileId).lean();
-      return profile as any;
+      const profile = await TrainerProfileModel.findById(profileId)
+        .lean<ITrainerProfileDocument>();
+      return profile;
     } catch (error) {
       console.error("Error in findTrainerProfileById:", error);
       throw error;

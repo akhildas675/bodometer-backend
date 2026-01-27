@@ -2,21 +2,21 @@ import {
   FindUserResponseDto,
   UpdateUserProfileDto,
 } from "../../dto/user/user.dto";
-import { UserRepositoryInterface } from "../../interfaces/user/user-repository.interface";
-import { UserServiceInterface } from "../../interfaces/user/user-service.interface";
+import { IUserRepository } from "../../interfaces/user/user-repository.interface";
+import { IUserService } from "../../interfaces/user/user-service.interface";
 import { UserMapper } from "../../mappers/user/user.mappers";
-import { S3Service } from "../s3/s3.service";
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
+import { IS3Service } from "../../interfaces/s3/s3-service.interface";
 
-export class UserService implements UserServiceInterface {
+export class UserService implements IUserService {
   constructor(
-    private userRepo: UserRepositoryInterface,
-    private s3Service: S3Service,
+    private _userRepo: IUserRepository,
+    private _s3Service: IS3Service,
   ) {}
 
   async fetchUser(userId: string): Promise<FindUserResponseDto> {
-    const user = await this.userRepo.findById(userId);
+    const user = await this._userRepo.findById(userId);
 
     if (!user) {
       throw new AppError(STATUS.NOT_FOUND, "User not found");
@@ -57,7 +57,7 @@ export class UserService implements UserServiceInterface {
       );
     }
 
-    const updatedUser = await this.userRepo.updateProfile(userId, updateData);
+    const updatedUser = await this._userRepo.updateProfile(userId, updateData);
 
     if (!updatedUser) {
       throw new AppError(STATUS.NOT_FOUND, "User not found");
@@ -70,25 +70,25 @@ export class UserService implements UserServiceInterface {
     userId: string,
     file: Express.Multer.File,
   ): Promise<string> {
-    const user = await this.userRepo.findById(userId);
+    const user = await this._userRepo.findById(userId);
     if (!user) {
       throw new AppError(STATUS.NOT_FOUND, "User not found");
     }
 
     if (user.profilePic) {
       try {
-        await this.s3Service.deleteFile(user.profilePic);
+        await this._s3Service.deleteFile(user.profilePic);
       } catch (error) {
         console.error("Error deleting old profile picture:", error);
       }
     }
 
-    const profilePicUrl = await this.s3Service.uploadFile(
+    const profilePicUrl = await this._s3Service.uploadFile(
       file,
       `profile-pictures/${userId}`,
     );
 
-    await this.userRepo.updateProfile(userId, { profilePic: profilePicUrl });
+    await this._userRepo.updateProfile(userId, { profilePic: profilePicUrl });
 
     return profilePicUrl;
   }

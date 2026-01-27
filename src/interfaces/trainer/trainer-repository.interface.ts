@@ -1,5 +1,5 @@
 import { TrainerWorkoutList } from "./trainer.interface";
 
-export interface TrainerRepositoryInterface{
+export interface ITrainerRepository{
     getWorkoutList():Promise<TrainerWorkoutList[]>
 }

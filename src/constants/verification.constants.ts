@@ -5,4 +5,4 @@ export const VERIFICATION_STATUS = {
 } as const;
 
 export type VerificationStatus =
-  typeof VERIFICATION_STATUS[keyof typeof VERIFICATION_STATUS];
+  (typeof VERIFICATION_STATUS)[keyof typeof VERIFICATION_STATUS];

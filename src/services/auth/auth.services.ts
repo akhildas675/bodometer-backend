@@ -2,306 +2,315 @@ import { googleClient } from "../../config/google";
 import { ROLES } from "../../constants/identity.constants";
 import { STATUS } from "../../constants/statuscode";
 import {
-    ForgotPasswordResponseDto,
-    GoogleLoginDto,
-    LoginDto,
-    LoginResponseDto,
-    RegisterDto,
-    RegisterResponseDto,
-    ResetPasswordDto
+  ForgotPasswordResponseDto,
+  GoogleLoginDto,
+  LoginDto,
+  LoginResponseDto,
+  RegisterDto,
+  RegisterResponseDto,
+  ResetPasswordDto,
 } from "../../dto/auth/auth.dto";
 import { ResendOtpDto, VerifyOtpDto } from "../../dto/otp/otp.dto";
-import { AuthServiceInterface } from "../../interfaces/auth/auth-service.interface";
+import { IAuthService } from "../../interfaces/auth/auth-service.interface";
 import { AuthMapper } from "../../mappers/auth/auth.mappers";
 import { AppError } from "../../utils/appError";
 import { Jwt } from "../../utils/jwt.utils";
 import { hashPassword } from "../../utils/password";
 import bcrypt from "bcrypt";
-import AuthRepository from "../../repositories/auth/auth.repository";
-import { OtpService } from "./otp/otp.services";
-import { SessionService } from "./session/session.services";
 import { VerificationStatus } from "../../constants/verification.constants";
-import { TrainerProfileRepositoryInterface } from "../../interfaces/trainer/trainer.profile-repository.interface";
+import { ITrainerProfileRepository } from "../../interfaces/trainer/trainer.profile-repository.interface";
+import { IAuthRepository } from "../../interfaces/auth/auth-repository.interface";
+import { ISessionService } from "../../interfaces/auth/session-service.interface";
+import { IOtpService } from "../../interfaces/otp/otp-service.interface";
 
-export class AuthService implements AuthServiceInterface {
-    constructor(
-        private authRepo: AuthRepository,
-        private otpService: OtpService,
-        private sessionService: SessionService,
-        private trainerProfileRepo: TrainerProfileRepositoryInterface
-    ) { }
+export class AuthService implements IAuthService {
+  constructor(
+    private _authRepo: IAuthRepository,
+    private _otpService: IOtpService,
+    private _sessionService: ISessionService,
+    private _trainerProfileRepo: ITrainerProfileRepository,
+  ) {}
 
-    async initiateRegister(data: RegisterDto): Promise<void> {
-        const role = data.role;
+  async initiateRegister(data: RegisterDto): Promise<void> {
+    const role = data.role;
 
-        if (role == ROLES.ADMIN) {
-            throw new AppError(403, "Admin register is not allowed");
-        }
-
-        if (![ROLES.USER, ROLES.TRAINER].includes(role)) {
-            throw new AppError(400, "Invalid role for registration");
-        }
-
-        const existing = await this.authRepo.findByEmail(
-            data.email.toLowerCase().trim()
-        );
-
-        if (existing) {
-            throw new AppError(409, "Email already registered");
-        }
-
-        const otpPurpose =
-            role === ROLES.TRAINER ? "TRAINER_REGISTER" : "USER_REGISTER";
-
-        await this.otpService.generateAndSendOtp({
-            email: data.email,
-            purpose: otpPurpose,
-        });
+    if (role == ROLES.ADMIN) {
+      throw new AppError(403, "Admin register is not allowed");
     }
 
-    async verifyOtp(data: VerifyOtpDto): Promise<void> {
-        await this.otpService.verifyOtp(data);
+    if (![ROLES.USER, ROLES.TRAINER].includes(role)) {
+      throw new AppError(400, "Invalid role for registration");
     }
 
-    async resendOtp(data: ResendOtpDto): Promise<void> {
-        await this.otpService.generateAndSendOtp({
-            email: data.email,
-            purpose: data.purpose,
-        });
+    const existing = await this._authRepo.findByEmail(
+      data.email.toLowerCase().trim(),
+    );
+
+    if (existing) {
+      throw new AppError(409, "Email already registered");
     }
 
-    async register(data: RegisterDto): Promise<RegisterResponseDto> {
-        console.log("The data from register service", data);
-        const role = data.role;
-        const hashedPassword = await hashPassword(data.password);
+    const otpPurpose =
+      role === ROLES.TRAINER ? "TRAINER_REGISTER" : "USER_REGISTER";
 
-        const normalizedEmail = data.email.toLowerCase().trim();
-        const baseUsername = normalizedEmail.split("@")[0];
+    await this._otpService.generateAndSendOtp({
+      email: data.email,
+      purpose: otpPurpose,
+    });
+  }
 
-        if (!baseUsername) {
-            throw new AppError(400, "Invalid email format");
-        }
+  async verifyOtp(data: VerifyOtpDto): Promise<void> {
+    await this._otpService.verifyOtp(data);
+  }
 
-        let userName = baseUsername;
-        let counter = 1;
+  async resendOtp(data: ResendOtpDto): Promise<void> {
+    await this._otpService.generateAndSendOtp({
+      email: data.email,
+      purpose: data.purpose,
+    });
+  }
 
-        while (await this.authRepo.findByUsername(userName)) {
-            userName = `${baseUsername} ${counter++}`;
-        }
+  async register(data: RegisterDto): Promise<RegisterResponseDto> {
+    console.log("The data from register service", data);
+    const role = data.role;
+    const hashedPassword = await hashPassword(data.password);
 
-        const user = await this.authRepo.create({
-            name: data.name.trim(),
-            userName: userName,
-            email: normalizedEmail,
-            phoneNumber: data.phoneNumber,
-            password: hashedPassword,
-            role: data.role,
-            isVerified: true,
-            isBlocked: false,
-            id: "",
-        });
+    const normalizedEmail = data.email.toLowerCase().trim();
+    const baseUsername = normalizedEmail.split("@")[0];
 
-        return AuthMapper.toRegisterResponse(user);
+    if (!baseUsername) {
+      throw new AppError(400, "Invalid email format");
     }
 
-    async login(data: LoginDto): Promise<{
-        response: LoginResponseDto;
-        refreshToken: string;
-    }> {
-        const user = await this.authRepo.findByEmail(
-            data.email.toLowerCase().trim()
-        );
+    let userName = baseUsername;
+    let counter = 1;
 
-        console.log("user on service....",user)
-        if (!user) throw new AppError(401, "Invalid credentials");
+    while (await this._authRepo.findByUsername(userName)) {
+      userName = `${baseUsername} ${counter++}`;
+    }
 
-        const match = await bcrypt.compare(data.password, user.password);
-        if (!match) throw new AppError(401, "Invalid credentials");
+    const user = await this._authRepo.create({
+      name: data.name.trim(),
+      userName: userName,
+      email: normalizedEmail,
+      phoneNumber: data.phoneNumber,
+      password: hashedPassword,
+      role: data.role,
+      isVerified: true,
+      isBlocked: false,
+      id: "",
+    });
 
-        if (user.isBlocked) {
-            throw new AppError(STATUS.FORBIDDEN, "Account is blocked");
+    return AuthMapper.toRegisterResponse(user);
+  }
+
+  async login(data: LoginDto): Promise<{
+    response: LoginResponseDto;
+    refreshToken: string;
+  }> {
+    const user = await this._authRepo.findByEmail(
+      data.email.toLowerCase().trim(),
+    );
+
+    console.log("user on service....", user);
+    if (!user) throw new AppError(401, "Invalid credentials");
+
+    const match = await bcrypt.compare(data.password, user.password);
+    if (!match) throw new AppError(401, "Invalid credentials");
+
+    if (user.isBlocked) {
+      throw new AppError(STATUS.FORBIDDEN, "Account is blocked");
+    }
+
+    let trainerStatus:
+      | {
+          profileExists: boolean;
+          verificationStatus?: VerificationStatus;
+          rejectionReason?: string | null;
         }
+      | undefined;
 
-        let trainerStatus:
-            | {
-                profileExists: boolean;
-                verificationStatus?: VerificationStatus;
-                rejectionReason?: string | null;
-            }
-            | undefined;
+    if (user.role === "trainer") {
+      const trainerProfile = await this._trainerProfileRepo.findByUserId(
+        user.id,
+      );
 
-
-        if (user.role === "trainer") {
-            const trainerProfile =
-                await this.trainerProfileRepo.findByUserId(user.id)
-
-            if (!trainerProfile) {
-                trainerStatus = {
-                    profileExists: false,
-                };
-            } else {
-                trainerStatus = {
-                    profileExists: true,
-                    verificationStatus: trainerProfile.verificationStatus,
-                    rejectionReason: trainerProfile.rejectionReason ?? null,
-                };
-            }
-        }
-
-        const accessToken = Jwt.signAccess({
-            sub: user.id,
-            role: user.role,
-        });
-
-        const refreshToken = await this.sessionService.createRefreshToken(
-            user.id,
-            {
-                id: user.id,
-                email: user.email,
-                role: user.role,
-                isBlocked: user.isBlocked,
-            }
-        );
-
-        console.log("trainer status",trainerStatus)
-
-        return {
-            response: AuthMapper.toLoginResponse(
-                user,
-                accessToken,
-                trainerStatus
-            ),
-            refreshToken,
+      if (!trainerProfile) {
+        trainerStatus = {
+          profileExists: false,
         };
-    }
-
-
-    async googleLogin({ idToken }: GoogleLoginDto): Promise<LoginResponseDto> {
-        const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-
-        if (!GOOGLE_CLIENT_ID) {
-            throw new Error("GOOGLE_CLIENT_ID is not defined");
-        }
-
-        const ticket = await googleClient.verifyIdToken({
-            idToken,
-            audience: GOOGLE_CLIENT_ID,
-        });
-
-        const payload = ticket.getPayload();
-
-        if (!payload || !payload.email || !payload.email_verified) {
-            throw new AppError(STATUS.UNAUTHORIZED, "Invalid Google token");
-        }
-
-        const email = payload.email.toLowerCase().trim();
-
-        const user = await this.authRepo.findByEmail(email);
-
-        if (!user) {
-            throw new AppError(
-                STATUS.NOT_FOUND,
-                "No account found. Please register first."
-            );
-        }
-
-        if (user.isBlocked) {
-            throw new AppError(STATUS.FORBIDDEN, "Account is blocked");
-        }
-
-        const accessToken = Jwt.signAccess({
-            sub: user.id!,
-            role: user.role,
-        });
-
-        const refreshToken = await this.sessionService.createRefreshToken(user.id!, {
-            id: user.id!,
-            email: user.email,
-            role: user.role,
-            isBlocked: user.isBlocked,
-        });
-
-        return AuthMapper.toLoginResponse(user, accessToken);
-    }
-
-    async refreshAccessToken(refreshToken: string): Promise<LoginResponseDto> {
-        if (!refreshToken) {
-            throw new AppError(STATUS.UNAUTHORIZED, "Invalid refresh token");
-        }
-
-        const userId = await this.sessionService.findUserByRefreshToken(refreshToken);
-        if (!userId) {
-            throw new AppError(STATUS.UNAUTHORIZED, "Invalid or expired refresh token");
-        }
-
-        const isValid = await this.sessionService.validateRefreshToken(userId, refreshToken);
-        if (!isValid) {
-            throw new AppError(STATUS.UNAUTHORIZED, "Invalid refresh token");
-        }
-
-        const sessionData = await this.sessionService.getUserSessionData(userId);
-        if (!sessionData || sessionData.isBlocked) {
-            throw new AppError(STATUS.FORBIDDEN, "Account is blocked or session expired");
-        }
-
-
-        const user = await this.authRepo.findById(userId);
-        if (!user) {
-            throw new AppError(STATUS.UNAUTHORIZED, "User not found");
-        }
-
-        const accessToken = Jwt.signAccess({
-            sub: user.id!,
-            role: user.role,
-        });
-
-        return AuthMapper.toLoginResponse(user, accessToken);
-    }
-    async logout(refreshToken: string): Promise<void> {
-        await this.sessionService.deleteSession(refreshToken);
-    }
-
-    async forgotPassword(data: { email: string }): Promise<ForgotPasswordResponseDto> {
-        const email = data.email.toLowerCase().trim();
-
-        const user = await this.authRepo.findByEmail(email);
-
-        if (!user) {
-            return { role: null };
-        }
-
-        await this.otpService.generateAndSendOtp({
-            email,
-            purpose: "FORGET_PASSWORD",
-        });
-
-        return {
-            role: user.role,
+      } else {
+        trainerStatus = {
+          profileExists: true,
+          verificationStatus: trainerProfile.verificationStatus,
+          rejectionReason: trainerProfile.rejectionReason ?? null,
         };
+      }
     }
 
-    async resetPassword(data: ResetPasswordDto): Promise<void> {
-        const normalizedEmail = data.email.toLowerCase().trim();
+    const accessToken = Jwt.signAccess({
+      sub: user.id,
+      role: user.role,
+    });
 
-        const isVerified = await this.sessionService.isOtpVerified(
-            "FORGET_PASSWORD",
-            normalizedEmail
-        );
+    const refreshToken = await this._sessionService.createRefreshToken(user.id, {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      isBlocked: user.isBlocked,
+    });
 
-        if (!isVerified) {
-            throw new AppError(STATUS.FORBIDDEN, "OTP not verified");
-        }
+    console.log("trainer status", trainerStatus);
 
-        const user = await this.authRepo.findByEmail(normalizedEmail);
+    return {
+      response: AuthMapper.toLoginResponse(user, accessToken, trainerStatus),
+      refreshToken,
+    };
+  }
 
-        if (!user) {
-            throw new AppError(STATUS.NOT_FOUND, "User not found");
-        }
+  async googleLogin({ idToken }: GoogleLoginDto): Promise<LoginResponseDto> {
+    const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 
-        const hashedPassword = await hashPassword(data.password);
-
-        await this.authRepo.updatePassword(user.id!, hashedPassword);
-
-        await this.sessionService.clearOtpVerification("FORGET_PASSWORD", normalizedEmail);
+    if (!GOOGLE_CLIENT_ID) {
+      throw new Error("GOOGLE_CLIENT_ID is not defined");
     }
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+
+    if (!payload || !payload.email || !payload.email_verified) {
+      throw new AppError(STATUS.UNAUTHORIZED, "Invalid Google token");
+    }
+
+    const email = payload.email.toLowerCase().trim();
+
+    const user = await this._authRepo.findByEmail(email);
+
+    if (!user) {
+      throw new AppError(
+        STATUS.NOT_FOUND,
+        "No account found. Please register first.",
+      );
+    }
+
+    if (user.isBlocked) {
+      throw new AppError(STATUS.FORBIDDEN, "Account is blocked");
+    }
+
+    const accessToken = Jwt.signAccess({
+      sub: user.id!,
+      role: user.role,
+    });
+
+    const refreshToken = await this._sessionService.createRefreshToken(
+      user.id!,
+      {
+        id: user.id!,
+        email: user.email,
+        role: user.role,
+        isBlocked: user.isBlocked,
+      },
+    );
+
+    return AuthMapper.toLoginResponse(user, accessToken);
+  }
+
+  async refreshAccessToken(refreshToken: string): Promise<LoginResponseDto> {
+    if (!refreshToken) {
+      throw new AppError(STATUS.UNAUTHORIZED, "Invalid refresh token");
+    }
+
+    const userId =
+      await this._sessionService.findUserByRefreshToken(refreshToken);
+    if (!userId) {
+      throw new AppError(
+        STATUS.UNAUTHORIZED,
+        "Invalid or expired refresh token",
+      );
+    }
+
+    const isValid = await this._sessionService.validateRefreshToken(
+      userId,
+      refreshToken,
+    );
+    if (!isValid) {
+      throw new AppError(STATUS.UNAUTHORIZED, "Invalid refresh token");
+    }
+
+    const sessionData = await this._sessionService.getUserSessionData(userId);
+    if (!sessionData || sessionData.isBlocked) {
+      throw new AppError(
+        STATUS.FORBIDDEN,
+        "Account is blocked or session expired",
+      );
+    }
+
+    const user = await this._authRepo.findById(userId);
+    if (!user) {
+      throw new AppError(STATUS.UNAUTHORIZED, "User not found");
+    }
+
+    const accessToken = Jwt.signAccess({
+      sub: user.id!,
+      role: user.role,
+    });
+
+    return AuthMapper.toLoginResponse(user, accessToken);
+  }
+  async logout(refreshToken: string): Promise<void> {
+    await this._sessionService.deleteSession(refreshToken);
+  }
+
+  async forgotPassword(data: {
+    email: string;
+  }): Promise<ForgotPasswordResponseDto> {
+    const email = data.email.toLowerCase().trim();
+
+    const user = await this._authRepo.findByEmail(email);
+
+    if (!user) {
+      return { role: null };
+    }
+
+    await this._otpService.generateAndSendOtp({
+      email,
+      purpose: "FORGET_PASSWORD",
+    });
+
+    return {
+      role: user.role,
+    };
+  }
+
+  async resetPassword(data: ResetPasswordDto): Promise<void> {
+    const normalizedEmail = data.email.toLowerCase().trim();
+
+    const isVerified = await this._sessionService.isOtpVerified(
+      "FORGET_PASSWORD",
+      normalizedEmail,
+    );
+
+    if (!isVerified) {
+      throw new AppError(STATUS.FORBIDDEN, "OTP not verified");
+    }
+
+    const user = await this._authRepo.findByEmail(normalizedEmail);
+
+    if (!user) {
+      throw new AppError(STATUS.NOT_FOUND, "User not found");
+    }
+
+    const hashedPassword = await hashPassword(data.password);
+
+    await this._authRepo.updatePassword(user.id!, hashedPassword);
+
+    await this._sessionService.clearOtpVerification(
+      "FORGET_PASSWORD",
+      normalizedEmail,
+    );
+  }
 }

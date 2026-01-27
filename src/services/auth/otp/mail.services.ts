@@ -4,19 +4,16 @@ import { STATUS } from "../../../constants/statuscode";
 import { MailServiceInterface } from "../../../interfaces/otp/mail-service.interface";
 
 export class MailService implements MailServiceInterface {
-  private transporter: Transporter;
+  private _transporter: Transporter;
 
   constructor() {
     const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
 
     if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
-      throw new AppError(
-        STATUS.INTERNAL_ERROR,
-        "SMTP configuration missing"
-      );
+      throw new AppError(STATUS.INTERNAL_ERROR, "SMTP configuration missing");
     }
 
-    this.transporter = nodemailer.createTransport({
+    this._transporter = nodemailer.createTransport({
       host: SMTP_HOST,
       port: Number(SMTP_PORT),
       secure: false,
@@ -28,7 +25,7 @@ export class MailService implements MailServiceInterface {
   }
 
   async sendOtpEmail(email: string, otp: string): Promise<void> {
-    await this.transporter.sendMail({
+    await this._transporter.sendMail({
       from: `"Bodometer" <${process.env.SMTP_USER}>`,
       to: email,
       subject: "Your OTP Verification Code",

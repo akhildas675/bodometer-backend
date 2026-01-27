@@ -1,29 +1,30 @@
-
 import crypto from "crypto";
 import { SessionData } from "../../../interfaces/auth/auth.interface";
 import { redis } from "../../../config/redis";
 
-
 export class SessionService {
-  private readonly REFRESH_TOKEN_TTL = 60 * 60 * 24 * 7; // 7 days
-  private readonly OTP_VERIFIED_TTL = 60 * 10; // 10 minutes
+  private readonly REFRESH_TOKEN_TTL = 60 * 60 * 24 * 7;
+  private readonly OTP_VERIFIED_TTL = 60 * 10;
 
   // Refresh Token Operations
-  async createRefreshToken(userId: string, userData: SessionData): Promise<string> {
+  async createRefreshToken(
+    userId: string,
+    userData: SessionData,
+  ): Promise<string> {
     const refreshToken = crypto.randomUUID();
 
     await redis.set(
       `refresh:${userId}`,
       refreshToken,
       "EX",
-      this.REFRESH_TOKEN_TTL
+      this.REFRESH_TOKEN_TTL,
     );
 
     await redis.set(
       `user:${userId}`,
       JSON.stringify(userData),
       "EX",
-      this.REFRESH_TOKEN_TTL
+      this.REFRESH_TOKEN_TTL,
     );
 
     return refreshToken;
@@ -42,7 +43,10 @@ export class SessionService {
     return null;
   }
 
-  async validateRefreshToken(userId: string, refreshToken: string): Promise<boolean> {
+  async validateRefreshToken(
+    userId: string,
+    refreshToken: string,
+  ): Promise<boolean> {
     const storedToken = await redis.get(`refresh:${userId}`);
     return storedToken === refreshToken;
   }

@@ -1,34 +1,39 @@
 import { NextFunction, Request, Response } from "express";
-import { AddWorkoutDto, AdminBlockUnBlockDto, AdminBlockUnblockTrainerDto, AdminGetTrainersDto, AdminGetUsersDto } from "../../dto/admin/admin.dto";
+import {
+  AddWorkoutDto,
+  AdminBlockUnBlockDto,
+  AdminBlockUnblockTrainerDto,
+  AdminGetTrainersDto,
+  AdminGetUsersDto,
+} from "../../dto/admin/admin.dto";
 import { AppError } from "../../utils/appError";
-import { AdminService } from "../../services/admin/admin.services";
 import { WorkoutMapper } from "../../mappers/admin/admin.mappers";
-
+import { IAdminService } from "../../interfaces/admin/admin-service.interface";
 
 export class AdminController {
-  constructor(private adminService: AdminService) { }
+  constructor(private _adminService: IAdminService) {}
 
   getUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const body = req.body as AdminGetUsersDto
-      const users = await this.adminService.fetchUsers(body);
-      console.log(users)
+      const body = req.body as AdminGetUsersDto;
+      const users = await this._adminService.fetchUsers(body);
+      console.log(users);
       res.status(200).json({
         success: true,
-        data: users
-      })
+        data: users,
+      });
     } catch (error) {
-      next(error)
+      next(error);
     }
-  }
+  };
 
   blockUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId } = req.params as unknown as AdminBlockUnBlockDto
+      const { userId } = req.params as unknown as AdminBlockUnBlockDto;
 
-      console.log("This is the user id for backend....", userId)
+      console.log("This is the user id for backend....", userId);
 
-      await this.adminService.blockUser(userId);
+      await this._adminService.blockUser(userId);
 
       res.status(200).json({
         success: true,
@@ -41,9 +46,9 @@ export class AdminController {
 
   unblockUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId } = req.params as unknown as AdminBlockUnBlockDto
+      const { userId } = req.params as unknown as AdminBlockUnBlockDto;
 
-      await this.adminService.unblockUser(userId);
+      await this._adminService.unblockUser(userId);
 
       res.status(200).json({
         success: true,
@@ -56,29 +61,28 @@ export class AdminController {
 
   getTrainers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log("function worked get all trianers")
+      console.log("function worked get all trianers");
       const body = req.body as AdminGetTrainersDto;
-      console.log("Trainers id from body", body)
-      const trainers = await this.adminService.fetchTrainers(body)
-      console.log(trainers)
+      console.log("Trainers id from body", body);
+      const trainers = await this._adminService.fetchTrainers(body);
+      console.log(trainers);
       res.status(200).json({
         success: true,
-        data: trainers
-      })
+        data: trainers,
+      });
     } catch (error) {
-      next(error)
+      next(error);
     }
-  }
-
+  };
 
   blockTrainer = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { trainerId } = req.params as unknown as AdminBlockUnblockTrainerDto;
-
+      const { trainerId } =
+        req.params as unknown as AdminBlockUnblockTrainerDto;
 
       console.log("This is the trainer id for backend....", trainerId);
 
-      await this.adminService.blockTrainer(trainerId);
+      await this._adminService.blockTrainer(trainerId);
 
       res.status(200).json({
         success: true,
@@ -91,11 +95,12 @@ export class AdminController {
 
   unblockTrainer = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { trainerId } = req.params as unknown as AdminBlockUnblockTrainerDto;
+      const { trainerId } =
+        req.params as unknown as AdminBlockUnblockTrainerDto;
 
       console.log("This is the trainer id for backend....", trainerId);
 
-      await this.adminService.unblockTrainer(trainerId);
+      await this._adminService.unblockTrainer(trainerId);
 
       res.status(200).json({
         success: true,
@@ -106,10 +111,7 @@ export class AdminController {
     }
   };
 
-
   //workouts
-
-
 
   addWorkout = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -127,7 +129,7 @@ export class AdminController {
 
       const body: AddWorkoutDto = { workoutName, workoutDescription, file };
 
-      const result = await this.adminService.workoutAdd(body);
+      const result = await this._adminService.workoutAdd(body);
 
       res.status(201).json({
         success: true,
@@ -140,8 +142,8 @@ export class AdminController {
 
   getWorkout = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const workouts = await this.adminService.fetchWorkouts();
-      console.log(workouts)
+      const workouts = await this._adminService.fetchWorkouts();
+      console.log(workouts);
 
       res.status(200).json({
         success: true,
@@ -154,33 +156,35 @@ export class AdminController {
 
   //trainer appointment
 
-  getTrainerAppointments =
-    async (req: Request, res: Response, next: NextFunction) => {
-      const trainers = await this.adminService.getTrainerAppointments();
+  getTrainerAppointments = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    const trainers = await this._adminService.getTrainerAppointments();
 
-      res.status(200).json({
-        success: true,
-        message: "Trainer appointments fetched successfully",
-        data: trainers,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Trainer appointments fetched successfully",
+      data: trainers,
+    });
+  };
+
+  getTrainerById = async (req: Request, res: Response, next: NextFunction) => {
+    const { profileId } = req.params;
+
+    if (!profileId) {
+      throw new AppError(400, "Profile ID is required");
     }
 
+    const trainer = await this._adminService.getTrainerByProfileId(profileId);
 
-getTrainerById = async (req: Request, res: Response, next: NextFunction) => {
-  const { profileId } = req.params; 
-
-  if (!profileId) {
-    throw new AppError(400, "Profile ID is required");
-  }
-
-  const trainer = await this.adminService.getTrainerByProfileId(profileId); 
-
-  res.status(200).json({
-    success: true,
-    message: "Trainer details fetched successfully",
-    data: trainer,
-  });
-}
+    res.status(200).json({
+      success: true,
+      message: "Trainer details fetched successfully",
+      data: trainer,
+    });
+  };
 
   approveTrainer = async (req: Request, res: Response, next: NextFunction) => {
     const { profileId } = req.params;
@@ -189,42 +193,33 @@ getTrainerById = async (req: Request, res: Response, next: NextFunction) => {
       throw new AppError(400, "Profile ID is required");
     }
 
-    const result = await this.adminService.approveTrainer(profileId);
+    const result = await this._adminService.approveTrainer(profileId);
 
     res.status(200).json({
       success: true,
       message: result.message,
       data: result.profile,
     });
-  }
+  };
 
+  rejectTrainer = async (req: Request, res: Response, next: NextFunction) => {
+    const { profileId } = req.params;
+    const { reason } = req.body;
 
-  rejectTrainer =
-    async (req: Request, res: Response, next: NextFunction) => {
-      const { profileId } = req.params;
-      const { reason } = req.body;
-
-      if (!profileId) {
-        throw new AppError(400, "Profile ID is required");
-      }
-
-      if (!reason) {
-        throw new AppError(400, "Rejection reason is required");
-      }
-
-      const result = await this.adminService.rejectTrainer(profileId, reason);
-
-      res.status(200).json({
-        success: true,
-        message: result.message,
-        data: result.profile,
-      });
+    if (!profileId) {
+      throw new AppError(400, "Profile ID is required");
     }
 
+    if (!reason) {
+      throw new AppError(400, "Rejection reason is required");
+    }
+
+    const result = await this._adminService.rejectTrainer(profileId, reason);
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
+      data: result.profile,
+    });
+  };
 }
-
-
-
-
-
-

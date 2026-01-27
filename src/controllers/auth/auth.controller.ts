@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response } from "express";
-import { AuthServiceInterface } from "../../interfaces/auth/auth-service.interface";
-import { LoginDto, OtpVerifyDto, RegisterDto } from "../../dto/auth/auth.dto";
+import { IAuthService } from "../../interfaces/auth/auth-service.interface";
+import { OtpVerifyDto, RegisterDto } from "../../dto/auth/auth.dto";
 import { ResendOtpDto } from "../../dto/otp/otp.dto";
 import { redis } from "../../config/redis";
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
 
 export class AuthController {
-  constructor(private authService: AuthServiceInterface) { }
+  constructor(private _authService: IAuthService) { }
 
   //send OTP
   register = async (req: Request, res: Response, next: NextFunction) => {
@@ -18,10 +18,10 @@ export class AuthController {
         "controller register email:",
         body.email,
         "role:",
-        body.role
+        body.role,
       );
 
-      await this.authService.initiateRegister(body);
+      await this._authService.initiateRegister(body);
 
       res.status(200).json({
         success: true,
@@ -44,10 +44,10 @@ export class AuthController {
         "controller verify otp email:",
         data.email,
         "purpose:",
-        data.purpose
+        data.purpose,
       );
 
-      await this.authService.verifyOtp(data);
+      await this._authService.verifyOtp(data);
 
       res.status(200).json({
         success: true,
@@ -66,10 +66,10 @@ export class AuthController {
         "controller resend otp email:",
         data.email,
         "purpose:",
-        data.purpose
+        data.purpose,
       );
 
-      await this.authService.resendOtp(data);
+      await this._authService.resendOtp(data);
 
       res.status(200).json({
         success: true,
@@ -81,7 +81,11 @@ export class AuthController {
   };
 
   // final register
-  completeRegister = async (req: Request, res: Response, next: NextFunction) => {
+  completeRegister = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const body = req.body as RegisterDto;
 
@@ -89,7 +93,7 @@ export class AuthController {
         "controller complete register email:",
         body.email,
         "role:",
-        body.role
+        body.role,
       );
 
       const purpose =
@@ -97,23 +101,20 @@ export class AuthController {
 
       const redisKey = `otp_verified:${purpose}:${body.email}`;
 
-      console.debug(
-        "controller complete register redis key:",
-        redisKey
-      );
+      console.debug("controller complete register redis key:", redisKey);
 
       const verified = await redis.get(redisKey);
 
       console.debug(
         "controller complete register otp verified:",
-        Boolean(verified)
+        Boolean(verified),
       );
 
       if (!verified) {
         throw new AppError(STATUS.FORBIDDEN, "OTP not verified");
       }
 
-      const user = await this.authService.register(body);
+      const user = await this._authService.register(body);
 
       await redis.del(redisKey);
 
@@ -127,39 +128,36 @@ export class AuthController {
     }
   };
 
-  //Login 
- login = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const {
-      response: loginResponse,
-      refreshToken,
-    } = await this.authService.login(req.body);
+  //Login
+  login = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { response: loginResponse, refreshToken } =
+        await this._authService.login(req.body);
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
 
-    return res.status(200).json({
-      success: true,
-      message: "Login successful",
-      data: loginResponse,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
+      return res.status(200).json({
+        success: true,
+        message: "Login successful",
+        data: loginResponse,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
 
   forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { email } = req.body;
 
-      console.log("E mail for the forget password controller", email)
+      console.log("E mail for the forget password controller", email);
 
-      const result = await this.authService.forgotPassword({ email });
+      const result = await this._authService.forgotPassword({ email });
 
       res.status(200).json({
         success: true,
@@ -174,52 +172,48 @@ export class AuthController {
     }
   };
 
- 
+  refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const refreshToken = req.cookies.refreshToken;
 
-refreshToken = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const refreshToken = req.cookies.refreshToken;
+      if (!refreshToken) {
+        throw new AppError(STATUS.UNAUTHORIZED, "No refresh token provided");
+      }
 
-    if (!refreshToken) {
-      throw new AppError(STATUS.UNAUTHORIZED, "No refresh token provided");
+      const result = await this._authService.refreshAccessToken(refreshToken);
+
+      res.status(200).json({
+        success: true,
+        message: "Token refreshed successfully",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    const result = await this.authService.refreshAccessToken(refreshToken);
+  logout = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const refreshToken = req.cookies.refreshToken;
 
-    res.status(200).json({
-      success: true,
-      message: "Token refreshed successfully",
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+      if (refreshToken) {
+        await this._authService.logout(refreshToken);
+      }
 
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
 
-logout = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const refreshToken = req.cookies.refreshToken;
-
-    if (refreshToken) {
-      await this.authService.logout(refreshToken);
+      res.status(200).json({
+        success: true,
+        message: "Logged out successfully",
+      });
+    } catch (error) {
+      next(error);
     }
-
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
-
-    res.status(200).json({
-      success: true,
-      message: "Logged out successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
+  };
 
   resetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -229,7 +223,7 @@ logout = async (req: Request, res: Response, next: NextFunction) => {
         throw new AppError(400, "Invalid reset purpose");
       }
 
-      await this.authService.resetPassword(email);
+      await this._authService.resetPassword(email);
 
       res.status(200).json({
         success: true,
@@ -240,7 +234,6 @@ logout = async (req: Request, res: Response, next: NextFunction) => {
     }
   };
 
-
   googleLogin = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { idToken } = req.body;
@@ -249,7 +242,7 @@ logout = async (req: Request, res: Response, next: NextFunction) => {
         throw new AppError(STATUS.BAD_REQUEST, "Google token is required");
       }
 
-      const result = await this.authService.googleLogin({ idToken });
+      const result = await this._authService.googleLogin({ idToken });
 
       res.status(STATUS.OK).json({
         success: true,
@@ -259,6 +252,5 @@ logout = async (req: Request, res: Response, next: NextFunction) => {
     } catch (error) {
       next(error);
     }
-  }
-
+  };
 }
