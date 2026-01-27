@@ -1,9 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { AuthRequest } from "../../middleware/authGuard";
-import { AppError } from "../../utils/appError";
-import { STATUS } from "../../constants/statuscode";
 import { TrainerServiceInterface } from "../../interfaces/trainer/trainer-service.interface";
-import { success } from "zod";
 
 export class TrainerController {
     constructor(private trainerService:TrainerServiceInterface) { }
