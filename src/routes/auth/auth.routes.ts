@@ -4,29 +4,12 @@ import {
   otpSchema,
   registerSchema,
 } from "../../validators/auth/auth.validator";
-import { AuthController } from "../../controllers/auth/auth.controller";
 import { validate } from "../../middleware/validate";
-import { AuthService } from "../../services/auth/auth.services";
-import { OtpService } from "../../services/auth/otp/otp.services";
-import AuthRepository from "../../repositories/auth/auth.repository";
-import { MailService } from "../../services/auth/otp/mail.services";
-import { SessionService } from "../../services/auth/session/session.services";
-import TrainerProfileRepository from "../../repositories/trainer/trainer-profile.repository";
+import { createAuthModule } from "../../modules/auth/auth.module";
 
 const authRoute = Router();
 
-const mailService = new MailService();
-const otpService = new OtpService(mailService);
-const sessionService = new SessionService();
-const authRepository = new AuthRepository();
-const trainerProfileRepository = new TrainerProfileRepository();
-const authService = new AuthService(
-  authRepository,
-  otpService,
-  sessionService,
-  trainerProfileRepository,
-);
-const authController = new AuthController(authService);
+const { authController } = createAuthModule();
 
 authRoute.post(
   "/auth/register",

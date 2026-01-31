@@ -27,11 +27,12 @@ import {
 } from "../../dto/trainer/trainer.dto";
 import { VERIFICATION_STATUS } from "../../constants/verification.constants";
 import { IAdminRepository } from "../../interfaces/admin/admin-repository.interface";
+import { IS3Service } from "../../interfaces/s3/s3-service.interface";
 
 export class AdminService implements IAdminService {
   constructor(
     private _adminRepo: IAdminRepository,
-    private _s3Service: S3Service,
+    private _s3Service: IS3Service
   ) {}
 
   async fetchUsers(

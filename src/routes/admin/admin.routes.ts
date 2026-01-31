@@ -1,16 +1,10 @@
 import { Router } from "express";
-import AdminRepository from "../../repositories/admin/admin.repository";
-import { AdminService } from "../../services/admin/admin.services";
-import { AdminController } from "../../controllers/admin/admin.controller";
-import { S3Service } from "../../services/s3/s3.service";
 import { authGuard } from "../../middleware/authGuard";
 import { imageUpload } from "../../config/multer";
+import { createAdminModule } from "../../modules/admin/admin.module";
 
 const adminRoute = Router();
-const adminRepository = new AdminRepository();
-const s3Service = new S3Service();
-const adminService = new AdminService(adminRepository, s3Service);
-const adminController = new AdminController(adminService);
+const {adminController} = createAdminModule()
 
 // User Management
 adminRoute.get(

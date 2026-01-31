@@ -1,29 +1,11 @@
 import { Router } from "express";
-import userRoute from "../user/user.routes";
 import { authGuard } from "../../middleware/authGuard";
-import TrainerRepository from "../../repositories/trainer/trainer.repository";
-import { TrainerService } from "../../services/trainer/trainer.services";
-import { TrainerController } from "../../controllers/trainer/trainer.controller";
-import TrainerProfileController from "../../controllers/trainer/trainer-profile.controller";
-import TrainerProfileService from "../../services/trainer/trainer-profile.service";
-import TrainerProfileRepository from "../../repositories/trainer/trainer-profile.repository";
 import { documentUpload } from "../../config/multer";
-import { S3Service } from "../../services/s3/s3.service";
+import { createTrainerModule } from "../../modules/trainer/trainer.module";
 
 const trainerRoute = Router();
 
-const trainerRepository = new TrainerRepository();
-const trainerService = new TrainerService(trainerRepository);
-const trainerController = new TrainerController(trainerService);
-const trainerProfileRepository = new TrainerProfileRepository();
-const s3Service = new S3Service();
-const trainerProfileService = new TrainerProfileService(
-  trainerProfileRepository,
-  s3Service,
-);
-const trainerProfileController = new TrainerProfileController(
-  trainerProfileService,
-);
+const {trainerController,trainerProfileController}=createTrainerModule()
 
 trainerRoute.get(
   "/trainer/get-workout-list",
