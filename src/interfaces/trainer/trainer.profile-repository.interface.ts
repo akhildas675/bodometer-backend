@@ -1,8 +1,13 @@
-import { TrainerProfile, TrainerProfileDataInterface } from "./trainer.interface";
+import { IBaseRepository } from "../base/base-repository.interface";
+import {
+  TrainerProfile,
+  TrainerProfileDataInterface,
+} from "./trainer.interface";
+import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
 
-
-
-export interface ITrainerProfileRepository {
+export interface ITrainerProfileRepository
+  extends IBaseRepository<TrainerProfile, ITrainerProfileDocument>
+{
   findByUserId(userId: string): Promise<TrainerProfile | null>;
-  create(profile: TrainerProfileDataInterface): Promise<void>;
+  createProfile(profile: TrainerProfileDataInterface): Promise<void>;
 }

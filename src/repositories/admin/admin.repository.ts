@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { ROLES } from "../../constants/identity.constants";
 import {
   AdminGetTrainersDto,
@@ -19,19 +18,18 @@ import {
   TrainerProfileModel,
 } from "../../models/trainer-profile.model";
 import { IUserDocument, UserModel } from "../../models/user.model";
-import { WorkoutModel } from "../../models/workout.model";
+import { IWorkoutDocument, WorkoutModel } from "../../models/workout.model";
+import { BaseRepository } from "../base/base.repository";
 
-export default class AdminRepository implements IAdminRepository {
-  async findUsers(_query: AdminGetUsersDto): Promise<AdminUserInterface[]> {
-    const docs = await UserModel.find({ role: ROLES.USER }).select("-password");
-    return docs.map((doc) => this.toAdminUserInterface(doc));
+export default class AdminRepository
+  extends BaseRepository<AdminUserInterface, IUserDocument>
+  implements IAdminRepository
+{
+  constructor() {
+    super(UserModel);
   }
 
-  async updateUserStatus(userId: string, isBlocked: boolean): Promise<void> {
-    await UserModel.updateOne({ _id: userId }, { $set: { isBlocked } });
-  }
-
-  private toAdminUserInterface(doc: IUserDocument): AdminUserInterface {
+  protected toInterface(doc: IUserDocument): AdminUserInterface {
     return {
       id: doc._id.toString(),
       name: doc.name,
@@ -43,11 +41,22 @@ export default class AdminRepository implements IAdminRepository {
     };
   }
 
+  // User management
+  async findUsers(_query: AdminGetUsersDto): Promise<AdminUserInterface[]> {
+    const docs = await UserModel.find({ role: ROLES.USER }).select("-password");
+    return docs.map((doc) => this.toInterface(doc));
+  }
+
+  async updateUserStatus(userId: string, isBlocked: boolean): Promise<void> {
+    await UserModel.updateOne({ _id: userId }, { $set: { isBlocked } });
+  }
+
+  // Trainer management
   async findTrainers(
-    _query: AdminGetTrainersDto
+    _query: AdminGetTrainersDto,
   ): Promise<AdminTrainerInterface[]> {
     const docs = await UserModel.find({ role: ROLES.TRAINER }).select(
-      "-password"
+      "-password",
     );
     return docs.map((doc) => this.toAdminTrainerInterface(doc));
   }
@@ -68,33 +77,31 @@ export default class AdminRepository implements IAdminRepository {
     };
   }
 
+  // Workout management
   async createWorkout(body: Workout): Promise<Workout> {
     const doc = new WorkoutModel(body);
     const saved = await doc.save();
-    return {
-      id: saved._id.toString(),
-      workoutName: saved.workoutName,
-      workoutDescription: saved.workoutDescription,
-      workoutImage: saved.workoutImage,
-      isActive: saved.isActive,
-    };
+    return this.toWorkoutInterface(saved);
   }
 
   async getAllWorkouts(): Promise<Workout[]> {
     const docs = await WorkoutModel.find();
+    return docs.map((doc) => this.toWorkoutInterface(doc));
+  }
 
-    return docs.map((doc) => ({
+  private toWorkoutInterface(doc: IWorkoutDocument): Workout {
+    return {
       id: doc._id.toString(),
       workoutName: doc.workoutName,
       workoutDescription: doc.workoutDescription,
       workoutImage: doc.workoutImage,
       isActive: doc.isActive,
-    }));
+    };
   }
 
+  // Trainer profile management
   async getAllTrainersWithProfiles(): Promise<ITrainerWithProfile[]> {
     try {
-      // Find all trainer profiles and populate
       const trainerProfiles = await TrainerProfileModel.find()
         .populate<{ userId: IUserDocument }>({
           path: "userId",
@@ -103,12 +110,10 @@ export default class AdminRepository implements IAdminRepository {
         })
         .lean<PopulatedTrainerProfile[]>();
 
-      // Map to ITrainerWithProfile format with proper typing
       const trainersWithProfiles: ITrainerWithProfile[] = trainerProfiles.map(
         (profile) => {
-          // Extract userId and rest of profile
           const { userId, ...profileData } = profile;
-          
+
           return {
             user: userId,
             profile: {
@@ -116,7 +121,7 @@ export default class AdminRepository implements IAdminRepository {
               userId: userId._id,
             } as ITrainerProfileDocument,
           };
-        }
+        },
       );
 
       return trainersWithProfiles;
@@ -127,7 +132,7 @@ export default class AdminRepository implements IAdminRepository {
   }
 
   async getTrainerByProfileId(
-    profileId: string
+    profileId: string,
   ): Promise<ITrainerWithProfile | null> {
     try {
       const trainerProfile = await TrainerProfileModel.findById(profileId)
@@ -141,6 +146,7 @@ export default class AdminRepository implements IAdminRepository {
       if (!trainerProfile) {
         return null;
       }
+
       const { userId, ...profileData } = trainerProfile;
 
       return {
@@ -159,7 +165,7 @@ export default class AdminRepository implements IAdminRepository {
   async updateTrainerVerificationStatus(
     profileId: string,
     status: string,
-    rejectionReason?: string | null
+    rejectionReason?: string | null,
   ): Promise<ITrainerProfileDocument | null> {
     try {
       const updateData: {
@@ -176,7 +182,7 @@ export default class AdminRepository implements IAdminRepository {
       const updatedProfile = await TrainerProfileModel.findByIdAndUpdate(
         profileId,
         updateData,
-        { new: true }
+        { new: true },
       ).lean<ITrainerProfileDocument>();
 
       return updatedProfile;
@@ -187,11 +193,11 @@ export default class AdminRepository implements IAdminRepository {
   }
 
   async findTrainerProfileById(
-    profileId: string
+    profileId: string,
   ): Promise<ITrainerProfileDocument | null> {
     try {
-      const profile = await TrainerProfileModel.findById(profileId)
-        .lean<ITrainerProfileDocument>();
+      const profile =
+        await TrainerProfileModel.findById(profileId).lean<ITrainerProfileDocument>();
       return profile;
     } catch (error) {
       console.error("Error in findTrainerProfileById:", error);

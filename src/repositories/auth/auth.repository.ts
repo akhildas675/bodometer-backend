@@ -1,28 +1,17 @@
 import { IAuthRepository } from "../../interfaces/auth/auth-repository.interface";
 import { UserInterface } from "../../interfaces/auth/auth.interface";
 import { IUserDocument, UserModel } from "../../models/user.model";
+import { BaseRepository } from "../base/base.repository";
 
-export default class AuthRepository implements IAuthRepository {
-  async create(data: UserInterface): Promise<UserInterface> {
-    const doc = new UserModel(data);
-    const saved = await doc.save();
-    return this.toUserInterface(saved);
-  }
-  async findByUsername(username: string): Promise<UserInterface | null> {
-    const doc = await UserModel.findOne({ userName: username });
-    return doc ? this.toUserInterface(doc) : null;
+export default class AuthRepository
+  extends BaseRepository<UserInterface, IUserDocument>
+  implements IAuthRepository
+{
+  constructor() {
+    super(UserModel);
   }
 
-  async findByEmail(email: string): Promise<UserInterface | null> {
-    const doc = await UserModel.findOne({ email }).exec();
-    return doc ? this.toUserInterface(doc) : null;
-  }
-  async findById(id: string): Promise<UserInterface | null> {
-    const doc = await UserModel.findById(id).exec();
-    return doc ? this.toUserInterface(doc) : null;
-  }
-
-  private toUserInterface(doc: IUserDocument): UserInterface {
+  protected toInterface(doc: IUserDocument): UserInterface {
     return {
       id: doc._id.toString(),
       name: doc.name,
@@ -39,6 +28,14 @@ export default class AuthRepository implements IAuthRepository {
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     };
+  }
+
+  async findByUsername(username: string): Promise<UserInterface | null> {
+    return this.findOne({ userName: username });
+  }
+
+  async findByEmail(email: string): Promise<UserInterface | null> {
+    return this.findOne({ email });
   }
 
   async updatePassword(userId: string, password: string): Promise<void> {

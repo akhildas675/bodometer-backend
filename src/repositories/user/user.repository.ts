@@ -1,13 +1,18 @@
 import { IUserRepository } from "../../interfaces/user/user-repository.interface";
 import { UserProfile } from "../../interfaces/user/user.interface";
 import { UpdateUserProfileDto } from "../../dto/user/user.dto";
-import { UserModel } from "../../models/user.model";
+import { IUserDocument, UserModel } from "../../models/user.model";
+import { BaseRepository } from "../base/base.repository";
 
-export default class UserRepository implements IUserRepository {
-  async findById(userId: string): Promise<UserProfile | null> {
-    const doc = await UserModel.findById(userId).select("-password");
-    if (!doc) return null;
+export default class UserRepository
+  extends BaseRepository<UserProfile, IUserDocument>
+  implements IUserRepository
+{
+  constructor() {
+    super(UserModel);
+  }
 
+  protected toInterface(doc: IUserDocument): UserProfile {
     return {
       id: doc._id.toString(),
       name: doc.name,
@@ -18,6 +23,11 @@ export default class UserRepository implements IUserRepository {
       profilePic: doc.profilePic ?? null,
       dateOfBirth: doc.dateOfBirth ?? null,
     };
+  }
+
+  async findById(userId: string): Promise<UserProfile | null> {
+    const doc = await UserModel.findById(userId).select("-password").exec();
+    return doc ? this.toInterface(doc) : null;
   }
 
   async updateProfile(
@@ -41,19 +51,10 @@ export default class UserRepository implements IUserRepository {
       userId,
       { $set: updateFields },
       { new: true, runValidators: true },
-    ).select("-password");
+    )
+      .select("-password")
+      .exec();
 
-    if (!doc) return null;
-
-    return {
-      id: doc._id.toString(),
-      name: doc.name,
-      email: doc.email,
-      userName: doc.userName,
-      phoneNumber: doc.phoneNumber,
-      gender: doc.gender,
-      profilePic: doc.profilePic ?? null,
-      dateOfBirth: doc.dateOfBirth ?? null,
-    };
+    return doc ? this.toInterface(doc) : null;
   }
 }
