@@ -9,6 +9,8 @@ import {
 import { AppError } from "../../utils/appError";
 import { WorkoutMapper } from "../../mappers/admin/admin.mappers";
 import { IAdminService } from "../../interfaces/admin/admin-service.interface";
+import { STATUS } from "../../constants/statuscode";
+import { MESSAGES } from "../../constants/messages";
 
 export class AdminController {
   constructor(private _adminService: IAdminService) {}
@@ -18,7 +20,7 @@ export class AdminController {
       const body = req.body as AdminGetUsersDto;
       const users = await this._adminService.fetchUsers(body);
       console.log(users);
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
         data: users,
       });
@@ -35,9 +37,9 @@ export class AdminController {
 
       await this._adminService.blockUser(userId);
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message: "User blocked successfully",
+        message: MESSAGES.LOGIN.ACCOUNT_BLOCKED,
       });
     } catch (error) {
       next(error);
@@ -50,9 +52,9 @@ export class AdminController {
 
       await this._adminService.unblockUser(userId);
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message: "User unblocked successfully",
+        message:  MESSAGES.LOGIN.ACCOUNT_UNBLOCKED,
       });
     } catch (error) {
       next(error);
@@ -66,7 +68,7 @@ export class AdminController {
       console.log("Trainers id from body", body);
       const trainers = await this._adminService.fetchTrainers(body);
       console.log(trainers);
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
         data: trainers,
       });
@@ -84,9 +86,9 @@ export class AdminController {
 
       await this._adminService.blockTrainer(trainerId);
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message: "Trainer blocked successfully",
+        message:  MESSAGES.LOGIN.ACCOUNT_BLOCKED,
       });
     } catch (error) {
       next(error);
@@ -102,9 +104,9 @@ export class AdminController {
 
       await this._adminService.unblockTrainer(trainerId);
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message: "Trainer unblocked successfully",
+        message:  MESSAGES.LOGIN.ACCOUNT_UNBLOCKED,
       });
     } catch (error) {
       next(error);
@@ -120,18 +122,18 @@ export class AdminController {
       console.log("body data", req.file);
 
       if (!workoutName || !workoutDescription) {
-        throw new AppError(400, "Missing fields");
+        throw new AppError(STATUS.BAD_REQUEST, "Missing fields");
       }
 
       if (!file) {
-        throw new AppError(400, "File missing");
+        throw new AppError(STATUS.BAD_REQUEST, "File missing");
       }
 
       const body: AddWorkoutDto = { workoutName, workoutDescription, file };
 
       const result = await this._adminService.workoutAdd(body);
 
-      res.status(201).json({
+      res.status(STATUS.CREATED).json({
         success: true,
         data: result,
       });
@@ -145,7 +147,7 @@ export class AdminController {
       const workouts = await this._adminService.fetchWorkouts();
       console.log(workouts);
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
         data: WorkoutMapper.toResponseList(workouts),
       });
@@ -163,7 +165,7 @@ export class AdminController {
   ) => {
     const trainers = await this._adminService.getTrainerAppointments();
 
-    res.status(200).json({
+    res.status(STATUS.OK).json({
       success: true,
       message: "Trainer appointments fetched successfully",
       data: trainers,
@@ -179,7 +181,7 @@ export class AdminController {
 
     const trainer = await this._adminService.getTrainerByProfileId(profileId);
 
-    res.status(200).json({
+    res.status(STATUS.OK).json({
       success: true,
       message: "Trainer details fetched successfully",
       data: trainer,
@@ -195,7 +197,7 @@ export class AdminController {
 
     const result = await this._adminService.approveTrainer(profileId);
 
-    res.status(200).json({
+    res.status(STATUS.OK).json({
       success: true,
       message: result.message,
       data: result.profile,
@@ -207,19 +209,20 @@ export class AdminController {
     const { reason } = req.body;
 
     if (!profileId) {
-      throw new AppError(400, "Profile ID is required");
+      throw new AppError(STATUS.BAD_REQUEST, "Profile ID is required");
     }
 
     if (!reason) {
-      throw new AppError(400, "Rejection reason is required");
+      throw new AppError(STATUS.BAD_REQUEST, "Rejection reason is required");
     }
 
     const result = await this._adminService.rejectTrainer(profileId, reason);
 
-    res.status(200).json({
+    res.status(STATUS.OK).json({
       success: true,
       message: result.message,
       data: result.profile,
     });
   };
 }
+
