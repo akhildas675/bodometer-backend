@@ -5,6 +5,9 @@ import { ResendOtpDto } from "../../dto/otp/otp.dto";
 import { redis } from "../../config/redis";
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
+import { Logger } from "../../utils/logger";
+
+const logger = new Logger("AuthController");
 
 export class AuthController {
   constructor(private _authService: IAuthService) { }
@@ -14,12 +17,11 @@ export class AuthController {
     try {
       const body = req.body as RegisterDto;
 
-      console.debug(
-        "controller register email:",
-        body.email,
-        "role:",
-        body.role,
-      );
+      logger.debug("Register request received", {
+        email: body.email,
+        role: body.role,
+      });
+
 
       await this._authService.initiateRegister(body);
 
