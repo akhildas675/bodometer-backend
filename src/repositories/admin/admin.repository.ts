@@ -56,7 +56,7 @@ export default class AdminRepository
 ): Promise<AdminTrainerInterface[]> {
   const filter: Record<string, unknown> = { role: ROLES.TRAINER };
 
-  // Add search filter if search query exists
+  
   if (query.search) {
     filter.$or = [
       { name: { $regex: query.search, $options: 'i' } },
@@ -64,7 +64,7 @@ export default class AdminRepository
     ];
   }
 
-  // Build sort object
+  
   const sort: Record<string, 1 | -1> = {};
   if (query.sortBy) {
     sort[query.sortBy] = query.sortOrder === 'desc' ? -1 : 1;
