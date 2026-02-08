@@ -5,6 +5,7 @@ import {
   AdminGetTrainersResponseDto,
   AdminGetUsersDto,
   AdminGetUsersResponseDto,
+  PaginatedResponseDto,
 } from "../../dto/admin/admin.dto";
 import {
   ApproveTrainerResponseDto,
@@ -19,8 +20,8 @@ export interface IAdminService {
   blockUser(userId: string): Promise<void>;
   unblockUser(userId: string): Promise<void>;
   fetchTrainers(
-    query: AdminGetTrainersDto,
-  ): Promise<AdminGetTrainersResponseDto[]>;
+    query: AdminGetTrainersDto
+  ): Promise<PaginatedResponseDto<AdminGetTrainersResponseDto>>;
   blockTrainer(trainerId: string): Promise<void>;
   unblockTrainer(trainerId: string): Promise<void>;
   // workouts

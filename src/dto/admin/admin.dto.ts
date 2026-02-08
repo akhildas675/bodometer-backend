@@ -1,13 +1,28 @@
 import { Role } from "../../constants/identity.constants";
 
+
 export interface AdminGetUsersDto {
- page?: number;
+  page?: number;
   limit?: number;
   search?: string;
   role?: Exclude<Role, "admin">;
   isBlocked?: boolean;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
+}
+
+export interface PaginationMetaDto {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface PaginatedResponseDto<T> {
+  data: T[];
+  pagination: PaginationMetaDto;
 }
 
 export interface AdminGetUsersResponseDto {
@@ -21,10 +36,6 @@ export interface AdminGetUsersResponseDto {
   profilePic?: string | null;
 }
 
-export interface AdminBlockUnBlockDto {
-  userId: string;
-}
-
 export interface AdminGetTrainersDto extends AdminGetUsersDto {}
 
 export interface AdminGetTrainersResponseDto extends AdminGetUsersResponseDto {}
@@ -32,7 +43,9 @@ export interface AdminGetTrainersResponseDto extends AdminGetUsersResponseDto {}
 export interface AdminBlockUnblockTrainerDto {
   trainerId: string;
 }
-
+export interface AdminBlockUnBlockDto {
+  userId: string;
+}
 export interface AddWorkoutDto {
   workoutName: string;
   workoutDescription: string;

@@ -59,18 +59,26 @@ export class AdminController {
     }
   };
 
-  getTrainers = async (req: Request, res: Response, next: NextFunction) => {
+getTrainers = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    console.log("function worked get all trainers");
-    const query = req.query as unknown as AdminGetTrainersDto; 
+    console.log("Get all trainers with pagination");
+    const query = req.query as unknown as AdminGetTrainersDto;
+    
+    if (query.page) query.page = Number(query.page);
+    if (query.limit) query.limit = Number(query.limit);
+    
     console.log("Trainers query params", query);
-    const trainers = await this._adminService.fetchTrainers(query);
-    console.log(trainers);
+    const result = await this._adminService.fetchTrainers(query);
+    
+    console.log("Sending response:", result); 
+    
     res.status(200).json({
       success: true,
-      data: trainers,
+      data: result.data,
+      pagination: result.pagination,
     });
   } catch (error) {
+    console.error("Error in getTrainers:", error); 
     next(error);
   }
 };

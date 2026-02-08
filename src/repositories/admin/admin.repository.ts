@@ -53,30 +53,44 @@ export default class AdminRepository
   // Trainer management
   async findTrainers(
   query: AdminGetTrainersDto,
-): Promise<AdminTrainerInterface[]> {
+): Promise<{ trainers: AdminTrainerInterface[]; total: number }> {
   const filter: Record<string, unknown> = { role: ROLES.TRAINER };
 
-  
+  // Add search filter if search query exists
   if (query.search) {
     filter.$or = [
-      { name: { $regex: query.search, $options: 'i' } },
-      { email: { $regex: query.search, $options: 'i' } }
+      { name: { $regex: query.search, $options: "i" } },
+      { email: { $regex: query.search, $options: "i" } },
     ];
   }
 
-  
+  // Build sort object
   const sort: Record<string, 1 | -1> = {};
   if (query.sortBy) {
-    sort[query.sortBy] = query.sortOrder === 'desc' ? -1 : 1;
+    sort[query.sortBy] = query.sortOrder === "desc" ? -1 : 1;
   } else {
-    sort.createdAt = -1; 
+    // Default sort by createdAt descending (newest first)
+    sort.createdAt = -1;
   }
 
+  // Pagination
+  const page = query.page || 1;
+  const limit = query.limit || 10;
+  const skip = (page - 1) * limit;
+
+  // Get total count for pagination
+  const total = await UserModel.countDocuments(filter);
+
+  // Get paginated data
   const docs = await UserModel.find(filter)
     .select("-password")
-    .sort(sort);
-    
-  return docs.map((doc) => this.toAdminTrainerInterface(doc));
+    .sort(sort)
+    .skip(skip)
+    .limit(limit);
+
+  const trainers = docs.map((doc) => this.toAdminTrainerInterface(doc));
+
+  return { trainers, total };
 }
 
   async updateTrainerStatus(userId: string, isBlocked: boolean): Promise<void> {

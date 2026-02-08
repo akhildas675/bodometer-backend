@@ -13,7 +13,9 @@ import {
 export interface IAdminRepository {
   findUsers(query: AdminGetUsersDto): Promise<AdminUserInterface[]>;
   updateUserStatus(userId: string, isBlocked: boolean): Promise<void>;
-  findTrainers(query: AdminGetTrainersDto): Promise<AdminTrainerInterface[]>;
+  findTrainers(
+    query: AdminGetTrainersDto
+  ): Promise<{ trainers: AdminTrainerInterface[]; total: number }>;
   updateTrainerStatus(trainerId: string, isBlocked: boolean): Promise<void>;
   createWorkout(body: Workout): Promise<Workout>;
   getAllWorkouts(): Promise<Workout[]>;

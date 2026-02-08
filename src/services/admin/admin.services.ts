@@ -7,6 +7,7 @@ import {
   AdminGetTrainersResponseDto,
   AdminGetUsersDto,
   AdminGetUsersResponseDto,
+  PaginatedResponseDto,
 } from "../../dto/admin/admin.dto";
 import { IAdminService } from "../../interfaces/admin/admin-service.interface";
 import {
@@ -60,11 +61,26 @@ export class AdminService implements IAdminService {
   }
 
   async fetchTrainers(
-    query: AdminGetTrainersDto,
-  ): Promise<AdminGetTrainersResponseDto[]> {
-    const trainers = await this._adminRepo.findTrainers(query);
-    return AdminAccountMapper.toResponseList(trainers);
-  }
+  query: AdminGetTrainersDto,
+): Promise<PaginatedResponseDto<AdminGetTrainersResponseDto>> {
+  const { trainers, total } = await this._adminRepo.findTrainers(query);
+  
+  const page = query.page || 1;
+  const limit = query.limit || 10;
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    data: AdminAccountMapper.toResponseList(trainers),
+    pagination: {
+      currentPage: page,
+      totalPages,
+      totalItems: total,
+      itemsPerPage: limit,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+    },
+  };
+}
 
   async blockTrainer(trainerId: string): Promise<void> {
     if (!trainerId) {
