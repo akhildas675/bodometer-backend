@@ -15,8 +15,8 @@ export class AdminController {
 
   getUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const body = req.body as AdminGetUsersDto;
-      const users = await this._adminService.fetchUsers(body);
+      const query = req.query as unknown as AdminGetUsersDto;
+      const users = await this._adminService.fetchUsers(query);
       console.log(users);
       res.status(200).json({
         success: true,
