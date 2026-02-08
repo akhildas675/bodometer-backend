@@ -8,6 +8,7 @@ import {
   RefreshTokenPayload,
 } from "../interfaces/auth/auth.interface";
 import { Role } from "../constants/identity.constants";
+import { UserModel } from "../models/user.model";
 
 export interface AuthRequest extends Request {
   file?: Express.Multer.File | undefined;
@@ -29,13 +30,31 @@ export const authGuard = (allowedRoles: Role[] = []) => {
         try {
           const payload = Jwt.verifyAccess(accessToken) as AccessTokenPayload;
 
+          const user = await UserModel.findById(payload.sub).select("isBlocked role");
+
+          if (!user) {
+            return next(new AppError(STATUS.UNAUTHORIZED, "User not found"));
+          }
+
+          if (user.isBlocked) {
+          
+            await redis.del(`refresh:${payload.sub}`);
+
+            res.clearCookie("refreshToken");
+
+            return next(
+              new AppError(STATUS.FORBIDDEN, "Account blocked by admin")
+            );
+          }
+
+
           if (allowedRoles.length && !allowedRoles.includes(payload.role)) {
             return next(new AppError(STATUS.FORBIDDEN, "Access denied"));
           }
 
           req.user = { id: payload.sub, role: payload.role };
           return next();
-        } catch {}
+        } catch { }
       }
 
       return await handleRefresh(req, res, next, allowedRoles);
