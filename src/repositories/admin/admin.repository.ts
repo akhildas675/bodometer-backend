@@ -41,8 +41,30 @@ export default class AdminRepository
   }
 
   // User management
-  async findUsers(_query: AdminGetUsersDto): Promise<AdminUserInterface[]> {
-    const docs = await UserModel.find({ role: ROLES.USER }).select("-password");
+  async findUsers(query: AdminGetUsersDto): Promise<AdminUserInterface[]> {
+
+    const filter: Record<string, unknown> = { role: ROLES.USER };
+
+  
+  if (query.search) {
+    filter.$or = [
+      { name: { $regex: query.search, $options: 'i' } },
+      { email: { $regex: query.search, $options: 'i' } }
+    ];
+  }
+
+  
+  const sort: Record<string, 1 | -1> = {};
+  if (query.sortBy) {
+    sort[query.sortBy] = query.sortOrder === 'desc' ? -1 : 1;
+  } else {
+    sort.createdAt = -1; 
+  }
+
+  const docs = await UserModel.find(filter)
+    .select("-password")
+    .sort(sort);
+    
     return docs.map((doc) => this.toInterface(doc));
   }
 
