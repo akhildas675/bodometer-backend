@@ -23,8 +23,7 @@ import { BaseRepository } from "../base/base.repository";
 
 export default class AdminRepository
   extends BaseRepository<AdminUserInterface, IUserDocument>
-  implements IAdminRepository
-{
+  implements IAdminRepository {
   constructor() {
     super(UserModel);
   }
@@ -53,11 +52,19 @@ export default class AdminRepository
 
   // Trainer management
   async findTrainers(
-    _query: AdminGetTrainersDto,
+    query: AdminGetTrainersDto,
   ): Promise<AdminTrainerInterface[]> {
-    const docs = await UserModel.find({ role: ROLES.TRAINER }).select(
-      "-password",
-    );
+    const filter: Record<string, unknown> = { role: ROLES.TRAINER };
+
+    
+    if (query.search) {
+      filter.$or = [
+        { name: { $regex: query.search, $options: 'i' } },
+        { email: { $regex: query.search, $options: 'i' } }
+      ];
+    }
+
+    const docs = await UserModel.find(filter).select("-password");
     return docs.map((doc) => this.toAdminTrainerInterface(doc));
   }
 

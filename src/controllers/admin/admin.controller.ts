@@ -60,20 +60,20 @@ export class AdminController {
   };
 
   getTrainers = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      console.log("function worked get all trianers");
-      const body = req.body as AdminGetTrainersDto;
-      console.log("Trainers id from body", body);
-      const trainers = await this._adminService.fetchTrainers(body);
-      console.log(trainers);
-      res.status(200).json({
-        success: true,
-        data: trainers,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+  try {
+    console.log("function worked get all trainers");
+    const query = req.query as unknown as AdminGetTrainersDto; 
+    console.log("Trainers query params", query);
+    const trainers = await this._adminService.fetchTrainers(query);
+    console.log(trainers);
+    res.status(200).json({
+      success: true,
+      data: trainers,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
   blockTrainer = async (req: Request, res: Response, next: NextFunction) => {
     try {

@@ -33,7 +33,7 @@ export class AdminService implements IAdminService {
   constructor(
     private _adminRepo: IAdminRepository,
     private _s3Service: IS3Service
-  ) {}
+  ) { }
 
   async fetchUsers(
     query: AdminGetUsersDto,
@@ -62,8 +62,8 @@ export class AdminService implements IAdminService {
   async fetchTrainers(
     query: AdminGetTrainersDto,
   ): Promise<AdminGetTrainersResponseDto[]> {
-    const trainer = await this._adminRepo.findTrainers(query);
-    return AdminAccountMapper.toResponseList(trainer);
+    const trainers = await this._adminRepo.findTrainers(query);
+    return AdminAccountMapper.toResponseList(trainers);
   }
 
   async blockTrainer(trainerId: string): Promise<void> {
