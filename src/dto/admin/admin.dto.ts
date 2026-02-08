@@ -1,11 +1,13 @@
 import { Role } from "../../constants/identity.constants";
 
 export interface AdminGetUsersDto {
-  page?: number;
+ page?: number;
   limit?: number;
   search?: string;
   role?: Exclude<Role, "admin">;
   isBlocked?: boolean;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface AdminGetUsersResponseDto {

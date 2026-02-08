@@ -52,21 +52,32 @@ export default class AdminRepository
 
   // Trainer management
   async findTrainers(
-    query: AdminGetTrainersDto,
-  ): Promise<AdminTrainerInterface[]> {
-    const filter: Record<string, unknown> = { role: ROLES.TRAINER };
+  query: AdminGetTrainersDto,
+): Promise<AdminTrainerInterface[]> {
+  const filter: Record<string, unknown> = { role: ROLES.TRAINER };
 
-    
-    if (query.search) {
-      filter.$or = [
-        { name: { $regex: query.search, $options: 'i' } },
-        { email: { $regex: query.search, $options: 'i' } }
-      ];
-    }
-
-    const docs = await UserModel.find(filter).select("-password");
-    return docs.map((doc) => this.toAdminTrainerInterface(doc));
+  // Add search filter if search query exists
+  if (query.search) {
+    filter.$or = [
+      { name: { $regex: query.search, $options: 'i' } },
+      { email: { $regex: query.search, $options: 'i' } }
+    ];
   }
+
+  // Build sort object
+  const sort: Record<string, 1 | -1> = {};
+  if (query.sortBy) {
+    sort[query.sortBy] = query.sortOrder === 'desc' ? -1 : 1;
+  } else {
+    sort.createdAt = -1; 
+  }
+
+  const docs = await UserModel.find(filter)
+    .select("-password")
+    .sort(sort);
+    
+  return docs.map((doc) => this.toAdminTrainerInterface(doc));
+}
 
   async updateTrainerStatus(userId: string, isBlocked: boolean): Promise<void> {
     await UserModel.updateOne({ _id: userId }, { $set: { isBlocked } });
