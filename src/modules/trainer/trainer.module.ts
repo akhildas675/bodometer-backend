@@ -18,7 +18,8 @@ export function createTrainerModule(){
 
 
     const trainerService:ITrainerService = new TrainerService(
-        trainerRepository
+        trainerRepository,
+        s3Service,
     );
 
 

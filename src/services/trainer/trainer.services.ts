@@ -65,14 +65,14 @@ export class TrainerService implements ITrainerService {
     trainerId: string,
     file: Express.Multer.File,
   ): Promise<string> {
-    const user = await this._trainerRepo.findById(trainerId);
-    if (!user) {
+    const trainer = await this._trainerRepo.findById(trainerId);
+    if (!trainer) {
       throw new AppError(STATUS.NOT_FOUND, "User not found");
     }
 
-    if (user.profilePic) {
+    if (trainer.profilePic) {
       try {
-        await this._s3Service.deleteFile(user.profilePic);
+        await this._s3Service.deleteFile(trainer.profilePic);
       } catch (error) {
         console.error("Error deleting old profile picture:", error);
       }

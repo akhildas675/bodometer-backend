@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authGuard } from "../../middleware/authGuard";
-import { documentUpload } from "../../config/multer";
+import { documentUpload, imageUpload } from "../../config/multer";
 import { createTrainerModule } from "../../modules/trainer/trainer.module";
 import { TRAINER_ROUTES } from "../../constants/routes.constant/trainer-routes.constant";
 
@@ -26,5 +26,7 @@ trainerRoute.get(
 );
 
 trainerRoute.put(TRAINER_ROUTES.TRAINER_PROFILE_UPDATE,authGuard(["trainer"]),trainerController.updateProfile)
+
+trainerRoute.post(TRAINER_ROUTES.TRAINER_PROFILE_PICTURE_UPDATE,imageUpload.single("file"),authGuard(["trainer"]),trainerController.uploadProfilePicture)
 
 export default trainerRoute;
