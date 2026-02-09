@@ -5,26 +5,28 @@ import { UserController } from "../../controllers/user/user.controller";
 import { authGuard } from "../../middleware/authGuard";
 import { S3Service } from "../../services/s3/s3.service";
 import { imageUpload } from "../../config/multer";
+import { USER_ROUTES } from "../../constants/routes.constant/user-routes.constant";
 
 const userRoute = Router();
-
 const userRepository = new UserRepository();
 const s3Service = new S3Service();
 const userService = new UserService(userRepository, s3Service);
 const userController = new UserController(userService);
 
 userRoute.get(
-  "/user/user-profile",
+  USER_ROUTES.USER_PROFILE,
   authGuard(["user"]),
   userController.getUser,
 );
+
 userRoute.put(
-  "/user/profile",
+  USER_ROUTES.PROFILE,
   authGuard(["user"]),
   userController.updateProfile,
 );
+
 userRoute.post(
-  "/user/profile-picture",
+  USER_ROUTES.PROFILE_PICTURE,
   imageUpload.single("file"),
   authGuard(["user"]),
   userController.uploadProfilePicture,

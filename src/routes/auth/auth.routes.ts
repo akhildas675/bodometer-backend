@@ -6,42 +6,64 @@ import {
 } from "../../validators/auth/auth.validator";
 import { validate } from "../../middleware/validate";
 import { createAuthModule } from "../../modules/auth/auth.module";
+import { AUTH_ROUTES } from "../../constants/routes.constant/auth-routes.constant";
 
 const authRoute = Router();
-
 const { authController } = createAuthModule();
 
 authRoute.post(
-  "/auth/register",
+  AUTH_ROUTES.REGISTER,
   validate(registerSchema),
   authController.register,
 );
 
 authRoute.post(
-  "/auth/otp-verify",
+  AUTH_ROUTES.OTP_VERIFY,
   validate(otpSchema),
   authController.verifyOtp,
 );
 
 authRoute.post(
-  "/auth/otp-resend",
+  AUTH_ROUTES.OTP_RESEND,
   validate(otpSchema),
   authController.resendOtp,
 );
-authRoute.post("/auth/login", validate(loginSchema), authController.login);
 
 authRoute.post(
-  "/auth/register/complete",
+  AUTH_ROUTES.LOGIN,
+  validate(loginSchema),
+  authController.login,
+);
+
+authRoute.post(
+  AUTH_ROUTES.COMPLETE_REGISTER,
   validate(registerSchema),
   authController.completeRegister,
 );
 
-authRoute.post("/auth/forgot-password", authController.forgotPassword);
+authRoute.post(
+  AUTH_ROUTES.FORGOT_PASSWORD,
+  authController.forgotPassword,
+);
 
-authRoute.post("/auth/reset-password", authController.resetPassword);
+authRoute.post(
+  AUTH_ROUTES.RESET_PASSWORD,
+  authController.resetPassword,
+);
 
-authRoute.post("/auth/google-login", authController.googleLogin);
-authRoute.post("/auth/refresh-token", authController.refreshToken);
-authRoute.post("/auth/logout", authController.logout);
+authRoute.post(
+  AUTH_ROUTES.GOOGLE_LOGIN,
+  authController.googleLogin,
+);
+
+authRoute.post(
+  AUTH_ROUTES.REFRESH_TOKEN,
+  authController.refreshToken,
+);
+
+authRoute.post(
+  AUTH_ROUTES.LOGOUT,
+  authController.logout,
+);
 
 export default authRoute;

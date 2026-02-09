@@ -2,18 +2,19 @@ import { Router } from "express";
 import { authGuard } from "../../middleware/authGuard";
 import { documentUpload } from "../../config/multer";
 import { createTrainerModule } from "../../modules/trainer/trainer.module";
+import { TRAINER_ROUTES } from "../../constants/routes.constant/trainer-routes.constant";
 
 const trainerRoute = Router();
-
-const {trainerController,trainerProfileController}=createTrainerModule()
+const { trainerController, trainerProfileController } = createTrainerModule();
 
 trainerRoute.get(
-  "/trainer/get-workout-list",
+  TRAINER_ROUTES.GET_WORKOUT_LIST,
   authGuard(["trainer"]),
   trainerController.getWorkoutList,
 );
+
 trainerRoute.post(
-  "/trainer/submit-profile-data",
+  TRAINER_ROUTES.SUBMIT_PROFILE_DATA,
   authGuard(["trainer"]),
   documentUpload.single("certificate"),
   trainerProfileController.createProfile,

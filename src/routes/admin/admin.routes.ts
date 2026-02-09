@@ -2,86 +2,87 @@ import { Router } from "express";
 import { authGuard } from "../../middleware/authGuard";
 import { imageUpload } from "../../config/multer";
 import { createAdminModule } from "../../modules/admin/admin.module";
+import { ADMIN_ROUTES } from "../../constants/routes.constant/admin-routes.constant";
 
 const adminRoute = Router();
-const {adminController} = createAdminModule()
+const { adminController } = createAdminModule();
 
 // User Management
 adminRoute.get(
-  "/admin/get-users",
+  ADMIN_ROUTES.GET_USERS,
   authGuard(["admin"]),
   adminController.getUsers,
 );
 
 adminRoute.patch(
-  "/admin/users/:userId/block",
+  ADMIN_ROUTES.BLOCK_USER,
   authGuard(["admin"]),
   adminController.blockUser,
 );
 
 adminRoute.patch(
-  "/admin/users/:userId/unblock",
+  ADMIN_ROUTES.UNBLOCK_USER,
   authGuard(["admin"]),
   adminController.unblockUser,
 );
 
-// Trainer Management (Block/Unblock)
+// Trainer Management
 adminRoute.get(
-  "/admin/get-trainers",
+  ADMIN_ROUTES.GET_TRAINERS,
   authGuard(["admin"]),
   adminController.getTrainers,
 );
 
 adminRoute.patch(
-  "/admin/trainer/:trainerId/block",
+  ADMIN_ROUTES.BLOCK_TRAINER,
   authGuard(["admin"]),
   adminController.blockTrainer,
 );
 
 adminRoute.patch(
-  "/admin/trainer/:trainerId/unblock",
+  ADMIN_ROUTES.UNBLOCK_TRAINER,
   authGuard(["admin"]),
   adminController.unblockTrainer,
 );
 
-// workout management
+// Workout Management
 adminRoute.post(
-  "/admin/add-workout",
+  ADMIN_ROUTES.ADD_WORKOUT,
   authGuard(["admin"]),
   imageUpload.single("workoutImage"),
   adminController.addWorkout,
 );
 
 adminRoute.get(
-  "/admin/get-workouts",
+  ADMIN_ROUTES.GET_WORKOUTS,
   authGuard(["admin"]),
   adminController.getWorkout,
 );
 
-//trainer appointment management
+// Trainer Appointment Management
 adminRoute.post(
-  "/admin/get-trainer-appointments",
+  ADMIN_ROUTES.GET_TRAINER_APPOINTMENTS,
   authGuard(["admin"]),
   adminController.getTrainerAppointments,
 );
 
-//get trainer by profileId
+// Get Trainer by ProfileId
 adminRoute.get(
-  "/admin/trainers/profile/:profileId",
+  ADMIN_ROUTES.GET_TRAINER_BY_ID,
   authGuard(["admin"]),
   adminController.getTrainerById,
 );
 
-//Approve trainer
+// Approve Trainer
 adminRoute.patch(
-  "/admin/trainers/:profileId/approve",
+  ADMIN_ROUTES.APPROVE_TRAINER,
   authGuard(["admin"]),
   adminController.approveTrainer,
 );
 
-//Reject trainer
+// Reject Trainer
 adminRoute.patch(
-  "/admin/trainers/:profileId/reject",
+  ADMIN_ROUTES.REJECT_TRAINER,
   authGuard(["admin"]),
   adminController.rejectTrainer,
 );
