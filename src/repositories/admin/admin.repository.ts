@@ -78,7 +78,7 @@ export default class AdminRepository
 ): Promise<{ trainers: AdminTrainerInterface[]; total: number }> {
   const filter: Record<string, unknown> = { role: ROLES.TRAINER };
 
-  // Add search filter if search query exists
+  // Add search 
   if (query.search) {
     filter.$or = [
       { name: { $regex: query.search, $options: "i" } },
@@ -86,24 +86,24 @@ export default class AdminRepository
     ];
   }
 
-  // Build sort object
+  //  sort object
   const sort: Record<string, 1 | -1> = {};
   if (query.sortBy) {
     sort[query.sortBy] = query.sortOrder === "desc" ? -1 : 1;
   } else {
-    // Default sort by createdAt descending (newest first)
+    // default sort
     sort.createdAt = -1;
   }
 
-  // Pagination
+  // pagination
   const page = query.page || 1;
   const limit = query.limit || 10;
   const skip = (page - 1) * limit;
 
-  // Get total count for pagination
+  // total count pagination
   const total = await UserModel.countDocuments(filter);
 
-  // Get paginated data
+  // pagination
   const docs = await UserModel.find(filter)
     .select("-password")
     .sort(sort)
