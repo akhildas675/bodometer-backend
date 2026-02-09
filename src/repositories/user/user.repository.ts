@@ -12,6 +12,11 @@ export default class UserRepository
     super(UserModel);
   }
 
+  
+  async findById(userId: string): Promise<UserProfile | null> {
+    const doc = await UserModel.findById(userId).select("-password").exec();
+    return doc ? this.toInterface(doc) : null;
+  }
   protected toInterface(doc: IUserDocument): UserProfile {
     return {
       id: doc._id.toString(),
@@ -23,11 +28,6 @@ export default class UserRepository
       profilePic: doc.profilePic ?? null,
       dateOfBirth: doc.dateOfBirth ?? null,
     };
-  }
-
-  async findById(userId: string): Promise<UserProfile | null> {
-    const doc = await UserModel.findById(userId).select("-password").exec();
-    return doc ? this.toInterface(doc) : null;
   }
 
   async updateProfile(

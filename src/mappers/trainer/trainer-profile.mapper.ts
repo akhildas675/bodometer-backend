@@ -1,10 +1,24 @@
-import { TrainerProfileResponseDto } from "../../dto/trainer/trainer.dto";
+// mapper/trainer-profile.mapper.ts
+import { TrainerProfile, TrainerProfileDataInterface } from "../../interfaces/trainer/trainer.interface";
+import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
 
 export class TrainerProfileMapper {
-  static toResponse(): TrainerProfileResponseDto {
+  static toInterface(doc: ITrainerProfileDocument): TrainerProfile {
     return {
-      success: true,
-      message: "Trainer profile submitted successfully",
+      userId: doc.userId.toString(),
+      verificationStatus: doc.verificationStatus,
+      rejectionReason: doc.rejectionReason ?? null,
+    };
+  }
+
+  static toDocument(profile: TrainerProfileDataInterface) {
+    return {
+      userId: profile.userId,
+      experienceInYears: profile.experienceInYears,
+      certifications: profile.certifications,
+      bio: profile.bio,
+      verificationStatus: profile.verificationStatus,
+      rejectionReason: profile.rejectionReason ?? null,
     };
   }
 }

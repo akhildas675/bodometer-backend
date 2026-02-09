@@ -20,4 +20,11 @@ trainerRoute.post(
   trainerProfileController.createProfile,
 );
 
+
+trainerRoute.get(
+  TRAINER_ROUTES.GET_TRAINER_PROFILE, authGuard(["trainer"]), trainerController.getTrainer
+);
+
+trainerRoute.put(TRAINER_ROUTES.TRAINER_PROFILE_UPDATE,authGuard(["trainer"]),trainerController.updateProfile)
+
 export default trainerRoute;

@@ -1,4 +1,5 @@
 import { Gender } from "../../constants/identity.constants";
+import { FindUserResponseDto } from "../user/user.dto";
 
 export interface WorkoutListDto {
   id: string;
@@ -11,10 +12,15 @@ export interface CreateTrainerProfileDto {
   certificateUrl: string;
 }
 export interface TrainerProfileResponseDto {
-  success: true;
-  message: string;
+  id: string;
+  name: string;
+  email: string;
+  userName: string;
+  phoneNumber: string | null;
+  gender: Gender;
+  profilePic: string | null;
+  dateOfBirth: Date | null;
 }
-
 export interface GetTrainerAppointmentsResponseDto {
   user: {
     _id: string;
@@ -47,6 +53,9 @@ export interface GetTrainerAppointmentsResponseDto {
 export interface GetTrainerByIdRequestDto {
   userId: string;
 }
+
+
+
 
 export interface GetTrainerByIdResponseDto {
   user: {
@@ -119,6 +128,7 @@ export interface FindTrainerResponseDto {
   userName: string;
   phoneNumber: string | null;
   gender: Gender;
-  profilePic?: string;
-  dateOfBirth?: Date;
+  profilePic: string | null;
+  dateOfBirth: Date | null;
 }
+

@@ -1,16 +1,16 @@
 import { VERIFICATION_STATUS } from "../../constants/verification.constants";
-import { ISessionService } from "../../interfaces/auth/session-service.interface";
 import { IS3Service } from "../../interfaces/s3/s3-service.interface";
 import { ITrainerProfileRepository } from "../../interfaces/trainer/trainer.profile-repository.interface";
 import { ITrainerProfileService } from "../../interfaces/trainer/trainer.profile-service.interface";
 import { AppError } from "../../utils/appError";
-import { S3Service } from "../s3/s3.service";
+
 
 export default class TrainerProfileService implements ITrainerProfileService {
   constructor(
     private _trainerProfileRepo: ITrainerProfileRepository,
     private _s3Service: IS3Service,
   ) {}
+  
 
   async createProfile(
     userId: string,

@@ -1,12 +1,15 @@
-// trainer.interface.ts
 import { VerificationStatus } from "../../constants/verification.constants";
 import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
 import { IUserDocument } from "../../models/user.model";
+import { UserProfile } from "../user/user.interface";
 
 export interface TrainerWorkoutList {
   id: string;
   workoutName: string;
 }
+
+export interface TrainerProfileInterface extends UserProfile{}
+
 
 export interface TrainerProfile {
   userId: string;
