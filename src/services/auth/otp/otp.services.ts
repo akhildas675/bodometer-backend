@@ -4,14 +4,15 @@ import { STATUS } from "../../../constants/statuscode";
 import { generateOtp } from "../../../utils/generateOtp";
 import { OtpPurpose } from "../../../constants/otp.constants";
 import { IOtpService } from "../../../interfaces/otp/otp-service.interface";
-import { MailServiceInterface } from "../../../interfaces/otp/mail-service.interface";
+
 import {
   GenerateOtpPayload,
   VerifyOtpPayload,
 } from "../../../interfaces/otp/otp.interface";
+import { IMailService } from "../../../interfaces/otp/mail-service.interface";
 
 export class OtpService implements IOtpService {
-  constructor(private _mailService: MailServiceInterface) {}
+  constructor(private _mailService: IMailService) {}
 
   private OTP_TTL = 300;
   private MAX_ATTEMPTS = 5;
