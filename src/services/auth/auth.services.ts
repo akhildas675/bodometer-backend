@@ -22,6 +22,8 @@ import { ITrainerProfileRepository } from "../../interfaces/trainer/trainer.prof
 import { IAuthRepository } from "../../interfaces/auth/auth-repository.interface";
 import { ISessionService } from "../../interfaces/auth/session-service.interface";
 import { IOtpService } from "../../interfaces/otp/otp-service.interface";
+import { IUsernameGenerator } from "../../strategies/username/username-generator.interface";
+import { RegistrationStrategyFactory } from "../../strategies/register/registration.strategy";
 
 export class AuthService implements IAuthService {
   constructor(
@@ -29,18 +31,15 @@ export class AuthService implements IAuthService {
     private _otpService: IOtpService,
     private _sessionService: ISessionService,
     private _trainerProfileRepo: ITrainerProfileRepository,
+     private _usernameGenerator: IUsernameGenerator,
   ) {}
 
   async initiateRegister(data: RegisterDto): Promise<void> {
-    const role = data.role;
-
-    if (role == ROLES.ADMIN) {
-      throw new AppError(403, "Admin register is not allowed");
-    }
-
-    if (![ROLES.USER, ROLES.TRAINER].includes(role)) {
-      throw new AppError(400, "Invalid role for registration");
-    }
+   
+    const strategy = RegistrationStrategyFactory.getStrategy(data.role);
+    
+   
+    strategy.validateRole();
 
     const existing = await this._authRepo.findByEmail(
       data.email.toLowerCase().trim(),
@@ -50,8 +49,8 @@ export class AuthService implements IAuthService {
       throw new AppError(409, "Email already registered");
     }
 
-    const otpPurpose =
-      role === ROLES.TRAINER ? "TRAINER_REGISTER" : "USER_REGISTER";
+  
+    const otpPurpose = strategy.getOtpPurpose();
 
     await this._otpService.generateAndSendOtp({
       email: data.email,
@@ -70,24 +69,14 @@ export class AuthService implements IAuthService {
     });
   }
 
-  async register(data: RegisterDto): Promise<RegisterResponseDto> {
+   async register(data: RegisterDto): Promise<RegisterResponseDto> {
     console.log("The data from register service", data);
-    const role = data.role;
     const hashedPassword = await hashPassword(data.password);
 
     const normalizedEmail = data.email.toLowerCase().trim();
-    const baseUsername = normalizedEmail.split("@")[0];
 
-    if (!baseUsername) {
-      throw new AppError(400, "Invalid email format");
-    }
-
-    let userName = baseUsername;
-    let counter = 1;
-
-    while (await this._authRepo.findByUsername(userName)) {
-      userName = `${baseUsername} ${counter++}`;
-    }
+    // OCP: Username generation is now delegated to strategy
+    const userName = await this._usernameGenerator.generate(normalizedEmail);
 
     const user = await this._authRepo.create({
       name: data.name.trim(),
@@ -103,6 +92,7 @@ export class AuthService implements IAuthService {
 
     return AuthMapper.toRegisterResponse(user);
   }
+
 
   async login(data: LoginDto): Promise<{
     response: LoginResponseDto;

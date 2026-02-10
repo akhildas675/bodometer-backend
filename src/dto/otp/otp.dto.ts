@@ -2,7 +2,7 @@ import { OtpPurpose } from "../../constants/otp.constants";
 
 export interface GenerateOtpDto {
   email: string;
-  purpose: OtpPurpose;
+  purpose: OtpPurpose | string;
 }
 
 export interface VerifyOtpDto {
