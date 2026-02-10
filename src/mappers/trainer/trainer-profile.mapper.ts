@@ -1,4 +1,3 @@
-// mapper/trainer-profile.mapper.ts
 import { TrainerProfile, TrainerProfileDataInterface } from "../../interfaces/trainer/trainer.interface";
 import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
 
