@@ -4,6 +4,7 @@ import { httpLogger } from "./middleware/logger.middleware";
 import cors from 'cors'
 import routes from "./routes/routes";
 import cookieParser from "cookie-parser";
+import { errorHandler } from "./middleware/errorHandling";
 
 const app = express();
 
@@ -27,7 +28,11 @@ app.use(
 
 app.use(cookieParser());
 
+//routes
 routes(app);
+app.use(errorHandler)
+
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
