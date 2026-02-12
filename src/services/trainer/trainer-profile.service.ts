@@ -1,10 +1,11 @@
+import { MESSAGES } from "../../constants/messages";
+import { STATUS } from "../../constants/statuscode";
 import { VERIFICATION_STATUS } from "../../constants/verification.constants";
-import { ISessionService } from "../../interfaces/auth/session-service.interface";
 import { IS3Service } from "../../interfaces/s3/s3-service.interface";
 import { ITrainerProfileRepository } from "../../interfaces/trainer/trainer.profile-repository.interface";
 import { ITrainerProfileService } from "../../interfaces/trainer/trainer.profile-service.interface";
 import { AppError } from "../../utils/appError";
-import { S3Service } from "../s3/s3.service";
+
 
 export default class TrainerProfileService implements ITrainerProfileService {
   constructor(
@@ -23,7 +24,7 @@ export default class TrainerProfileService implements ITrainerProfileService {
     const existing = await this._trainerProfileRepo.findByUserId(userId);
 
     if (existing) {
-      throw new AppError(400, "Trainer profile already exists");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.TRAINER_PROFILE_EXISTS);
     }
 
     const certificateUrl = await this._s3Service.uploadFile(

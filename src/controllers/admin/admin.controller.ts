@@ -22,6 +22,7 @@ export class AdminController {
       console.log(users);
       res.status(STATUS.OK).json({
         success: true,
+        message:MESSAGES.USER.PROFILE_FETCHED,
         data: users,
       });
     } catch (error) {
@@ -39,7 +40,7 @@ export class AdminController {
 
       res.status(STATUS.OK).json({
         success: true,
-        message: MESSAGES.LOGIN.ACCOUNT_BLOCKED,
+        message: MESSAGES.ADMIN.USER_BLOCKED,
       });
     } catch (error) {
       next(error);
@@ -54,7 +55,7 @@ export class AdminController {
 
       res.status(STATUS.OK).json({
         success: true,
-        message:  MESSAGES.LOGIN.ACCOUNT_UNBLOCKED,
+        message:  MESSAGES.ADMIN.USER_UNBLOCKED,
       });
     } catch (error) {
       next(error);
@@ -70,6 +71,7 @@ export class AdminController {
       console.log(trainers);
       res.status(STATUS.OK).json({
         success: true,
+        message: MESSAGES.USER.PROFILE_FETCHED,
         data: trainers,
       });
     } catch (error) {
@@ -88,7 +90,7 @@ export class AdminController {
 
       res.status(STATUS.OK).json({
         success: true,
-        message:  MESSAGES.LOGIN.ACCOUNT_BLOCKED,
+        message:  MESSAGES.ADMIN.TRAINER_BLOCKED,
       });
     } catch (error) {
       next(error);
@@ -106,7 +108,7 @@ export class AdminController {
 
       res.status(STATUS.OK).json({
         success: true,
-        message:  MESSAGES.LOGIN.ACCOUNT_UNBLOCKED,
+        message:  MESSAGES.ADMIN.TRAINER_UNBLOCKED,
       });
     } catch (error) {
       next(error);
@@ -122,11 +124,11 @@ export class AdminController {
       console.log("body data", req.file);
 
       if (!workoutName || !workoutDescription) {
-        throw new AppError(STATUS.BAD_REQUEST, "Missing fields");
+        throw new AppError(STATUS.BAD_REQUEST,  MESSAGES.VALIDATION.REQUIRED_FIELD);
       }
 
       if (!file) {
-        throw new AppError(STATUS.BAD_REQUEST, "File missing");
+        throw new AppError(STATUS.BAD_REQUEST,  MESSAGES.VALIDATION.REQUIRED_FIELD);
       }
 
       const body: AddWorkoutDto = { workoutName, workoutDescription, file };
@@ -135,6 +137,7 @@ export class AdminController {
 
       res.status(STATUS.CREATED).json({
         success: true,
+        message: MESSAGES.ADMIN.EXERCISE_CREATED,
         data: result,
       });
     } catch (error) {
@@ -149,6 +152,7 @@ export class AdminController {
 
       res.status(STATUS.OK).json({
         success: true,
+        message: MESSAGES.COMMON.SUCCESS,
         data: WorkoutMapper.toResponseList(workouts),
       });
     } catch (error) {
@@ -167,7 +171,7 @@ export class AdminController {
 
     res.status(STATUS.OK).json({
       success: true,
-      message: "Trainer appointments fetched successfully",
+      message: MESSAGES.TRAINER.PROFILE_FETCHED,
       data: trainers,
     });
   };
@@ -176,14 +180,14 @@ export class AdminController {
     const { profileId } = req.params;
 
     if (!profileId) {
-      throw new AppError(400, "Profile ID is required");
+      throw new AppError(STATUS.BAD_REQUEST, "Profile ID is required");
     }
 
     const trainer = await this._adminService.getTrainerByProfileId(profileId);
 
     res.status(STATUS.OK).json({
       success: true,
-      message: "Trainer details fetched successfully",
+      message: MESSAGES.TRAINER.PROFILE_FETCHED,
       data: trainer,
     });
   };
@@ -192,7 +196,7 @@ export class AdminController {
     const { profileId } = req.params;
 
     if (!profileId) {
-      throw new AppError(400, "Profile ID is required");
+      throw new AppError(STATUS.BAD_REQUEST, "Profile ID is required");
     }
 
     const result = await this._adminService.approveTrainer(profileId);
@@ -209,11 +213,11 @@ export class AdminController {
     const { reason } = req.body;
 
     if (!profileId) {
-      throw new AppError(STATUS.BAD_REQUEST, "Profile ID is required");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.INVALID_ID);
     }
 
     if (!reason) {
-      throw new AppError(STATUS.BAD_REQUEST, "Rejection reason is required");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.REQUIRED_FIELD);
     }
 
     const result = await this._adminService.rejectTrainer(profileId, reason);

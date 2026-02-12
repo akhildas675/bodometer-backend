@@ -4,6 +4,7 @@ import { UpdateUserProfileDto } from "../../dto/user/user.dto";
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
 import { AuthRequest } from "../../middleware/authGuard";
+import { MESSAGES } from "../../constants/messages";
 
 export class UserController {
   constructor(private _userService: IUserService) {}
@@ -11,13 +12,13 @@ export class UserController {
   getUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       if (!req.user) {
-        throw new AppError(STATUS.UNAUTHORIZED, "User not authenticated");
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
       }
 
       const userId = req.user.id;
       const user = await this._userService.fetchUser(userId);
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
         data: user,
       });
@@ -33,7 +34,7 @@ export class UserController {
   ) => {
     try {
       if (!req.user) {
-        throw new AppError(STATUS.UNAUTHORIZED, "User not authenticated");
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
       }
 
       const userId = req.user.id;
@@ -44,9 +45,9 @@ export class UserController {
         updateData,
       );
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message: "Profile updated successfully",
+        message: MESSAGES.USER.PROFILE_UPDATED,
         data: updatedUser,
       });
     } catch (error) {
@@ -61,11 +62,11 @@ export class UserController {
   ) => {
     try {
       if (!req.user) {
-        throw new AppError(STATUS.UNAUTHORIZED, "User not authenticated");
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
       }
 
       if (!req.file) {
-        throw new AppError(STATUS.BAD_REQUEST, "No file uploaded");
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.REQUIRED_FIELD);
       }
 
       const userId = req.user.id;
@@ -76,9 +77,9 @@ export class UserController {
         file,
       );
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message: "Profile picture uploaded successfully",
+        message: MESSAGES.USER.PROFILE_PICTURE_UPDATED,
         data: {
           url: profilePicUrl,
         },

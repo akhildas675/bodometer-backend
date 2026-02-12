@@ -22,6 +22,7 @@ import { ITrainerProfileRepository } from "../../interfaces/trainer/trainer.prof
 import { IAuthRepository } from "../../interfaces/auth/auth-repository.interface";
 import { ISessionService } from "../../interfaces/auth/session-service.interface";
 import { IOtpService } from "../../interfaces/otp/otp-service.interface";
+import { MESSAGES } from "../../constants/messages";
 
 export class AuthService implements IAuthService {
   constructor(
@@ -35,11 +36,11 @@ export class AuthService implements IAuthService {
     const role = data.role;
 
     if (role == ROLES.ADMIN) {
-      throw new AppError(403, "Admin register is not allowed");
+      throw new AppError(STATUS.FORBIDDEN, MESSAGES.REGISTER.ADMIN_NOT_ALLOWED);
     }
 
     if (![ROLES.USER, ROLES.TRAINER].includes(role)) {
-      throw new AppError(400, "Invalid role for registration");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.REGISTER.INVALID_ROLE);
     }
 
     const existing = await this._authRepo.findByEmail(
@@ -47,7 +48,7 @@ export class AuthService implements IAuthService {
     );
 
     if (existing) {
-      throw new AppError(409, "Email already registered");
+      throw new AppError(STATUS.CONFLICT, MESSAGES.REGISTER.EMAIL_EXISTS);
     }
 
     const otpPurpose =
@@ -79,7 +80,7 @@ export class AuthService implements IAuthService {
     const baseUsername = normalizedEmail.split("@")[0];
 
     if (!baseUsername) {
-      throw new AppError(400, "Invalid email format");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.REGISTER.INVALID_EMAIL_FORMAT);
     }
 
     let userName = baseUsername;
@@ -113,13 +114,13 @@ export class AuthService implements IAuthService {
     );
 
     console.log("user on service....", user);
-    if (!user) throw new AppError(401, "Invalid credentials");
+    if (!user) throw new AppError(STATUS.BAD_REQUEST, MESSAGES.LOGIN.INVALID_CREDENTIALS);
 
     const match = await bcrypt.compare(data.password, user.password);
-    if (!match) throw new AppError(401, "Invalid credentials");
+    if (!match) throw new AppError(STATUS.BAD_REQUEST, MESSAGES.LOGIN.INVALID_CREDENTIALS);
 
     if (user.isBlocked) {
-      throw new AppError(STATUS.FORBIDDEN, "Account is blocked");
+      throw new AppError(STATUS.FORBIDDEN, MESSAGES.LOGIN.ACCOUNT_BLOCKED);
     }
 
     let trainerStatus:
@@ -172,8 +173,9 @@ export class AuthService implements IAuthService {
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 
     if (!GOOGLE_CLIENT_ID) {
-      throw new Error("GOOGLE_CLIENT_ID is not defined");
+      throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.COMMON.GOOGLE_CLIENT_ID_MISSING);
     }
+
 
     const ticket = await googleClient.verifyIdToken({
       idToken,
@@ -193,12 +195,12 @@ export class AuthService implements IAuthService {
     if (!user) {
       throw new AppError(
         STATUS.NOT_FOUND,
-        "No account found. Please register first.",
+        MESSAGES.REGISTER.NO_ACCOUNT_FOUND,
       );
     }
 
     if (user.isBlocked) {
-      throw new AppError(STATUS.FORBIDDEN, "Account is blocked");
+      throw new AppError(STATUS.FORBIDDEN, MESSAGES.LOGIN.ACCOUNT_BLOCKED);
     }
 
     const accessToken = Jwt.signAccess({
@@ -221,7 +223,7 @@ export class AuthService implements IAuthService {
 
   async refreshAccessToken(refreshToken: string): Promise<LoginResponseDto> {
     if (!refreshToken) {
-      throw new AppError(STATUS.UNAUTHORIZED, "Invalid refresh token");
+      throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.REFRESH_TOKEN_INVALID);
     }
 
     const userId =
@@ -238,20 +240,20 @@ export class AuthService implements IAuthService {
       refreshToken,
     );
     if (!isValid) {
-      throw new AppError(STATUS.UNAUTHORIZED, "Invalid refresh token");
+      throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.REFRESH_TOKEN_INVALID);
     }
 
     const sessionData = await this._sessionService.getUserSessionData(userId);
     if (!sessionData || sessionData.isBlocked) {
       throw new AppError(
         STATUS.FORBIDDEN,
-        "Account is blocked or session expired",
+        MESSAGES.LOGIN.SESSION_EXPIRED,
       );
     }
 
     const user = await this._authRepo.findById(userId);
     if (!user) {
-      throw new AppError(STATUS.UNAUTHORIZED, "User not found");
+      throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
     }
 
     const accessToken = Jwt.signAccess({
@@ -295,13 +297,13 @@ export class AuthService implements IAuthService {
     );
 
     if (!isVerified) {
-      throw new AppError(STATUS.FORBIDDEN, "OTP not verified");
+      throw new AppError(STATUS.FORBIDDEN, MESSAGES.OTP.OTP_NOT_VERIFIED);
     }
 
     const user = await this._authRepo.findByEmail(normalizedEmail);
 
     if (!user) {
-      throw new AppError(STATUS.NOT_FOUND, "User not found");
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.USER.USER_NOT_FOUND);
     }
 
     const hashedPassword = await hashPassword(data.password);

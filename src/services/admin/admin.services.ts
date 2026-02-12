@@ -1,4 +1,3 @@
-import { file } from "zod";
 import { STATUS } from "../../constants/statuscode";
 import {
   AddWorkoutDto,
@@ -14,11 +13,8 @@ import {
   TrainerMapper,
   WorkoutMapper,
 } from "../../mappers/admin/admin.mappers";
-
-import AdminRepository from "../../repositories/admin/admin.repository";
 import { AppError } from "../../utils/appError";
 import { Workout } from "../../interfaces/admin/admin.interface";
-import { S3Service } from "../s3/s3.service";
 import {
   ApproveTrainerResponseDto,
   GetTrainerAppointmentsResponseDto,
@@ -28,6 +24,7 @@ import {
 import { VERIFICATION_STATUS } from "../../constants/verification.constants";
 import { IAdminRepository } from "../../interfaces/admin/admin-repository.interface";
 import { IS3Service } from "../../interfaces/s3/s3-service.interface";
+import { MESSAGES } from "../../constants/messages";
 
 export class AdminService implements IAdminService {
   constructor(
@@ -45,7 +42,7 @@ export class AdminService implements IAdminService {
 
   async blockUser(userId: string): Promise<void> {
     if (!userId) {
-      throw new AppError(STATUS.BAD_REQUEST, "User ID required");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
     }
 
     await this._adminRepo.updateUserStatus(userId, true);
@@ -53,7 +50,7 @@ export class AdminService implements IAdminService {
 
   async unblockUser(userId: string): Promise<void> {
     if (!userId) {
-      throw new AppError(STATUS.BAD_REQUEST, "User ID required");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
     }
 
     await this._adminRepo.updateUserStatus(userId, false);
@@ -68,7 +65,7 @@ export class AdminService implements IAdminService {
 
   async blockTrainer(trainerId: string): Promise<void> {
     if (!trainerId) {
-      throw new AppError(STATUS.BAD_REQUEST, "Trainer ID required");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
     }
 
     await this._adminRepo.updateTrainerStatus(trainerId, true);
@@ -76,7 +73,7 @@ export class AdminService implements IAdminService {
 
   async unblockTrainer(trainerId: string): Promise<void> {
     if (!trainerId) {
-      throw new AppError(STATUS.BAD_REQUEST, "Trainer ID required");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
     }
 
     await this._adminRepo.updateTrainerStatus(trainerId, false);
@@ -109,7 +106,7 @@ export class AdminService implements IAdminService {
       return TrainerMapper.toDtoArray(trainers);
     } catch (error) {
       console.error("Error in getTrainerAppointments:", error);
-      throw new AppError(500, "Failed to fetch trainer appointments");
+      throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.ADMIN.APPOINTMENTS_FETCHED_FAILED);
     }
   }
 
@@ -120,14 +117,14 @@ export class AdminService implements IAdminService {
       const trainer = await this._adminRepo.getTrainerByProfileId(profileId);
 
       if (!trainer) {
-        throw new AppError(404, "Trainer not found");
+        throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND);
       }
 
       return TrainerMapper.toDetailDto(trainer);
     } catch (error) {
       console.error("Error in getTrainerByProfileId:", error);
       if (error instanceof AppError) throw error;
-      throw new AppError(500, "Failed to fetch trainer details");
+      throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.ADMIN.TRAINER_PROFILE_FETCHED_FAILED);
     }
   }
 
@@ -135,11 +132,11 @@ export class AdminService implements IAdminService {
     try {
       const profile = await this._adminRepo.findTrainerProfileById(profileId);
       if (!profile) {
-        throw new AppError(404, "Trainer profile not found");
+        throw new AppError(STATUS.NOT_FOUND, MESSAGES.ADMIN.TRAINER_PROFILE_FETCHED_FAILED );
       }
 
       if (profile.verificationStatus === VERIFICATION_STATUS.APPROVED) {
-        throw new AppError(404, "Trainer is already approved");
+        throw new AppError(STATUS.NOT_FOUND, MESSAGES.ADMIN.VERIFICATION_APPROVED_EXISTS);
       }
 
       const updatedProfile =
@@ -150,14 +147,14 @@ export class AdminService implements IAdminService {
         );
 
       if (!updatedProfile) {
-        throw new AppError(500, "Failed to approve trainer");
+        throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.ADMIN.VERIFICATION_APPROVED_FAILED);
       }
 
       return TrainerMapper.toApproveDto(updatedProfile);
     } catch (error) {
       console.error("Error in approveTrainer:", error);
       if (error instanceof AppError) throw error;
-      throw new AppError(500, "Failed to approve trainer");
+      throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.ADMIN.VERIFICATION_APPROVED_FAILED);
     }
   }
 
@@ -167,12 +164,12 @@ export class AdminService implements IAdminService {
   ): Promise<RejectTrainerResponseDto> {
     try {
       if (!reason || reason.trim().length === 0) {
-        throw new AppError(400, "Rejection reason is required");
+        throw new AppError(STATUS.BAD_REQUEST,MESSAGES.VALIDATION.REQUIRED_FIELD);
       }
 
       const profile = await this._adminRepo.findTrainerProfileById(profileId);
       if (!profile) {
-        throw new AppError(404, "Trainer profile not found");
+        throw new AppError(STATUS.NOT_FOUND, MESSAGES.ADMIN.TRAINER_PROFILE_NOT_FOUND);
       }
 
       const updatedProfile =
@@ -183,14 +180,14 @@ export class AdminService implements IAdminService {
         );
 
       if (!updatedProfile) {
-        throw new AppError(500, "Failed to reject trainer");
+        throw new AppError(STATUS.INTERNAL_ERROR,MESSAGES.ADMIN.TRAINER_FAILED_TO_REJECTED);
       }
 
       return TrainerMapper.toRejectDto(updatedProfile);
     } catch (error) {
       console.error("Error in rejectTrainer:", error);
       if (error instanceof AppError) throw error;
-      throw new AppError(500, "Failed to reject trainer");
+      throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.ADMIN.TRAINER_FAILED_TO_REJECTED);
     }
   }
 }
