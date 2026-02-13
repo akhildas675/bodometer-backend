@@ -6,7 +6,7 @@ import {
 import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
 
 export interface ITrainerProfileRepository
-  extends IBaseRepository<TrainerProfile, ITrainerProfileDocument>
+  extends IBaseRepository<TrainerProfileDataInterface, ITrainerProfileDocument>
 {
   findByUserId(userId: string): Promise<TrainerProfile | null>;
   createProfile(profile: TrainerProfileDataInterface): Promise<void>;

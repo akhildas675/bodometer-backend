@@ -6,11 +6,13 @@ import { redis } from "../../config/redis";
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
 import { Logger } from "../../utils/logger";
+import { MESSAGES } from "../../constants/messages";
 
 const logger = new Logger("AuthController");
 
+
 export class AuthController {
-  constructor(private _authService: IAuthService) { }
+  constructor(private _authService: IAuthService) {}
 
   //send OTP
   register = async (req: Request, res: Response, next: NextFunction) => {
@@ -25,9 +27,9 @@ export class AuthController {
 
       await this._authService.initiateRegister(body);
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message: "OTP sent to your email",
+        message: MESSAGES.OTP.SENT_SUCCESS,
         data: {
           email: body.email,
         },
@@ -51,9 +53,9 @@ export class AuthController {
 
       await this._authService.verifyOtp(data);
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message: "OTP verified successfully",
+        message: MESSAGES.OTP.VERIFIED_SUCCESS,
       });
     } catch (error) {
       next(error);
@@ -73,9 +75,9 @@ export class AuthController {
 
       await this._authService.resendOtp(data);
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message: "OTP resent successfully",
+        message: MESSAGES.OTP.RESENT_SUCCESS,
       });
     } catch (error) {
       next(error);
@@ -113,16 +115,16 @@ export class AuthController {
       );
 
       if (!verified) {
-        throw new AppError(STATUS.FORBIDDEN, "OTP not verified");
+        throw new AppError(STATUS.FORBIDDEN, MESSAGES.OTP.OTP_NOT_VERIFIED);
       }
 
       const user = await this._authService.register(body);
 
       await redis.del(redisKey);
 
-      res.status(201).json({
+      res.status(STATUS.CREATED).json({
         success: true,
-        message: "Registration completed",
+        message: MESSAGES.REGISTER.SUCCESS,
         data: user,
       });
     } catch (error) {
@@ -142,11 +144,10 @@ export class AuthController {
         sameSite: "strict",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
+      return res.status(STATUS.OK).json({
 
-      console.log("login response...",loginResponse)
-      return res.status(200).json({
         success: true,
-        message: "Login successful",
+        message: MESSAGES.LOGIN.SUCCESS,
         data: loginResponse,
       });
     } catch (err) {
@@ -162,10 +163,9 @@ export class AuthController {
 
       const result = await this._authService.forgotPassword({ email });
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message:
-          "If an account exists, a verification code has been sent to your email",
+        message: MESSAGES.PASSWORD.RESET_EMAIL_SENT,
         data: {
           role: result.role,
         },
@@ -180,14 +180,17 @@ export class AuthController {
       const refreshToken = req.cookies.refreshToken;
 
       if (!refreshToken) {
-        throw new AppError(STATUS.UNAUTHORIZED, "No refresh token provided");
+        throw new AppError(
+          STATUS.UNAUTHORIZED,
+          MESSAGES.TOKEN.REFRESH_TOKEN_MISSING,
+        );
       }
 
       const result = await this._authService.refreshAccessToken(refreshToken);
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message: "Token refreshed successfully",
+        message: MESSAGES.TOKEN.REFRESH_SUCCESS,
         data: result,
       });
     } catch (error) {
@@ -209,9 +212,9 @@ export class AuthController {
         sameSite: "strict",
       });
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message: "Logged out successfully",
+        message: MESSAGES.LOGIN.LOGOUT_SUCCESS,
       });
     } catch (error) {
       next(error);
@@ -223,14 +226,17 @@ export class AuthController {
       const { email, purpose } = req.body;
 
       if (purpose !== "FORGET_PASSWORD") {
-        throw new AppError(400, "Invalid reset purpose");
+        throw new AppError(
+          STATUS.BAD_REQUEST,
+          MESSAGES.PASSWORD.INVALID_RESET_PURPOSE,
+        );
       }
 
       await this._authService.resetPassword(email);
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message: "Password reset successful",
+        message: MESSAGES.PASSWORD.RESET_SUCCESS,
       });
     } catch (error) {
       next(error);
@@ -242,14 +248,17 @@ export class AuthController {
       const { idToken } = req.body;
 
       if (!idToken) {
-        throw new AppError(STATUS.BAD_REQUEST, "Google token is required");
+        throw new AppError(
+          STATUS.BAD_REQUEST,
+          MESSAGES.LOGIN.GOOGLE_TOKEN_REQUIRED,
+        );
       }
 
       const result = await this._authService.googleLogin({ idToken });
 
       res.status(STATUS.OK).json({
         success: true,
-        message: "Google login successful",
+        message: MESSAGES.LOGIN.GOOGLE_LOGIN_SUCCESS,
         data: result,
       });
     } catch (error) {

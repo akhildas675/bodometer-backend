@@ -2,6 +2,7 @@ import { NextFunction, Response } from "express";
 import { AuthRequest } from "../../middleware/authGuard";
 import { TrainerProfileMapper } from "../../mappers/trainer/trainer-profile.mapper";
 import { ITrainerProfileService } from "../../interfaces/trainer/trainer.profile-service.interface";
+import { STATUS } from "../../constants/statuscode";
 
 export default class TrainerProfileController {
   constructor(private _trainerProfileService: ITrainerProfileService) {}
@@ -29,7 +30,7 @@ export default class TrainerProfileController {
         certificateFile,
       });
 
-      return res.status(201).json(TrainerProfileMapper.toResponse());
+      return res.status(STATUS.CREATED).json(TrainerProfileMapper.toResponse());
     } catch (err) {
       next(err);
     }

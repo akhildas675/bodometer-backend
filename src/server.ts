@@ -5,12 +5,13 @@ import app from "./app";
 import { connectDB } from "./config/db";
 import { connectRedis } from "./config/redis";
 import { AppError } from "./utils/appError";
+import { STATUS } from "./constants/statuscode";
 
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
 if (!MONGO_URI) {
-  throw new AppError(400, "mongo uri error");
+  throw new AppError(STATUS.BAD_REQUEST, "mongo uri error");
 }
 
 const mongoUri: string = MONGO_URI;

@@ -23,7 +23,7 @@ export const validate =
         const firstError = errors[0];
         const topMessage = firstError?.message ?? "Validation error";
 
-        return res.status(400).json({
+        return res.status(STATUS.BAD_REQUEST).json({
           success: false,
           message: topMessage,
           errors,

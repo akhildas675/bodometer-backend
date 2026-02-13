@@ -1,3 +1,5 @@
+import { MESSAGES } from "../../constants/messages";
+import { STATUS } from "../../constants/statuscode";
 import { VERIFICATION_STATUS } from "../../constants/verification.constants";
 import { IS3Service } from "../../interfaces/s3/s3-service.interface";
 import { ITrainerProfileRepository } from "../../interfaces/trainer/trainer.profile-repository.interface";
@@ -23,7 +25,7 @@ export default class TrainerProfileService implements ITrainerProfileService {
     const existing = await this._trainerProfileRepo.findByUserId(userId);
 
     if (existing) {
-      throw new AppError(400, "Trainer profile already exists");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.TRAINER_PROFILE_EXISTS);
     }
 
     const certificateUrl = await this._s3Service.uploadFile(

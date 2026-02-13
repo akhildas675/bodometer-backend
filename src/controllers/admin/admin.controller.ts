@@ -9,6 +9,8 @@ import {
 import { AppError } from "../../utils/appError";
 import { WorkoutMapper } from "../../mappers/admin/admin.mappers";
 import { IAdminService } from "../../interfaces/admin/admin-service.interface";
+import { STATUS } from "../../constants/statuscode";
+import { MESSAGES } from "../../constants/messages";
 
 export class AdminController {
   constructor(private _adminService: IAdminService) {}
@@ -18,8 +20,9 @@ export class AdminController {
       const query = req.query as unknown as AdminGetUsersDto;
       const users = await this._adminService.fetchUsers(query);
       console.log(users);
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
+        message:MESSAGES.USER.PROFILE_FETCHED,
         data: users,
       });
     } catch (error) {
@@ -35,9 +38,9 @@ export class AdminController {
 
       await this._adminService.blockUser(userId);
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message: "User blocked successfully",
+        message: MESSAGES.ADMIN.USER_BLOCKED,
       });
     } catch (error) {
       next(error);
@@ -50,38 +53,30 @@ export class AdminController {
 
       await this._adminService.unblockUser(userId);
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message: "User unblocked successfully",
+        message:  MESSAGES.ADMIN.USER_UNBLOCKED,
       });
     } catch (error) {
       next(error);
     }
   };
 
-getTrainers = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    console.log("Get all trainers with pagination");
-    const query = req.query as unknown as AdminGetTrainersDto;
-    
-    if (query.page) query.page = Number(query.page);
-    if (query.limit) query.limit = Number(query.limit);
-    
-    console.log("Trainers query params", query);
-    const result = await this._adminService.fetchTrainers(query);
-    
-    console.log("Sending response:", result); 
-    
-    res.status(200).json({
-      success: true,
-      data: result.data,
-      pagination: result.pagination,
-    });
-  } catch (error) {
-    console.error("Error in getTrainers:", error); 
-    next(error);
-  }
-};
+  getTrainers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      console.log("function worked get all trianers");
+      const body = req.body as AdminGetTrainersDto;
+      console.log("Trainers id from body", body);
+      const trainers = await this._adminService.fetchTrainers(body);
+      console.log(trainers);
+      res.status(200).json({
+        success: true,
+        data: trainers,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
   blockTrainer = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -92,9 +87,9 @@ getTrainers = async (req: Request, res: Response, next: NextFunction) => {
 
       await this._adminService.blockTrainer(trainerId);
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message: "Trainer blocked successfully",
+        message:  MESSAGES.ADMIN.TRAINER_BLOCKED,
       });
     } catch (error) {
       next(error);
@@ -110,9 +105,9 @@ getTrainers = async (req: Request, res: Response, next: NextFunction) => {
 
       await this._adminService.unblockTrainer(trainerId);
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
-        message: "Trainer unblocked successfully",
+        message:  MESSAGES.ADMIN.TRAINER_UNBLOCKED,
       });
     } catch (error) {
       next(error);
@@ -128,19 +123,20 @@ getTrainers = async (req: Request, res: Response, next: NextFunction) => {
       console.log("body data", req.file);
 
       if (!workoutName || !workoutDescription) {
-        throw new AppError(400, "Missing fields");
+        throw new AppError(STATUS.BAD_REQUEST,  MESSAGES.VALIDATION.REQUIRED_FIELD);
       }
 
       if (!file) {
-        throw new AppError(400, "File missing");
+        throw new AppError(STATUS.BAD_REQUEST,  MESSAGES.VALIDATION.REQUIRED_FIELD);
       }
 
       const body: AddWorkoutDto = { workoutName, workoutDescription, file };
 
       const result = await this._adminService.workoutAdd(body);
 
-      res.status(201).json({
+      res.status(STATUS.CREATED).json({
         success: true,
+        message: MESSAGES.ADMIN.EXERCISE_CREATED,
         data: result,
       });
     } catch (error) {
@@ -153,8 +149,9 @@ getTrainers = async (req: Request, res: Response, next: NextFunction) => {
       const workouts = await this._adminService.fetchWorkouts();
       console.log(workouts);
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
+        message: MESSAGES.COMMON.SUCCESS,
         data: WorkoutMapper.toResponseList(workouts),
       });
     } catch (error) {
@@ -171,9 +168,9 @@ getTrainers = async (req: Request, res: Response, next: NextFunction) => {
   ) => {
     const trainers = await this._adminService.getTrainerAppointments();
 
-    res.status(200).json({
+    res.status(STATUS.OK).json({
       success: true,
-      message: "Trainer appointments fetched successfully",
+      message: MESSAGES.TRAINER.PROFILE_FETCHED,
       data: trainers,
     });
   };
@@ -182,14 +179,14 @@ getTrainers = async (req: Request, res: Response, next: NextFunction) => {
     const { profileId } = req.params;
 
     if (!profileId) {
-      throw new AppError(400, "Profile ID is required");
+      throw new AppError(STATUS.BAD_REQUEST, "Profile ID is required");
     }
 
     const trainer = await this._adminService.getTrainerByProfileId(profileId);
 
-    res.status(200).json({
+    res.status(STATUS.OK).json({
       success: true,
-      message: "Trainer details fetched successfully",
+      message: MESSAGES.TRAINER.PROFILE_FETCHED,
       data: trainer,
     });
   };
@@ -198,12 +195,12 @@ getTrainers = async (req: Request, res: Response, next: NextFunction) => {
     const { profileId } = req.params;
 
     if (!profileId) {
-      throw new AppError(400, "Profile ID is required");
+      throw new AppError(STATUS.BAD_REQUEST, "Profile ID is required");
     }
 
     const result = await this._adminService.approveTrainer(profileId);
 
-    res.status(200).json({
+    res.status(STATUS.OK).json({
       success: true,
       message: result.message,
       data: result.profile,
@@ -215,19 +212,20 @@ getTrainers = async (req: Request, res: Response, next: NextFunction) => {
     const { reason } = req.body;
 
     if (!profileId) {
-      throw new AppError(400, "Profile ID is required");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.INVALID_ID);
     }
 
     if (!reason) {
-      throw new AppError(400, "Rejection reason is required");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.REQUIRED_FIELD);
     }
 
     const result = await this._adminService.rejectTrainer(profileId, reason);
 
-    res.status(200).json({
+    res.status(STATUS.OK).json({
       success: true,
       message: result.message,
       data: result.profile,
     });
   };
 }
+

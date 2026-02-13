@@ -8,6 +8,7 @@ import { UserMapper } from "../../mappers/user/user.mappers";
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
 import { IS3Service } from "../../interfaces/s3/s3-service.interface";
+import { MESSAGES } from "../../constants/messages";
 
 export class UserService implements IUserService {
   constructor(
@@ -19,7 +20,7 @@ export class UserService implements IUserService {
     const user = await this._userRepo.findById(userId);
 
     if (!user) {
-      throw new AppError(STATUS.NOT_FOUND, "User not found");
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.USER.USER_NOT_FOUND);
     }
 
     return UserMapper.toFindUserResponse(user);
@@ -38,14 +39,14 @@ export class UserService implements IUserService {
       throw new AppError(STATUS.BAD_REQUEST, "Please select a valid gender");
     }
     if (!updateData.dateOfBirth) {
-      throw new AppError(STATUS.BAD_REQUEST, "Please select the date of birth");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.COMMON.SELECT_CORRECT_DOB);
     }
 
     const dob = new Date(updateData.dateOfBirth);
     const today = new Date();
 
     const limitDate = new Date(
-      today.getFullYear() - 15,
+      today.getFullYear() - 18,
       today.getMonth(),
       today.getDate(),
     );
@@ -53,14 +54,14 @@ export class UserService implements IUserService {
     if (dob > limitDate) {
       throw new AppError(
         STATUS.BAD_REQUEST,
-        "You must be at least 15 years old",
+        MESSAGES.USER.AGE_RESTRICTION,
       );
     }
 
     const updatedUser = await this._userRepo.updateProfile(userId, updateData);
 
     if (!updatedUser) {
-      throw new AppError(STATUS.NOT_FOUND, "User not found");
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.USER.USER_NOT_FOUND);
     }
 
     return UserMapper.toFindUserResponse(updatedUser);
@@ -72,7 +73,7 @@ export class UserService implements IUserService {
   ): Promise<string> {
     const user = await this._userRepo.findById(userId);
     if (!user) {
-      throw new AppError(STATUS.NOT_FOUND, "User not found");
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.USER.USER_NOT_FOUND);
     }
 
     if (user.profilePic) {

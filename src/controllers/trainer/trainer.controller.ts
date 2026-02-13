@@ -22,7 +22,7 @@ export class TrainerController {
       const trainerId = req.user.id;
       const trainer = await this._trainerService.fetchTrainer(trainerId)
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
         data: trainer,
       });
@@ -47,7 +47,7 @@ export class TrainerController {
 
       const updatedTrainer = await this._trainerService.updateTrainerProfile(trainerId,updateData)
 
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
         message: "Profile updated successfully",
         data: updatedTrainer,
@@ -80,7 +80,7 @@ export class TrainerController {
           file,
         );
   
-        res.status(200).json({
+        res.status(STATUS.OK).json({
           success: true,
           message: "Trainer Profile picture uploaded successfully",
           data: {
@@ -92,10 +92,11 @@ export class TrainerController {
       }
     };
 
-  getWorkoutList = async (req: Request, res: Response, next: NextFunction) => {
+
+  getWorkoutList = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const workoutList = await this._trainerService.fetchWorkoutList();
-      res.status(200).json({
+      res.status(STATUS.OK).json({
         success: true,
         data: workoutList,
       });

@@ -4,12 +4,13 @@ import { STATUS } from "../../../constants/statuscode";
 import { generateOtp } from "../../../utils/generateOtp";
 import { OtpPurpose } from "../../../constants/otp.constants";
 import { IOtpService } from "../../../interfaces/otp/otp-service.interface";
-
 import {
   GenerateOtpPayload,
   VerifyOtpPayload,
 } from "../../../interfaces/otp/otp.interface";
 import { IMailService } from "../../../interfaces/otp/mail-service.interface";
+import { MESSAGES } from "../../../constants/messages";
+
 
 export class OtpService implements IOtpService {
   constructor(private _mailService: IMailService) {}
@@ -48,7 +49,7 @@ export class OtpService implements IOtpService {
     console.log("Stored Otp", storedOtp);
 
     if (!storedOtp) {
-      throw new AppError(STATUS.BAD_REQUEST, "OTP expired or not found");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.OTP.INVALID_OTP);
     }
 
     const attempts = await redis.incr(attemptsKey);
@@ -56,11 +57,11 @@ export class OtpService implements IOtpService {
     if (attempts > this.MAX_ATTEMPTS) {
       await redis.del(otpKey);
       await redis.del(attemptsKey);
-      throw new AppError(STATUS.TOO_MANY_REQUESTS, "Too many invalid attempts");
+      throw new AppError(STATUS.TOO_MANY_REQUESTS, MESSAGES.OTP.TOO_MANY_OTP_REQUESTS);
     }
 
     if (storedOtp !== otp) {
-      throw new AppError(STATUS.BAD_REQUEST, "Invalid OTP");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.OTP.INVALID_OTP);
     }
 
     await redis.set(verifiedKey, "true", "EX", 10 * 60);
