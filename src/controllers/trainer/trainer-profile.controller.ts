@@ -1,8 +1,9 @@
 import { NextFunction, Response } from "express";
 import { AuthRequest } from "../../middleware/authGuard";
-import { TrainerProfileMapper } from "../../mappers/trainer/trainer-profile.mapper";
 import { ITrainerProfileService } from "../../interfaces/trainer/trainer.profile-service.interface";
 import { STATUS } from "../../constants/statuscode";
+import { MESSAGES } from "../../constants/messages";
+import { AppError } from "../../utils/appError";
 
 export default class TrainerProfileController {
   constructor(private _trainerProfileService: ITrainerProfileService) {}
@@ -14,14 +15,14 @@ export default class TrainerProfileController {
   ) => {
     try {
       if (!req.user) {
-        throw new Error("User not found");
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
       }
 
       const { experienceInYears, bio } = req.body;
       const certificateFile = req.file;
 
       if (!certificateFile) {
-        throw new Error("Certificate file missing");
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.CERTIFICATE_REQUIRED); 
       }
 
       await this._trainerProfileService.createProfile(req.user.id, {
@@ -30,7 +31,10 @@ export default class TrainerProfileController {
         certificateFile,
       });
 
-      return res.status(STATUS.CREATED).json(TrainerProfileMapper.toResponse());
+      return res.status(STATUS.CREATED).json({
+        success: true,
+        message: MESSAGES.TRAINER.PROFILE_CREATED,
+      });
     } catch (err) {
       next(err);
     }
