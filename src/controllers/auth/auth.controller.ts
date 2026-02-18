@@ -225,6 +225,8 @@ export class AuthController {
     try {
       const { email, purpose } = req.body;
 
+      console.log("email from forget password",email,purpose)
+
       if (purpose !== "FORGET_PASSWORD") {
         throw new AppError(
           STATUS.BAD_REQUEST,
@@ -232,7 +234,7 @@ export class AuthController {
         );
       }
 
-      await this._authService.resetPassword(email);
+      await this._authService.resetPassword(req.body);
 
       res.status(STATUS.OK).json({
         success: true,

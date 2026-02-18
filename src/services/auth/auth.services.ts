@@ -289,7 +289,9 @@ export class AuthService implements IAuthService {
   }
 
   async resetPassword(data: ResetPasswordDto): Promise<void> {
-    const normalizedEmail = data.email.toLowerCase().trim();
+    const normalizedEmail = data.email.toLowerCase().trim()
+
+    console.log("normalized email",normalizedEmail,"data",data)
 
     const isVerified = await this._sessionService.isOtpVerified(
       "FORGET_PASSWORD",
@@ -306,6 +308,12 @@ export class AuthService implements IAuthService {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.USER.USER_NOT_FOUND);
     }
 
+    const match = await bcrypt.compare(data.password,user.password);
+
+    if(match){
+      throw new AppError(STATUS.BAD_REQUEST,MESSAGES.PASSWORD.NEW_PASSWORD_SAME_AS_OLD)
+    }
+  
     const hashedPassword = await hashPassword(data.password);
 
     await this._authRepo.updatePassword(user.id!, hashedPassword);

@@ -58,6 +58,7 @@ export interface ForgotPasswordResponseDto {
 
 export interface ResetPasswordDto {
   email: string;
+  purpose:OtpPurpose;
   password: string;
 }
 
