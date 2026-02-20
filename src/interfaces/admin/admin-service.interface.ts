@@ -16,7 +16,7 @@ import {
 import { Workout } from "./admin.interface";
 
 export interface IAdminService {
-  fetchUsers(query: AdminGetUsersDto): Promise<AdminGetUsersResponseDto[]>;
+  fetchUsers(query: AdminGetUsersDto): Promise<PaginatedResponseDto<AdminGetUsersResponseDto>>;
   blockUser(userId: string): Promise<void>;
   unblockUser(userId: string): Promise<void>;
   fetchTrainers(

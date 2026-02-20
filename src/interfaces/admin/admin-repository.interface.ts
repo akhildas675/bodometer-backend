@@ -11,7 +11,7 @@ import {
 } from "./admin.interface";
 
 export interface IAdminRepository {
-  findUsers(query: AdminGetUsersDto): Promise<AdminUserInterface[]>;
+  findUsers(query: AdminGetUsersDto): Promise<{users:AdminUserInterface[];total:number}>;
   updateUserStatus(userId: string, isBlocked: boolean): Promise<void>;
   findTrainers(
     query: AdminGetTrainersDto

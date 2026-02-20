@@ -3,7 +3,6 @@ import {
   AddWorkoutDto,
   AdminBlockUnBlockDto,
   AdminBlockUnblockTrainerDto,
-  AdminGetTrainersDto,
   AdminGetUsersDto,
 } from "../../dto/admin/admin.dto";
 import { AppError } from "../../utils/appError";
@@ -18,12 +17,13 @@ export class AdminController {
   getUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const query = req.query as unknown as AdminGetUsersDto;
-      const users = await this._adminService.fetchUsers(query);
-      console.log(users);
+      const data = await this._adminService.fetchUsers(query);
+   
       res.status(STATUS.OK).json({
         success: true,
         message:MESSAGES.USER.PROFILE_FETCHED,
-        data: users,
+        data:data.data,
+        pagination:data.pagination
       });
     } catch (error) {
       next(error);
@@ -64,14 +64,14 @@ export class AdminController {
 
   getTrainers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log("function worked get all trianers");
-      const body = req.body as AdminGetTrainersDto;
-      console.log("Trainers id from body", body);
-      const trainers = await this._adminService.fetchTrainers(body);
-      console.log(trainers);
+
+      console.log("Trainers from body", req.query);
+      const data = await this._adminService.fetchTrainers(req.query);
+      console.log("Get trainers...",data);
       res.status(200).json({
         success: true,
-        data: trainers,
+        data:data.data,
+        pagination:data.pagination
       });
     } catch (error) {
       next(error);
@@ -147,7 +147,7 @@ export class AdminController {
   getWorkout = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const workouts = await this._adminService.fetchWorkouts();
-      console.log(workouts);
+      // console.log(workouts);
 
       res.status(STATUS.OK).json({
         success: true,

@@ -35,10 +35,25 @@ export class AdminService implements IAdminService {
 
   async fetchUsers(
     query: AdminGetUsersDto,
-  ): Promise<AdminGetUsersResponseDto[]> {
-    const users = await this._adminRepo.findUsers(query);
+  ): Promise<PaginatedResponseDto<AdminGetUsersResponseDto>> {
+    const { users, total } = await this._adminRepo.findUsers(query);
 
-    return AdminAccountMapper.toResponseList(users);
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: AdminAccountMapper.toResponseList(users),
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems: total,
+        itemsPerPage: limit,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+
+    }
   }
 
   async blockUser(userId: string): Promise<void> {
@@ -58,26 +73,26 @@ export class AdminService implements IAdminService {
   }
 
   async fetchTrainers(
-  query: AdminGetTrainersDto,
-): Promise<PaginatedResponseDto<AdminGetTrainersResponseDto>> {
-  const { trainers, total } = await this._adminRepo.findTrainers(query);
-  
-  const page = query.page || 1;
-  const limit = query.limit || 10;
-  const totalPages = Math.ceil(total / limit);
+    query: AdminGetTrainersDto,
+  ): Promise<PaginatedResponseDto<AdminGetTrainersResponseDto>> {
+    const { trainers, total } = await this._adminRepo.findTrainers(query);
 
-  return {
-    data: AdminAccountMapper.toResponseList(trainers),
-    pagination: {
-      currentPage: page,
-      totalPages,
-      totalItems: total,
-      itemsPerPage: limit,
-      hasNextPage: page < totalPages,
-      hasPreviousPage: page > 1,
-    },
-  };
-}
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: AdminAccountMapper.toResponseList(trainers),
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems: total,
+        itemsPerPage: limit,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    };
+  }
 
   async blockTrainer(trainerId: string): Promise<void> {
     if (!trainerId) {
@@ -148,7 +163,7 @@ export class AdminService implements IAdminService {
     try {
       const profile = await this._adminRepo.findTrainerProfileById(profileId);
       if (!profile) {
-        throw new AppError(STATUS.NOT_FOUND, MESSAGES.ADMIN.TRAINER_PROFILE_FETCHED_FAILED );
+        throw new AppError(STATUS.NOT_FOUND, MESSAGES.ADMIN.TRAINER_PROFILE_FETCHED_FAILED);
       }
 
       if (profile.verificationStatus === VERIFICATION_STATUS.APPROVED) {
@@ -180,7 +195,7 @@ export class AdminService implements IAdminService {
   ): Promise<RejectTrainerResponseDto> {
     try {
       if (!reason || reason.trim().length === 0) {
-        throw new AppError(STATUS.BAD_REQUEST,MESSAGES.VALIDATION.REQUIRED_FIELD);
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.REQUIRED_FIELD);
       }
 
       const profile = await this._adminRepo.findTrainerProfileById(profileId);
@@ -196,7 +211,7 @@ export class AdminService implements IAdminService {
         );
 
       if (!updatedProfile) {
-        throw new AppError(STATUS.INTERNAL_ERROR,MESSAGES.ADMIN.TRAINER_FAILED_TO_REJECTED);
+        throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.ADMIN.TRAINER_FAILED_TO_REJECTED);
       }
 
       return TrainerMapper.toRejectDto(updatedProfile);

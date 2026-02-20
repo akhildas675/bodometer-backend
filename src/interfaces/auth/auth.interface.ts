@@ -15,7 +15,7 @@ export interface UserInterface {
   isVerified:boolean;
   dateOfBirth?: Date | null;
   isBlocked: boolean;
-  createdAt?: Date;
+  createdAt?: Date | string;
   updatedAt?: Date;
 }
 

@@ -41,7 +41,7 @@ export default class AdminRepository
   }
 
   // User management
-  async findUsers(query: AdminGetUsersDto): Promise<AdminUserInterface[]> {
+  async findUsers(query: AdminGetUsersDto): Promise<{users:AdminUserInterface[];total:number}> {
 
     const filter: Record<string, unknown> = { role: ROLES.USER };
 
@@ -61,11 +61,21 @@ export default class AdminRepository
     sort.createdAt = -1; 
   }
 
+  //pagination
+  const page = query.page || 1;
+  const limit = query.limit ||10;
+  const skip = (page-1)*limit;
+
+  const total = await UserModel.countDocuments({role:"user"})
+
   const docs = await UserModel.find(filter)
     .select("-password")
-    .sort(sort);
+    .sort(sort)
+    .skip(skip)
+    .limit(limit);
     
-    return docs.map((doc) => this.toInterface(doc));
+    const users= docs.map((doc) => this.toInterface(doc));
+    return {users,total};
   }
 
   async updateUserStatus(userId: string, isBlocked: boolean): Promise<void> {
@@ -101,7 +111,9 @@ export default class AdminRepository
   const skip = (page - 1) * limit;
 
   // total count pagination
-  const total = await UserModel.countDocuments(filter);
+  const total = await UserModel.countDocuments({role:"trainer"})
+
+ 
 
   // pagination
   const docs = await UserModel.find(filter)
