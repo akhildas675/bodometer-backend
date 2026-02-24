@@ -8,13 +8,24 @@ export interface TrainerWorkoutList {
   workoutName: string;
 }
 
-export interface TrainerProfileInterface extends UserProfile{}
+export interface TrainerProfileInterface extends UserProfile { };
+
+
+export interface TrainerProfileRequest {
+  experienceInYears: number;
+  bio: string;
+  certificateFile: Express.Multer.File;
+}
 
 
 export interface TrainerProfile {
   userId: string;
   verificationStatus: VerificationStatus;
   rejectionReason?: string | null;
+  experienceInYears: number,
+  certifications: string[],
+  bio: string;
+  applyCount: number;
 }
 
 export interface TrainerProfileDataInterface {
@@ -24,6 +35,7 @@ export interface TrainerProfileDataInterface {
   bio: string;
   verificationStatus: VerificationStatus;
   rejectionReason?: string | null;
+  applyCount:number
 }
 
 export interface PopulatedTrainerProfile extends Omit<ITrainerProfileDocument, 'userId'> {
@@ -33,4 +45,16 @@ export interface PopulatedTrainerProfile extends Omit<ITrainerProfileDocument, '
 export interface ITrainerWithProfile {
   user: IUserDocument;
   profile: ITrainerProfileDocument;
+}
+
+export interface TrainerStatusResponse {
+  name: string;
+  verificationStatus: VerificationStatus
+  rejectionReason?: string | null
+}
+
+export interface ReapplyTrainerData {
+  experienceInYears: number;
+  certifications: string[];
+  bio: string;
 }

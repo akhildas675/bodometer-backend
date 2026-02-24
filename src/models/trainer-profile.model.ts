@@ -12,6 +12,7 @@ export interface ITrainerProfileDocument extends Document {
     rejectionReason?: string | null;
     createdAt: Date;
     updatedAt: Date;
+    applyCount:number;
 }
 const TrainerProfileSchema = new Schema<ITrainerProfileDocument>(
     {
@@ -54,6 +55,9 @@ const TrainerProfileSchema = new Schema<ITrainerProfileDocument>(
             type: String,
             default: null,
         },
+        applyCount:{ 
+            type: Number,
+            default: 1 }
     },
     { timestamps: true }
 );

@@ -11,7 +11,7 @@ const app = express();
 
 // app.use(httpLogger);
 
-
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

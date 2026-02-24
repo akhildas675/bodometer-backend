@@ -1,4 +1,5 @@
 import { Gender } from "../../constants/identity.constants";
+import { VerificationStatus } from "../../constants/verification.constants";
 import { FindUserResponseDto } from "../user/user.dto";
 
 export interface WorkoutListDto {
@@ -132,3 +133,8 @@ export interface FindTrainerResponseDto {
   dateOfBirth: Date | null;
 }
 
+export interface TrainerStatusResponseDto{
+  name:string,
+  verificationStatus:VerificationStatus,
+  rejectionReason?:string | null,
+}

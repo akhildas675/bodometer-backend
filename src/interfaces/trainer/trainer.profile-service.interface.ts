@@ -1,10 +1,12 @@
+import { Role } from "../../constants/identity.constants";
+import { TrainerStatusResponseDto } from "../../dto/trainer/trainer.dto";
+import { TrainerProfileRequest } from "./trainer.interface";
+
 export interface ITrainerProfileService {
   createProfile(
     userId: string,
-    data: {
-      experienceInYears: number;
-      bio: string;
-      certificateFile: Express.Multer.File;
-    }
+    data:TrainerProfileRequest
   ): Promise<void>;
+
+  getTrainerStatus(userId:string):Promise<TrainerStatusResponseDto>
 }

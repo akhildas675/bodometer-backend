@@ -25,8 +25,10 @@ trainerRoute.get(
   TRAINER_ROUTES.GET_TRAINER_PROFILE, authGuard(["trainer"]), trainerController.getTrainer
 );
 
-trainerRoute.put(TRAINER_ROUTES.TRAINER_PROFILE_UPDATE,authGuard(["trainer"]),trainerController.updateProfile)
+trainerRoute.put(TRAINER_ROUTES.TRAINER_PROFILE_UPDATE, authGuard(["trainer"]), trainerController.updateProfile)
 
-trainerRoute.post(TRAINER_ROUTES.TRAINER_PROFILE_PICTURE_UPDATE,imageUpload.single("file"),authGuard(["trainer"]),trainerController.uploadProfilePicture)
+trainerRoute.post(TRAINER_ROUTES.TRAINER_PROFILE_PICTURE_UPDATE, imageUpload.single("file"), authGuard(["trainer"]), trainerController.uploadProfilePicture)
+
+trainerRoute.get("/trainer/profile/status",authGuard(["trainer"]),trainerProfileController.getProfileStatus)
 
 export default trainerRoute;
