@@ -7,6 +7,7 @@ import { IAdminRepository } from "../../interfaces/admin/admin-repository.interf
 import {
   AdminTrainerInterface,
   AdminUserInterface,
+  PaginationMeta,
   Workout,
 } from "../../interfaces/admin/admin.interface";
 import {
@@ -166,37 +167,94 @@ export default class AdminRepository
   }
 
   // Trainer profile management
-  async getAllTrainersWithProfiles(): Promise<ITrainerWithProfile[]> {
-    try {
-      const trainerProfiles = await TrainerProfileModel.find()
-        .populate<{ userId: IUserDocument }>({
-          path: "userId",
-          select:
-            "_id name userName email phoneNumber profilePic gender role isVerified dateOfBirth isBlocked createdAt updatedAt",
-        })
-        .lean<PopulatedTrainerProfile[]>();
+async getAllTrainersWithProfiles(
+  search?: string,
+  sortBy?: string,
+  sortOrder?: 'asc' | 'desc',
+  page?: number,
+  limit?: number,
+  status?: string
+): Promise<{ data: ITrainerWithProfile[]; pagination: PaginationMeta }> {
+  try {
+    const pageNum = page || 1;
+    const limitNum = limit || 10;
+    const skip = (pageNum - 1) * limitNum;
 
-      const trainersWithProfiles: ITrainerWithProfile[] = trainerProfiles.map(
-        (profile) => {
-          const { userId, ...profileData } = profile;
+    // Build match filter for verificationStatus
+    const profileFilter: Record<string, any> = {};
+    if (status) profileFilter.verificationStatus = status;
 
-          return {
-            user: userId,
-            profile: {
-              ...profileData,
-              userId: userId._id,
-            } as ITrainerProfileDocument,
-          };
+    // We need to filter by search on user fields, so use aggregation
+    const pipeline: any[] = [
+      { $match: profileFilter },
+      {
+        $lookup: {
+          from: 'users', // your users collection name
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
         },
-      );
+      },
+      { $unwind: '$userId' },
+    ];
 
-      return trainersWithProfiles;
-    } catch (error) {
-      console.error("Error in getAllTrainersWithProfiles:", error);
-      throw error;
+    // Search filter on user name or email
+    if (search) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { 'userId.name': { $regex: search, $options: 'i' } },
+            { 'userId.email': { $regex: search, $options: 'i' } },
+          ],
+        },
+      });
     }
-  }
 
+    // Sort
+    if (sortBy) {
+      const sortField = ['name', 'email'].includes(sortBy)
+        ? `userId.${sortBy}`
+        : sortBy;
+      pipeline.push({ $sort: { [sortField]: sortOrder === 'desc' ? -1 : 1 } });
+    } else {
+      pipeline.push({ $sort: { createdAt: -1 } });
+    }
+
+    // Count total before pagination
+    const countPipeline = [...pipeline, { $count: 'total' }];
+    const countResult = await TrainerProfileModel.aggregate(countPipeline);
+    const totalItems = countResult[0]?.total || 0;
+
+    // Paginate
+    pipeline.push({ $skip: skip }, { $limit: limitNum });
+
+    const trainerProfiles = await TrainerProfileModel.aggregate(pipeline);
+
+    const data: ITrainerWithProfile[] = trainerProfiles.map((profile) => {
+      const { userId, ...profileData } = profile;
+      return {
+        user: userId,
+        profile: {
+          ...profileData,
+          userId: userId._id,
+        } as ITrainerProfileDocument,
+      };
+    });
+
+    return {
+      data,
+      pagination: {
+        currentPage: pageNum,
+        totalPages: Math.ceil(totalItems / limitNum),
+        totalItems,
+        itemsPerPage: limitNum,
+      },
+    };
+  } catch (error) {
+    console.error('Error in getAllTrainersWithProfiles:', error);
+    throw error;
+  }
+}
   async getTrainerByProfileId(
     profileId: string,
   ): Promise<ITrainerWithProfile | null> {

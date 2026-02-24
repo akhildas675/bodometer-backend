@@ -60,7 +60,7 @@ adminRoute.get(
 );
 
 // Trainer Appointment Management
-adminRoute.post(
+adminRoute.get(
   ADMIN_ROUTES.GET_TRAINER_APPOINTMENTS,
   authGuard(["admin"]),
   adminController.getTrainerAppointments,

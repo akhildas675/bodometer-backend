@@ -7,6 +7,7 @@ import { ITrainerWithProfile } from "../trainer/trainer.interface";
 import {
   AdminTrainerInterface,
   AdminUserInterface,
+  PaginatedResult,
   Workout,
 } from "./admin.interface";
 
@@ -20,8 +21,14 @@ export interface IAdminRepository {
   createWorkout(body: Workout): Promise<Workout>;
   getAllWorkouts(): Promise<Workout[]>;
 
-  getAllTrainersWithProfiles(): Promise<ITrainerWithProfile[]>;
-
+getAllTrainersWithProfiles(
+  search?: string,
+  sortBy?: string,
+  sortOrder?: 'asc' | 'desc',
+  page?: number,
+  limit?: number,
+  status?: string
+): Promise<PaginatedResult<ITrainerWithProfile>>;
   getTrainerByProfileId(userId: string): Promise<ITrainerWithProfile | null>;
 
   updateTrainerVerificationStatus(

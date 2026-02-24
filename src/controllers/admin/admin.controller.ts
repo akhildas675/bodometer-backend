@@ -161,20 +161,36 @@ export class AdminController {
 
   //trainer appointment
 
-  getTrainerAppointments = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    const trainers = await this._adminService.getTrainerAppointments();
+getTrainerAppointments = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const {
+    search,
+    sortBy,
+    sortOrder,
+    page,
+    limit,
+    status,
+  } = req.query;
 
-    res.status(STATUS.OK).json({
-      success: true,
-      message: MESSAGES.TRAINER.PROFILE_FETCHED,
-      data: trainers,
-    });
-  };
+  const result = await this._adminService.getTrainerAppointments(
+    search as string | undefined,
+    sortBy as string | undefined,
+    (sortOrder as 'asc' | 'desc') || 'asc',
+    page ? Number(page) : undefined,
+    limit ? Number(limit) : undefined,
+    status as string | undefined
+  );
 
+  res.status(STATUS.OK).json({
+    success: true,
+    message: MESSAGES.TRAINER.PROFILE_FETCHED,
+    data: result.data,
+    pagination: result.pagination,
+  });
+};
   getTrainerById = async (req: Request, res: Response, next: NextFunction) => {
     const { profileId } = req.params;
 

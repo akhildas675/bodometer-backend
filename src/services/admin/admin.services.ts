@@ -15,7 +15,7 @@ import {
   WorkoutMapper,
 } from "../../mappers/admin/admin.mappers";
 import { AppError } from "../../utils/appError";
-import { Workout } from "../../interfaces/admin/admin.interface";
+import { PaginatedResult, Workout } from "../../interfaces/admin/admin.interface";
 import {
   ApproveTrainerResponseDto,
   GetTrainerAppointmentsResponseDto,
@@ -131,15 +131,32 @@ export class AdminService implements IAdminService {
     return this._adminRepo.getAllWorkouts();
   }
 
-  async getTrainerAppointments(): Promise<GetTrainerAppointmentsResponseDto[]> {
-    try {
-      const trainers = await this._adminRepo.getAllTrainersWithProfiles();
-      return TrainerMapper.toDtoArray(trainers);
-    } catch (error) {
-      console.error("Error in getTrainerAppointments:", error);
-      throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.ADMIN.APPOINTMENTS_FETCHED_FAILED);
-    }
+async getTrainerAppointments(
+  search?: string,
+  sortBy?: string,
+  sortOrder?: 'asc' | 'desc',
+  page?: number,
+  limit?: number,
+  status?: string
+): Promise<PaginatedResult<GetTrainerAppointmentsResponseDto>> {
+  try {
+    const { data, pagination } = await this._adminRepo.getAllTrainersWithProfiles(
+      search,
+      sortBy,
+      sortOrder,
+      page,
+      limit,
+      status
+    );
+    return {
+      data: TrainerMapper.toDtoArray(data),
+      pagination,
+    };
+  } catch (error) {
+    console.error('Error in getTrainerAppointments:', error);
+    throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.ADMIN.APPOINTMENTS_FETCHED_FAILED);
   }
+}
 
   async getTrainerByProfileId(
     profileId: string,

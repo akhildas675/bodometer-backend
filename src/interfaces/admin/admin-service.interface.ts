@@ -13,7 +13,7 @@ import {
   GetTrainerByIdResponseDto,
   RejectTrainerResponseDto,
 } from "../../dto/trainer/trainer.dto";
-import { Workout } from "./admin.interface";
+import { PaginatedResult, Workout } from "./admin.interface";
 
 export interface IAdminService {
   fetchUsers(query: AdminGetUsersDto): Promise<PaginatedResponseDto<AdminGetUsersResponseDto>>;
@@ -27,7 +27,14 @@ export interface IAdminService {
   // workouts
   workoutAdd(body: AddWorkoutDto): Promise<AddWorkoutResponseDto>;
   fetchWorkouts(): Promise<Workout[]>;
-  getTrainerAppointments(): Promise<GetTrainerAppointmentsResponseDto[]>;
+  getTrainerAppointments(
+  search?: string,
+  sortBy?: string,
+  sortOrder?: 'asc' | 'desc',
+  page?: number,
+  limit?: number,
+  status?: string
+): Promise<PaginatedResult<GetTrainerAppointmentsResponseDto>>;
   getTrainerByProfileId(profileId: string): Promise<GetTrainerByIdResponseDto>;
   approveTrainer(profileId: string): Promise<ApproveTrainerResponseDto>;
   rejectTrainer(
