@@ -9,26 +9,26 @@ const { trainerController, trainerProfileController } = createTrainerModule();
 
 trainerRoute.get(
   TRAINER_ROUTES.GET_WORKOUT_LIST,
-  authGuard(["trainer"]),
+  ROLE_GUARD.TRAINER_GUARD,
   trainerController.getWorkoutList,
 );
 
 trainerRoute.post(
   TRAINER_ROUTES.SUBMIT_PROFILE_DATA,
-  authGuard(["trainer"]),
+  ROLE_GUARD.TRAINER_GUARD,
   documentUpload.single("certificate"),
   trainerProfileController.createProfile,
 );
 
 
 trainerRoute.get(
-  TRAINER_ROUTES.GET_TRAINER_PROFILE, authGuard(["trainer"]), trainerController.getTrainer
+  TRAINER_ROUTES.GET_TRAINER_PROFILE, ROLE_GUARD.TRAINER_GUARD, trainerController.getTrainer
 );
 
-trainerRoute.put(TRAINER_ROUTES.TRAINER_PROFILE_UPDATE, authGuard(["trainer"]), trainerController.updateProfile)
+trainerRoute.put(TRAINER_ROUTES.TRAINER_PROFILE_UPDATE, ROLE_GUARD.TRAINER_GUARD, trainerController.updateProfile)
 
-trainerRoute.post(TRAINER_ROUTES.TRAINER_PROFILE_PICTURE_UPDATE, imageUpload.single("file"), authGuard(["trainer"]), trainerController.uploadProfilePicture)
+trainerRoute.post(TRAINER_ROUTES.TRAINER_PROFILE_PICTURE_UPDATE, imageUpload.single("file"), ROLE_GUARD.TRAINER_GUARD, trainerController.uploadProfilePicture)
 
-trainerRoute.get("/trainer/profile/status",authGuard(["trainer"]),trainerProfileController.getProfileStatus)
+trainerRoute.get("/trainer/profile/status",ROLE_GUARD.TRAINER_GUARD,trainerProfileController.getProfileStatus)
 
 export default trainerRoute;

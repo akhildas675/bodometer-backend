@@ -1,43 +1,9 @@
-import {
-  AdminGetTrainersDto,
-  AdminGetUsersDto,
-} from "../../dto/admin/admin.dto";
-import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
-import { ITrainerWithProfile } from "../trainer/trainer.interface";
-import {
-  AdminTrainerInterface,
-  AdminUserInterface,
-  PaginatedResult,
-  Workout,
+
+import {  Workout,
 } from "./admin.interface";
 
 export interface IAdminRepository {
-  findUsers(query: AdminGetUsersDto): Promise<{users:AdminUserInterface[];total:number}>;
-  updateUserStatus(userId: string, isBlocked: boolean): Promise<void>;
-  findTrainers(
-    query: AdminGetTrainersDto
-  ): Promise<{ trainers: AdminTrainerInterface[]; total: number }>;
-  updateTrainerStatus(trainerId: string, isBlocked: boolean): Promise<void>;
   createWorkout(body: Workout): Promise<Workout>;
   getAllWorkouts(): Promise<Workout[]>;
 
-getAllTrainersWithProfiles(
-  search?: string,
-  sortBy?: string,
-  sortOrder?: 'asc' | 'desc',
-  page?: number,
-  limit?: number,
-  status?: string
-): Promise<PaginatedResult<ITrainerWithProfile>>;
-  getTrainerByProfileId(userId: string): Promise<ITrainerWithProfile | null>;
-
-  updateTrainerVerificationStatus(
-    profileId: string,
-    status: string,
-    rejectionReason?: string | null,
-  ): Promise<ITrainerProfileDocument | null>;
-
-  findTrainerProfileById(
-    profileId: string,
-  ): Promise<ITrainerProfileDocument | null>;
 }

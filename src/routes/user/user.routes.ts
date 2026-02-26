@@ -15,20 +15,20 @@ const userController = new UserController(userService);
 
 userRoute.get(
   USER_ROUTES.USER_PROFILE,
-  authGuard(["user"]),
+  ROLE_GUARD.USER_GUARD,
   userController.getUser,
 );
 
 userRoute.put(
   USER_ROUTES.PROFILE,
-  authGuard(["user"]),
+  ROLE_GUARD.USER_GUARD,
   userController.updateProfile,
 );
 
 userRoute.post(
   USER_ROUTES.PROFILE_PICTURE,
   imageUpload.single("file"),
-  authGuard(["user"]),
+  ROLE_GUARD.USER_GUARD,
   userController.uploadProfilePicture,
 );
 
