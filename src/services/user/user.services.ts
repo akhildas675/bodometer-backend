@@ -1,14 +1,14 @@
 import {
   FindUserResponseDto,
   UpdateUserProfileDto,
-} from "../../dto/user/user.dto";
-import { IUserRepository } from "../../interfaces/user/user-repository.interface";
-import { IUserService } from "../../interfaces/user/user-service.interface";
-import { UserMapper } from "../../mappers/user/user.mappers";
-import { AppError } from "../../utils/appError";
-import { STATUS } from "../../constants/statuscode";
-import { IS3Service } from "../../interfaces/s3/s3-service.interface";
-import { MESSAGES } from "../../constants/messages";
+} from "@/dto/user/user.dto";
+import { IUserRepository } from "@/interfaces/user/user-repository.interface";
+import { IUserService } from "@/interfaces/user/user-service.interface";
+import { UserMapper } from "@/mappers/user/user.mappers";
+import { AppError } from "@/utils/appError";
+import { STATUS } from "@/constants/statuscode";
+import { IS3Service } from "@/interfaces/s3/s3-service.interface";
+import { MESSAGES } from "@/constants/messages";
 
 export class UserService implements IUserService {
   constructor(

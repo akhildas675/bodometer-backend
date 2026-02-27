@@ -1,11 +1,11 @@
-import { STATUS } from "../../constants/statuscode";
-import { FindTrainerResponseDto, UpdateTrainerProfileDto } from "../../dto/trainer/trainer.dto";
-import { IS3Service } from "../../interfaces/s3/s3-service.interface";
-import { ITrainerRepository } from "../../interfaces/trainer/trainer-repository.interface";
-import { ITrainerService } from "../../interfaces/trainer/trainer-service.interface";
-import { TrainerWorkoutList } from "../../interfaces/trainer/trainer.interface";
-import { TrainerMapper } from "../../mappers/trainer/trainer.mapper";
-import { AppError } from "../../utils/appError";
+import { STATUS } from "@/constants/statuscode";
+import { FindTrainerResponseDto, UpdateTrainerProfileDto } from "@/dto/trainer/trainer.dto";
+import { IS3Service } from "@/interfaces/s3/s3-service.interface";
+import { ITrainerRepository } from "@/interfaces/trainer/trainer-repository.interface";
+import { ITrainerService } from "@/interfaces/trainer/trainer-service.interface";
+import { TrainerWorkoutList } from "@/interfaces/trainer/trainer.interface";
+import { TrainerMapper } from "@/mappers/trainer/trainer.mapper";
+import { AppError } from "@/utils/appError";
 
 export class TrainerService implements ITrainerService {
   constructor(private _trainerRepo: ITrainerRepository,

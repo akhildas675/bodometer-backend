@@ -1,20 +1,13 @@
-import { Role } from "../../constants/identity.constants";
-import {
-  AdminGetUsersResponseDto,
-  GetWorkoutsResponseDto,
-} from "../../dto/admin/admin.dto";
-import {
-  ApproveTrainerResponseDto,
-  GetTrainerAppointmentsResponseDto,
-  GetTrainerByIdResponseDto,
-  RejectTrainerResponseDto,
-} from "../../dto/trainer/trainer.dto";
+import type { Role } from "@/constants/roles";
 import {
   AdminAccountInterface,
   Workout,
-} from "../../interfaces/admin/admin.interface";
-import { ITrainerWithProfile } from "../../interfaces/trainer/trainer.interface";
-import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
+} from "@/interfaces/admin/admin.interface";
+import { ITrainerWithProfile } from "@/interfaces/trainer/trainer.interface";
+import { ITrainerProfileDocument } from "@/models/trainer-profile.model";
+import { AdminGetUsersResponseDto } from "@/dto/admin/admin-user.dto";
+import { ApproveTrainerResponseDto, GetTrainerAppointmentsResponseDto, GetTrainerByIdResponseDto, RejectTrainerResponseDto } from "@/dto/trainer/trainer.dto";
+import { GetWorkoutsResponseDto } from "@/dto/admin/admin.dto";
 
 export class AdminAccountMapper {
   static toResponse<T extends Exclude<Role, "admin">>(

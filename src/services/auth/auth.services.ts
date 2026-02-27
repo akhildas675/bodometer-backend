@@ -1,5 +1,5 @@
-import { googleClient } from "../../config/google";
-import { STATUS } from "../../constants/statuscode";
+import { googleClient } from "@/config/google";
+import { STATUS } from "@/constants/statuscode";
 import {
   ForgotPasswordResponseDto,
   GoogleLoginDto,
@@ -8,21 +8,21 @@ import {
   RegisterDto,
   RegisterResponseDto,
   ResetPasswordDto,
-} from "../../dto/auth/auth.dto";
-import { ResendOtpDto, VerifyOtpDto } from "../../dto/otp/otp.dto";
-import { IAuthService } from "../../interfaces/auth/auth-service.interface";
-import { AuthMapper } from "../../mappers/auth/auth.mappers";
-import { AppError } from "../../utils/appError";
-import { Jwt } from "../../utils/jwt.utils";
-import { hashPassword } from "../../utils/password";
+} from "@/dto/auth/auth.dto";
+import { ResendOtpDto, VerifyOtpDto } from "@/dto/otp/otp.dto";
+import { IAuthService } from "@/interfaces/auth/auth-service.interface";
+import { AuthMapper } from "@/mappers/auth/auth.mappers";
+import { AppError } from "@/utils/appError";
+import { Jwt } from "@/utils/jwt.utils";
+import { hashPassword } from "@/utils/password";
 import bcrypt from "bcrypt";
-import { VerificationStatus } from "../../constants/verification.constants";
-import { ITrainerProfileRepository } from "../../interfaces/trainer/trainer.profile-repository.interface";
-import { IAuthRepository } from "../../interfaces/auth/auth-repository.interface";
-import { ISessionService } from "../../interfaces/auth/session-service.interface";
-import { IOtpService } from "../../interfaces/otp/otp-service.interface";
-import { MESSAGES } from "../../constants/messages";
-import { ROLES } from "../../constants/roles";
+import { VerificationStatus } from "@/constants/verification.constants";
+import { ITrainerProfileRepository } from "@/interfaces/trainer/trainer.profile-repository.interface";
+import { IAuthRepository } from "@/interfaces/auth/auth-repository.interface";
+import { ISessionService } from "@/interfaces/auth/session-service.interface";
+import { IOtpService } from "@/interfaces/otp/otp-service.interface";
+import { MESSAGES } from "@/constants/messages";
+import { ROLES } from "@/constants/roles";
 
 export class AuthService implements IAuthService {
   constructor(
@@ -76,7 +76,7 @@ export class AuthService implements IAuthService {
     const hashedPassword = await hashPassword(data.password);
 
     const normalizedEmail = data.email.toLowerCase().trim();
-    const baseUsername = normalizedEmail.split("@")[0];
+    const baseUsername = normalizedEmail.split("@/")[0];
 
     if (!baseUsername) {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.REGISTER.INVALID_EMAIL_FORMAT);

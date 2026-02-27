@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { GENDER } from "../../constants/identity.constants";
+import { GENDER } from "@/constants/identity.constants";
 
 
 export const updateUserProfileSchema = z.object({

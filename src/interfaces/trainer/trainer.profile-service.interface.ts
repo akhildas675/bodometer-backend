@@ -1,5 +1,4 @@
-import { Role } from "../../constants/identity.constants";
-import { TrainerStatusResponseDto } from "../../dto/trainer/trainer.dto";
+import { TrainerStatusResponseDto } from "@/dto/trainer/trainer.dto";
 import { TrainerProfileRequest } from "./trainer.interface";
 
 export interface ITrainerProfileService {

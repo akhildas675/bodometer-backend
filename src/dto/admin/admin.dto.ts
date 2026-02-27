@@ -1,5 +1,4 @@
-import { Role } from "../../constants/roles";
-
+import { Role } from "@/constants/roles";
 
 export interface PaginationMetaDto {
   currentPage: number;
@@ -35,4 +34,11 @@ export interface AddWorkoutResponseDto {
   workoutName: string;
   workoutDescription: string;
   workoutImage: string;
+}
+export interface GetWorkoutsResponseDto {
+  id: string;
+  workoutName: string;
+  workoutDescription: string;
+  workoutImage: string;
+  isActive: boolean;
 }

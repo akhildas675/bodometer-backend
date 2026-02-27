@@ -1,9 +1,9 @@
 import { NextFunction, Response } from "express";
-import { AuthRequest } from "../../middleware/authGuard";
-import { ITrainerProfileService } from "../../interfaces/trainer/trainer.profile-service.interface";
-import { STATUS } from "../../constants/statuscode";
-import { MESSAGES } from "../../constants/messages";
-import { AppError } from "../../utils/appError";
+import { AuthRequest } from "@/middleware/authGuard";
+import { ITrainerProfileService } from "@/interfaces/trainer/trainer.profile-service.interface";
+import { STATUS } from "@/constants/statuscode";
+import { MESSAGES } from "@/constants/messages";
+import { AppError } from "@/utils/appError";
 
 
 export default class TrainerProfileController {

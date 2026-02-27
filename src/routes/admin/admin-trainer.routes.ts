@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { ADMIN_ROUTES } from "../../constants/routes.constant/admin-routes.constant";
-import { createAdminTrainerModule } from "../../modules/admin/admin-trainer.module";
-import { ROLE_GUARD } from "../../constants/role.guard";
-import { validate } from "../../middleware/validate";
-import { getTrainerAppointmentsSchema, getTrainersSchema, profileIdParamSchema, rejectTrainerSchema, trainerIdParamSchema } from "../../validators/admin/admin-trainer.validator";
+import { ADMIN_ROUTES } from "@/constants/routes.constant/admin-routes.constant";
+import { createAdminTrainerModule } from "@/modules/admin/admin-trainer.module";
+import { ROLE_GUARD } from "@/constants/role.guard";
+import { validate } from "@/middleware/validate";
+import { getTrainerAppointmentsSchema, getTrainersSchema, profileIdParamSchema, rejectTrainerSchema, trainerIdParamSchema } from "@/validators/admin/admin-trainer.validator";
 import { profile } from "console";
 
 const adminTrainerRoute = Router()

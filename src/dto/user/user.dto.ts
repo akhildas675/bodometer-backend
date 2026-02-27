@@ -1,4 +1,4 @@
-import { Gender } from "../../constants/identity.constants";
+import { Gender } from "@/constants/identity.constants";
 
 export interface FindUserDto {
   userId: string;

@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-import { IUserService } from "../../interfaces/user/user-service.interface";
-import { UpdateUserProfileDto } from "../../dto/user/user.dto";
-import { AppError } from "../../utils/appError";
-import { STATUS } from "../../constants/statuscode";
-import { AuthRequest } from "../../middleware/authGuard";
-import { MESSAGES } from "../../constants/messages";
+import { IUserService } from "@/interfaces/user/user-service.interface";
+import { UpdateUserProfileDto } from "@/dto/user/user.dto";
+import { AppError } from "@/utils/appError";
+import { STATUS } from "@/constants/statuscode";
+import { AuthRequest } from "@/middleware/authGuard";
+import { MESSAGES } from "@/constants/messages";
 
 export class UserController {
   constructor(private _userService: IUserService) {}

@@ -1,6 +1,6 @@
 
-import { VerificationStatus } from "../../constants/verification.constants";
-import { Gender, GENDER } from "../../constants/identity.constants";
+import { VerificationStatus } from "@/constants/verification.constants";
+import { Gender, GENDER } from "@/constants/identity.constants";
 
 export interface WorkoutListDto {
   id: string;

@@ -1,4 +1,5 @@
-import { AdminGetUsersDto } from "../../dto/admin/admin.dto";
+
+import { AdminGetUsersDto } from "@/dto/admin/admin-user.dto";
 import { AdminUserInterface } from "./admin.interface";
 
 export interface IAdminUserRepository{

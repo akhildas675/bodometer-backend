@@ -1,8 +1,8 @@
-import { IUserRepository } from "../../interfaces/user/user-repository.interface";
-import { UserProfile } from "../../interfaces/user/user.interface";
-import { UpdateUserProfileDto } from "../../dto/user/user.dto";
-import { IUserDocument, UserModel } from "../../models/user.model";
-import { BaseRepository } from "../base/base.repository";
+import { IUserRepository } from "@/interfaces/user/user-repository.interface";
+import { UserProfile } from "@/interfaces/user/user.interface";
+import { UpdateUserProfileDto } from "@/dto/user/user.dto";
+import { IUserDocument, UserModel } from "@/models/user.model";
+import { BaseRepository } from "@/repositories/base/base.repository";
 
 export default class UserRepository
   extends BaseRepository<UserProfile, IUserDocument>

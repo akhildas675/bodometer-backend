@@ -1,4 +1,4 @@
-import { Role, ROLES } from "../../constants/identity.constants";
+import { ROLES, type Role } from "@/constants/roles";
 
 export interface AdminAccountInterface<R extends Role> {
   id: string;

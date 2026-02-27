@@ -1,7 +1,7 @@
-import { IAuthRepository } from "../../interfaces/auth/auth-repository.interface";
-import { UserInterface } from "../../interfaces/auth/auth.interface";
-import { IUserDocument, UserModel } from "../../models/user.model";
-import { BaseRepository } from "../base/base.repository";
+import { IAuthRepository } from "@/interfaces/auth/auth-repository.interface";
+import { UserInterface } from "@/interfaces/auth/auth.interface";
+import { IUserDocument, UserModel } from "@/models/user.model";
+import { BaseRepository } from "@/repositories/base/base.repository";
 
 export default class AuthRepository
   extends BaseRepository<UserInterface, IUserDocument>

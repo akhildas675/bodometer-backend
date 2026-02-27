@@ -1,13 +1,13 @@
 
-import { IAdminRepository } from "../../interfaces/admin/admin-repository.interface";
+import { IAdminRepository } from "@/interfaces/admin/admin-repository.interface";
 import {
   AdminUserInterface,
   Workout,
-} from "../../interfaces/admin/admin.interface";
+} from "@/interfaces/admin/admin.interface";
 
-import { IUserDocument, UserModel } from "../../models/user.model";
-import { IWorkoutDocument, WorkoutModel } from "../../models/workout.model";
-import { BaseRepository } from "../base/base.repository";
+import { IUserDocument, UserModel } from "@/models/user.model";
+import { IWorkoutDocument, WorkoutModel } from "@/models/workout.model";
+import { BaseRepository } from "@/repositories/base/base.repository";
 
 export default class AdminRepository
   extends BaseRepository<AdminUserInterface, IUserDocument>

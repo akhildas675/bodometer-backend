@@ -1,9 +1,9 @@
 
-import { ITrainerRepository } from "../../interfaces/trainer/trainer-repository.interface";
-import { TrainerProfileInterface, TrainerWorkoutList } from "../../interfaces/trainer/trainer.interface";
-import { IUserDocument, UserModel } from "../../models/user.model";
-import { IWorkoutDocument, WorkoutModel } from "../../models/workout.model";
-import { UpdateUserProfileDto } from "../../dto/user/user.dto";
+import { ITrainerRepository } from "@/interfaces/trainer/trainer-repository.interface";
+import { TrainerProfileInterface, TrainerWorkoutList } from "@/interfaces/trainer/trainer.interface";
+import { IUserDocument, UserModel } from "@/models/user.model";
+import { IWorkoutDocument, WorkoutModel } from "@/models/workout.model";
+import { UpdateUserProfileDto } from "@/dto/user/user.dto";
 
 export default class TrainerRepository implements ITrainerRepository {
 

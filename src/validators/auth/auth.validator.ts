@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { OTP_PURPOSE } from "../../constants/otp.constants";
-import { ROLES } from "../../constants/roles";
+import { OTP_PURPOSE } from "@/constants/otp.constants";
+import { ROLES } from "@/constants/roles";
 
 export const registerSchema = z.object({
   body: z.object({

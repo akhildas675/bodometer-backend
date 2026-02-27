@@ -1,4 +1,4 @@
-import { authGuard } from "../middleware/authGuard";
+import { authGuard } from "@/middleware/authGuard";
 
 export const ROLE_GUARD={
     ADMIN_GUARD:authGuard(['admin']),

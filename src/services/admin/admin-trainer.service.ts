@@ -1,14 +1,14 @@
-import { MESSAGES } from "../../constants/messages";
-import { STATUS } from "../../constants/statuscode";
-import { VERIFICATION_STATUS } from "../../constants/verification.constants";
-import { AdminGetTrainersDto, AdminGetTrainersResponseDto, GetTrainerAppointmentsQueryDto } from "../../dto/admin/admin-trainer.dto";
-import { PaginatedResponseDto } from "../../dto/admin/admin.dto";
-import { ApproveTrainerResponseDto, GetTrainerAppointmentsResponseDto, GetTrainerByIdResponseDto, RejectTrainerResponseDto } from "../../dto/trainer/trainer.dto";
-import { PaginatedResult } from "../../interfaces/admin/admin.interface";
-import { IAdminTrainerRepository } from "../../interfaces/admin/admin.trainer-repository.interface";
-import { IAdminTrainerService } from "../../interfaces/admin/admin.trainer-service.interface";
-import { AdminAccountMapper, TrainerMapper } from "../../mappers/admin/admin.mappers";
-import { AppError } from "../../utils/appError";
+import { MESSAGES } from "@/constants/messages";
+import { STATUS } from "@/constants/statuscode";
+import { VERIFICATION_STATUS } from "@/constants/verification.constants";
+import { AdminGetTrainersDto, AdminGetTrainersResponseDto, GetTrainerAppointmentsQueryDto } from "@/dto/admin/admin-trainer.dto";
+import { PaginatedResponseDto } from "@/dto/admin/admin.dto";
+import { ApproveTrainerResponseDto, GetTrainerAppointmentsResponseDto, GetTrainerByIdResponseDto, RejectTrainerResponseDto } from "@/dto/trainer/trainer.dto";
+import { PaginatedResult } from "@/interfaces/admin/admin.interface";
+import { IAdminTrainerRepository } from "@/interfaces/admin/admin.trainer-repository.interface";
+import { IAdminTrainerService } from "@/interfaces/admin/admin.trainer-service.interface";
+import { AdminAccountMapper, TrainerMapper } from "@/mappers/admin/admin.mappers";
+import { AppError } from "@/utils/appError";
 
 export class AdminTrainerService implements IAdminTrainerService {
     constructor(

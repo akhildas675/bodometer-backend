@@ -1,15 +1,15 @@
-import { redis } from "../../../config/redis";
-import { AppError } from "../../../utils/appError";
-import { STATUS } from "../../../constants/statuscode";
-import { generateOtp } from "../../../utils/generateOtp";
-import { OtpPurpose } from "../../../constants/otp.constants";
-import { IOtpService } from "../../../interfaces/otp/otp-service.interface";
+import { redis } from "@/config/redis";
+import { AppError } from "@/utils/appError";
+import { STATUS } from "@/constants/statuscode";
+import { generateOtp } from "@/utils/generateOtp";
+import { OtpPurpose } from "@/constants/otp.constants";
+import { IOtpService } from "@/interfaces/otp/otp-service.interface";
 import {
   GenerateOtpPayload,
   VerifyOtpPayload,
-} from "../../../interfaces/otp/otp.interface";
-import { IMailService } from "../../../interfaces/otp/mail-service.interface";
-import { MESSAGES } from "../../../constants/messages";
+} from "@/interfaces/otp/otp.interface";
+import { IMailService } from "@/interfaces/otp/mail-service.interface";
+import { MESSAGES } from "@/constants/messages";
 
 
 export class OtpService implements IOtpService {

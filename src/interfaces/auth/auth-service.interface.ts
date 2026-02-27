@@ -1,5 +1,5 @@
-import { LoginResponseDto, LoginDto, OtpVerifyDto, RegisterDto, RegisterResponseDto, ForgotPasswordDto, ForgotPasswordResponseDto, GoogleLoginDto, GoogleLoginResponseDto, ResetPasswordDto,  } from "../../dto/auth/auth.dto";
-import { ResendOtpDto } from "../../dto/otp/otp.dto";
+import { LoginResponseDto, LoginDto, OtpVerifyDto, RegisterDto, RegisterResponseDto, ForgotPasswordDto, ForgotPasswordResponseDto, GoogleLoginDto, GoogleLoginResponseDto, ResetPasswordDto,  } from "@/dto/auth/auth.dto";
+import { ResendOtpDto } from "@/dto/otp/otp.dto";
 
 export interface IAuthService {
     initiateRegister(body: RegisterDto): Promise<void>;

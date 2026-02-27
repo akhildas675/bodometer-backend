@@ -1,12 +1,12 @@
-import { MESSAGES } from "../../constants/messages";
-import { STATUS } from "../../constants/statuscode";
-import { VERIFICATION_STATUS } from "../../constants/verification.constants";
-import { TrainerStatusResponseDto } from "../../dto/trainer/trainer.dto";
-import { IS3Service } from "../../interfaces/s3/s3-service.interface";
-import { TrainerProfileRequest } from "../../interfaces/trainer/trainer.interface";
-import { ITrainerProfileRepository } from "../../interfaces/trainer/trainer.profile-repository.interface";
-import { ITrainerProfileService } from "../../interfaces/trainer/trainer.profile-service.interface";
-import { AppError } from "../../utils/appError";
+import { MESSAGES } from "@/constants/messages";
+import { STATUS } from "@/constants/statuscode";
+import { VERIFICATION_STATUS } from "@/constants/verification.constants";
+import { TrainerStatusResponseDto } from "@/dto/trainer/trainer.dto";
+import { IS3Service } from "@/interfaces/s3/s3-service.interface";
+import { TrainerProfileRequest } from "@/interfaces/trainer/trainer.interface";
+import { ITrainerProfileRepository } from "@/interfaces/trainer/trainer.profile-repository.interface";
+import { ITrainerProfileService } from "@/interfaces/trainer/trainer.profile-service.interface";
+import { AppError } from "@/utils/appError";
 
 
 export default class TrainerProfileService implements ITrainerProfileService {

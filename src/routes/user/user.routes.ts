@@ -1,13 +1,13 @@
 import { Router } from "express";
-import UserRepository from "../../repositories/user/user.repository";
-import { UserService } from "../../services/user/user.services";
-import { UserController } from "../../controllers/user/user.controller";
-import { S3Service } from "../../services/s3/s3.service";
-import { imageUpload } from "../../config/multer";
-import { USER_ROUTES } from "../../constants/routes.constant/user-routes.constant";
-import { ROLE_GUARD } from "../../constants/role.guard";
-import { validate } from "../../middleware/validate";
-import { updateUserProfileSchema, uploadProfilePictureSchema } from "../../validators/user/user.validator";
+import UserRepository from "@/repositories/user/user.repository";
+import { UserService } from "@/services/user/user.services";
+import { UserController } from "@/controllers/user/user.controller";
+import { S3Service } from "@/services/s3/s3.service";
+import { imageUpload } from "@/config/multer";
+import { USER_ROUTES } from "@/constants/routes.constant/user-routes.constant";
+import { ROLE_GUARD } from "@/constants/role.guard";
+import { validate } from "@/middleware/validate";
+import { updateUserProfileSchema, uploadProfilePictureSchema } from "@/validators/user/user.validator";
 
 const userRoute = Router();
 const userRepository = new UserRepository();

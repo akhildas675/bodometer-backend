@@ -1,6 +1,6 @@
 import crypto from "crypto";
-import { SessionData } from "../../../interfaces/auth/auth.interface";
-import { redis } from "../../../config/redis";
+import { SessionData } from "@/interfaces/auth/auth.interface";
+import { redis } from "@/config/redis";
 
 export class SessionService {
   private readonly REFRESH_TOKEN_TTL = 60 * 60 * 24 * 7;

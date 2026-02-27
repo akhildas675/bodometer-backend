@@ -1,5 +1,5 @@
-import { TrainerProfileResponseDto, WorkoutListDto } from "../../dto/trainer/trainer.dto";
-import { TrainerProfileInterface, TrainerWorkoutList } from "../../interfaces/trainer/trainer.interface";
+import { TrainerProfileResponseDto, WorkoutListDto } from "@/dto/trainer/trainer.dto";
+import { TrainerProfileInterface, TrainerWorkoutList } from "@/interfaces/trainer/trainer.interface";
 
 export class TrainerMapper {
   static toTrainerWorkoutList(workoutList: TrainerWorkoutList): WorkoutListDto {

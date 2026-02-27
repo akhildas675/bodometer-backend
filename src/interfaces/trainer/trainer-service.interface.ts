@@ -1,5 +1,5 @@
 
-import { FindTrainerResponseDto, UpdateTrainerProfileDto } from "../../dto/trainer/trainer.dto";
+import { FindTrainerResponseDto, UpdateTrainerProfileDto } from "@/dto/trainer/trainer.dto";
 import { TrainerWorkoutList } from "./trainer.interface";
 
 export interface ITrainerService{

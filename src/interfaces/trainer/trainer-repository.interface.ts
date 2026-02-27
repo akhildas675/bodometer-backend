@@ -1,4 +1,4 @@
-import { UpdateTrainerProfileDto } from "../../dto/trainer/trainer.dto";
+import { UpdateTrainerProfileDto } from "@/dto/trainer/trainer.dto";
 import { TrainerProfileInterface, TrainerWorkoutList } from "./trainer.interface";
 
 export interface ITrainerRepository{

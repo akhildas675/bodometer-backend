@@ -1,10 +1,10 @@
-import { IBaseRepository } from "../base/base-repository.interface";
+import { IBaseRepository } from "@/interfaces/base/base-repository.interface";
 import {
   TrainerProfile,
   TrainerProfileDataInterface,
   TrainerStatusResponse,ReapplyTrainerData
 } from "./trainer.interface";
-import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
+import { ITrainerProfileDocument } from "@/models/trainer-profile.model";
 
 export interface ITrainerProfileRepository
   extends IBaseRepository<TrainerProfileDataInterface, ITrainerProfileDocument>

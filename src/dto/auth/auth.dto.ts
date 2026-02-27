@@ -1,6 +1,6 @@
-import { Role } from "../../constants/identity.constants";
-import { OtpPurpose } from "../../constants/otp.constants";
-import { VerificationStatus } from "../../constants/verification.constants";
+import type { Role } from "@/constants/roles";
+import { OtpPurpose } from "@/constants/otp.constants";
+import { VerificationStatus } from "@/constants/verification.constants";
 
 export interface RegisterDto {
   name: string;

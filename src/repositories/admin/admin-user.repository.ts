@@ -1,9 +1,10 @@
-import { ROLES } from "../../constants/identity.constants";
-import { AdminGetUsersDto } from "../../dto/admin/admin.dto";
-import { AdminUserInterface } from "../../interfaces/admin/admin.interface";
-import { IAdminUserRepository } from "../../interfaces/admin/admin.user-repository.interface";
-import { IUserDocument, UserModel } from "../../models/user.model";
-import { BaseRepository } from "../base/base.repository";
+
+import { ROLES } from "@/constants/roles";
+import { AdminUserInterface } from "@/interfaces/admin/admin.interface";
+import { IAdminUserRepository } from "@/interfaces/admin/admin.user-repository.interface";
+import { IUserDocument, UserModel } from "@/models/user.model";
+import { BaseRepository } from "@/repositories/base/base.repository";
+import { AdminGetUsersDto } from "@/dto/admin/admin-user.dto";
 
 export default class AdminUserRepository extends BaseRepository<AdminUserInterface, IUserDocument> implements IAdminUserRepository {
   

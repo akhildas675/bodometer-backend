@@ -1,5 +1,7 @@
+import { GENDER, Gender } from "@/constants/identity.constants";
+import { Role, ROLES } from "@/constants/roles";
 import mongoose, { Document, Schema } from "mongoose";
-import { Gender, Role } from "../constants/identity.constants";
+
 
 
 export interface IUserDocument extends Document {
@@ -51,13 +53,13 @@ const UserSchema = new Schema<IUserDocument>(
         },
         gender: {
             type: String,
-            enum: ["male", "female", "other", "prefer_not_say"],
-            default: "prefer_not_say"
+            enum: Object.values(GENDER),
+            default: GENDER.PREFER_NOT_SAY
         },
         role: {
             type: String,
-            enum: ["user", "trainer", "admin"],
-            default: "user"
+            enum: Object.values(ROLES),
+            default: ROLES.USER,
         },
         isVerified: {
             type: Boolean,

@@ -1,8 +1,8 @@
 
-import { AdminGetTrainersDto } from "../../dto/admin/admin-trainer.dto";
-import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
-import { ITrainerWithProfile } from "../trainer/trainer.interface";
+import { AdminGetTrainersDto } from "@/dto/admin/admin-trainer.dto";
+import { ITrainerProfileDocument } from "@/models/trainer-profile.model";
 import { AdminTrainerInterface, PaginatedResult } from "./admin.interface";
+import { ITrainerWithProfile } from "@/interfaces/trainer/trainer.interface";
 
 export interface IAdminTrainerRepository{
       findTrainers(

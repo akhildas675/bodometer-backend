@@ -1,15 +1,15 @@
-import { VERIFICATION_STATUS } from "../../constants/verification.constants";
+import { VERIFICATION_STATUS } from "@/constants/verification.constants";
 import {
   TrainerProfile,
   TrainerProfileDataInterface,
   TrainerStatusResponse,ReapplyTrainerData
-} from "../../interfaces/trainer/trainer.interface";
-import { ITrainerProfileRepository } from "../../interfaces/trainer/trainer.profile-repository.interface";
+} from "@/interfaces/trainer/trainer.interface";
+import { ITrainerProfileRepository } from "@/interfaces/trainer/trainer.profile-repository.interface";
 import {
   ITrainerProfileDocument,
   TrainerProfileModel,
-} from "../../models/trainer-profile.model";
-import { BaseRepository } from "../base/base.repository";
+} from "@/models/trainer-profile.model";
+import { BaseRepository } from "@/repositories/base/base.repository";
 
 export default class TrainerProfileRepository
   extends BaseRepository<TrainerProfile, ITrainerProfileDocument>

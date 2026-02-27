@@ -1,10 +1,11 @@
-import { MESSAGES } from "../../constants/messages";
-import { STATUS } from "../../constants/statuscode";
-import { AdminGetUsersDto, AdminGetUsersResponseDto, PaginatedResponseDto } from "../../dto/admin/admin.dto";
-import { IAdminUserRepository } from "../../interfaces/admin/admin.user-repository.interface";
-import { IAdminUserService } from "../../interfaces/admin/admin.user-service.interface";
-import { AdminAccountMapper } from "../../mappers/admin/admin.mappers";
-import { AppError } from "../../utils/appError";
+import { AdminGetUsersDto, AdminGetUsersResponseDto } from "@/dto/admin/admin-user.dto";
+import { MESSAGES } from "@/constants/messages";
+import { STATUS } from "@/constants/statuscode";
+import { PaginatedResponseDto } from "@/dto/admin/admin.dto";
+import { IAdminUserRepository } from "@/interfaces/admin/admin.user-repository.interface";
+import { IAdminUserService } from "@/interfaces/admin/admin.user-service.interface";
+import { AdminAccountMapper } from "@/mappers/admin/admin.mappers";
+import { AppError } from "@/utils/appError";
 
 export class AdminUserService implements IAdminUserService {
     constructor(

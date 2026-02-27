@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express";
-import { IAuthService } from "../../interfaces/auth/auth-service.interface";
-import { OtpVerifyDto, RegisterDto } from "../../dto/auth/auth.dto";
-import { ResendOtpDto } from "../../dto/otp/otp.dto";
-import { redis } from "../../config/redis";
-import { AppError } from "../../utils/appError";
-import { STATUS } from "../../constants/statuscode";
-import { Logger } from "../../utils/logger";
-import { MESSAGES } from "../../constants/messages";
+import { IAuthService } from "@/interfaces/auth/auth-service.interface";
+import { OtpVerifyDto, RegisterDto } from "@/dto/auth/auth.dto";
+import { ResendOtpDto } from "@/dto/otp/otp.dto";
+import { redis } from "@/config/redis";
+import { AppError } from "@/utils/appError";
+import { STATUS } from "@/constants/statuscode";
+import { Logger } from "@/utils/logger";
+import { MESSAGES } from "@/constants/messages";
 
 const logger = new Logger("AuthController");
 

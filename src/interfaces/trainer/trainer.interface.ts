@@ -1,7 +1,9 @@
-import { VerificationStatus } from "../../constants/verification.constants";
-import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
-import { IUserDocument } from "../../models/user.model";
-import { UserProfile } from "../user/user.interface";
+import { VerificationStatus } from "@/constants/verification.constants";
+import { ITrainerProfileDocument } from "@/models/trainer-profile.model";
+import { IUserDocument } from "@/models/user.model";
+import { UserProfile } from "@/interfaces/user/user.interface";
+
+
 
 export interface TrainerWorkoutList {
   id: string;

@@ -1,5 +1,5 @@
-import { TrainerProfile, TrainerProfileDataInterface } from "../../interfaces/trainer/trainer.interface";
-import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
+import { TrainerProfile, TrainerProfileDataInterface } from "@/interfaces/trainer/trainer.interface";
+import { ITrainerProfileDocument } from "@/models/trainer-profile.model";
 
 export class TrainerProfileMapper {
   static toInterface(doc: ITrainerProfileDocument): TrainerProfile {

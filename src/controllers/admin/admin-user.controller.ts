@@ -1,8 +1,8 @@
 import {Request,Response, NextFunction } from "express";
-import { MESSAGES } from "../../constants/messages";
-import { STATUS } from "../../constants/statuscode";
-import { IAdminUserService } from "../../interfaces/admin/admin.user-service.interface";
-import { AdminBlockUnBlockUserDto, AdminGetUsersDto } from "../../dto/admin/admin-user.dto";
+import { MESSAGES } from "@/constants/messages";
+import { STATUS } from "@/constants/statuscode";
+import { IAdminUserService } from "@/interfaces/admin/admin.user-service.interface";
+import { AdminBlockUnBlockUserDto, AdminGetUsersDto } from "@/dto/admin/admin-user.dto";
 
 export class AdminUserController{
     constructor(private _adminUserService:IAdminUserService){}

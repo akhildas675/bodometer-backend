@@ -1,11 +1,11 @@
-import { ROLES } from "../../constants/identity.constants";
-import { AdminGetTrainersDto } from "../../dto/admin/admin.dto";
-import { AdminTrainerInterface, AdminUserInterface, PaginationMeta } from "../../interfaces/admin/admin.interface";
-import { IAdminTrainerRepository } from "../../interfaces/admin/admin.trainer-repository.interface";
-import { ITrainerWithProfile, PopulatedTrainerProfile } from "../../interfaces/trainer/trainer.interface";
-import { ITrainerProfileDocument, TrainerProfileModel } from "../../models/trainer-profile.model";
-import { IUserDocument, UserModel } from "../../models/user.model";
-import { BaseRepository } from "../base/base.repository";
+import { AdminTrainerInterface, PaginationMeta } from "@/interfaces/admin/admin.interface";
+import { IAdminTrainerRepository } from "@/interfaces/admin/admin.trainer-repository.interface";
+import { ITrainerWithProfile, PopulatedTrainerProfile } from "@/interfaces/trainer/trainer.interface";
+import { ITrainerProfileDocument, TrainerProfileModel } from "@/models/trainer-profile.model";
+import { IUserDocument, UserModel } from "@/models/user.model";
+import { BaseRepository } from "@/repositories/base/base.repository";
+import { ROLES } from "@/constants/roles";
+import { AdminGetTrainersDto } from "@/dto/admin/admin-trainer.dto";
 
 export default class AdminTrainerRepository extends BaseRepository<AdminTrainerInterface, IUserDocument> implements IAdminTrainerRepository {
     constructor() {

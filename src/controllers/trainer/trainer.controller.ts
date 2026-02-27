@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import { ITrainerService } from "../../interfaces/trainer/trainer-service.interface";
-import { AuthRequest } from "../../middleware/authGuard";
-import { AppError } from "../../utils/appError";
-import { STATUS } from "../../constants/statuscode";
-import { UpdateTrainerProfileDto } from "../../dto/trainer/trainer.dto";
+import { ITrainerService } from "@/interfaces/trainer/trainer-service.interface";
+import { AuthRequest } from "@/middleware/authGuard";
+import { AppError } from "@/utils/appError";
+import { STATUS } from "@/constants/statuscode";
+import { UpdateTrainerProfileDto } from "@/dto/trainer/trainer.dto";
 
 
 export class TrainerController {

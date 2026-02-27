@@ -1,6 +1,6 @@
 import { ZodObject, ZodError } from "zod";
 import { Request, Response, NextFunction } from "express";
-import { STATUS } from "../constants/statuscode";
+import { STATUS } from "@/constants/statuscode";
 
 export const validate =
   (schema: ZodObject) => (req: Request, res: Response, next: NextFunction) => {

@@ -1,5 +1,5 @@
 
-import { Role } from "../../constants/roles";
+import { Role } from "@/constants/roles";
 import { AdminBaseUserResponseDto } from "./admin.dto";
 
 export interface AdminGetUsersDto {

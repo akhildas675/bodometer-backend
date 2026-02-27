@@ -2,17 +2,17 @@ import {
   AddWorkoutDto,
   AddWorkoutResponseDto,
 
-} from "../../dto/admin/admin.dto";
-import { IAdminService } from "../../interfaces/admin/admin-service.interface";
+} from "@/dto/admin/admin.dto";
+import { IAdminService } from "@/interfaces/admin/admin-service.interface";
 import {
 
   WorkoutMapper,
-} from "../../mappers/admin/admin.mappers";
+} from "@/mappers/admin/admin.mappers";
 
-import {  Workout } from "../../interfaces/admin/admin.interface";
+import {  Workout } from "@/interfaces/admin/admin.interface";
 
-import { IAdminRepository } from "../../interfaces/admin/admin-repository.interface";
-import { IS3Service } from "../../interfaces/s3/s3-service.interface";
+import { IAdminRepository } from "@/interfaces/admin/admin-repository.interface";
+import { IS3Service } from "@/interfaces/s3/s3-service.interface";
 
 
 export class AdminService implements IAdminService {

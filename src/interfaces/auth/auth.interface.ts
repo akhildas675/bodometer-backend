@@ -1,5 +1,5 @@
-import { Gender, Role } from "../../constants/identity.constants";
-import { OtpPurpose } from "../../constants/otp.constants";
+import type { Gender } from "@/constants/identity.constants";
+import type { Role } from "@/constants/roles";
 
 
 export interface UserInterface {

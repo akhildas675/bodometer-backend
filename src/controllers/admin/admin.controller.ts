@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-import { AddWorkoutDto } from "../../dto/admin/admin.dto";
-import { AppError } from "../../utils/appError";
-import { WorkoutMapper } from "../../mappers/admin/admin.mappers";
-import { IAdminService } from "../../interfaces/admin/admin-service.interface";
-import { STATUS } from "../../constants/statuscode";
-import { MESSAGES } from "../../constants/messages";
+import { AddWorkoutDto } from "@/dto/admin/admin.dto";
+import { AppError } from "@/utils/appError";
+import { WorkoutMapper } from "@/mappers/admin/admin.mappers";
+import { IAdminService } from "@/interfaces/admin/admin-service.interface";
+import { STATUS } from "@/constants/statuscode";
+import { MESSAGES } from "@/constants/messages";
 
 export class AdminController {
   constructor(private _adminService: IAdminService) { }

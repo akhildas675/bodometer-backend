@@ -1,5 +1,5 @@
-import { UserInterface } from "../../interfaces/auth/auth.interface";
-import { RegisterResponseDto, LoginResponseDto } from "../../dto/auth/auth.dto";
+import { UserInterface } from "@/interfaces/auth/auth.interface";
+import { RegisterResponseDto, LoginResponseDto } from "@/dto/auth/auth.dto";
 
 export class AuthMapper {
   static toRegisterResponse(user: UserInterface): RegisterResponseDto {

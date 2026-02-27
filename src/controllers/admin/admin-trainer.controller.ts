@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { IAdminTrainerService } from "../../interfaces/admin/admin.trainer-service.interface";
-import { STATUS } from "../../constants/statuscode";
-import { MESSAGES } from "../../constants/messages";
-import { AppError } from "../../utils/appError";
-import { AdminBlockUnblockTrainerDto, AdminGetTrainersDto, GetTrainerAppointmentsQueryDto, RejectTrainerBodyDto } from "../../dto/admin/admin-trainer.dto";
+import { IAdminTrainerService } from "@/interfaces/admin/admin.trainer-service.interface";
+import { STATUS } from "@/constants/statuscode";
+import { MESSAGES } from "@/constants/messages";
+import { AppError } from "@/utils/appError";
+import { AdminBlockUnblockTrainerDto, AdminGetTrainersDto, GetTrainerAppointmentsQueryDto, RejectTrainerBodyDto } from "@/dto/admin/admin-trainer.dto";
 
 export class AdminTrainerController {
   constructor(private _adminTrainerService: IAdminTrainerService) {

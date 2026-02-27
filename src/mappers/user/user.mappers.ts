@@ -1,5 +1,5 @@
-import { UserProfile } from "../../interfaces/user/user.interface";
-import { FindUserResponseDto } from "../../dto/user/user.dto";
+import { UserProfile } from "@/interfaces/user/user.interface";
+import { FindUserResponseDto } from "@/dto/user/user.dto";
 
 export class UserMapper {
   static toFindUserResponse(user: UserProfile): FindUserResponseDto {

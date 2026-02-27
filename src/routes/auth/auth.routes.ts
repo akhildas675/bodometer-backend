@@ -6,10 +6,10 @@ import {
   otpSchema,
   registerSchema,
   resetPasswordSchema,
-} from "../../validators/auth/auth.validator";
-import { validate } from "../../middleware/validate";
-import { createAuthModule } from "../../modules/auth/auth.module";
-import { AUTH_ROUTES } from "../../constants/routes.constant/auth-routes.constant";
+} from "@/validators/auth/auth.validator";
+import { validate } from "@/middleware/validate";
+import { createAuthModule } from "@/modules/auth/auth.module";
+import { AUTH_ROUTES } from "@/constants/routes.constant/auth-routes.constant";
 
 const authRoute = Router();
 const { authController } = createAuthModule();

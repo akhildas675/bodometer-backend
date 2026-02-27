@@ -1,5 +1,5 @@
-import { ROLES } from "../../constants/identity.constants";
-import { AppError } from "../../utils/appError";
+import { ROLES } from "@/constants/roles";
+import { AppError } from "@/utils/appError";
 import { IRegistrationStrategy } from "./registration-strategy.interface";
 
 export class UserRegistrationStrategy implements IRegistrationStrategy {

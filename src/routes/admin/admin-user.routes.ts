@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { ADMIN_ROUTES } from "../../constants/routes.constant/admin-routes.constant";
-import { createAdminUserModule } from "../../modules/admin/admin-user.module";
-import { ROLE_GUARD } from "../../constants/role.guard";
-import { validate } from "../../middleware/validate";
-import { getUsersSchema, userIdParamSchema } from "../../validators/admin/admin-user.validator";
+import { ADMIN_ROUTES } from "@/constants/routes.constant/admin-routes.constant";
+import { createAdminUserModule } from "@/modules/admin/admin-user.module";
+import { ROLE_GUARD } from "@/constants/role.guard";
+import { validate } from "@/middleware/validate";
+import { getUsersSchema, userIdParamSchema } from "@/validators/admin/admin-user.validator";
 
 const adminUserRoute = Router();
 const {adminUserController}=createAdminUserModule()

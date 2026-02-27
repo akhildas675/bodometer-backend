@@ -1,4 +1,4 @@
-import { FindUserResponseDto, UpdateUserProfileDto } from "../../dto/user/user.dto";
+import { FindUserResponseDto, UpdateUserProfileDto } from "@/dto/user/user.dto";
 
 export interface IUserService {
   fetchUser(userId: string): Promise<FindUserResponseDto>;

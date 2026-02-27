@@ -1,5 +1,6 @@
+import { AdminGetUsersDto, AdminGetUsersResponseDto } from "@/dto/admin/admin-user.dto";
+import { PaginatedResponseDto } from "@/dto/admin/admin.dto";
 
-import { AdminGetUsersDto, AdminGetUsersResponseDto, PaginatedResponseDto } from "../../dto/admin/admin.dto";
 
 export interface IAdminUserService {
     fetchUsers(query: AdminGetUsersDto): Promise<PaginatedResponseDto<AdminGetUsersResponseDto>>;

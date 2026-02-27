@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
-import { VERIFICATION_STATUS, VerificationStatus } from "../constants/verification.constants";
+import { VERIFICATION_STATUS, VerificationStatus } from "@/constants/verification.constants";
 
 
 export interface ITrainerProfileDocument extends Document {
