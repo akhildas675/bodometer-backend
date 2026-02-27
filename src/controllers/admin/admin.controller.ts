@@ -15,7 +15,6 @@ export class AdminController {
     try {
       const { workoutName, workoutDescription } = req.body;
       const file = req.file;
-      console.log("body data", req.file);
 
       if (!workoutName || !workoutDescription) {
         throw new AppError(
@@ -48,7 +47,6 @@ export class AdminController {
   getWorkout = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const workouts = await this._adminService.fetchWorkouts();
-      // console.log(workouts);
 
       res.status(STATUS.OK).json({
         success: true,

@@ -159,8 +159,6 @@ export class AuthController {
     try {
       const { email } = req.body;
 
-      console.log("E mail for the forget password controller", email);
-
       const result = await this._authService.forgotPassword({ email });
 
       res.status(STATUS.OK).json({
@@ -224,8 +222,6 @@ export class AuthController {
   resetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { email, purpose } = req.body;
-
-      console.log("email from forget password",email,purpose)
 
       if (purpose !== "FORGET_PASSWORD") {
         throw new AppError(

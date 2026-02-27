@@ -1,8 +1,11 @@
 import { Router } from "express";
 import {
+  forgotPasswordSchema,
+  googleLoginSchema,
   loginSchema,
   otpSchema,
   registerSchema,
+  resetPasswordSchema,
 } from "../../validators/auth/auth.validator";
 import { validate } from "../../middleware/validate";
 import { createAuthModule } from "../../modules/auth/auth.module";
@@ -43,16 +46,17 @@ authRoute.post(
 
 authRoute.post(
   AUTH_ROUTES.FORGOT_PASSWORD,
+  validate(forgotPasswordSchema),
   authController.forgotPassword,
 );
-
 authRoute.post(
   AUTH_ROUTES.RESET_PASSWORD,
+  validate(resetPasswordSchema),
   authController.resetPassword,
 );
-
 authRoute.post(
   AUTH_ROUTES.GOOGLE_LOGIN,
+  validate(googleLoginSchema),
   authController.googleLogin,
 );
 

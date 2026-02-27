@@ -1,5 +1,4 @@
 import { googleClient } from "../../config/google";
-import { ROLES } from "../../constants/identity.constants";
 import { STATUS } from "../../constants/statuscode";
 import {
   ForgotPasswordResponseDto,
@@ -23,6 +22,7 @@ import { IAuthRepository } from "../../interfaces/auth/auth-repository.interface
 import { ISessionService } from "../../interfaces/auth/session-service.interface";
 import { IOtpService } from "../../interfaces/otp/otp-service.interface";
 import { MESSAGES } from "../../constants/messages";
+import { ROLES } from "../../constants/roles";
 
 export class AuthService implements IAuthService {
   constructor(
@@ -72,7 +72,6 @@ export class AuthService implements IAuthService {
   }
 
   async register(data: RegisterDto): Promise<RegisterResponseDto> {
-    console.log("The data from register service", data);
     const role = data.role;
     const hashedPassword = await hashPassword(data.password);
 
@@ -112,8 +111,6 @@ export class AuthService implements IAuthService {
     const user = await this._authRepo.findByEmail(
       data.email.toLowerCase().trim(),
     );
-
-    console.log("user on service....", user);
     if (!user) throw new AppError(STATUS.BAD_REQUEST, MESSAGES.LOGIN.INVALID_CREDENTIALS);
 
     const match = await bcrypt.compare(data.password, user.password);
@@ -160,8 +157,6 @@ export class AuthService implements IAuthService {
       role: user.role,
       isBlocked: user.isBlocked,
     });
-
-    console.log("trainer status", trainerStatus);
 
     return {
       response: AuthMapper.toLoginResponse(user, accessToken, trainerStatus),
@@ -290,9 +285,6 @@ export class AuthService implements IAuthService {
 
   async resetPassword(data: ResetPasswordDto): Promise<void> {
     const normalizedEmail = data.email.toLowerCase().trim()
-
-    console.log("normalized email",normalizedEmail,"data",data)
-
     const isVerified = await this._sessionService.isOtpVerified(
       "FORGET_PASSWORD",
       normalizedEmail,

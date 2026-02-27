@@ -4,8 +4,7 @@ import { ITrainerProfileService } from "../../interfaces/trainer/trainer.profile
 import { STATUS } from "../../constants/statuscode";
 import { MESSAGES } from "../../constants/messages";
 import { AppError } from "../../utils/appError";
-import { success } from "zod";
-import { ROLES } from "../../constants/identity.constants";
+
 
 export default class TrainerProfileController {
   constructor(private _trainerProfileService: ITrainerProfileService) {}
@@ -49,7 +48,6 @@ export default class TrainerProfileController {
         const userId = req.user.id;
   
         const profileStatus = await this._trainerProfileService.getTrainerStatus(userId);
-        console.log("profile Status of trainer",profileStatus)
         return res.status(STATUS.OK).json({
           success:true,
           data:profileStatus

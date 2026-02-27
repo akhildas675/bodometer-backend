@@ -61,7 +61,6 @@ export class S3Service {
       });
 
       await this.s3Client.send(command);
-      console.log("Successfully deleted file from S3:", fileName);
     } catch (error) {
       console.error("Error deleting file from S3:", error);
       throw error;

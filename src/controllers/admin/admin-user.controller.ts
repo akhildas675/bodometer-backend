@@ -1,8 +1,8 @@
 import {Request,Response, NextFunction } from "express";
 import { MESSAGES } from "../../constants/messages";
 import { STATUS } from "../../constants/statuscode";
-import { AdminBlockUnBlockDto, AdminGetUsersDto } from "../../dto/admin/admin.dto";
 import { IAdminUserService } from "../../interfaces/admin/admin.user-service.interface";
+import { AdminBlockUnBlockUserDto, AdminGetUsersDto } from "../../dto/admin/admin-user.dto";
 
 export class AdminUserController{
     constructor(private _adminUserService:IAdminUserService){}
@@ -25,9 +25,7 @@ export class AdminUserController{
 
   blockUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId } = req.params as unknown as AdminBlockUnBlockDto;
-
-      console.log("This is the user id for backend....", userId);
+      const { userId } = req.params as unknown as AdminBlockUnBlockUserDto;
 
       await this._adminUserService.blockUser(userId);
 
@@ -42,7 +40,7 @@ export class AdminUserController{
 
   unblockUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId } = req.params as unknown as AdminBlockUnBlockDto;
+      const { userId } = req.params as unknown as AdminBlockUnBlockUserDto;
 
       await this._adminUserService.unblockUser(userId);
 

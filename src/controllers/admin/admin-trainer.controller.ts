@@ -1,20 +1,19 @@
-import {Request,Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import { IAdminTrainerService } from "../../interfaces/admin/admin.trainer-service.interface";
-import { AdminBlockUnblockTrainerDto } from "../../dto/admin/admin.dto";
 import { STATUS } from "../../constants/statuscode";
 import { MESSAGES } from "../../constants/messages";
 import { AppError } from "../../utils/appError";
+import { AdminBlockUnblockTrainerDto, AdminGetTrainersDto, GetTrainerAppointmentsQueryDto, RejectTrainerBodyDto } from "../../dto/admin/admin-trainer.dto";
 
-export class AdminTrainerController{
-    constructor(private _adminTrainerService:IAdminTrainerService) {
-    }
+export class AdminTrainerController {
+  constructor(private _adminTrainerService: IAdminTrainerService) {
+  }
 
-    getTrainers = async (req: Request, res: Response, next: NextFunction) => {
+  getTrainers = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
-      console.log("Trainers from body", req.query);
-      const data = await this._adminTrainerService.fetchTrainers(req.query);
-      console.log("Get trainers...", data);
+      const query = req.query as AdminGetTrainersDto
+      const data = await this._adminTrainerService.fetchTrainers(query);
       res.status(200).json({
         success: true,
         data: data.data,
@@ -29,8 +28,6 @@ export class AdminTrainerController{
     try {
       const { trainerId } =
         req.params as unknown as AdminBlockUnblockTrainerDto;
-
-      console.log("This is the trainer id for backend....", trainerId);
 
       await this._adminTrainerService.blockTrainer(trainerId);
 
@@ -48,8 +45,6 @@ export class AdminTrainerController{
       const { trainerId } =
         req.params as unknown as AdminBlockUnblockTrainerDto;
 
-      console.log("This is the trainer id for backend....", trainerId);
-
       await this._adminTrainerService.unblockTrainer(trainerId);
 
       res.status(STATUS.OK).json({
@@ -62,7 +57,7 @@ export class AdminTrainerController{
   };
 
 
-  
+
   //trainer appointment
 
   getTrainerAppointments = async (
@@ -70,23 +65,9 @@ export class AdminTrainerController{
     res: Response,
     next: NextFunction,
   ) => {
-    const {
-      search,
-      sortBy,
-      sortOrder,
-      page,
-      limit,
-      status,
-    } = req.query;
+    const query = req.query as GetTrainerAppointmentsQueryDto;
 
-    const result = await this._adminTrainerService.getTrainerAppointments(
-      search as string | undefined,
-      sortBy as string | undefined,
-      (sortOrder as 'asc' | 'desc') || 'asc',
-      page ? Number(page) : undefined,
-      limit ? Number(limit) : undefined,
-      status as string | undefined
-    );
+    const result = await this._adminTrainerService.getTrainerAppointments(query);
 
     res.status(STATUS.OK).json({
       success: true,
@@ -96,7 +77,7 @@ export class AdminTrainerController{
     });
   };
   getTrainerById = async (req: Request, res: Response, next: NextFunction) => {
-    const { profileId } = req.params;
+    const { profileId } = req.params 
 
     if (!profileId) {
       throw new AppError(STATUS.BAD_REQUEST, "Profile ID is required");
@@ -114,6 +95,7 @@ export class AdminTrainerController{
   approveTrainer = async (req: Request, res: Response, next: NextFunction) => {
     const { profileId } = req.params;
 
+
     if (!profileId) {
       throw new AppError(STATUS.BAD_REQUEST, "Profile ID is required");
     }
@@ -129,7 +111,7 @@ export class AdminTrainerController{
 
   rejectTrainer = async (req: Request, res: Response, next: NextFunction) => {
     const { profileId } = req.params;
-    const { reason } = req.body;
+    const { reason } = req.body as RejectTrainerBodyDto
 
     if (!profileId) {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.INVALID_ID);
@@ -148,5 +130,5 @@ export class AdminTrainerController{
     });
   };
 
-    
+
 }

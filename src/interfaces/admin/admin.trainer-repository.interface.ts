@@ -1,4 +1,5 @@
-import { AdminGetTrainersDto } from "../../dto/admin/admin.dto";
+
+import { AdminGetTrainersDto } from "../../dto/admin/admin-trainer.dto";
 import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
 import { ITrainerWithProfile } from "../trainer/trainer.interface";
 import { AdminTrainerInterface, PaginatedResult } from "./admin.interface";

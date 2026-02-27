@@ -70,8 +70,6 @@ export default class TrainerProfileRepository
       throw new Error("Not found")
     }
 
-    console.log("profile repo",profile)
-
     return {
       name: profile.userId.name,
       verificationStatus: profile.verificationStatus,

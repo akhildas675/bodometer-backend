@@ -17,8 +17,6 @@ export class TrainerController {
         throw new AppError(STATUS.UNAUTHORIZED, "User not authenticated");
       }
 
-      console.log("hit here")
-
       const trainerId = req.user.id;
       const trainer = await this._trainerService.fetchTrainer(trainerId)
 

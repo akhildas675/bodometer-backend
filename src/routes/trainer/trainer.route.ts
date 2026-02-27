@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { authGuard } from "../../middleware/authGuard";
+
 import { documentUpload, imageUpload } from "../../config/multer";
 import { createTrainerModule } from "../../modules/trainer/trainer.module";
 import { TRAINER_ROUTES } from "../../constants/routes.constant/trainer-routes.constant";
+import { ROLE_GUARD } from "../../constants/role.guard";
 
 const trainerRoute = Router();
 const { trainerController, trainerProfileController } = createTrainerModule();

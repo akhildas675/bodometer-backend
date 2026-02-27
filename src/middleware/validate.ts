@@ -11,6 +11,8 @@ export const validate =
         body: req.body,
         query: req.query,
         params: req.params,
+        file:req.file,
+        files:req.files,
       });
 
       return next();

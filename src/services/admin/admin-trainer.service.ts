@@ -1,7 +1,8 @@
 import { MESSAGES } from "../../constants/messages";
 import { STATUS } from "../../constants/statuscode";
 import { VERIFICATION_STATUS } from "../../constants/verification.constants";
-import { AdminGetTrainersDto, AdminGetTrainersResponseDto, PaginatedResponseDto } from "../../dto/admin/admin.dto";
+import { AdminGetTrainersDto, AdminGetTrainersResponseDto, GetTrainerAppointmentsQueryDto } from "../../dto/admin/admin-trainer.dto";
+import { PaginatedResponseDto } from "../../dto/admin/admin.dto";
 import { ApproveTrainerResponseDto, GetTrainerAppointmentsResponseDto, GetTrainerByIdResponseDto, RejectTrainerResponseDto } from "../../dto/trainer/trainer.dto";
 import { PaginatedResult } from "../../interfaces/admin/admin.interface";
 import { IAdminTrainerRepository } from "../../interfaces/admin/admin.trainer-repository.interface";
@@ -56,22 +57,10 @@ export class AdminTrainerService implements IAdminTrainerService {
     }
 
     async getTrainerAppointments(
-        search?: string,
-        sortBy?: string,
-        sortOrder?: 'asc' | 'desc',
-        page?: number,
-        limit?: number,
-        status?: string
+       data:GetTrainerAppointmentsQueryDto
     ): Promise<PaginatedResult<GetTrainerAppointmentsResponseDto>> {
         try {
-            const { data, pagination } = await this._adminTrainerRepository.getAllTrainersWithProfiles(
-                search,
-                sortBy,
-                sortOrder,
-                page,
-                limit,
-                status
-            );
+            const { data, pagination } = await this._adminTrainerRepository.getAllTrainersWithProfiles();
             return {
                 data: TrainerMapper.toDtoArray(data),
                 pagination,

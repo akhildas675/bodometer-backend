@@ -2,10 +2,12 @@ import { Router } from "express";
 import UserRepository from "../../repositories/user/user.repository";
 import { UserService } from "../../services/user/user.services";
 import { UserController } from "../../controllers/user/user.controller";
-import { authGuard } from "../../middleware/authGuard";
 import { S3Service } from "../../services/s3/s3.service";
 import { imageUpload } from "../../config/multer";
 import { USER_ROUTES } from "../../constants/routes.constant/user-routes.constant";
+import { ROLE_GUARD } from "../../constants/role.guard";
+import { validate } from "../../middleware/validate";
+import { updateUserProfileSchema, uploadProfilePictureSchema } from "../../validators/user/user.validator";
 
 const userRoute = Router();
 const userRepository = new UserRepository();
@@ -22,13 +24,14 @@ userRoute.get(
 userRoute.put(
   USER_ROUTES.PROFILE,
   ROLE_GUARD.USER_GUARD,
+  validate(updateUserProfileSchema),
   userController.updateProfile,
 );
-
 userRoute.post(
   USER_ROUTES.PROFILE_PICTURE,
   imageUpload.single("file"),
   ROLE_GUARD.USER_GUARD,
+  validate(uploadProfilePictureSchema),
   userController.uploadProfilePicture,
 );
 
