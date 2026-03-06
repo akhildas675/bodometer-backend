@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { documentUpload, imageUpload } from "@/config/multer";
+import { profileUpload, imageUpload } from "@/config/multer";
 import { createTrainerModule } from "@/modules/trainer/trainer.module";
 import { TRAINER_ROUTES } from "@/constants/routes.constant/trainer-routes.constant";
 import { ROLE_GUARD } from "@/constants/role.guard";
@@ -17,10 +17,12 @@ trainerRoute.get(
 trainerRoute.post(
   TRAINER_ROUTES.SUBMIT_PROFILE_DATA,
   ROLE_GUARD.TRAINER_GUARD,
-  documentUpload.single("certificate"),
-  trainerProfileController.createProfile,
-);
-
+  profileUpload.fields([
+    { name: "profileImage", maxCount: 1 },
+    { name: "certificate", maxCount: 1 },
+  ]),
+  trainerProfileController.createProfile
+)
 
 trainerRoute.get(
   TRAINER_ROUTES.GET_TRAINER_PROFILE, ROLE_GUARD.TRAINER_GUARD, trainerController.getTrainer

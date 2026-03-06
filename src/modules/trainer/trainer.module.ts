@@ -25,7 +25,8 @@ export function createTrainerModule(){
 
     const trainerProfileService:ITrainerProfileService = new TrainerProfileService(
         trainerProfileRepository,
-        s3Service
+        trainerRepository,
+        s3Service,
     )
 
     const trainerController = new TrainerController(trainerService)

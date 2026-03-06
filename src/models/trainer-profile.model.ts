@@ -4,7 +4,7 @@ import { VERIFICATION_STATUS, VerificationStatus } from "@/constants/verificatio
 
 export interface ITrainerProfileDocument extends Document {
     userId: mongoose.Types.ObjectId;
-    // specializationIds: mongoose.Types.ObjectId[];
+    specializationIds: mongoose.Types.ObjectId[];
     experienceInYears: number;
     certifications: string[];
     bio: string;
@@ -23,12 +23,12 @@ const TrainerProfileSchema = new Schema<ITrainerProfileDocument>(
             unique: true,
         },
 
-        // specializationIds: [
-        //     {
-        //         type: Schema.Types.ObjectId,
-        //         ref: "Workout",
-        //     },
-        // ],
+        specializationIds: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: "Workout",
+            },
+        ],
 
         experienceInYears: {
             type: Number,

@@ -1,10 +1,10 @@
 import { TrainerStatusResponseDto } from "@/dto/trainer/trainer.dto";
-import { TrainerProfileRequest } from "./trainer.interface";
+import { TrainerProfileDto } from "@/dto/trainer/trainer-profile.dto";
 
 export interface ITrainerProfileService {
   createProfile(
     userId: string,
-    data:TrainerProfileRequest
+    data:TrainerProfileDto
   ): Promise<void>;
 
   getTrainerStatus(userId:string):Promise<TrainerStatusResponseDto>

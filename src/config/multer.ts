@@ -1,4 +1,3 @@
-
 import multer from "multer";
 
 export const imageUpload = multer({
@@ -12,8 +11,6 @@ export const imageUpload = multer({
     }
   },
 });
-
-
 
 const allowedDocs = [
   "application/pdf",
@@ -29,6 +26,30 @@ export const documentUpload = multer({
       cb(null, true);
     } else {
       cb(new Error("Only PDF or Word documents are allowed"));
+    }
+  },
+});
+
+
+export const profileUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = [
+      ...allowedDocs,
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/avif", 
+      "image/gif",
+      "image/heic",
+      "image/heif",
+    ];
+
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only images or documents are allowed"));
     }
   },
 });

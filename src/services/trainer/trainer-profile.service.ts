@@ -1,9 +1,10 @@
 import { MESSAGES } from "@/constants/messages";
 import { STATUS } from "@/constants/statuscode";
 import { VERIFICATION_STATUS } from "@/constants/verification.constants";
+import { TrainerProfileDto } from "@/dto/trainer/trainer-profile.dto";
 import { TrainerStatusResponseDto } from "@/dto/trainer/trainer.dto";
 import { IS3Service } from "@/interfaces/s3/s3-service.interface";
-import { TrainerProfileRequest } from "@/interfaces/trainer/trainer.interface";
+import { ITrainerRepository } from "@/interfaces/trainer/trainer-repository.interface";
 import { ITrainerProfileRepository } from "@/interfaces/trainer/trainer.profile-repository.interface";
 import { ITrainerProfileService } from "@/interfaces/trainer/trainer.profile-service.interface";
 import { AppError } from "@/utils/appError";
@@ -12,13 +13,14 @@ import { AppError } from "@/utils/appError";
 export default class TrainerProfileService implements ITrainerProfileService {
   constructor(
     private _trainerProfileRepo: ITrainerProfileRepository,
+    private _trainerRepository : ITrainerRepository,
     private _s3Service: IS3Service,
   ) { }
 
 
 async createProfile(
   userId: string,
-  data:TrainerProfileRequest
+  data:TrainerProfileDto
 ): Promise<void> {
 
   const existing = await this._trainerProfileRepo.findByUserId(userId);
@@ -47,7 +49,18 @@ async createProfile(
   const certificateUrl = await this._s3Service.uploadFile(
     data.certificateFile,
     "trainer-certificates",
+  )
+
+ const profileImageUrl = await this._s3Service.uploadFile(
+    data.profileImageFile,
+    "trainer-profile-images"
   );
+
+   await this._trainerRepository.updateTrainerProfile(userId, {
+      profilePic:  profileImageUrl,
+      gender:      data.gender,
+      dateOfBirth: new Date(data.dateOfBirth),
+    });
 
 
   if (existing?.verificationStatus === VERIFICATION_STATUS.REJECTED) {
