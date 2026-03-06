@@ -67,7 +67,7 @@ export default class TrainerProfileRepository
       .populate<{ userId: { name: string } }>("userId", "name");
 
     if (!profile) {
-      throw new Error("Not found")
+      return null
     }
 
     return {
