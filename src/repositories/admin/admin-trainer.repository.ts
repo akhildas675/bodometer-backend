@@ -12,7 +12,7 @@ export default class AdminTrainerRepository extends BaseRepository<AdminTrainerI
         super(UserModel)
     }
 
-    protected toInterface(doc: IUserDocument):AdminTrainerInterface {
+    protected toInterface(doc: IUserDocument): AdminTrainerInterface {
         return {
             id: doc._id.toString(),
             name: doc.name,
@@ -103,12 +103,12 @@ export default class AdminTrainerRepository extends BaseRepository<AdminTrainerI
             const profileFilter: Record<string, any> = {};
             if (status) profileFilter.verificationStatus = status;
 
-            // We need to filter by search on user fields, so use aggregation
+            //  filter by search on user fields
             const pipeline: any[] = [
                 { $match: profileFilter },
                 {
                     $lookup: {
-                        from: 'users', // your users collection name
+                        from: 'users',
                         localField: 'userId',
                         foreignField: '_id',
                         as: 'userId',
