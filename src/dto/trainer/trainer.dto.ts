@@ -77,11 +77,13 @@ export interface GetTrainerByIdResponseDto {
   profile: {
     _id: string;
     userId: string;
+     specializationIds: { _id: string; workoutName: string }[];
     experienceInYears: number;
     certifications: string[];
     bio: string;
     verificationStatus: string;
     rejectionReason: string | null;
+    applyCount: number;
     createdAt: string;
     updatedAt: string;
   };
@@ -133,8 +135,8 @@ export interface FindTrainerResponseDto {
   dateOfBirth: Date | null;
 }
 
-export interface TrainerStatusResponseDto{
-  name:string,
-  verificationStatus:VerificationStatus,
-  rejectionReason?:string | null,
+export interface TrainerStatusResponseDto {
+  name: string,
+  verificationStatus: VerificationStatus,
+  rejectionReason?: string | null,
 }

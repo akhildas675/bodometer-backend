@@ -6,6 +6,7 @@ import { IUserDocument, UserModel } from "@/models/user.model";
 import { BaseRepository } from "@/repositories/base/base.repository";
 import { ROLES } from "@/constants/roles";
 import { AdminGetTrainersDto } from "@/dto/admin/admin-trainer.dto";
+import mongoose, { PipelineStage } from "mongoose";
 
 export default class AdminTrainerRepository extends BaseRepository<AdminTrainerInterface, IUserDocument> implements IAdminTrainerRepository {
     constructor() {
@@ -100,11 +101,11 @@ export default class AdminTrainerRepository extends BaseRepository<AdminTrainerI
             const skip = (pageNum - 1) * limitNum;
 
             // Build match filter for verificationStatus
-            const profileFilter: Record<string, any> = {};
+            const profileFilter: Record<string, string> = {};
             if (status) profileFilter.verificationStatus = status;
 
             //  filter by search on user fields
-            const pipeline: any[] = [
+            const pipeline: PipelineStage[] = [
                 { $match: profileFilter },
                 {
                     $lookup: {
@@ -174,36 +175,35 @@ export default class AdminTrainerRepository extends BaseRepository<AdminTrainerI
             throw error;
         }
     }
-    async getTrainerByProfileId(
-        profileId: string,
-    ): Promise<ITrainerWithProfile | null> {
-        try {
-            const trainerProfile = await TrainerProfileModel.findById(profileId)
-                .populate<{ userId: IUserDocument }>({
-                    path: "userId",
-                    select:
-                        "_id name userName email phoneNumber profilePic gender role isVerified dateOfBirth isBlocked createdAt updatedAt",
-                })
-                .lean<PopulatedTrainerProfile>();
+async getTrainerByProfileId(profileId: string): Promise<ITrainerWithProfile | null> {
+    try {
+        const trainerProfile = await TrainerProfileModel.findById(profileId)
+            .populate<{ userId: IUserDocument }>({
+                path: "userId",
+                select: "_id name userName email phoneNumber profilePic gender role isVerified dateOfBirth isBlocked createdAt updatedAt",
+            })
+            .populate<{ specializationIds: { _id: mongoose.Types.ObjectId; workoutName: string }[] }>({
+                path: "specializationIds",
+                select: "_id workoutName",
+            })
+            .lean<PopulatedTrainerProfile>();
 
-            if (!trainerProfile) {
-                return null;
-            }
+        if (!trainerProfile) return null;
 
-            const { userId, ...profileData } = trainerProfile;
+        const { userId, ...profileData } = trainerProfile;
 
-            return {
-                user: userId,
-                profile: {
-                    ...profileData,
-                    userId: userId._id,
-                } as ITrainerProfileDocument,
-            };
-        } catch (error) {
-            console.error("Error in getTrainerByProfileId:", error);
-            throw error;
-        }
+        return {
+            user: userId,
+            profile: {
+                ...profileData,
+                userId: userId._id,
+            } as ITrainerProfileDocument,
+        };
+    } catch (error) {
+        console.error("Error in getTrainerByProfileId:", error);
+        throw error;
     }
+}
 
     async updateTrainerVerificationStatus(
         profileId: string,
