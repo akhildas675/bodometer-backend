@@ -1,4 +1,5 @@
 import { ROLES, type Role } from "@/constants/roles";
+import { PlanType } from "@/constants/subscription";
 
 export interface AdminAccountInterface<R extends Role> {
   id: string;
@@ -36,4 +37,21 @@ export interface PaginationMeta {
 export interface PaginatedResult<T> {
   data: T[];
   pagination: PaginationMeta;
+}
+
+//subscription
+
+
+export interface Subscription {
+  id?:string,
+  subscriptionName: string;
+  description: string;
+  price: number;
+  durationDays: number;
+  features: string[];
+  liveSessionCount: number;
+  planType: PlanType
+  isActive: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

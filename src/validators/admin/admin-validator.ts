@@ -16,3 +16,35 @@ export const getWorkoutsSchema = z.object({
     sortOrder: z.enum(["asc", "desc"]).optional(),
   }),
 });
+
+
+
+export const addSubscriptionSchema = z.object({
+  body: z.object({
+    data: z.object({
+      subscriptionName: z.string().min(1, "Plan name is required."),
+      description: z.string().min(1, "Plan description is required."),
+      price: z.number().positive("Price must be a valid positive number."),
+      durationDays: z.number().min(1, "Duration must be at least 1 day."),
+      features: z.array(z.string()).min(1, "At least one feature is required."),
+      liveSessionCount: z.number().min(0, "Live session count must be valid"),
+      planType: z.enum(["basic", "pro", "elite"]),
+    }),
+  }),
+});
+
+
+
+export const updateSubscriptionSchema = z.object({
+  body: z.object({
+    data: z.object({
+      subscriptionName: z.string().min(1).optional(),
+      description: z.string().min(1).optional(),
+      price: z.number().positive().optional(),
+      durationDays: z.number().min(1).optional(),
+      features: z.array(z.string()).min(1).optional(),
+      liveSessionCount: z.number().min(0).optional(),
+      planType: z.enum(["basic", "pro", "elite"]).optional(),
+    }),
+  }),
+});

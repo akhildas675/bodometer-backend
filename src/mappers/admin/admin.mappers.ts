@@ -83,7 +83,7 @@ export class TrainerMapper {
     };
   }
 
-  // For detail view (single trainer profile page)
+  // For detail view 
   static toDetailDto(trainer: ITrainerWithProfile): GetTrainerByIdResponseDto {
     return {
       user: {
