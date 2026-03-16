@@ -32,4 +32,27 @@ export abstract class BaseRepository<T, D extends Document>
     const docs = await this.model.find(filter).exec();
     return docs.map((doc) => this.toInterface(doc));
   }
+
+async updateById(id: string, data: Partial<D>): Promise<T | null> {
+    const doc = await this.model
+      .findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true })
+      .exec();
+    return doc ? this.toInterface(doc) : null;
+}
+
+  async deleteById(id: string): Promise<boolean> {
+    const result = await this.model.findByIdAndDelete(id).exec();
+    return result !== null;
+  }
+
+  async countDocuments(filter: Record<string, unknown> = {}): Promise<number> {
+    return this.model.countDocuments(filter).exec();
+  }
+
+  async exists(filter: Record<string, unknown>): Promise<boolean> {
+    const count = await this.model.countDocuments(filter).exec();
+    return count > 0;
+  }
+
+
 }

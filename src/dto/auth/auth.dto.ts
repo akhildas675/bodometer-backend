@@ -10,14 +10,12 @@ export interface RegisterDto {
   role: Role;
 }
 
+
 export interface RegisterResponseDto {
   id: string;
   name: string;
   email: string;
-  userName: string | null;
-  phoneNumber: string;
   role: Role;
-  profilePic: string | null;
 }
 
 export interface LoginDto {
@@ -31,9 +29,15 @@ export interface LoginResponseDto {
   user: {
     id: string;
     name: string;
+    userName: string;
     email: string;
-    phoneNumber: string;
+    phoneNumber: string | null;
+    profilePic: string | null;
+    gender: string | null;
     role: string;
+    isVerified: boolean;
+    dateOfBirth: string | null;
+    isBlocked: boolean;
   };
   trainerStatus?: {
     profileExists: boolean;
@@ -41,7 +45,6 @@ export interface LoginResponseDto {
     rejectionReason?: string | null;
   };
 }
-
 export interface OtpVerifyDto {
   email: string;
   otp: string;

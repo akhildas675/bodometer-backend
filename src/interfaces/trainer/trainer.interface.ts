@@ -2,6 +2,7 @@ import { VerificationStatus } from "@/constants/verification.constants";
 import { ITrainerProfileDocument } from "@/models/trainer-profile.model";
 import { IUserDocument } from "@/models/user.model";
 import { UserProfile } from "@/interfaces/user/user.interface";
+import mongoose from "mongoose";
 
 
 
@@ -59,4 +60,5 @@ export interface ReapplyTrainerData {
   experienceInYears: number;
   certifications: string[];
   bio: string;
+  specializationIds: mongoose.Types.ObjectId[];
 }

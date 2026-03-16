@@ -1,5 +1,6 @@
-import { UserInterface } from "@/interfaces/auth/auth.interface";
-import { RegisterResponseDto, LoginResponseDto } from "@/dto/auth/auth.dto";
+import { UserInterface } from "@/interfaces/user/user.interface";
+import { LoginResponseDto, RegisterResponseDto } from "@/dto/auth/auth.dto";
+import { VerificationStatus } from "@/constants/verification.constants";
 
 export class AuthMapper {
   static toRegisterResponse(user: UserInterface): RegisterResponseDto {
@@ -7,33 +8,35 @@ export class AuthMapper {
       id: user.id,
       name: user.name,
       email: user.email,
-      userName: user.userName ?? null,
-      phoneNumber: user.phoneNumber,
       role: user.role,
-      profilePic: user.profilePic ?? null,
     };
   }
 
   static toLoginResponse(
     user: UserInterface,
     accessToken: string,
-    trainerStatus?: LoginResponseDto["trainerStatus"],
+    trainerStatus?: {
+      profileExists: boolean;
+      verificationStatus?: VerificationStatus;
+      rejectionReason?: string | null;
+    },
   ): LoginResponseDto {
-    const baseResponse: LoginResponseDto = {
+    return {
       accessToken,
       user: {
         id: user.id,
         name: user.name,
+        userName: user.userName,
         email: user.email,
-        phoneNumber: user.phoneNumber,
+        phoneNumber: user.phoneNumber ?? null,
+        profilePic: user.profilePic ?? null,
+        gender: user.gender ?? null,
         role: user.role,
+        isVerified: user.isVerified,
+        dateOfBirth: user.dateOfBirth?.toISOString() ?? null,
+        isBlocked: user.isBlocked,
       },
+      ...(trainerStatus && { trainerStatus }),
     };
-
-    if (trainerStatus) {
-      baseResponse.trainerStatus = trainerStatus;
-    }
-
-    return baseResponse;
   }
 }

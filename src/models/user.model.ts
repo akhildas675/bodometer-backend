@@ -8,7 +8,7 @@ export interface IUserDocument extends Document {
     name: string;
     userName: string;
     email: string;
-    phoneNumber: string;
+    phoneNumber: string | null;
     password: string;
     profilePic?: string | null;
     gender: Gender,

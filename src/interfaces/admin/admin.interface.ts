@@ -19,7 +19,7 @@ export interface AdminUserActionDto {
 }
 
 export interface Workout {
-  id?: string;
+  id: string;
   workoutName: string;
   workoutDescription: string;
   workoutImage: string;
@@ -55,3 +55,5 @@ export interface Subscription {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+

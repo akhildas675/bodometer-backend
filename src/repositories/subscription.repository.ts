@@ -1,7 +1,7 @@
 import { Subscription } from "@/interfaces/admin/admin.interface";
-import { BaseRepository } from "../base/base.repository";
+import { BaseRepository } from "./base/base.repository";
 import { ISubscriptionDocument, SubscriptionModel } from "@/models/subscription.model";
-import { ISubscriptionRepository } from "@/interfaces/admin/subscription/subscription-repository.interface";
+import { ISubscriptionRepository } from "@/interfaces/subscription/subscription-repository.interface";
 
 export default class SubscriptionRepository
   extends BaseRepository<Subscription, ISubscriptionDocument>

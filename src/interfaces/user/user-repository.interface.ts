@@ -1,7 +1,31 @@
-import { UserProfile } from "./user.interface";
-import { UpdateUserProfileDto } from "@/dto/user/user.dto";
+import { UpdateUserProfileInterface, UserInterface } from "./user.interface";
+import { PaginationMeta } from "@/interfaces/admin/admin.interface";
 
 export interface IUserRepository {
-  findById(userId: string): Promise<UserProfile | null>;
-  updateProfile(userId: string, updateData: UpdateUserProfileDto): Promise<UserProfile | null>;
+  // Base
+  findById(id: string): Promise<UserInterface | null>;
+  create(data: Partial<UserInterface>): Promise<UserInterface>;
+
+  // Auth
+  findByEmail(email: string): Promise<UserInterface | null>;
+  findByUsername(username: string): Promise<UserInterface | null>;
+  updatePassword(userId: string, password: string): Promise<void>;
+  updateVerified(userId: string, isVerified: boolean): Promise<void>;
+
+  // Profile
+  updateProfile(
+    userId: string,
+    updateData: UpdateUserProfileInterface,
+  ): Promise<UserInterface | null>;
+
+  //  Admin
+  findByRolePaginated(
+    role: string,
+    search?: string,
+    sortBy?: string,
+    sortOrder?: "asc" | "desc",
+    page?: number,
+    limit?: number,
+  ): Promise<{ data: UserInterface[]; pagination: PaginationMeta }>;
+  updateBlockStatus(userId: string, isBlocked: boolean): Promise<void>;
 }

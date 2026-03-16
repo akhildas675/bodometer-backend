@@ -17,10 +17,10 @@ export interface TrainerProfileResponseDto {
   name: string;
   email: string;
   userName: string;
-  phoneNumber: string | null;
-  gender: Gender;
+  phoneNumber: string;
+  gender: string | null;
   profilePic: string | null;
-  dateOfBirth: Date | null;
+  dateOfBirth: string | null;
 }
 export interface GetTrainerAppointmentsResponseDto {
   user: {
@@ -28,7 +28,7 @@ export interface GetTrainerAppointmentsResponseDto {
     name: string;
     userName: string;
     email: string;
-    phoneNumber: string;
+    phoneNumber: string |null;
     profilePic: string | null;
     gender: string;
     role: string;
@@ -64,7 +64,7 @@ export interface GetTrainerByIdResponseDto {
     name: string;
     userName: string;
     email: string;
-    phoneNumber: string;
+    phoneNumber: string | null;
     profilePic: string | null;
     gender: string;
     role: string;
@@ -116,27 +116,35 @@ export interface RejectTrainerResponseDto {
 }
 
 export interface UpdateTrainerProfileDto {
-  name?: string;
+ name?: string;
   userName?: string;
-  phoneNumber?: string | null;
+  phoneNumber?: string;
   gender?: Gender;
-  dateOfBirth?: Date | null;
   profilePic?: string;
+  dateOfBirth?: Date;  
 }
-
 export interface FindTrainerResponseDto {
   id: string;
   name: string;
   email: string;
   userName: string;
-  phoneNumber: string | null;
-  gender: Gender;
+  phoneNumber: string;
+  gender: Gender | null;       
   profilePic: string | null;
-  dateOfBirth: Date | null;
+  dateOfBirth: string | null;
 }
-
 export interface TrainerStatusResponseDto {
   name: string,
   verificationStatus: VerificationStatus,
   rejectionReason?: string | null,
+}
+
+export interface TrainerProfileDto {
+  profileImageFile: Express.Multer.File; 
+  certificateFile: Express.Multer.File;   
+  dateOfBirth: string;
+  gender: Gender;
+  experienceInYears: number;            
+  bio: string;
+  specializationIds: string[];           
 }

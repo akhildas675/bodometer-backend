@@ -18,15 +18,13 @@ export class UserService implements IUserService {
 
   async fetchUser(userId: string): Promise<FindUserResponseDto> {
     const user = await this._userRepo.findById(userId);
-
     if (!user) {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.USER.USER_NOT_FOUND);
     }
-
     return UserMapper.toFindUserResponse(user);
   }
 
-  async updateUserProfile(
+  async updateProfile(
     userId: string,
     updateData: UpdateUserProfileDto,
   ): Promise<FindUserResponseDto> {
@@ -34,17 +32,16 @@ export class UserService implements IUserService {
       throw new AppError(STATUS.BAD_REQUEST, "No fields to update");
     }
 
-    // Validate required fields
     if (updateData.gender && updateData.gender === "prefer_not_say") {
       throw new AppError(STATUS.BAD_REQUEST, "Please select a valid gender");
     }
+
     if (!updateData.dateOfBirth) {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.COMMON.SELECT_CORRECT_DOB);
     }
 
     const dob = new Date(updateData.dateOfBirth);
     const today = new Date();
-
     const limitDate = new Date(
       today.getFullYear() - 18,
       today.getMonth(),
@@ -52,14 +49,10 @@ export class UserService implements IUserService {
     );
 
     if (dob > limitDate) {
-      throw new AppError(
-        STATUS.BAD_REQUEST,
-        MESSAGES.USER.AGE_RESTRICTION,
-      );
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.USER.AGE_RESTRICTION);
     }
 
     const updatedUser = await this._userRepo.updateProfile(userId, updateData);
-
     if (!updatedUser) {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.USER.USER_NOT_FOUND);
     }

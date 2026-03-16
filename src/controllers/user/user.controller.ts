@@ -40,7 +40,7 @@ export class UserController {
       const userId = req.user.id;
       const updateData: UpdateUserProfileDto = req.body;
 
-      const updatedUser = await this._userService.updateUserProfile(
+      const updatedUser = await this._userService.updateProfile(
         userId,
         updateData,
       );

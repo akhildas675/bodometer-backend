@@ -1,4 +1,4 @@
-import { Subscription } from "../admin.interface";
+import { Subscription } from "../admin/admin.interface";
 
 export interface ISubscriptionRepository {
   createSubscription(body: Subscription): Promise<Subscription>;

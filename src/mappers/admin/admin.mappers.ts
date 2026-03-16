@@ -1,57 +1,40 @@
 import type { Role } from "@/constants/roles";
-import { AdminAccountInterface, Workout } from "@/interfaces/admin/admin.interface";
+import { UserInterface } from "@/interfaces/user/user.interface";
 import { ITrainerWithProfile } from "@/interfaces/trainer/trainer.interface";
 import { ITrainerProfileDocument } from "@/models/trainer-profile.model";
-import { AdminGetUsersResponseDto } from "@/dto/admin/admin-user.dto";
+import { Workout } from "@/interfaces/admin/admin.interface";
+
+
 import {
   ApproveTrainerResponseDto,
   GetTrainerAppointmentsResponseDto,
   GetTrainerByIdResponseDto,
   RejectTrainerResponseDto,
 } from "@/dto/trainer/trainer.dto";
-import { GetWorkoutsResponseDto } from "@/dto/admin/admin.dto";
-import mongoose from "mongoose";
+import { AdminGetUsersResponseDto, GetWorkoutsResponseDto } from "@/dto/admin/admin.dto";
 
+// Account Mapper (User & Trainer list)
 export class AdminAccountMapper {
-  static toResponse<T extends Exclude<Role, "admin">>(
-    account: AdminAccountInterface<T>,
-  ): AdminGetUsersResponseDto {
+  static toResponse(user: UserInterface): AdminGetUsersResponseDto {
     return {
-      id: account.id,
-      name: account.name,
-      email: account.email,
-      role: account.role,
-      isBlocked: account.isBlocked,
-      isVerified: account.isVerified,
-      createdAt: account.createdAt,
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role  as Exclude<Role, "admin">,
+      isBlocked: user.isBlocked,
+      isVerified: user.isVerified,
+      createdAt: user.createdAt.toISOString(),
     };
   }
 
-  static toResponseList<T extends Exclude<Role, "admin">>(
-    accounts: AdminAccountInterface<T>[],
-  ): AdminGetUsersResponseDto[] {
-    return accounts.map((account) => AdminAccountMapper.toResponse(account));
+  static toResponseList(users: UserInterface[]): AdminGetUsersResponseDto[] {
+    return users.map((u) => AdminAccountMapper.toResponse(u));
   }
 }
 
-export class WorkoutMapper {
-  static toResponse(workout: Workout): GetWorkoutsResponseDto {
-    return {
-      id: workout.id!,
-      workoutName: workout.workoutName,
-      workoutDescription: workout.workoutDescription,
-      workoutImage: workout.workoutImage,
-      isActive: workout.isActive,
-    };
-  }
-
-  static toResponseList(workouts: Workout[]): GetWorkoutsResponseDto[] {
-    return workouts.map(this.toResponse);
-  }
-}
-
+//Trainer Mapper 
 export class TrainerMapper {
-  // For list view (trainer appointments table)
+
   static toDto(trainer: ITrainerWithProfile): GetTrainerAppointmentsResponseDto {
     return {
       user: {
@@ -59,7 +42,7 @@ export class TrainerMapper {
         name: trainer.user.name,
         userName: trainer.user.userName,
         email: trainer.user.email,
-        phoneNumber: trainer.user.phoneNumber,
+        phoneNumber: trainer.user.phoneNumber || null,
         profilePic: trainer.user.profilePic || null,
         gender: trainer.user.gender,
         role: trainer.user.role,
@@ -83,7 +66,11 @@ export class TrainerMapper {
     };
   }
 
-  // For detail view 
+  static toDtoArray(trainers: ITrainerWithProfile[]): GetTrainerAppointmentsResponseDto[] {
+    return trainers.map((t) => TrainerMapper.toDto(t));
+  }
+
+  // Detail view
   static toDetailDto(trainer: ITrainerWithProfile): GetTrainerByIdResponseDto {
     return {
       user: {
@@ -91,7 +78,7 @@ export class TrainerMapper {
         name: trainer.user.name,
         userName: trainer.user.userName,
         email: trainer.user.email,
-        phoneNumber: trainer.user.phoneNumber,
+        phoneNumber: trainer.user.phoneNumber || null,
         profilePic: trainer.user.profilePic || null,
         gender: trainer.user.gender,
         role: trainer.user.role,
@@ -105,13 +92,13 @@ export class TrainerMapper {
         _id: trainer.profile._id?.toString() || "",
         userId: trainer.profile.userId.toString(),
         specializationIds: (
-          trainer.profile.specializationIds as unknown as { 
-            _id: mongoose.Types.ObjectId; 
-            workoutName: string 
+          trainer.profile.specializationIds as unknown as {
+            _id: { toString(): string };
+            workoutName: string;
           }[]
         ).map((s) => ({
           _id: s._id.toString(),
-          workoutName: s.workoutName, 
+          workoutName: s.workoutName,
         })),
         experienceInYears: trainer.profile.experienceInYears,
         certifications: trainer.profile.certifications ?? [],
@@ -125,10 +112,7 @@ export class TrainerMapper {
     };
   }
 
-  static toDtoArray(trainers: ITrainerWithProfile[]): GetTrainerAppointmentsResponseDto[] {
-    return trainers.map((trainer) => this.toDto(trainer));
-  }
-
+  // Approve / Reject
   static toApproveDto(profile: ITrainerProfileDocument): ApproveTrainerResponseDto {
     return {
       message: "Trainer approved successfully",
@@ -148,5 +132,22 @@ export class TrainerMapper {
         rejectionReason: profile.rejectionReason || "",
       },
     };
+  }
+}
+
+//  Workout Mapper
+export class WorkoutMapper {
+  static toAdminResponse(workout: Workout): GetWorkoutsResponseDto {
+    return {
+      id: workout.id,
+      workoutName: workout.workoutName,
+      workoutDescription: workout.workoutDescription,
+      workoutImage: workout.workoutImage,
+      isActive: workout.isActive,
+    };
+  }
+
+  static toAdminResponseList(workouts: Workout[]): GetWorkoutsResponseDto[] {
+    return workouts.map((w) => WorkoutMapper.toAdminResponse(w));
   }
 }

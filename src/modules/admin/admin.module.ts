@@ -1,20 +1,30 @@
 import { AdminController } from "@/controllers/admin/admin.controller";
-import { IAdminRepository } from "@/interfaces/admin/admin-repository.interface";
-import { ISubscriptionRepository } from "@/interfaces/admin/subscription/subscription-repository.interface";
+import { ISubscriptionRepository } from "@/interfaces/subscription/subscription-repository.interface";
 import { IS3Service } from "@/interfaces/s3/s3-service.interface";
-import AdminRepository from "@/repositories/admin/admin.repository";
-import SubscriptionRepository from "@/repositories/admin/subscription.repository";
+import { ITrainerProfileRepository } from "@/interfaces/trainer/trainer.profile-repository.interface";
+import { IUserRepository } from "@/interfaces/user/user-repository.interface";
+import { IWorkoutRepository } from "@/interfaces/workout/workout-repository.interface";
+import SubscriptionRepository from "@/repositories/subscription.repository";
+import TrainerProfileRepository from "@/repositories/trainer-profile.repository";
+import UserRepository from "@/repositories/user.repository";
+import WorkoutRepository from "@/repositories/workout.repository";
 import { AdminService } from "@/services/admin/admin.services";
 import { S3Service } from "@/services/s3/s3.service";
 
 export function createAdminModule(){
-    const adminRepository:IAdminRepository=new AdminRepository();
-    const subscriptionRepository:ISubscriptionRepository = new SubscriptionRepository();
+
+  const userRepository:IUserRepository = new UserRepository();
+  const trainerProfileRepository:ITrainerProfileRepository = new TrainerProfileRepository();
+  const workoutRepository:IWorkoutRepository= new WorkoutRepository();
+
+  const subscriptionRepository:ISubscriptionRepository= new SubscriptionRepository()
     const s3Service:IS3Service=new S3Service();
     const adminService=new AdminService(
-        adminRepository,
+        userRepository,
+        trainerProfileRepository,
+        workoutRepository,
+        subscriptionRepository,
         s3Service,
-        subscriptionRepository
 
     );
 

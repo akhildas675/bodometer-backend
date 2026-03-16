@@ -6,7 +6,7 @@ import { TRAINER_ROUTES } from "@/constants/routes.constant/trainer-routes.const
 import { ROLE_GUARD } from "@/constants/role.guard";
 
 const trainerRoute = Router();
-const { trainerController, trainerProfileController } = createTrainerModule();
+const { trainerController } = createTrainerModule();
 
 trainerRoute.get(
   TRAINER_ROUTES.GET_WORKOUT_LIST,
@@ -21,7 +21,7 @@ trainerRoute.post(
     { name: "profileImage", maxCount: 1 },
     { name: "certificate", maxCount: 1 },
   ]),
-  trainerProfileController.createProfile
+  trainerController .createProfile
 )
 
 trainerRoute.get(
@@ -32,6 +32,6 @@ trainerRoute.put(TRAINER_ROUTES.TRAINER_PROFILE_UPDATE, ROLE_GUARD.TRAINER_GUARD
 
 trainerRoute.post(TRAINER_ROUTES.TRAINER_PROFILE_PICTURE_UPDATE, imageUpload.single("file"), ROLE_GUARD.TRAINER_GUARD, trainerController.uploadProfilePicture)
 
-trainerRoute.get("/trainer/profile/status",ROLE_GUARD.TRAINER_GUARD,trainerProfileController.getProfileStatus)
+trainerRoute.get("/trainer/profile/status",ROLE_GUARD.TRAINER_GUARD,trainerController .getProfileStatus)
 
 export default trainerRoute;

@@ -9,10 +9,10 @@ export interface FindUserResponseDto {
   name: string;
   email: string;
   userName: string;
-  phoneNumber: string | null;
-  gender: Gender;
-  profilePic?: string;
-  dateOfBirth?: Date;
+  phoneNumber: string;
+  gender: string | null;
+  profilePic: string | null;
+  dateOfBirth: string | null;
 }
 
 export interface UpdateUserProfileDto {
