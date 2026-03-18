@@ -1,7 +1,4 @@
 import { Router } from "express";
-import { UserService } from "@/services/user/user.services";
-import { UserController } from "@/controllers/user/user.controller";
-import { S3Service } from "@/services/s3/s3.service";
 import { imageUpload } from "@/config/multer";
 import { USER_ROUTES } from "@/constants/routes.constant/user-routes.constant";
 import { ROLE_GUARD } from "@/constants/role.guard";
@@ -44,13 +41,34 @@ userRoute.get(
   userController.getWorkoutDetail,
 );
 
-userRoute.get(USER_ROUTES.GET_SUBSCRIPTIONS, ROLE_GUARD.USER_GUARD, userController.getSubscriptions);
-userRoute.get(USER_ROUTES.GET_MY_SUBSCRIPTION, ROLE_GUARD.USER_GUARD, userController.getMySubscription);
-userRoute.post(USER_ROUTES.CREATE_CHECKOUT_SESSION, ROLE_GUARD.USER_GUARD, userController.createCheckoutSession);
+userRoute.get(
+  USER_ROUTES.GET_SUBSCRIPTIONS,
+  ROLE_GUARD.USER_GUARD,
+  userController.getSubscriptions,
+);
+userRoute.get(
+  USER_ROUTES.GET_MY_SUBSCRIPTION,
+  ROLE_GUARD.USER_GUARD,
+  userController.getMySubscription,
+);
+userRoute.post(
+  USER_ROUTES.CREATE_CHECKOUT_SESSION,
+  ROLE_GUARD.USER_GUARD,
+  userController.createCheckoutSession,
+);
 
 userRoute.post(USER_ROUTES.STRIPE_WEBHOOK, userController.stripeWebhook);
 
-userRoute.get(USER_ROUTES.GET_TRAINERS, ROLE_GUARD.USER_GUARD, userController.getTrainers);
+userRoute.get(
+  USER_ROUTES.GET_TRAINERS,
+  ROLE_GUARD.USER_GUARD,
+  userController.getTrainers,
+);
 
+userRoute.patch(
+  USER_ROUTES.CHANGE_PASSWORD,
+  ROLE_GUARD.USER_GUARD,
+  userController.changePassword,
+);
 
 export default userRoute;

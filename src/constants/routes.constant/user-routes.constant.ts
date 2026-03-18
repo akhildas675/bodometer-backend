@@ -2,6 +2,7 @@ export const USER_ROUTES = {
   BASE: '/user',
   USER_PROFILE: '/user/user-profile',
   PROFILE: '/user/profile',
+  CHANGE_PASSWORD: '/user/change-password',
   PROFILE_PICTURE: '/user/profile-picture',
   GET_WORKOUTS: '/user/workouts',
   GET_WORKOUT_DETAIL: '/user/workouts/:id',

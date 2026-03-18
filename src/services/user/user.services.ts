@@ -1,5 +1,6 @@
 import {
   ActiveSubscriptionDto,
+  ChangePasswordDto,
   CheckoutSessionResponseDto,
   CreateCheckoutSessionDto,
   FindUserResponseDto,
@@ -26,9 +27,11 @@ import {
 import { ISubscriptionRepository } from "@/interfaces/subscription/subscription-repository.interface";
 import { ISubscriptionTransactionRepository } from "@/interfaces/subscription/subscription.transaction-repository.interface";
 import Stripe from "stripe";
-import { UserSubscriptionMapper } from "@/mappers/user/user-subscription.mapper";
 import { IStripeService } from "@/interfaces/payment/stripe-service.interface";
 import { UserTrainerMapper } from "@/mappers/user/user-trainer.mapper";
+import { hashPassword } from "@/utils/password";
+import bcrypt from "bcrypt";
+import { UserSubscriptionMapper } from "@/mappers/user/user-subscription.mapper";
 
 export class UserService implements IUserService {
   constructor(
@@ -38,8 +41,8 @@ export class UserService implements IUserService {
     private _trainerProfileRepo: ITrainerProfileRepository,
     private _subscriptionRepository: ISubscriptionRepository,
     private _subscriptionTransactionRepo: ISubscriptionTransactionRepository,
-    private _stripeService:IStripeService,
-  ) {}
+    private _stripeService: IStripeService,
+  ) { }
 
   async fetchUser(userId: string): Promise<FindUserResponseDto> {
     const user = await this._userRepo.findById(userId);
@@ -102,6 +105,20 @@ export class UserService implements IUserService {
     return profilePicUrl;
   }
 
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
+    const user = await this._userRepo.findById(userId);
+    if (!user) throw new AppError(STATUS.NOT_FOUND, MESSAGES.USER.USER_NOT_FOUND);
+
+    const match = await bcrypt.compare(dto.currentPassword, user.password);
+    if (!match) throw new AppError(STATUS.BAD_REQUEST, MESSAGES.PASSWORD.INCORRECT_CURRENT_PASSWORD);
+
+    const sameAsOld = await bcrypt.compare(dto.newPassword, user.password);
+    if (sameAsOld) throw new AppError(STATUS.BAD_REQUEST, MESSAGES.PASSWORD.NEW_PASSWORD_SAME_AS_OLD);
+
+    const hashedPassword = await hashPassword(dto.newPassword);
+    await this._userRepo.updatePassword(userId, hashedPassword);
+  }
+
   async getWorkouts(
     query: GetUserWorkoutsQueryDto,
   ): Promise<{ data: UserWorkoutResponseDto[]; pagination: PaginationMeta }> {
@@ -157,7 +174,7 @@ export class UserService implements IUserService {
     );
   }
 
- async createCheckoutSession(
+  async createCheckoutSession(
     userId: string,
     dto: CreateCheckoutSessionDto,
   ): Promise<CheckoutSessionResponseDto> {
@@ -239,28 +256,28 @@ export class UserService implements IUserService {
   }
 
   async getTrainers(
-  query: GetTrainersQueryDto,
-): Promise<TrainerListResponseDto> {
-  const page = query.page || 1;
-  const limit = query.limit || 9;
+    query: GetTrainersQueryDto,
+  ): Promise<TrainerListResponseDto> {
+    const page = query.page || 1;
+    const limit = query.limit || 9;
 
-  const { data, total } = await this._trainerProfileRepo.getApprovedTrainersPaginated(
-    page,
-    limit,
-    query.search,
-    query.sortBy,
-    query.sortOrder,
-    query.specializationId,
-  );
+    const { data, total } = await this._trainerProfileRepo.getApprovedTrainersPaginated(
+      page,
+      limit,
+      query.search,
+      query.sortBy,
+      query.sortOrder,
+      query.specializationId,
+    );
 
-  return {
-    data: UserTrainerMapper.toListItemDtoArray(data),
-    pagination: {
-      currentPage: page,
-      totalPages: Math.ceil(total / limit),
-      totalItems: total,
-      itemsPerPage: limit,
-    },
-  };
-}
+    return {
+      data: UserTrainerMapper.toListItemDtoArray(data),
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        itemsPerPage: limit,
+      },
+    };
+  }
 }

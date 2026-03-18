@@ -76,6 +76,8 @@ export const MESSAGES = {
     NEW_PASSWORD_SAME_AS_OLD: "New password cannot be same as old password.",
     PASSWORD_UPDATED: "Password updated successfully.",
     FORGOT_PASSWORD_OTP_SENT: "Password reset OTP sent to your email.",
+    INCORRECT_CURRENT_PASSWORD:"Incorrect current password please enter correct password",
+    CHANGED_SUCCESS:"Password Changed Successfully"
   },
 
   USER: {

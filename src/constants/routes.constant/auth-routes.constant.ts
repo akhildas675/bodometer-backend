@@ -10,4 +10,5 @@ export const AUTH_ROUTES = {
   GOOGLE_LOGIN: '/auth/google-login',
   REFRESH_TOKEN: '/auth/refresh-token',
   LOGOUT: '/auth/logout',
+  
 } as const;
