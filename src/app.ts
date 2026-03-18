@@ -12,7 +12,6 @@ const app = express();
 // app.use(httpLogger);
 
 app.use(cookieParser());
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
@@ -25,8 +24,12 @@ app.use(
   })
 );
 
+app.use(
+  "/api/user/stripe/webhook",
+  express.raw({ type: "application/json" }),
+);
 
-app.use(cookieParser());
+app.use(express.json());
 
 //routes
 routes(app);

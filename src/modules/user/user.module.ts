@@ -1,8 +1,18 @@
 import { UserController } from "@/controllers/user/user.controller";
+import { IStripeService } from "@/interfaces/payment/stripe-service.interface";
 import { IS3Service } from "@/interfaces/s3/s3-service.interface";
+import { ISubscriptionRepository } from "@/interfaces/subscription/subscription-repository.interface";
+import { ISubscriptionTransactionRepository } from "@/interfaces/subscription/subscription.transaction-repository.interface";
+import { ITrainerProfileRepository } from "@/interfaces/trainer/trainer.profile-repository.interface";
 import { IUserRepository } from "@/interfaces/user/user-repository.interface";
 import { IUserService } from "@/interfaces/user/user-service.interface";
+import { IWorkoutRepository } from "@/interfaces/workout/workout-repository.interface";
+import SubscriptionTransactionRepository from "@/repositories/subscription-transaction.repository";
+import SubscriptionRepository from "@/repositories/subscription.repository";
+import TrainerProfileRepository from "@/repositories/trainer-profile.repository";
 import UserRepository from "@/repositories/user.repository";
+import WorkoutRepository from "@/repositories/workout.repository";
+import { StripeService } from "@/services/payments/stripe.service";
 import { S3Service } from "@/services/s3/s3.service";
 import { UserService } from "@/services/user/user.services";
 
@@ -10,11 +20,24 @@ export function createUserModule(){
 
     const userRepository:IUserRepository=new UserRepository();
     const s3Service:IS3Service=new S3Service();
+    const workoutRepository:IWorkoutRepository = new WorkoutRepository()
+    const trainerProfileRepository:ITrainerProfileRepository=new TrainerProfileRepository();
+
+    const subscriptionRepository:ISubscriptionRepository = new SubscriptionRepository();
+
+    const subscriptionTransactionRepository:ISubscriptionTransactionRepository = new SubscriptionTransactionRepository()
+
+    const stripeService:IStripeService=new StripeService();
 
 
     const userService:IUserService = new UserService(
         userRepository,
-        s3Service
+        s3Service,
+        workoutRepository,
+        trainerProfileRepository,
+        subscriptionRepository,
+        subscriptionTransactionRepository,
+        stripeService,
     );
 
     const userController = new UserController(userService);

@@ -1,3 +1,4 @@
+import { GetTrainersQueryDto, TrainerListResponseDto } from "@/dto/user/user.dto";
 import { UpdateUserProfileInterface, UserInterface } from "./user.interface";
 import { PaginationMeta } from "@/interfaces/admin/admin.interface";
 

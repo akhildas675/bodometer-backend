@@ -37,24 +37,24 @@ export default class TrainerProfileRepository
   }
 
   async updateToReapply(
-  userId: string,
-  data: ReapplyTrainerData,  
-): Promise<void> {
-  await TrainerProfileModel.updateOne(
-    { userId },
-    {
-      $set: {
-        experienceInYears: data.experienceInYears,
-        certifications: data.certifications,
-        bio: data.bio,
-        specializationIds: data.specializationIds,
-        verificationStatus: VERIFICATION_STATUS.PENDING,
-        rejectionReason: null,
+    userId: string,
+    data: ReapplyTrainerData,
+  ): Promise<void> {
+    await TrainerProfileModel.updateOne(
+      { userId },
+      {
+        $set: {
+          experienceInYears: data.experienceInYears,
+          certifications: data.certifications,
+          bio: data.bio,
+          specializationIds: data.specializationIds,
+          verificationStatus: VERIFICATION_STATUS.PENDING,
+          rejectionReason: null,
+        },
+        $inc: { applyCount: 1 },
       },
-      $inc: { applyCount: 1 },
-    },
-  );
-}
+    );
+  }
   async fetchTrainerStatus(userId: string): Promise<TrainerStatusResponse | null> {
     const profile = await TrainerProfileModel.findOne({ userId }).populate<{
       userId: { name: string };
@@ -180,4 +180,103 @@ export default class TrainerProfileRepository
     return TrainerProfileModel.findByIdAndUpdate(profileId, updateData, { new: true })
       .lean<ITrainerProfileDocument>();
   }
+
+  async getTrainersBySpecialization(workoutId: string): Promise<ITrainerWithProfile[]> {
+  const profiles = await TrainerProfileModel.find({
+    specializationIds: new mongoose.Types.ObjectId(workoutId),
+    verificationStatus: VERIFICATION_STATUS.APPROVED,
+  })
+    .populate<{ userId: IUserDocument }>({
+      path: "userId",
+      select: "_id name profilePic bio",
+    })
+    .lean<PopulatedTrainerProfile[]>();
+
+  return profiles.map((p) => {
+    const { userId, ...profileData } = p;
+    return {
+      user: userId,
+      profile: { ...profileData, userId: userId._id } as ITrainerProfileDocument,
+    };
+  });
+}
+
+async getApprovedTrainersPaginated(
+  page: number,
+  limit: number,
+  search?: string,
+  sortBy?: string,
+  sortOrder?: "asc" | "desc",
+  specializationId?: string,
+): Promise<{ data: ITrainerWithProfile[]; total: number }> {
+  const skip = (page - 1) * limit;
+
+  const pipeline: PipelineStage[] = [
+    { $match: { verificationStatus: VERIFICATION_STATUS.APPROVED } },
+    {
+      $lookup: {
+        from: "users",
+        localField: "userId",
+        foreignField: "_id",
+        as: "userId",
+      },
+    },
+    { $unwind: "$userId" },
+    {
+      $lookup: {
+        from: "workouts",
+        localField: "specializationIds",
+        foreignField: "_id",
+        as: "specializationIds",
+      },
+    },
+  ];
+
+  if (search) {
+    pipeline.push({
+      $match: {
+        $or: [
+          { "userId.name": { $regex: search, $options: "i" } },
+          { bio: { $regex: search, $options: "i" } },
+        ],
+      },
+    });
+  }
+
+  if (specializationId) {
+    pipeline.push({
+      $match: {
+        "specializationIds._id": new mongoose.Types.ObjectId(specializationId),
+      },
+    });
+  }
+
+  if (sortBy) {
+    const sortField = sortBy === "name" ? "userId.name" : sortBy;
+    pipeline.push({ $sort: { [sortField]: sortOrder === "desc" ? -1 : 1 } });
+  } else {
+    pipeline.push({ $sort: { createdAt: -1 } });
+  }
+
+  const countPipeline: PipelineStage[] = [...pipeline, { $count: "total" }];
+  const countResult = await TrainerProfileModel.aggregate<{ total: number }>(countPipeline);
+  const total = countResult[0]?.total || 0;
+
+  pipeline.push({ $skip: skip }, { $limit: limit });
+
+
+  const profiles = await TrainerProfileModel.aggregate<ITrainerProfileDocument & { userId: IUserDocument }>(pipeline);
+
+  const data: ITrainerWithProfile[] = profiles.map((profile) => {
+  const { userId, ...profileData } = profile;
+  return {
+    user: userId,
+    profile: { ...profileData, userId: userId._id } as unknown as ITrainerProfileDocument,
+  };
+});
+
+  return { data, total };
+}
+
+
 }

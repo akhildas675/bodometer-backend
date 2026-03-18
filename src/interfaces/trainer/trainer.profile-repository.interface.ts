@@ -34,4 +34,17 @@ export interface ITrainerProfileRepository
     status: string,
     rejectionReason?: string | null,
   ): Promise<ITrainerProfileDocument | null>;
+
+  getTrainersBySpecialization(workoutId: string): Promise<ITrainerWithProfile[]>;
+
+getApprovedTrainersPaginated(
+  page: number,
+  limit: number,
+  search?: string,
+  sortBy?: string,
+  sortOrder?: "asc" | "desc",
+  specializationId?: string,
+): Promise<{ data: ITrainerWithProfile[]; total: number }>;
+
+
 }

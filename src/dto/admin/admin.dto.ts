@@ -136,3 +136,15 @@ export interface AdminGetUsersResponseDto
 export interface AdminBlockUnBlockUserDto {
   userId: string;
 }
+
+
+export interface GetSubscriptionsResponseDto {
+  id: string;
+  subscriptionName: string;
+  description: string;
+  price: number;
+  durationDays: number;
+  features: string[];
+  liveSessionCount: number;
+  planType: PlanType;
+}
