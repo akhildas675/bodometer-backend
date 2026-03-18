@@ -61,7 +61,7 @@ export class AuthService implements IAuthService {
   async register(data: RegisterDto): Promise<RegisterResponseDto> {
     const hashedPassword = await hashPassword(data.password);
     const normalizedEmail = data.email.toLowerCase().trim();
-    const baseUsername = normalizedEmail.split("@")[0];  // ✅ fixed split("@/") → split("@")
+    const baseUsername = normalizedEmail.split("@")[0]; 
 
     if (!baseUsername) {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.REGISTER.INVALID_EMAIL_FORMAT);
