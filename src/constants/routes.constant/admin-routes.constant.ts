@@ -17,6 +17,9 @@ export const ADMIN_ROUTES = {
   // Workout Management
   ADD_WORKOUT: '/admin/add-workout',
   GET_WORKOUTS: '/admin/get-workouts',
+  TOGGLE_WORKOUT_STATUS: (id: string) => `/admin/toggle-workout/${id}`,
+  GET_WORKOUT_BY_ID: "/admin/workout/:id",
+  UPDATE_WORKOUT:(id: string) => `/admin/update-workout/${id}`,
   
   // Appointment Management
   GET_TRAINER_APPOINTMENTS: '/admin/get-trainer-appointments',

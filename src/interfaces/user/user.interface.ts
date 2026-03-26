@@ -38,3 +38,32 @@ export interface UserInterface {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface WorkoutDetailResponse {
+  workout: {
+    id: string;
+    workoutName: string;
+    workoutDescription: string;
+    workoutImage: string;
+    coverPhoto: string;       
+    introVideo: string;       
+    targetMuscles: string[];  
+    equipment: string[];      
+    benefits: string[];       
+    isActive: boolean;
+    createdAt: string;
+  };
+  relatedTrainers: {
+    _id: string;
+    name: string;
+    profilePic: string | null;
+    experienceInYears: number;
+    bio: string;
+  }[];
+  relatedWorkouts: {
+    id: string;
+    workoutName: string;
+    workoutDescription: string;
+    workoutImage: string;
+  }[];
+}

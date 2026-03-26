@@ -5,7 +5,6 @@ import { ROLES } from "@/constants/roles";
 
 import {
   AddWorkoutDto,
-  AddWorkoutResponseDto,
   AdminGetTrainersDto,
   AdminGetTrainersResponseDto,
   AdminGetUsersDto,
@@ -15,6 +14,8 @@ import {
   PaginatedResponseDto,
   SubscriptionResponseDTO,
   UpdateSubscriptionDTO,
+  UpdateWorkoutDto,
+  WorkoutResponseDto,
 } from "@/dto/admin/admin.dto";
 import {
   ApproveTrainerResponseDto,
@@ -31,14 +32,14 @@ import { IWorkoutRepository } from "@/interfaces/workout/workout-repository.inte
 import { ISubscriptionRepository } from "@/interfaces/subscription/subscription-repository.interface";
 import { IS3Service } from "@/interfaces/s3/s3-service.interface";
 
-// ✅ all mappers from admin.mappers.ts
+
 import {
   AdminAccountMapper,
   TrainerMapper,
-  WorkoutMapper,
 } from "@/mappers/admin/admin.mappers";
 import { SubscriptionMapper } from "@/mappers/admin/subscription.mapper";
 import { AppError } from "@/utils/appError";
+import { WorkoutMapper } from "@/mappers/admin/workout.mapper";
 
 export class AdminService implements IAdminService {
   constructor(
@@ -47,7 +48,7 @@ export class AdminService implements IAdminService {
     private _workoutRepo: IWorkoutRepository,
     private _subscriptionRepo: ISubscriptionRepository,
     private _s3Service: IS3Service,
-  ) {}
+  ) { }
 
   //  Users
   async fetchUsers(
@@ -194,23 +195,103 @@ export class AdminService implements IAdminService {
   }
 
   //  Workouts
-  async workoutAdd(body: AddWorkoutDto): Promise<AddWorkoutResponseDto> {
-    const imageUrl = await this._s3Service.uploadFile(body.file, "workouts");
-    const workout: Workout = {
-      id: "",
-      workoutName: body.workoutName,
-      workoutDescription: body.workoutDescription,
-      workoutImage: imageUrl,
-      isActive: true,
-    };
-    const saved = await this._workoutRepo.createWorkout(workout);
-    return WorkoutMapper.toAdminResponse(saved);
+async createWorkout(body: AddWorkoutDto): Promise<WorkoutResponseDto> {
+
+  const imageUrl = await this._s3Service.uploadFile(
+    body.workoutImageFile,
+    "workout-thumbnails",
+  );
+
+  let coverPhotoUrl = "";
+  if (body.coverPhotoFile) {
+    coverPhotoUrl = await this._s3Service.uploadFile(
+      body.coverPhotoFile,
+      "workout-covers",
+    );
   }
 
-  async fetchWorkouts(): Promise<AddWorkoutResponseDto[]> {
+  let introVideoUrl = "";
+  if (body.introVideoFile) {
+    introVideoUrl = await this._s3Service.uploadFile(
+      body.introVideoFile,
+      "workout-videos",
+    );
+  }
+
+  const workout: Workout = {
+    id: "",
+    workoutName: body.workoutName,
+    workoutDescription: body.workoutDescription,
+    workoutImage: imageUrl,
+    coverPhoto: coverPhotoUrl,
+    introVideo: introVideoUrl,
+    targetMuscles: body.targetMuscles,
+    equipment: body.equipment,
+    benefits: body.benefits,
+    isActive: true,
+  };
+
+  const saved = await this._workoutRepo.createWorkout(workout);
+  return WorkoutMapper.toAdminResponse(saved);
+}
+
+  async fetchWorkouts(): Promise<WorkoutResponseDto[]> {
     const workouts = await this._workoutRepo.getAllWorkouts();
     return WorkoutMapper.toAdminResponseList(workouts);
   }
+
+  async toggleWorkoutStatus(id: string): Promise<Workout> {
+  const updated = await this._workoutRepo.toggleWorkoutStatus(id);
+  if (!updated) {
+    throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT.NOT_FOUND);
+  }
+  return updated;
+}
+
+async getWorkoutById(id: string): Promise<WorkoutResponseDto> {
+  const workout = await this._workoutRepo.getWorkoutById(id);
+
+  if (!workout) {
+    throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT.NOT_FOUND);
+  }
+
+  return WorkoutMapper.toAdminResponse(workout);;
+}
+
+
+async updateWorkout(id: string, dto: UpdateWorkoutDto): Promise<WorkoutResponseDto> {
+  const existing = await this._workoutRepo.getWorkoutById(id);
+  if (!existing) throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT.NOT_FOUND);
+
+  // Upload new files to S3 only if provided, else keep existing URLs
+  const workoutImage = dto.workoutImageFile
+    ? await this._s3Service.uploadFile(dto.workoutImageFile, "workout-thumbnails")
+    : existing.workoutImage;
+
+  const coverPhoto = dto.coverPhotoFile
+    ? await this._s3Service.uploadFile(dto.coverPhotoFile, "workout-covers")
+    : existing.coverPhoto;
+
+  const introVideo = dto.introVideoFile
+    ? await this._s3Service.uploadFile(dto.introVideoFile, "workout-videos")
+    : existing.introVideo;
+
+  const updateData: Partial<Workout> = {
+    workoutName:        dto.workoutName        ?? existing.workoutName,
+    workoutDescription: dto.workoutDescription ?? existing.workoutDescription,
+    targetMuscles:      dto.targetMuscles      ?? existing.targetMuscles,
+    equipment:          dto.equipment          ?? existing.equipment,
+    benefits:           dto.benefits           ?? existing.benefits,
+    workoutImage,
+    coverPhoto,
+    introVideo,
+  };
+
+  const updated = await this._workoutRepo.updateWorkout(id, updateData);
+  if (!updated) throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.COMMON.FAILED);
+
+  return WorkoutMapper.toAdminResponse(updated);
+}
 
   //  Subscriptions
   async createSubscription(data: CreateSubscriptionDTO): Promise<SubscriptionResponseDTO> {

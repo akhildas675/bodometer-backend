@@ -28,20 +28,37 @@ export interface AdminBaseUserResponseDto {
 export interface AddWorkoutDto {
   workoutName: string;
   workoutDescription: string;
-  file: Express.Multer.File;
+  targetMuscles: string[];
+  equipment: string[];
+  benefits: string[];
+  workoutImageFile: Express.Multer.File;
+  coverPhotoFile?: Express.Multer.File;
+  introVideoFile?: Express.Multer.File; 
 }
-export interface AddWorkoutResponseDto {
+
+export interface WorkoutResponseDto {
   id: string;
   workoutName: string;
   workoutDescription: string;
-  workoutImage: string;
-}
-export interface GetWorkoutsResponseDto {
-  id: string;
-  workoutName: string;
-  workoutDescription: string;
-  workoutImage: string;
+  workoutImage?: string;
+  coverPhoto?: string;
+  introVideo?: string;
+  targetMuscles: string[];
+  equipment: string[];
+  benefits: string[];
   isActive: boolean;
+  createdAt: string;
+}
+
+export interface UpdateWorkoutDto {
+  workoutName?: string;
+  workoutDescription?: string;
+  targetMuscles?: string[];
+  equipment?: string[];
+  benefits?: string[];
+  workoutImageFile?: Express.Multer.File;
+  coverPhotoFile?: Express.Multer.File;
+  introVideoFile?: Express.Multer.File;
 }
 
 

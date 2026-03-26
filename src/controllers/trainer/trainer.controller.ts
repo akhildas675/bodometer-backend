@@ -126,6 +126,7 @@ createProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
 
     const profileImageFile = files?.profileImage?.[0];
     const certificateFile = files?.certificate?.[0];
+    const coverImageFile = files?.coverImage?.[0];
 
     if (!profileImageFile) {
       throw new AppError(STATUS.BAD_REQUEST, "Profile image is required");
@@ -135,6 +136,10 @@ createProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
       throw new AppError(STATUS.BAD_REQUEST, "Certificate is required");
     }
 
+    if(!coverImageFile){
+      throw new AppError(STATUS.BAD_REQUEST,"Cover image is required")
+    }
+
     const specializationArray = Array.isArray(specializationIds)
       ? specializationIds
       : [specializationIds];
@@ -142,6 +147,7 @@ createProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
       const data: TrainerProfileDto = {
       profileImageFile,
       certificateFile,
+      coverImageFile,
       dateOfBirth,
       gender,
       experienceInYears: Number(experience),

@@ -8,6 +8,8 @@
     "lint:fix": "eslint . --ext .ts --fix",
     "lint:check": "eslint . --ext .ts --max-warnings 0",
     "dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/server.ts",
+    "dev:stripe": "stripe listen --forward-to localhost:5000/api/user/stripe/webhook",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev:stripe\"",
     "build": "tsc && tsc-alias",
     "start": "node dist/server.js"
   },
@@ -62,6 +64,7 @@
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.54.0",
     "@typescript-eslint/parser": "^8.54.0",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",

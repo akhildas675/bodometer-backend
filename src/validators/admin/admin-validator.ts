@@ -1,12 +1,31 @@
 import { z } from "zod";
 
+const formDataArray = z
+  .union([
+    z.array(z.string()),
+    z.string().transform((val) => [val]),
+  ])
+  .default([]);
+
 export const addWorkoutSchema = z.object({
   body: z.object({
     workoutName: z.string().min(1, "Workout name is required"),
-    workoutDescription: z.string().min(1, "Workout description is required"),
+    workoutDescription: z.string().min(1, "Description is required"),
+    targetMuscles: formDataArray,
+    equipment: formDataArray,
+    benefits: formDataArray,
   }),
 });
 
+export const updateWorkoutSchema = z.object({
+  body: z.object({
+    workoutName: z.string().min(1).optional(),
+    workoutDescription: z.string().min(1).optional(),
+    targetMuscles: formDataArray,
+    equipment: formDataArray,
+    benefits: formDataArray,
+  }),
+});
 export const getWorkoutsSchema = z.object({
   query: z.object({
     page: z.coerce.number().min(1).optional(),

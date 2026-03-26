@@ -23,9 +23,14 @@ export interface Workout {
   workoutName: string;
   workoutDescription: string;
   workoutImage: string;
+  coverPhoto: string;
+  introVideo: string;
+  targetMuscles: string[];
+  equipment: string[];
+  benefits: string[];
   isActive: boolean;
+  createdAt?: Date;
 }
-
 
 export interface PaginationMeta {
   currentPage: number;

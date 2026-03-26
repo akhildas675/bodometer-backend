@@ -44,6 +44,7 @@ export interface GetTrainerAppointmentsResponseDto {
     experienceInYears: number;
     certifications: string[];
     bio: string;
+    coverPhoto:string,
     verificationStatus: string;
     rejectionReason: string | null;
     createdAt: string;
@@ -79,6 +80,7 @@ export interface GetTrainerByIdResponseDto {
     userId: string;
      specializationIds: { _id: string; workoutName: string }[];
     experienceInYears: number;
+    coverPhoto:string;
     certifications: string[];
     bio: string;
     verificationStatus: string;
@@ -142,6 +144,7 @@ export interface TrainerStatusResponseDto {
 export interface TrainerProfileDto {
   profileImageFile: Express.Multer.File; 
   certificateFile: Express.Multer.File;   
+  coverImageFile: Express.Multer.File; 
   dateOfBirth: string;
   gender: Gender;
   experienceInYears: number;            

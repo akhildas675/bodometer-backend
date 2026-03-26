@@ -6,6 +6,7 @@ export interface ITrainerProfileDocument extends Document {
     userId: mongoose.Types.ObjectId;
     specializationIds: mongoose.Types.ObjectId[];
     experienceInYears: number;
+    coverPhoto:string,
     certifications: string[];
     bio: string;
     verificationStatus: VerificationStatus;
@@ -33,6 +34,11 @@ const TrainerProfileSchema = new Schema<ITrainerProfileDocument>(
         experienceInYears: {
             type: Number,
             default: 0,
+        },
+
+        coverPhoto:{
+            type:String,
+            default:""
         },
 
         certifications: {

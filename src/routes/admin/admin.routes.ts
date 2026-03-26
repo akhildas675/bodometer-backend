@@ -2,7 +2,6 @@ import { Router } from "express";
 import { ADMIN_ROUTES } from "@/constants/routes.constant/admin-routes.constant";
 import { ROLE_GUARD } from "@/constants/role.guard";
 import { validate } from "@/middleware/validate";
-import { imageUpload } from "@/config/multer";
 import { createAdminModule } from "@/modules/admin/admin.module";
 import {
   addWorkoutSchema,
@@ -12,6 +11,7 @@ import {
 } from "@/validators/admin/admin-validator";
 import { getTrainerAppointmentsSchema, getTrainersSchema, profileIdParamSchema, rejectTrainerSchema, trainerIdParamSchema } from "@/validators/admin/admin-trainer.validator";
 import { getUsersSchema, userIdParamSchema } from "@/validators/admin/admin-user.validator";
+import { mediaUpload } from "@/config/multer";
 
 const adminRoute = Router();
 const { adminController } = createAdminModule();
@@ -20,15 +20,41 @@ const { adminController } = createAdminModule();
 adminRoute.post(
   ADMIN_ROUTES.ADD_WORKOUT,
   ROLE_GUARD.ADMIN_GUARD,
-  imageUpload.single("workoutImage"),
+  mediaUpload.fields([
+    { name: "workoutImage", maxCount: 1 },
+    { name: "coverPhoto", maxCount: 1 },
+    { name: "introVideo", maxCount: 1 },  
+  ]),
   validate(addWorkoutSchema),
-  adminController.addWorkout,
+  adminController.createWorkout,
 );
 adminRoute.get(
   ADMIN_ROUTES.GET_WORKOUTS,
   ROLE_GUARD.ADMIN_GUARD,
   validate(getWorkoutsSchema),
   adminController.getWorkout,
+);
+
+adminRoute.patch(
+  ADMIN_ROUTES.TOGGLE_WORKOUT_STATUS(":id"),
+  ROLE_GUARD.ADMIN_GUARD,
+  adminController.toggleWorkoutStatus,
+);
+adminRoute.get(
+  ADMIN_ROUTES.GET_WORKOUT_BY_ID,
+  ROLE_GUARD.ADMIN_GUARD,
+  adminController.getWorkoutById,
+);
+
+adminRoute.put(
+  ADMIN_ROUTES.UPDATE_WORKOUT(":id"),
+  ROLE_GUARD.ADMIN_GUARD,
+  mediaUpload.fields([
+    { name: "workoutImage", maxCount: 1 },
+    { name: "coverPhoto", maxCount: 1 },
+    { name: "introVideo", maxCount: 1 },
+  ]),
+  adminController.updateWorkout,
 );
 
 // Subscription Management

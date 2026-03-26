@@ -6,6 +6,7 @@ import {
   FindUserResponseDto,
   GetTrainersQueryDto,
   GetUserWorkoutsQueryDto,
+  TrainerDetailDto,
   TrainerListResponseDto,
   UpdateUserProfileDto,
   UserWorkoutResponseDto,
@@ -13,7 +14,7 @@ import {
 } from "@/dto/user/user.dto";
 import { IUserRepository } from "@/interfaces/user/user-repository.interface";
 import { IUserService } from "@/interfaces/user/user-service.interface";
-import { UserMapper, UserWorkoutMapper } from "@/mappers/user/user.mappers";
+import { UserMapper, UserMappers } from "@/mappers/user/user.mappers";
 import { AppError } from "@/utils/appError";
 import { STATUS } from "@/constants/statuscode";
 import { IS3Service } from "@/interfaces/s3/s3-service.interface";
@@ -28,7 +29,6 @@ import { ISubscriptionRepository } from "@/interfaces/subscription/subscription-
 import { ISubscriptionTransactionRepository } from "@/interfaces/subscription/subscription.transaction-repository.interface";
 import Stripe from "stripe";
 import { IStripeService } from "@/interfaces/payment/stripe-service.interface";
-import { UserTrainerMapper } from "@/mappers/user/user-trainer.mapper";
 import { hashPassword } from "@/utils/password";
 import bcrypt from "bcrypt";
 import { UserSubscriptionMapper } from "@/mappers/user/user-subscription.mapper";
@@ -131,7 +131,7 @@ export class UserService implements IUserService {
       query.sortBy,
       query.sortOrder,
     );
-    return UserWorkoutMapper.toResponseDtoList(workouts, {
+    return UserMappers.toResponseDtoList(workouts, {
       currentPage: page,
       totalPages: Math.ceil(total / limit),
       totalItems: total,
@@ -139,18 +139,27 @@ export class UserService implements IUserService {
     });
   }
 
-  async getWorkoutDetail(workoutId: string): Promise<WorkoutDetailPageDto> {
-    const workout = await this._workoutRepository.getWorkoutById(workoutId);
-    if (!workout || !workout.isActive) {
-      throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT.NOT_FOUND);
-    }
-    const [trainers, relatedWorkouts] = await Promise.all([
-      this._trainerProfileRepo.getTrainersBySpecialization(workoutId),
-      this._workoutRepository.getRelatedWorkouts(workoutId, 3),
-    ]);
-    return UserWorkoutMapper.toDetailDto(workout, trainers, relatedWorkouts);
+
+async getWorkoutDetail(workoutId: string): Promise<WorkoutDetailPageDto> {
+  const workout = await this._workoutRepository.getWorkoutById(workoutId);
+  
+  console.log("1. raw workout from repo:", JSON.stringify(workout)); 
+  
+  if (!workout || !workout.isActive) {
+    throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT.NOT_FOUND);
   }
 
+  const [trainers, relatedWorkouts] = await Promise.all([
+    this._trainerProfileRepo.getTrainersBySpecialization(workoutId),
+    this._workoutRepository.getRelatedWorkouts(workoutId, 3),
+  ]);
+
+  const result = UserMappers.toDetailDto(workout, trainers, relatedWorkouts);
+  
+  console.log("2. result after mapper:", JSON.stringify(result.workout)); 
+  
+  return result;
+}
   async getActiveSubscriptions(): Promise<GetSubscriptionsResponseDto[]> {
     const subs = await this._subscriptionRepository.findAllSubscriptions();
     const active = subs.filter((s) => s.isActive);
@@ -270,8 +279,10 @@ export class UserService implements IUserService {
       query.specializationId,
     );
 
+    console.log("Trainer profile data...",data)
+
     return {
-      data: UserTrainerMapper.toListItemDtoArray(data),
+      data: UserMappers.toListItemDtoArray(data),
       pagination: {
         currentPage: page,
         totalPages: Math.ceil(total / limit),
@@ -280,4 +291,14 @@ export class UserService implements IUserService {
       },
     };
   }
+
+ async getTrainerById(trainerId: string): Promise<TrainerDetailDto> {
+    const data = await this._trainerProfileRepo.getTrainerByIdWithUser(trainerId);
+    console.log("Trainer data in user service details",data)
+    if(!data){
+      throw new AppError(STATUS.NOT_FOUND,MESSAGES.TRAINER.NOT_FOUND)
+    }
+    return UserMappers.toTrainerDetailDto(data)
+  }
+
 }

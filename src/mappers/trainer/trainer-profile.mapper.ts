@@ -7,6 +7,7 @@ export class TrainerProfileMapper {
     userId:             doc.userId.toString(),
     experienceInYears:  doc.experienceInYears,
     certifications:     doc.certifications,
+    coverPhoto:         doc.coverPhoto,
     bio:                doc.bio,
     verificationStatus: doc.verificationStatus,
     rejectionReason:    doc.rejectionReason ?? null,
@@ -18,6 +19,7 @@ export class TrainerProfileMapper {
     return {
       userId: profile.userId,
       experienceInYears: profile.experienceInYears,
+      coverPhoto       : profile.coverPhoto,
       certifications: profile.certifications,
       bio: profile.bio,
       verificationStatus: profile.verificationStatus,

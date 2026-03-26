@@ -46,5 +46,7 @@ getApprovedTrainersPaginated(
   specializationId?: string,
 ): Promise<{ data: ITrainerWithProfile[]; total: number }>;
 
+getTrainerByIdWithUser(trainerId:string):Promise<ITrainerWithProfile| null>
+
 
 }

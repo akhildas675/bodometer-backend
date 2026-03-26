@@ -18,12 +18,27 @@ export default class WorkoutRepository
       workoutName: doc.workoutName,
       workoutDescription: doc.workoutDescription,
       workoutImage: doc.workoutImage,
+      coverPhoto: doc.coverPhoto,
+      introVideo: doc.introVideo,
+      targetMuscles: doc.targetMuscles,
+      benefits: doc.benefits,
+      equipment: doc.equipment,
       isActive: doc.isActive,
     };
   }
 
   async createWorkout(body: Workout): Promise<Workout> {
     return this.create(body);
+  }
+
+  async toggleWorkoutStatus(id: string): Promise<Workout | null> {
+    const workout = await WorkoutModel.findById(id);
+    if (!workout) {
+      return null;
+    }
+    workout.isActive = !workout.isActive;
+    await workout.save();
+    return this.toInterface(workout)
   }
 
   async getAllWorkouts(): Promise<Workout[]> {
@@ -84,8 +99,23 @@ export default class WorkoutRepository
       workoutName: doc.workoutName,
       workoutDescription: doc.workoutDescription,
       workoutImage: doc.workoutImage,
+      coverPhoto: doc.coverPhoto,
+      introVideo: doc.introVideo,
+      targetMuscles: doc.targetMuscles,
+      benefits: doc.benefits,
+      equipment: doc.equipment,
       isActive: doc.isActive,
     }));
+  }
+
+  async updateWorkout(id: string, body: Partial<Workout>): Promise<Workout | null> {
+    const doc = await WorkoutModel.findByIdAndUpdate(
+      id,
+      { $set: body },
+      { new: true }
+    );
+    if (!doc) return null;
+    return this.toInterface(doc);
   }
 
 }

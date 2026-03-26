@@ -57,14 +57,6 @@ export interface UserWorkoutResponseDto {
   workoutImage: string;
 }
 
-
-export interface WorkoutDetailResponseDto {
-  id: string;
-  workoutName: string;
-  workoutDescription: string;
-  workoutImage: string;
-}
-
 export interface RelatedTrainerDto {
   _id: string;
   name: string;
@@ -72,13 +64,6 @@ export interface RelatedTrainerDto {
   experienceInYears: number;
   bio: string;
 }
-
-export interface WorkoutDetailPageDto {
-  workout: WorkoutDetailResponseDto;
-  relatedTrainers: RelatedTrainerDto[];
-  relatedWorkouts: WorkoutDetailResponseDto[];
-}
-
 export interface GetSubscriptionsResponseDto {
   id: string;
   subscriptionName: string;
@@ -121,7 +106,9 @@ export interface TrainerListItemDto {
   _id: string;
   name: string;
   profilePic: string | null;
+  profileId: string; 
   experienceInYears: number;
+  coverPhoto:string;
   bio: string;
   specializations: { _id: string; workoutName: string }[];
 }
@@ -135,3 +122,43 @@ export interface TrainerListResponseDto {
     itemsPerPage: number;
   };
 }
+
+export interface WorkoutDetailResponseDto {
+  id: string;
+  workoutName: string;
+  workoutDescription: string;
+  workoutImage: string;
+  coverPhoto: string;
+  introVideo: string;
+  targetMuscles: string[];
+  equipment: string[];
+  benefits: string[];
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface RelatedTrainerDto {
+  _id: string;
+  name: string;
+  profilePic: string | null;
+  experienceInYears: number;
+  bio: string;
+}
+
+export interface WorkoutDetailPageDto {
+  workout: WorkoutDetailResponseDto;
+  relatedTrainers: RelatedTrainerDto[];
+  relatedWorkouts: WorkoutDetailResponseDto[];
+}
+
+
+export interface TrainerDetailDto {
+  _id: string;
+  name: string;
+  profilePic: string | null;
+  coverPhoto: string;
+  bio: string;
+  experienceInYears: number;
+  specializations: { _id: string; workoutName: string }[];
+}
+ 

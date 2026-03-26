@@ -11,7 +11,7 @@ import {
   GetTrainerByIdResponseDto,
   RejectTrainerResponseDto,
 } from "@/dto/trainer/trainer.dto";
-import { AdminGetUsersResponseDto, GetWorkoutsResponseDto } from "@/dto/admin/admin.dto";
+import { AdminGetUsersResponseDto, WorkoutResponseDto,  } from "@/dto/admin/admin.dto";
 
 // Account Mapper (User & Trainer list)
 export class AdminAccountMapper {
@@ -58,6 +58,7 @@ export class TrainerMapper {
         experienceInYears: trainer.profile.experienceInYears,
         certifications: trainer.profile.certifications ?? [],
         bio: trainer.profile.bio,
+        coverPhoto:trainer.profile.coverPhoto,
         verificationStatus: trainer.profile.verificationStatus,
         rejectionReason: trainer.profile.rejectionReason || null,
         createdAt: trainer.profile.createdAt?.toISOString() || "",
@@ -103,6 +104,7 @@ export class TrainerMapper {
         experienceInYears: trainer.profile.experienceInYears,
         certifications: trainer.profile.certifications ?? [],
         bio: trainer.profile.bio,
+        coverPhoto:trainer.profile.coverPhoto,
         verificationStatus: trainer.profile.verificationStatus,
         rejectionReason: trainer.profile.rejectionReason || null,
         applyCount: trainer.profile.applyCount ?? 0,
@@ -135,19 +137,25 @@ export class TrainerMapper {
   }
 }
 
-//  Workout Mapper
-export class WorkoutMapper {
-  static toAdminResponse(workout: Workout): GetWorkoutsResponseDto {
-    return {
-      id: workout.id,
-      workoutName: workout.workoutName,
-      workoutDescription: workout.workoutDescription,
-      workoutImage: workout.workoutImage,
-      isActive: workout.isActive,
-    };
-  }
+// //  Workout Mapper
+// export class WorkoutMapper {
+//   static toAdminResponse(workout: Workout): WorkoutResponseDto {
+//     return {
+//         id: workout.id!,
+//       workoutName: workout.workoutName,
+//       workoutDescription: workout.workoutDescription,
+//       workoutImage: workout.workoutImage,
+//       coverPhoto:workout.coverPhoto,
+//       introVideo:workout.introVideo,
+//       targetMuscles:workout.targetMuscles,
+//       benefits:workout.benefits,
+//       equipment:workout.equipment,
+//       isActive: workout.isActive,
+//       createdAt: workout.createdAt?.toISOString() ?? "",
+//     };
+//   }
 
-  static toAdminResponseList(workouts: Workout[]): GetWorkoutsResponseDto[] {
-    return workouts.map((w) => WorkoutMapper.toAdminResponse(w));
-  }
-}
+//   static toAdminResponseList(workouts: Workout[]): WorkoutResponseDto[] {
+//     return workouts.map((w) => WorkoutMapper.toAdminResponse(w));
+//   }
+// }

@@ -26,6 +26,7 @@ export interface TrainerProfile {
   verificationStatus: VerificationStatus;
   rejectionReason?: string | null;
   experienceInYears: number,
+  coverPhoto:string,
   certifications: string[],
   bio: string;
   applyCount: number;
@@ -35,6 +36,7 @@ export interface TrainerProfileDataInterface {
   userId: string;
   experienceInYears: number;
   certifications: string[];
+  coverPhoto:string;
   bio: string;
   verificationStatus: VerificationStatus;
   rejectionReason?: string | null;
@@ -61,4 +63,5 @@ export interface ReapplyTrainerData {
   certifications: string[];
   bio: string;
   specializationIds: mongoose.Types.ObjectId[];
+  coverPhoto:string;
 }

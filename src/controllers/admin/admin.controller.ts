@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { AddWorkoutDto, AdminBlockUnblockTrainerDto, AdminBlockUnBlockUserDto, AdminGetTrainersDto, AdminGetUsersDto, CreateSubscriptionDTO, GetTrainerAppointmentsQueryDto, RejectTrainerBodyDto, UpdateSubscriptionDTO } from "@/dto/admin/admin.dto";
+import { AddWorkoutDto, AdminBlockUnblockTrainerDto, AdminBlockUnBlockUserDto, AdminGetTrainersDto, AdminGetUsersDto, CreateSubscriptionDTO, GetTrainerAppointmentsQueryDto, RejectTrainerBodyDto, UpdateSubscriptionDTO, UpdateWorkoutDto } from "@/dto/admin/admin.dto";
 import { AppError } from "@/utils/appError";
 import { IAdminService } from "@/interfaces/admin/admin-service.interface";
 import { STATUS } from "@/constants/statuscode";
@@ -11,32 +11,34 @@ export class AdminController {
 
   //workouts
 
-  addWorkout = async (req: Request, res: Response, next: NextFunction) => {
+  createWorkout = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { workoutName, workoutDescription } = req.body;
-      const file = req.file;
+      const files = req.files as Record<string, Express.Multer.File[]>;
 
-      if (!workoutName || !workoutDescription) {
-        throw new AppError(
-          STATUS.BAD_REQUEST,
-          MESSAGES.VALIDATION.REQUIRED_FIELD,
-        );
+      const workoutImageFile = files?.workoutImage?.[0];
+      const coverPhotoFile = files?.coverPhoto?.[0];
+      const introVideoFile = files?.introVideo?.[0];
+
+      if (!workoutImageFile) {
+        throw new AppError(STATUS.BAD_REQUEST, "Workout image is required");
       }
 
-      if (!file) {
-        throw new AppError(
-          STATUS.BAD_REQUEST,
-          MESSAGES.VALIDATION.REQUIRED_FIELD,
-        );
-      }
+      const dto: AddWorkoutDto = {
+        workoutName: req.body.workoutName,
+        workoutDescription: req.body.workoutDescription,
+        targetMuscles: req.body.targetMuscles,
+        equipment: req.body.equipment,
+        benefits: req.body.benefits,
+        workoutImageFile,
+      };
 
-      const body: AddWorkoutDto = { workoutName, workoutDescription, file };
+      if (coverPhotoFile) dto.coverPhotoFile = coverPhotoFile;
+      if (introVideoFile) dto.introVideoFile = introVideoFile;
 
-      const result = await this._adminService.workoutAdd(body);
-
+      const result = await this._adminService.createWorkout(dto);
       res.status(STATUS.CREATED).json({
         success: true,
-        message: MESSAGES.ADMIN.EXERCISE_CREATED,
+        message: MESSAGES.WORKOUT.CREATED,
         data: result,
       });
     } catch (error) {
@@ -44,8 +46,32 @@ export class AdminController {
     }
   };
 
+
+
+  toggleWorkoutStatus = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
+      }
+      const result = await this._adminService.toggleWorkoutStatus(id);
+      res.status(STATUS.OK).json({
+        success: true,
+        message: result.isActive
+          ? MESSAGES.WORKOUT.ACTIVATED
+          : MESSAGES.WORKOUT.DEACTIVATED,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+
   getWorkout = async (req: Request, res: Response, next: NextFunction) => {
     try {
+
+      console.log("get workout fun work")
       const workouts = await this._adminService.fetchWorkouts();
 
       res.status(STATUS.OK).json({
@@ -58,6 +84,55 @@ export class AdminController {
     }
   };
 
+
+  getWorkoutById = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+
+    console.log("hit get workout by id")
+    if (!id) throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
+    const result = await this._adminService.getWorkoutById(id);
+     console.log("result before sending:", result);
+    res.status(STATUS.OK).json({
+      success: true,
+      message: MESSAGES.COMMON.SUCCESS,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+updateWorkout = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    if (!id) throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
+
+    const files = req.files as Record<string, Express.Multer.File[]>;
+
+    const dto: UpdateWorkoutDto = {
+      workoutName: req.body.workoutName,
+      workoutDescription: req.body.workoutDescription,
+      targetMuscles: req.body.targetMuscles,
+      equipment: req.body.equipment,
+      benefits: req.body.benefits,
+    };
+
+    if (files?.workoutImage?.[0]) dto.workoutImageFile = files.workoutImage[0];
+    if (files?.coverPhoto?.[0])   dto.coverPhotoFile   = files.coverPhoto[0];
+    if (files?.introVideo?.[0])   dto.introVideoFile   = files.introVideo[0];
+
+    const result = await this._adminService.updateWorkout(id, dto);
+
+    res.status(STATUS.OK).json({
+      success: true,
+      message: MESSAGES.COMMON.SUCCESS,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
   // subscription
   createSubscription = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
@@ -120,27 +195,27 @@ export class AdminController {
       next(error);
     }
   };
-toggleSubscriptionStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.SUBSCRIPTION.ID_REQUIRED);
+  toggleSubscriptionStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.SUBSCRIPTION.ID_REQUIRED);
+      }
+      const result = await this._adminService.toggleSubscriptionStatus(id);
+      return res.status(STATUS.OK).json({
+        success: true,
+        message: result.isActive ? MESSAGES.SUBSCRIPTION.ACTIVATED : MESSAGES.SUBSCRIPTION.DEACTIVATED,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
     }
-    const result = await this._adminService.toggleSubscriptionStatus(id);
-    return res.status(STATUS.OK).json({
-      success: true,
-      message: result.isActive ? MESSAGES.SUBSCRIPTION.ACTIVATED : MESSAGES.SUBSCRIPTION.DEACTIVATED,
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  };
 
 
-//Trainer
+  //Trainer
 
- getTrainers = async (req: Request, res: Response, next: NextFunction) => {
+  getTrainers = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
       const query = req.query as AdminGetTrainersDto
@@ -191,30 +266,30 @@ toggleSubscriptionStatus = async (req: AuthRequest, res: Response, next: NextFun
 
   //trainer appointment
 
-getTrainerAppointments = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const query: GetTrainerAppointmentsQueryDto = {};
+  getTrainerAppointments = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    const query: GetTrainerAppointmentsQueryDto = {};
 
-  if (req.query.search) query.search = req.query.search as string;
-  if (req.query.sortBy) query.sortBy = req.query.sortBy as string;
-  if (req.query.sortOrder) query.sortOrder = req.query.sortOrder as "asc" | "desc";
-  if (req.query.page) query.page = Number(req.query.page);
-  if (req.query.limit) query.limit = Number(req.query.limit);
-  if (req.query.status) query.status = req.query.status as string;
+    if (req.query.search) query.search = req.query.search as string;
+    if (req.query.sortBy) query.sortBy = req.query.sortBy as string;
+    if (req.query.sortOrder) query.sortOrder = req.query.sortOrder as "asc" | "desc";
+    if (req.query.page) query.page = Number(req.query.page);
+    if (req.query.limit) query.limit = Number(req.query.limit);
+    if (req.query.status) query.status = req.query.status as string;
 
-  const result = await this._adminService.getTrainerAppointments(query);
-  res.status(STATUS.OK).json({
-    success: true,
-    message: MESSAGES.TRAINER.PROFILE_FETCHED,
-    data: result.data,
-    pagination: result.pagination,
-  });
-};
+    const result = await this._adminService.getTrainerAppointments(query);
+    res.status(STATUS.OK).json({
+      success: true,
+      message: MESSAGES.TRAINER.PROFILE_FETCHED,
+      data: result.data,
+      pagination: result.pagination,
+    });
+  };
   getTrainerById = async (req: Request, res: Response, next: NextFunction) => {
-    const { profileId } = req.params 
+    const { profileId } = req.params
 
     if (!profileId) {
       throw new AppError(STATUS.BAD_REQUEST, "Profile ID is required");
@@ -222,7 +297,7 @@ getTrainerAppointments = async (
 
     const trainer = await this._adminService.getTrainerByProfileId(profileId);
 
-    console.log("Trainer Profile details",trainer)
+    console.log("Trainer Profile details", trainer)
 
     res.status(STATUS.OK).json({
       success: true,
@@ -274,12 +349,12 @@ getTrainerAppointments = async (
     try {
       const query = req.query as unknown as AdminGetUsersDto;
       const data = await this._adminService.fetchUsers(query);
-   
+
       res.status(STATUS.OK).json({
         success: true,
-        message:MESSAGES.USER.PROFILE_FETCHED,
-        data:data.data,
-        pagination:data.pagination
+        message: MESSAGES.USER.PROFILE_FETCHED,
+        data: data.data,
+        pagination: data.pagination
       });
     } catch (error) {
       next(error);
@@ -309,7 +384,7 @@ getTrainerAppointments = async (
 
       res.status(STATUS.OK).json({
         success: true,
-        message:  MESSAGES.ADMIN.USER_UNBLOCKED,
+        message: MESSAGES.ADMIN.USER_UNBLOCKED,
       });
     } catch (error) {
       next(error);

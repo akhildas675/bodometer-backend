@@ -114,6 +114,7 @@ export class TrainerService implements ITrainerService {
 
     const certificateUrl = await this._s3Service.uploadFile(data.certificateFile, "trainer-certificates");
     const profileImageUrl = await this._s3Service.uploadFile(data.profileImageFile, "trainer-profile-images");
+     const coverPhotoUrl = await this._s3Service.uploadFile(data.coverImageFile, "trainer-cover-photos");
 
     await this._userRepo.updateProfile(userId, {
       profilePic: profileImageUrl,
@@ -131,6 +132,7 @@ export class TrainerService implements ITrainerService {
         certifications: [certificateUrl],
         bio: data.bio,
         specializationIds: specializationObjectIds,
+        coverPhoto:coverPhotoUrl,
       });
       return;
     }
@@ -139,6 +141,7 @@ export class TrainerService implements ITrainerService {
       userId: new mongoose.Types.ObjectId(userId),
       specializationIds: specializationObjectIds, 
       experienceInYears: data.experienceInYears,
+      coverPhoto:coverPhotoUrl,
       certifications: [certificateUrl],
       bio: data.bio,
       verificationStatus: VERIFICATION_STATUS.PENDING,

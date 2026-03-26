@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { imageUpload } from "@/config/multer";
 import { USER_ROUTES } from "@/constants/routes.constant/user-routes.constant";
 import { ROLE_GUARD } from "@/constants/role.guard";
 import { validate } from "@/middleware/validate";
@@ -8,6 +7,7 @@ import {
   uploadProfilePictureSchema,
 } from "@/validators/user/user.validator";
 import { createUserModule } from "@/modules/user/user.module";
+import { mediaUpload } from "@/config/multer";
 
 const userRoute = Router();
 const { userController } = createUserModule();
@@ -25,7 +25,7 @@ userRoute.put(
 );
 userRoute.post(
   USER_ROUTES.PROFILE_PICTURE,
-  imageUpload.single("file"),
+  mediaUpload.single("file"),
   ROLE_GUARD.USER_GUARD,
   validate(uploadProfilePictureSchema),
   userController.uploadProfilePicture,
@@ -64,6 +64,8 @@ userRoute.get(
   ROLE_GUARD.USER_GUARD,
   userController.getTrainers,
 );
+
+userRoute.get(USER_ROUTES.GET_TRAINERS_BY_ID, ROLE_GUARD.USER_GUARD, userController.getTrainerById)
 
 userRoute.patch(
   USER_ROUTES.CHANGE_PASSWORD,

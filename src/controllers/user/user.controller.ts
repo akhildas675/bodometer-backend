@@ -11,6 +11,7 @@ import { AppError } from "@/utils/appError";
 import { STATUS } from "@/constants/statuscode";
 import { AuthRequest } from "@/middleware/authGuard";
 import { MESSAGES } from "@/constants/messages";
+import { success } from "zod";
 
 export class UserController {
   constructor(private _userService: IUserService) { }
@@ -149,6 +150,7 @@ export class UserController {
       if (!id)
         throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
       const result = await this._userService.getWorkoutDetail(id);
+      console.log("workout details page",result)
       res.status(STATUS.OK).json({
         success: true,
         message: MESSAGES.COMMON.SUCCESS,
@@ -253,4 +255,27 @@ export class UserController {
       next(error);
     }
   };
+  getTrainerById = async(req:AuthRequest,res:Response,next:NextFunction)=>{
+    try {
+
+      const {id}=req.params;
+
+      console.log("id in trainer details",id)
+
+      if(!id){
+       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
+      };
+
+      const result = await this._userService.getTrainerById(id);
+
+      res.status(STATUS.OK).json({
+        success:true,
+        message:MESSAGES.COMMON.SUCCESS,
+        data:result,
+      })
+      
+    } catch (error) {
+      next(error)
+    }
+  }
 }

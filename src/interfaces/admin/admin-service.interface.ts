@@ -1,6 +1,6 @@
-import { AddWorkoutDto, AddWorkoutResponseDto, AdminGetTrainersDto, AdminGetTrainersResponseDto, AdminGetUsersDto, AdminGetUsersResponseDto, CreateSubscriptionDTO, GetTrainerAppointmentsQueryDto, PaginatedResponseDto, SubscriptionResponseDTO, UpdateSubscriptionDTO } from "@/dto/admin/admin.dto";
+import { AddWorkoutDto, AdminGetTrainersDto, AdminGetTrainersResponseDto, AdminGetUsersDto, AdminGetUsersResponseDto, CreateSubscriptionDTO, GetTrainerAppointmentsQueryDto, PaginatedResponseDto, SubscriptionResponseDTO, UpdateSubscriptionDTO, UpdateWorkoutDto, WorkoutResponseDto } from "@/dto/admin/admin.dto";
 import { ApproveTrainerResponseDto, GetTrainerAppointmentsResponseDto, GetTrainerByIdResponseDto, RejectTrainerResponseDto } from "@/dto/trainer/trainer.dto";
-import { PaginatedResult } from "@/interfaces/admin/admin.interface";
+import { PaginatedResult, Workout } from "@/interfaces/admin/admin.interface";
 
 export interface IAdminService {
   // Users
@@ -18,8 +18,11 @@ export interface IAdminService {
   rejectTrainer(profileId: string, reason: string): Promise<RejectTrainerResponseDto>;
 
   // Workouts
-  workoutAdd(body: AddWorkoutDto): Promise<AddWorkoutResponseDto>;
-  fetchWorkouts(): Promise<AddWorkoutResponseDto[]>;
+  createWorkout(body: AddWorkoutDto): Promise<WorkoutResponseDto>;
+  fetchWorkouts(): Promise<WorkoutResponseDto[]>;
+  toggleWorkoutStatus(id: string): Promise<Workout>;
+  getWorkoutById(id:string):Promise<WorkoutResponseDto>
+  updateWorkout(id:string,data:UpdateWorkoutDto):Promise<WorkoutResponseDto>
 
   // Subscriptions
   createSubscription(data: CreateSubscriptionDTO): Promise<SubscriptionResponseDTO>;
