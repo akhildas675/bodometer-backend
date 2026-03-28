@@ -116,12 +116,6 @@ createProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
 
     const { dateOfBirth, gender, experience, bio, specializationIds } = req.body;
 
-    
-    // Debug logs
-    console.log("Content-Type:", req.headers["content-type"]);
-    console.log("Body:", req.body);
-    console.log("Files:", req.files);
-
     const files = req.files as Record<string, Express.Multer.File[]> | undefined;
 
     const profileImageFile = files?.profileImage?.[0];
@@ -154,7 +148,6 @@ createProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
       bio,
       specializationIds: specializationArray,
     };
-    console.log("data from the appointment...",data)
 
     await this._trainerService.createProfile(req.user.id, data);
 

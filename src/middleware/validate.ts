@@ -5,7 +5,7 @@ import { STATUS } from "@/constants/statuscode";
 export const validate =
   (schema: ZodObject) => (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log("VALIDATE MIDDLEWARE - body:", req.body);
+ 
 
       schema.parse({
         body: req.body,

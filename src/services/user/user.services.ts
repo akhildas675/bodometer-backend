@@ -143,7 +143,6 @@ export class UserService implements IUserService {
 async getWorkoutDetail(workoutId: string): Promise<WorkoutDetailPageDto> {
   const workout = await this._workoutRepository.getWorkoutById(workoutId);
   
-  console.log("1. raw workout from repo:", JSON.stringify(workout)); 
   
   if (!workout || !workout.isActive) {
     throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT.NOT_FOUND);
@@ -155,8 +154,7 @@ async getWorkoutDetail(workoutId: string): Promise<WorkoutDetailPageDto> {
   ]);
 
   const result = UserMappers.toDetailDto(workout, trainers, relatedWorkouts);
-  
-  console.log("2. result after mapper:", JSON.stringify(result.workout)); 
+
   
   return result;
 }
@@ -279,7 +277,7 @@ async getWorkoutDetail(workoutId: string): Promise<WorkoutDetailPageDto> {
       query.specializationId,
     );
 
-    console.log("Trainer profile data...",data)
+
 
     return {
       data: UserMappers.toListItemDtoArray(data),
@@ -294,7 +292,6 @@ async getWorkoutDetail(workoutId: string): Promise<WorkoutDetailPageDto> {
 
  async getTrainerById(trainerId: string): Promise<TrainerDetailDto> {
     const data = await this._trainerProfileRepo.getTrainerByIdWithUser(trainerId);
-    console.log("Trainer data in user service details",data)
     if(!data){
       throw new AppError(STATUS.NOT_FOUND,MESSAGES.TRAINER.NOT_FOUND)
     }

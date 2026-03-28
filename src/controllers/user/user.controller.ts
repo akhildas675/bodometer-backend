@@ -150,7 +150,6 @@ export class UserController {
       if (!id)
         throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
       const result = await this._userService.getWorkoutDetail(id);
-      console.log("workout details page",result)
       res.status(STATUS.OK).json({
         success: true,
         message: MESSAGES.COMMON.SUCCESS,
@@ -259,8 +258,6 @@ export class UserController {
     try {
 
       const {id}=req.params;
-
-      console.log("id in trainer details",id)
 
       if(!id){
        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);

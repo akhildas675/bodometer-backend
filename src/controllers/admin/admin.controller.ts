@@ -70,8 +70,6 @@ export class AdminController {
 
   getWorkout = async (req: Request, res: Response, next: NextFunction) => {
     try {
-
-      console.log("get workout fun work")
       const workouts = await this._adminService.fetchWorkouts();
 
       res.status(STATUS.OK).json({
@@ -89,11 +87,10 @@ export class AdminController {
   try {
     const { id } = req.params;
 
-    console.log("hit get workout by id")
+    
     if (!id) throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
     const result = await this._adminService.getWorkoutById(id);
-     console.log("result before sending:", result);
-    res.status(STATUS.OK).json({
+        res.status(STATUS.OK).json({
       success: true,
       message: MESSAGES.COMMON.SUCCESS,
       data: result,
@@ -296,8 +293,6 @@ updateWorkout = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     const trainer = await this._adminService.getTrainerByProfileId(profileId);
-
-    console.log("Trainer Profile details", trainer)
 
     res.status(STATUS.OK).json({
       success: true,
