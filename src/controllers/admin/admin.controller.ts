@@ -386,5 +386,18 @@ updateWorkout = async (req: Request, res: Response, next: NextFunction) => {
     }
   };
 
+  getAllSections = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const sections = await this._adminService.getAllSections();
+      res.status(STATUS.OK).json({
+        success: true,
+        message: MESSAGES.COMMON.SUCCESS,
+        data: sections,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
+  
 }

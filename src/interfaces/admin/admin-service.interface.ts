@@ -1,4 +1,4 @@
-import { AddWorkoutDto, AdminGetTrainersDto, AdminGetTrainersResponseDto, AdminGetUsersDto, AdminGetUsersResponseDto, CreateSubscriptionDTO, GetTrainerAppointmentsQueryDto, PaginatedResponseDto, SubscriptionResponseDTO, UpdateSubscriptionDTO, UpdateWorkoutDto, WorkoutResponseDto } from "@/dto/admin/admin.dto";
+import { AddWorkoutDto, AdminGetTrainersDto, AdminGetTrainersResponseDto, AdminGetUsersDto, AdminGetUsersResponseDto, CreateSubscriptionDTO, GetTrainerAppointmentsQueryDto, OnboardingSectionResponseDto, PaginatedResponseDto, SubscriptionResponseDTO, UpdateSubscriptionDTO, UpdateWorkoutDto, WorkoutResponseDto } from "@/dto/admin/admin.dto";
 import { ApproveTrainerResponseDto, GetTrainerAppointmentsResponseDto, GetTrainerByIdResponseDto, RejectTrainerResponseDto } from "@/dto/trainer/trainer.dto";
 import { PaginatedResult, Workout } from "@/interfaces/admin/admin.interface";
 
@@ -30,4 +30,7 @@ export interface IAdminService {
   getSubscriptionById(id: string): Promise<SubscriptionResponseDTO>;
   updateSubscription(id: string, data: UpdateSubscriptionDTO): Promise<SubscriptionResponseDTO>;
   toggleSubscriptionStatus(id: string): Promise<SubscriptionResponseDTO>;
+
+  // Onboarding Sections
+  getAllSections(): Promise<OnboardingSectionResponseDto[]>;
 }

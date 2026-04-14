@@ -23,6 +23,13 @@ export abstract class BaseRepository<T, D extends Document>
     return this.toInterface(saved);
   }
 
+  async upsert(filter: Record<string, unknown>, data: Partial<T>): Promise<T> {
+    const doc = await this.model
+      .findOneAndUpdate(filter, { $set: data }, { new: true, upsert: true, runValidators: true })
+      .exec();
+    return this.toInterface(doc as D);
+  }
+
   async findOne(filter: Record<string, unknown>): Promise<T | null> {
     const doc = await this.model.findOne(filter).exec();
     return doc ? this.toInterface(doc) : null;

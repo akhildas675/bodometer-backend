@@ -160,5 +160,10 @@ adminRoute.patch(
   adminController.unblockUser,
 );
 
+adminRoute.get(
+  ADMIN_ROUTES.GET_ONBOARDING_SECTIONS,
+  ROLE_GUARD.ADMIN_GUARD,
+  adminController.getAllSections,
+);
 
 export default adminRoute;

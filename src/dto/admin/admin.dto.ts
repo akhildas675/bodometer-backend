@@ -1,6 +1,14 @@
 import { Role } from "@/constants/roles";
 import { PlanType } from "@/constants/subscription";
 
+export interface OnboardingSectionResponseDto {
+  id: string;
+  key: string;
+  title: string;
+  order: number;
+  isActive: boolean;
+}
+
 export interface PaginationMetaDto {
   currentPage: number;
   totalPages: number;
@@ -165,3 +173,36 @@ export interface GetSubscriptionsResponseDto {
   liveSessionCount: number;
   planType: PlanType;
 }
+
+export interface CreateQuestionDto {
+  key: string;
+  schemaKey?: string | null;
+  isCoreLocked?: boolean;
+  question: string;
+  section: string;
+  order: number;
+  isActive?: boolean;
+  type: string;
+  options?: any[];
+  followUp?: any;
+  config?: any;
+  validation?: any;
+}
+
+export interface OnboardingQuestionResponseDto {
+  id: string;
+  key: string;
+  schemaKey: string | null;
+  isCoreLocked: boolean;
+  question: string;
+  section: string;
+  order: number;
+  isActive: boolean;
+  type: string;
+  options: any[];
+  followUp: any;
+  config: any;
+  validation: any;
+  createdAt?: string;
+  updatedAt?: string;
+}

@@ -1,15 +1,11 @@
 import express from "express";
 import logger from "./config/logger.config";
-import { httpLogger } from "./middleware/logger.middleware";
 import cors from 'cors'
 import routes from "./routes/routes";
 import cookieParser from "cookie-parser";
 import { errorHandler } from "./middleware/errorHandling";
 
 const app = express();
-
-
-// app.use(httpLogger);
 
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
@@ -34,14 +30,6 @@ app.use(express.json());
 //routes
 routes(app);
 app.use(errorHandler)
-
-
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  logger.info(`Server started on port ${PORT}`);
-  logger.info(`Environment: ${process.env.NODE_ENV || "development"}`);
-});
 
 
 process.on("uncaughtException", (error: Error) => {

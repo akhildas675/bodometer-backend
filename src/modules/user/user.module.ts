@@ -15,6 +15,14 @@ import WorkoutRepository from "@/repositories/workout.repository";
 import { StripeService } from "@/services/payments/stripe.service";
 import { S3Service } from "@/services/s3/s3.service";
 import { UserService } from "@/services/user/user.services";
+import { IFitnessProfileRepository } from "@/interfaces/user/fitness-profile-repository.interface";
+import { IWorkoutHistoryRepository } from "@/interfaces/user/workout-history-repository.interface";
+import { IMedicalProfileRepository } from "@/interfaces/user/medical-profile-repository.interface";
+import { IDailyHabitsRepository } from "@/interfaces/user/daily-habits-repository.interface";
+import { FitnessProfileRepository } from "@/repositories/fitness-profile.repository";
+import { WorkoutHistoryRepository } from "@/repositories/workout-history.repository";
+import { MedicalProfileRepository } from "@/repositories/medical-profile.repository";
+import { DailyHabitsRepository } from "@/repositories/daily-habits.repository";
 
 export function createUserModule(){
 
@@ -29,6 +37,11 @@ export function createUserModule(){
 
     const stripeService:IStripeService=new StripeService();
 
+    const fitnessProfileRepository: IFitnessProfileRepository = new FitnessProfileRepository();
+    const workoutHistoryRepository: IWorkoutHistoryRepository = new WorkoutHistoryRepository();
+    const medicalProfileRepository: IMedicalProfileRepository = new MedicalProfileRepository();
+    const dailyHabitsRepository: IDailyHabitsRepository = new DailyHabitsRepository();
+
 
     const userService:IUserService = new UserService(
         userRepository,
@@ -38,6 +51,11 @@ export function createUserModule(){
         subscriptionRepository,
         subscriptionTransactionRepository,
         stripeService,
+        fitnessProfileRepository,
+        workoutHistoryRepository,
+        medicalProfileRepository,
+        dailyHabitsRepository,
+
     );
 
     const userController = new UserController(userService);

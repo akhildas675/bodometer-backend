@@ -2,8 +2,6 @@ import type { Role } from "@/constants/roles";
 import { UserInterface } from "@/interfaces/user/user.interface";
 import { ITrainerWithProfile } from "@/interfaces/trainer/trainer.interface";
 import { ITrainerProfileDocument } from "@/models/trainer-profile.model";
-import { Workout } from "@/interfaces/admin/admin.interface";
-
 
 import {
   ApproveTrainerResponseDto,
@@ -11,59 +9,108 @@ import {
   GetTrainerByIdResponseDto,
   RejectTrainerResponseDto,
 } from "@/dto/trainer/trainer.dto";
-import { AdminGetUsersResponseDto, WorkoutResponseDto,  } from "@/dto/admin/admin.dto";
+import { AdminGetUsersResponseDto, OnboardingSectionResponseDto, OnboardingQuestionResponseDto } from "@/dto/admin/admin.dto";
+import { IUserDocument } from "@/models/user.model";
+import { IOnboardingSection } from "@/models/onboarding-section.model";
+import { IOnboardingQuestion } from "@/models/onboarding-question.model";
 
-// Account Mapper (User & Trainer list)
+// Admin Account Mapper (User & Trainer list)
 export class AdminAccountMapper {
   static toResponse(user: UserInterface): AdminGetUsersResponseDto {
     return {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role  as Exclude<Role, "admin">,
+      role: user.role as Exclude<Role, "admin">,
       isBlocked: user.isBlocked,
       isVerified: user.isVerified,
       createdAt: user.createdAt.toISOString(),
+      profilePic: user.profilePic || null,
     };
   }
 
   static toResponseList(users: UserInterface[]): AdminGetUsersResponseDto[] {
     return users.map((u) => AdminAccountMapper.toResponse(u));
   }
+
+  static toSectionResponse(section: IOnboardingSection): OnboardingSectionResponseDto {
+    return {
+      id: section._id?.toString() || "",
+      key: section.key,
+      title: section.title,
+      order: section.order,
+      isActive: section.isActive,
+    };
+  }
+
+  static toQuestionResponse(question: IOnboardingQuestion): OnboardingQuestionResponseDto {
+    return {
+      id: question._id?.toString() || "",
+      key: question.key,
+      schemaKey: question.schemaKey,
+      isCoreLocked: question.isCoreLocked,
+      question: question.question,
+      section: question.section,
+      order: question.order,
+      isActive: question.isActive,
+      type: question.type,
+      options: question.options || [],
+      followUp: question.followUp,
+      config: question.config,
+      validation: question.validation,
+      createdAt: question.createdAt?.toISOString(),
+      updatedAt: question.updatedAt?.toISOString(),
+    };
+  }
 }
 
-//Trainer Mapper 
+// --- TRAINERS ---
 export class TrainerMapper {
+  private static mapTrainerUser(user: IUserDocument) {
+    return {
+      _id: user._id?.toString() || "",
+      name: user.name,
+      userName: user.userName,
+      email: user.email,
+      phoneNumber: user.phoneNumber || null,
+      profilePic: user.profilePic || null,
+      gender: user.gender,
+      role: user.role,
+      isVerified: user.isVerified,
+      dateOfBirth: user.dateOfBirth?.toISOString() || null,
+      isBlocked: user.isBlocked,
+      createdAt: user.createdAt?.toISOString() || "",
+      updatedAt: user.updatedAt?.toISOString() || "",
+    };
+  }
+
+  private static mapTrainerBaseProfile(profile: ITrainerProfileDocument) {
+    return {
+      _id: profile._id?.toString() || "",
+      userId: profile.userId.toString(),
+      experienceInYears: profile.experienceInYears,
+      certifications: profile.certifications ?? [],
+      bio: profile.bio,
+      coverPhoto: profile.coverPhoto,
+      verificationStatus: profile.verificationStatus,
+      rejectionReason: profile.rejectionReason || null,
+      createdAt: profile.createdAt?.toISOString() || "",
+      updatedAt: profile.updatedAt?.toISOString() || "",
+    };
+  }
+
+  private static mapSpecializations(specializationIds: unknown) {
+    const specs = (specializationIds || []) as any[];
+    return specs.map((s) => ({
+      _id: s._id?.toString() || "",
+      workoutName: s.workoutName || "",
+    }));
+  }
 
   static toDto(trainer: ITrainerWithProfile): GetTrainerAppointmentsResponseDto {
     return {
-      user: {
-        _id: trainer.user._id?.toString() || "",
-        name: trainer.user.name,
-        userName: trainer.user.userName,
-        email: trainer.user.email,
-        phoneNumber: trainer.user.phoneNumber || null,
-        profilePic: trainer.user.profilePic || null,
-        gender: trainer.user.gender,
-        role: trainer.user.role,
-        isVerified: trainer.user.isVerified,
-        dateOfBirth: trainer.user.dateOfBirth?.toISOString() || null,
-        isBlocked: trainer.user.isBlocked,
-        createdAt: trainer.user.createdAt?.toISOString() || "",
-        updatedAt: trainer.user.updatedAt?.toISOString() || "",
-      },
-      profile: {
-        _id: trainer.profile._id?.toString() || "",
-        userId: trainer.profile.userId.toString(),
-        experienceInYears: trainer.profile.experienceInYears,
-        certifications: trainer.profile.certifications ?? [],
-        bio: trainer.profile.bio,
-        coverPhoto:trainer.profile.coverPhoto,
-        verificationStatus: trainer.profile.verificationStatus,
-        rejectionReason: trainer.profile.rejectionReason || null,
-        createdAt: trainer.profile.createdAt?.toISOString() || "",
-        updatedAt: trainer.profile.updatedAt?.toISOString() || "",
-      },
+      user: this.mapTrainerUser(trainer.user),
+      profile: this.mapTrainerBaseProfile(trainer.profile),
     };
   }
 
@@ -71,50 +118,19 @@ export class TrainerMapper {
     return trainers.map((t) => TrainerMapper.toDto(t));
   }
 
-  // Detail view
   static toDetailDto(trainer: ITrainerWithProfile): GetTrainerByIdResponseDto {
+    const baseProfile = this.mapTrainerBaseProfile(trainer.profile);
+    
     return {
-      user: {
-        _id: trainer.user._id?.toString() || "",
-        name: trainer.user.name,
-        userName: trainer.user.userName,
-        email: trainer.user.email,
-        phoneNumber: trainer.user.phoneNumber || null,
-        profilePic: trainer.user.profilePic || null,
-        gender: trainer.user.gender,
-        role: trainer.user.role,
-        isVerified: trainer.user.isVerified,
-        dateOfBirth: trainer.user.dateOfBirth?.toISOString() || null,
-        isBlocked: trainer.user.isBlocked,
-        createdAt: trainer.user.createdAt?.toISOString() || "",
-        updatedAt: trainer.user.updatedAt?.toISOString() || "",
-      },
+      user: this.mapTrainerUser(trainer.user),
       profile: {
-        _id: trainer.profile._id?.toString() || "",
-        userId: trainer.profile.userId.toString(),
-        specializationIds: (
-          trainer.profile.specializationIds as unknown as {
-            _id: { toString(): string };
-            workoutName: string;
-          }[]
-        ).map((s) => ({
-          _id: s._id.toString(),
-          workoutName: s.workoutName,
-        })),
-        experienceInYears: trainer.profile.experienceInYears,
-        certifications: trainer.profile.certifications ?? [],
-        bio: trainer.profile.bio,
-        coverPhoto:trainer.profile.coverPhoto,
-        verificationStatus: trainer.profile.verificationStatus,
-        rejectionReason: trainer.profile.rejectionReason || null,
+        ...baseProfile,
+        specializationIds: this.mapSpecializations(trainer.profile.specializationIds),
         applyCount: trainer.profile.applyCount ?? 0,
-        createdAt: trainer.profile.createdAt?.toISOString() || "",
-        updatedAt: trainer.profile.updatedAt?.toISOString() || "",
       },
     };
   }
 
-  // Approve / Reject
   static toApproveDto(profile: ITrainerProfileDocument): ApproveTrainerResponseDto {
     return {
       message: "Trainer approved successfully",
@@ -136,26 +152,4 @@ export class TrainerMapper {
     };
   }
 }
-
-// //  Workout Mapper
-// export class WorkoutMapper {
-//   static toAdminResponse(workout: Workout): WorkoutResponseDto {
-//     return {
-//         id: workout.id!,
-//       workoutName: workout.workoutName,
-//       workoutDescription: workout.workoutDescription,
-//       workoutImage: workout.workoutImage,
-//       coverPhoto:workout.coverPhoto,
-//       introVideo:workout.introVideo,
-//       targetMuscles:workout.targetMuscles,
-//       benefits:workout.benefits,
-//       equipment:workout.equipment,
-//       isActive: workout.isActive,
-//       createdAt: workout.createdAt?.toISOString() ?? "",
-//     };
-//   }
-
-//   static toAdminResponseList(workouts: Workout[]): WorkoutResponseDto[] {
-//     return workouts.map((w) => WorkoutMapper.toAdminResponse(w));
-//   }
-// }
+

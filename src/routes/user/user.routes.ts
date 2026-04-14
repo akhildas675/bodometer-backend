@@ -73,4 +73,15 @@ userRoute.patch(
   userController.changePassword,
 );
 
+userRoute.get(USER_ROUTES.GET_PREFER_TIME,ROLE_GUARD.USER_GUARD,userController.getWorkoutTimes)
+userRoute.get(USER_ROUTES.GET_FITNESS_GOALS,ROLE_GUARD.USER_GUARD,userController.getWorkoutGoals)
+userRoute.get(USER_ROUTES.GET_ONBOARDING_WORKOUTS,ROLE_GUARD.USER_GUARD,userController.fetchWorkout)
+userRoute.get(USER_ROUTES.GET_ONBOARDING_OPTIONS,ROLE_GUARD.USER_GUARD,userController.getOnboardingOptions)
+
+userRoute.post(
+  USER_ROUTES.SUBMIT_ONBOARDING,
+  ROLE_GUARD.USER_GUARD,
+  userController.submitPremiumOnboarding
+);
+
 export default userRoute;

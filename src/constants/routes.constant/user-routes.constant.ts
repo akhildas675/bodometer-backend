@@ -11,5 +11,13 @@ export const USER_ROUTES = {
   CREATE_CHECKOUT_SESSION: '/user/subscriptions/checkout',
   STRIPE_WEBHOOK: '/user/stripe/webhook',
   GET_TRAINERS: '/user/trainers',
-  GET_TRAINERS_BY_ID:'/user/trainers/:id'
+  GET_TRAINERS_BY_ID:'/user/trainers/:id',
+ 
+  //Fitness routes
+
+  GET_PREFER_TIME:'/user/prefer-time',
+  GET_FITNESS_GOALS:"/user/fitness-goals",
+  GET_ONBOARDING_WORKOUTS:"/user/onboarding-workouts",
+  GET_ONBOARDING_OPTIONS:"/user/onboarding-options",
+  SUBMIT_ONBOARDING: "/user/onboarding-submit",
 } as const;
