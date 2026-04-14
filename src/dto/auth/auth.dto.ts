@@ -1,6 +1,7 @@
 import type { Role } from "@/constants/roles";
 import { OtpPurpose } from "@/constants/otp.constants";
 import { VerificationStatus } from "@/constants/verification.constants";
+import { SubscriptionStatus } from "@/constants/subscription";
 
 export interface RegisterDto {
   name: string;
@@ -26,6 +27,7 @@ export interface LoginDto {
 
 export interface LoginResponseDto {
   accessToken: string;
+
   user: {
     id: string;
     name: string;
@@ -38,7 +40,13 @@ export interface LoginResponseDto {
     isVerified: boolean;
     dateOfBirth: string | null;
     isBlocked: boolean;
+
+    subscription: {
+      status: SubscriptionStatus;
+      endDate: string | null;
+    };
   };
+
   trainerStatus?: {
     profileExists: boolean;
     verificationStatus?: VerificationStatus;

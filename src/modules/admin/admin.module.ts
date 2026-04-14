@@ -10,25 +10,32 @@ import UserRepository from "@/repositories/user.repository";
 import WorkoutRepository from "@/repositories/workout.repository";
 import { AdminService } from "@/services/admin/admin.services";
 import { S3Service } from "@/services/s3/s3.service";
+import { OnboardingSectionRepository } from "@/repositories/onboarding-section.repository";
+import { IOnboardingSectionRepository } from "@/interfaces/admin/onboarding.section-respository.interface";
+import OnboardingQuestionRepository from "@/repositories/onboarding-question.repository";
+import { IOnboardingQuestionRepository } from "@/interfaces/admin/onboarding.question-repository.Interface";
 
-export function createAdminModule(){
+export function createAdminModule() {
 
-  const userRepository:IUserRepository = new UserRepository();
-  const trainerProfileRepository:ITrainerProfileRepository = new TrainerProfileRepository();
-  const workoutRepository:IWorkoutRepository= new WorkoutRepository();
+  const userRepository: IUserRepository = new UserRepository();
+  const trainerProfileRepository: ITrainerProfileRepository = new TrainerProfileRepository();
+  const workoutRepository: IWorkoutRepository = new WorkoutRepository();
 
-  const subscriptionRepository:ISubscriptionRepository= new SubscriptionRepository()
-    const s3Service:IS3Service=new S3Service();
-    const adminService=new AdminService(
-        userRepository,
-        trainerProfileRepository,
-        workoutRepository,
-        subscriptionRepository,
-        s3Service,
+  const subscriptionRepository: ISubscriptionRepository = new SubscriptionRepository();
+  const onboardingSectionRepository: IOnboardingSectionRepository = new OnboardingSectionRepository();
+  const onboardingQuestionRepository: IOnboardingQuestionRepository = new OnboardingQuestionRepository();
+  const s3Service: IS3Service = new S3Service();
+  const adminService = new AdminService(
+    userRepository,
+    trainerProfileRepository,
+    workoutRepository,
+    subscriptionRepository,
+    s3Service,
+    onboardingSectionRepository,
+    onboardingQuestionRepository
+  );
 
-    );
+  const adminController = new AdminController(adminService)
 
-    const adminController = new AdminController(adminService)
-
-    return {adminController}
+  return { adminController }
 }

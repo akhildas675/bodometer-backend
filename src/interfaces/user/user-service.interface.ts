@@ -1,4 +1,5 @@
-import { ActiveSubscriptionDto, ChangePasswordDto, CheckoutSessionResponseDto, CreateCheckoutSessionDto, FindUserResponseDto, GetTrainersQueryDto, GetUserWorkoutsQueryDto, TrainerDetailDto, TrainerListResponseDto, UpdateUserProfileDto, UserWorkoutResponseDto, WorkoutDetailPageDto } from "@/dto/user/user.dto";
+import { ActiveSubscriptionDto, ChangePasswordDto, CheckoutSessionResponseDto, CreateCheckoutSessionDto, FindUserResponseDto, GetTrainersQueryDto, GetUserWorkoutsQueryDto, GetWorkoutResponseDto, TrainerDetailDto, TrainerListResponseDto, UpdateUserProfileDto, UserWorkoutResponseDto, WorkoutDetailPageDto, WorkoutGoalsResponseDto, WorkoutTimeResponseDto } from "@/dto/user/user.dto";
+import { UnifiedOnboardingDto } from "@/dto/user/user-onboarding.dto";
 import { PaginationMeta } from "../admin/admin.interface";
 import { GetSubscriptionsResponseDto } from "@/dto/admin/admin.dto";
 
@@ -21,6 +22,12 @@ export interface IUserService {
   handleStripeWebhook(payload: Buffer, signature: string): Promise<void>;
 
   getTrainers(query: GetTrainersQueryDto): Promise<TrainerListResponseDto>;
-  getTrainerById(id:string):Promise<TrainerDetailDto>
+  getTrainerById(id:string):Promise<TrainerDetailDto>;
+
+  //fitness
+  getWorkoutTimes(): Promise<WorkoutTimeResponseDto>;
+  getWorkoutGoals(): Promise<WorkoutGoalsResponseDto>;
+
+  fetchWorkouts():Promise<GetWorkoutResponseDto[]>
 
 }

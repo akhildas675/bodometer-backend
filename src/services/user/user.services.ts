@@ -6,12 +6,16 @@ import {
   FindUserResponseDto,
   GetTrainersQueryDto,
   GetUserWorkoutsQueryDto,
+  GetWorkoutResponseDto,
   TrainerDetailDto,
   TrainerListResponseDto,
   UpdateUserProfileDto,
   UserWorkoutResponseDto,
   WorkoutDetailPageDto,
+  WorkoutGoalsResponseDto,
+  WorkoutTimeResponseDto,
 } from "@/dto/user/user.dto";
+import { UnifiedOnboardingDto } from "@/dto/user/user-onboarding.dto";
 import { IUserRepository } from "@/interfaces/user/user-repository.interface";
 import { IUserService } from "@/interfaces/user/user-service.interface";
 import { UserMapper, UserMappers } from "@/mappers/user/user.mappers";
@@ -32,6 +36,14 @@ import { IStripeService } from "@/interfaces/payment/stripe-service.interface";
 import { hashPassword } from "@/utils/password";
 import bcrypt from "bcrypt";
 import { UserSubscriptionMapper } from "@/mappers/user/user-subscription.mapper";
+import { FITNESS_GOAL, PREFERRED_WORKOUT_TIME } from "@/constants/fitness.constant";
+import { EXPERIENCE_DURATION, STRENGTH_LEVEL, TRAINING_TYPE, CONSISTENCY_LEVEL, WEEKLY_TRAINING_DAYS, AVG_SESSION_DURATION, GOAL_INTENSITY } from "@/constants/past-workouts.constant";
+
+import { IFitnessProfileRepository } from "@/interfaces/user/fitness-profile-repository.interface";
+import { IWorkoutHistoryRepository } from "@/interfaces/user/workout-history-repository.interface";
+import { IMedicalProfileRepository } from "@/interfaces/user/medical-profile-repository.interface";
+import { IDailyHabitsRepository } from "@/interfaces/user/daily-habits-repository.interface";
+
 
 export class UserService implements IUserService {
   constructor(
@@ -42,6 +54,11 @@ export class UserService implements IUserService {
     private _subscriptionRepository: ISubscriptionRepository,
     private _subscriptionTransactionRepo: ISubscriptionTransactionRepository,
     private _stripeService: IStripeService,
+    private _fitnessProfileRepository: IFitnessProfileRepository,
+    private _workoutHistoryRepository: IWorkoutHistoryRepository,
+    private _medicalProfileRepository: IMedicalProfileRepository,
+    private _dailyHabitsRepository: IDailyHabitsRepository,
+    
   ) { }
 
   async fetchUser(userId: string): Promise<FindUserResponseDto> {
@@ -140,26 +157,22 @@ export class UserService implements IUserService {
   }
 
 
-async getWorkoutDetail(workoutId: string): Promise<WorkoutDetailPageDto> {
-  const workout = await this._workoutRepository.getWorkoutById(workoutId);
-  
-  console.log("1. raw workout from repo:", JSON.stringify(workout)); 
-  
-  if (!workout || !workout.isActive) {
-    throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT.NOT_FOUND);
+  async getWorkoutDetail(workoutId: string): Promise<WorkoutDetailPageDto> {
+    const workout = await this._workoutRepository.getWorkoutById(workoutId);
+
+    if (!workout || !workout.isActive) {
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT.NOT_FOUND);
+    }
+
+    const [trainers, relatedWorkouts] = await Promise.all([
+      this._trainerProfileRepo.getTrainersBySpecialization(workoutId),
+      this._workoutRepository.getRelatedWorkouts(workoutId, 3),
+    ]);
+
+    const result = UserMappers.toDetailDto(workout, trainers, relatedWorkouts);
+
+    return result;
   }
-
-  const [trainers, relatedWorkouts] = await Promise.all([
-    this._trainerProfileRepo.getTrainersBySpecialization(workoutId),
-    this._workoutRepository.getRelatedWorkouts(workoutId, 3),
-  ]);
-
-  const result = UserMappers.toDetailDto(workout, trainers, relatedWorkouts);
-  
-  console.log("2. result after mapper:", JSON.stringify(result.workout)); 
-  
-  return result;
-}
   async getActiveSubscriptions(): Promise<GetSubscriptionsResponseDto[]> {
     const subs = await this._subscriptionRepository.findAllSubscriptions();
     const active = subs.filter((s) => s.isActive);
@@ -279,7 +292,7 @@ async getWorkoutDetail(workoutId: string): Promise<WorkoutDetailPageDto> {
       query.specializationId,
     );
 
-    console.log("Trainer profile data...",data)
+    console.log("Trainer profile data...", data)
 
     return {
       data: UserMappers.toListItemDtoArray(data),
@@ -292,13 +305,94 @@ async getWorkoutDetail(workoutId: string): Promise<WorkoutDetailPageDto> {
     };
   }
 
- async getTrainerById(trainerId: string): Promise<TrainerDetailDto> {
+  async getTrainerById(trainerId: string): Promise<TrainerDetailDto> {
     const data = await this._trainerProfileRepo.getTrainerByIdWithUser(trainerId);
-    console.log("Trainer data in user service details",data)
-    if(!data){
-      throw new AppError(STATUS.NOT_FOUND,MESSAGES.TRAINER.NOT_FOUND)
+    console.log("Trainer data in user service details", data)
+    if (!data) {
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND)
     }
     return UserMappers.toTrainerDetailDto(data)
   }
+
+//premium user
+  async getWorkoutTimes(): Promise<WorkoutTimeResponseDto> {
+    return {
+      workoutTimes: Object.values(PREFERRED_WORKOUT_TIME),
+    };
+  }
+  async getWorkoutGoals(): Promise<WorkoutGoalsResponseDto> {
+    return {
+      fitnessGoals: Object.values(FITNESS_GOAL),
+    };
+  }
+
+ 
+
+  async submitPremiumOnboarding(userId: string, data: UnifiedOnboardingDto): Promise<void> {
+    try {
+      // 1. Fitness Profile
+      await this._fitnessProfileRepository.upsert({ userId }, {
+        userId,
+        fitnessGoals: data.fitnessProfile.fitnessGoals,
+        preferredWorkoutTime: data.fitnessProfile.preferredWorkoutTime,
+        preferredWorkoutCategories: data.fitnessProfile.preferredWorkoutCategories,
+        fitnessLevel: "beginner", // or derive from history
+      });
+
+      // 2. Workout History
+      await this._workoutHistoryRepository.upsert({ userId }, {
+        userId,
+        ...data.workoutHistory
+      });
+
+      // 3. Medical Profile Mapping
+      const conditions = data.medicalProfile.medicalConditions || [];
+      await this._medicalProfileRepository.upsert({ userId }, {
+        userId,
+        conditions: {
+          hypertension: conditions.includes("High Blood Pressure"),
+          diabetes: conditions.includes("Diabetes"),
+          jointPain: conditions.includes("Joint / Back Pain"),
+          heartIssue: conditions.includes("Heart / Breathing Issues"),
+          other: conditions.find((c: string) => !["High Blood Pressure", "Diabetes", "Joint / Back Pain", "Heart / Breathing Issues"].includes(c)) || ""
+        },
+        medications: { taking: data.medicalProfile.takingMedication || false, notes: (data.medicalProfile.medications || [])[0] },
+        injuries: { hasInjuries: data.medicalProfile.hasPastInjuries || false, notes: (data.medicalProfile.pastInjuries || [])[0] },
+        allergies: { hasAllergies: data.medicalProfile.hasAllergies || false, notes: (data.medicalProfile.allergies || [])[0] },
+        bmi: 0, heightCm: 0, weightKg: 0
+      });
+
+      // 4. Daily Habits Mapping
+      const [sleepTime, wakeUpTime] = (data.dailyHabits.sleepDuration || "").split(" to ");
+      const isCaffeine = (data.dailyHabits.smokingDrinking || "").includes("Caffeine: Yes");
+      const isAlcohol = (data.dailyHabits.smokingDrinking || "").includes("Alcohol: Yes");
+      const water = parseFloat(data.dailyHabits.waterIntake) || 0;
+      const stepsMatch = (data.dailyHabits.workType || "").match(/\d+/);
+      const steps = stepsMatch ? parseInt(stepsMatch[0]) : 0;
+
+      await this._dailyHabitsRepository.upsert({ userId }, {
+        userId,
+        date: new Date(),
+        wakeUpTime: wakeUpTime || "00:00",
+        sleepTime: sleepTime || "00:00",
+        mealsPerDay: parseInt(data.dailyHabits.dailyMeals) || 3,
+        avgWaterLiters: water,
+        avgDailySteps: steps,
+        caffeine: isCaffeine,
+        alcohol: isAlcohol
+      });
+
+    } catch (error) {
+      console.error("Error saving onboarding data", error);
+      throw new AppError(STATUS.INTERNAL_ERROR, "Failed to save onboarding data");
+    }
+  }
+
+ async fetchWorkouts():Promise<GetWorkoutResponseDto[]>{
+  const data = await this._workoutRepository.getAllWorkouts()
+
+  return UserMappers.toWorkoutResponseList(data)
+ }
+
 
 }

@@ -59,4 +59,14 @@ export default class SubscriptionTransactionRepository
     ).lean<ISubscriptionTransactionDocument>();
     return doc ? this.toInterface(doc) : null;
   }
+  async findLatestByUserId(userId: string): Promise<SubscriptionTransaction | null> {
+  const doc = await SubscriptionTransactionModel.findOne({
+    userId: new mongoose.Types.ObjectId(userId),
+    paymentStatus: "completed",
+  })
+    .sort({ endDate: -1 })
+    .lean<ISubscriptionTransactionDocument>();
+
+  return doc ? this.toInterface(doc) : null;
+}
 }

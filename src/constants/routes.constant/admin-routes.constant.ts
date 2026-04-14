@@ -31,4 +31,7 @@ export const ADMIN_ROUTES = {
   UPDATE_SUBSCRIPTION: (id: string) => `/admin/subscriptions/${id}`,
   DELETE_SUBSCRIPTION: (id: string) => `/admin/subscriptions/${id}`,
   TOGGLE_SUBSCRIPTION_STATUS: (id: string) => `/admin/subscriptions/${id}/toggle`,
+
+  // Onboarding
+  GET_ONBOARDING_SECTIONS: '/admin/onboarding-sections',
 } as const;

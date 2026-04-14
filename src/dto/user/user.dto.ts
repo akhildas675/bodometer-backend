@@ -55,6 +55,7 @@ export interface UserWorkoutResponseDto {
   workoutName: string;
   workoutDescription: string;
   workoutImage: string;
+  coverPhoto: string;
 }
 
 export interface RelatedTrainerDto {
@@ -162,3 +163,19 @@ export interface TrainerDetailDto {
   specializations: { _id: string; workoutName: string }[];
 }
  
+
+//fitness
+
+
+export interface WorkoutTimeResponseDto {
+  workoutTimes: string[];
+}
+export interface WorkoutGoalsResponseDto {
+  fitnessGoals: string[];
+}
+
+
+export interface GetWorkoutResponseDto{
+  id:string;
+  workoutName:string;
+}

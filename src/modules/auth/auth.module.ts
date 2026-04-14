@@ -4,7 +4,9 @@ import { IAuthService } from "@/interfaces/auth/auth-service.interface";
 import { ISessionService } from "@/interfaces/auth/session-service.interface";
 import { IMailService } from "@/interfaces/otp/mail-service.interface";
 import { IOtpService } from "@/interfaces/otp/otp-service.interface";
+import { ISubscriptionTransactionRepository } from "@/interfaces/subscription/subscription.transaction-repository.interface";
 import { ITrainerProfileRepository } from "@/interfaces/trainer/trainer.profile-repository.interface";
+import SubscriptionTransactionRepository from "@/repositories/subscription-transaction.repository";
 import TrainerProfileRepository from "@/repositories/trainer-profile.repository";
 import UserRepository from "@/repositories/user.repository";
 import { AuthService } from "@/services/auth/auth.services";
@@ -19,12 +21,15 @@ export function createAuthModule(){
 
     const userRepository = new UserRepository()
     const trainerProfileRepository : ITrainerProfileRepository = new TrainerProfileRepository();
+    const subscriptionTransactionRepository:ISubscriptionTransactionRepository = new SubscriptionTransactionRepository()
 
     const authService:IAuthService = new AuthService(
         userRepository,
         otpService,
         sessionService,
-        trainerProfileRepository
+        trainerProfileRepository,
+        subscriptionTransactionRepository,
+
     );
 
     const authController = new AuthController(authService)

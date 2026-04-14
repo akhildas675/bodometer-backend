@@ -1,5 +1,5 @@
 import { UserInterface } from "@/interfaces/user/user.interface";
-import { FindUserResponseDto, TrainerDetailDto, TrainerListItemDto, UserWorkoutResponseDto, WorkoutDetailPageDto } from "@/dto/user/user.dto";
+import { FindUserResponseDto, GetWorkoutResponseDto, TrainerDetailDto, TrainerListItemDto, UserWorkoutResponseDto, WorkoutDetailPageDto } from "@/dto/user/user.dto";
 import { PaginationMeta, Workout } from "@/interfaces/admin/admin.interface";
 import { ITrainerWithProfile } from "@/interfaces/trainer/trainer.interface";
 import mongoose from "mongoose";
@@ -70,6 +70,7 @@ export class UserMappers {
       workoutName: workout.workoutName,
       workoutDescription: workout.workoutDescription,
       workoutImage: workout.workoutImage,
+      coverPhoto: workout.coverPhoto || "",
     };
   }
 
@@ -123,6 +124,16 @@ export class UserMappers {
     experienceInYears: data.profile.experienceInYears,
     specializations,
   };
+  }
+
+  static toWorkoutResponse(workout:Workout):GetWorkoutResponseDto{
+    return {
+      id:workout.id,
+      workoutName:workout.workoutName
+    }
+  }
+  static toWorkoutResponseList(workout:Workout[]):GetWorkoutResponseDto[]{
+    return workout.map(this.toWorkoutResponse)
   }
 }
 

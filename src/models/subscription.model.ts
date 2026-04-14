@@ -69,7 +69,6 @@ const SubscriptionSchema = new Schema<ISubscriptionDocument>(
     }
 );
 
-SubscriptionSchema.index({ subscriptionName: 1 });
 
 export const SubscriptionModel = mongoose.model<ISubscriptionDocument>(
     "Subscription",

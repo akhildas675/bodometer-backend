@@ -23,13 +23,16 @@ import { IOtpService } from "@/interfaces/otp/otp-service.interface";
 import { MESSAGES } from "@/constants/messages";
 import { ROLES } from "@/constants/roles";
 import { IUserRepository } from "@/interfaces/user/user-repository.interface";
+import { SUBSCRIPTION_STATUS } from "@/constants/subscription";
+import { ISubscriptionTransactionRepository } from "@/interfaces/subscription/subscription.transaction-repository.interface";
 
 export class AuthService implements IAuthService {
   constructor(
-    private _userRepo: IUserRepository,          
+    private _userRepo: IUserRepository,
     private _otpService: IOtpService,
     private _sessionService: ISessionService,
     private _trainerProfileRepo: ITrainerProfileRepository,
+    private _subscriptionTransactionRepository: ISubscriptionTransactionRepository
   ) { }
 
   async initiateRegister(data: RegisterDto): Promise<void> {
@@ -61,7 +64,7 @@ export class AuthService implements IAuthService {
   async register(data: RegisterDto): Promise<RegisterResponseDto> {
     const hashedPassword = await hashPassword(data.password);
     const normalizedEmail = data.email.toLowerCase().trim();
-    const baseUsername = normalizedEmail.split("@")[0]; 
+    const baseUsername = normalizedEmail.split("@")[0];
 
     if (!baseUsername) {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.REGISTER.INVALID_EMAIL_FORMAT);
@@ -88,7 +91,10 @@ export class AuthService implements IAuthService {
     return AuthMapper.toRegisterResponse(user);
   }
 
-  async login(data: LoginDto): Promise<{ response: LoginResponseDto; refreshToken: string }> {
+  async login(
+    data: LoginDto
+  ): Promise<{ response: LoginResponseDto; refreshToken: string }> {
+
     const user = await this._userRepo.findByEmail(data.email.toLowerCase().trim());
     if (!user) throw new AppError(STATUS.BAD_REQUEST, MESSAGES.LOGIN.INVALID_CREDENTIALS);
 
@@ -99,11 +105,13 @@ export class AuthService implements IAuthService {
       throw new AppError(STATUS.FORBIDDEN, MESSAGES.LOGIN.ACCOUNT_BLOCKED);
     }
 
-    let trainerStatus: {
-      profileExists: boolean;
-      verificationStatus?: VerificationStatus;
-      rejectionReason?: string | null;
-    } | undefined;
+    let trainerStatus:
+      | {
+        profileExists: boolean;
+        verificationStatus?: VerificationStatus;
+        rejectionReason?: string | null;
+      }
+      | undefined;
 
     if (user.role === ROLES.TRAINER) {
       const trainerProfile = await this._trainerProfileRepo.findByUserId(user.id);
@@ -116,7 +124,36 @@ export class AuthService implements IAuthService {
         };
     }
 
+    const subscriptionDoc = await this._subscriptionTransactionRepository.findLatestByUserId(user.id);
+
+    console.log("subscription.....ss",subscriptionDoc)
+
+    let subscription;
+
+    if (!subscriptionDoc) {
+      subscription = {
+        status: SUBSCRIPTION_STATUS.NONE,
+        endDate: null,
+      };
+    } else {
+      const now = new Date();
+
+      if (subscriptionDoc.endDate && subscriptionDoc.endDate >= now) {
+        subscription = {
+          status: SUBSCRIPTION_STATUS.ACTIVE,
+          endDate: subscriptionDoc.endDate,
+        };
+      } else {
+        subscription = {
+          status: SUBSCRIPTION_STATUS.EXPIRED,
+          endDate: subscriptionDoc.endDate,
+        };
+      }
+    }
+
+    /* ---------- TOKENS ---------- */
     const accessToken = Jwt.signAccess({ sub: user.id, role: user.role });
+
     const refreshToken = await this._sessionService.createRefreshToken(user.id, {
       id: user.id,
       email: user.email,
@@ -124,8 +161,14 @@ export class AuthService implements IAuthService {
       isBlocked: user.isBlocked,
     });
 
+   
     return {
-      response: AuthMapper.toLoginResponse(user, accessToken, trainerStatus),
+      response: AuthMapper.toLoginResponse(
+        user,
+        accessToken,
+        trainerStatus,
+        subscription
+      ),
       refreshToken,
     };
   }

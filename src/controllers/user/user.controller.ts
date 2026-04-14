@@ -150,7 +150,7 @@ export class UserController {
       if (!id)
         throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
       const result = await this._userService.getWorkoutDetail(id);
-      console.log("workout details page",result)
+      console.log("workout details page", result)
       res.status(STATUS.OK).json({
         success: true,
         message: MESSAGES.COMMON.SUCCESS,
@@ -255,27 +255,109 @@ export class UserController {
       next(error);
     }
   };
-  getTrainerById = async(req:AuthRequest,res:Response,next:NextFunction)=>{
+  getTrainerById = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
 
-      const {id}=req.params;
+      const { id } = req.params;
 
-      console.log("id in trainer details",id)
+      console.log("id in trainer details", id)
 
-      if(!id){
-       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
+      if (!id) {
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
       };
 
       const result = await this._userService.getTrainerById(id);
 
       res.status(STATUS.OK).json({
-        success:true,
-        message:MESSAGES.COMMON.SUCCESS,
-        data:result,
+        success: true,
+        message: MESSAGES.COMMON.SUCCESS,
+        data: result,
       })
-      
+
     } catch (error) {
       next(error)
     }
   }
+
+  getWorkoutTimes = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+
+      const data = await this._userService.getWorkoutTimes();
+
+      res.status(STATUS.OK).json({
+        success: true,
+        message: MESSAGES.COMMON.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+  getWorkoutGoals = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+
+      const data = await this._userService.getWorkoutGoals();
+
+      res.status(STATUS.OK).json({
+        success: true,
+        message: MESSAGES.COMMON.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getOnboardingOptions = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const data = await this._userService.getOnboardingOptions();
+
+      res.status(STATUS.OK).json({
+        success: true,
+        message: MESSAGES.COMMON.SUCCESS,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  submitPremiumOnboarding = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      
+      const userId = req.user.id;
+      const data = req.body;
+      
+      await this._userService.submitPremiumOnboarding(userId, data);
+
+      res.status(STATUS.OK).json({
+        success: true,
+        message: "Onboarding completed successfully!",
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  fetchWorkout = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      const data = await this._userService.fetchWorkouts();
+
+      res.status(STATUS.OK).json({
+        success:true,
+        message:MESSAGES.COMMON.SUCCESS,
+        data,
+      })
+
+    } catch (error) {
+      next(error)
+    }
+  }
+
+
 }
