@@ -30,27 +30,6 @@ userRoute.post(
   validate(uploadProfilePictureSchema),
   userController.uploadProfilePicture,
 );
-userRoute.get(
-  USER_ROUTES.GET_WORKOUTS,
-  ROLE_GUARD.USER_GUARD,
-  userController.getWorkouts,
-);
-userRoute.get(
-  USER_ROUTES.GET_WORKOUT_DETAIL,
-  ROLE_GUARD.USER_GUARD,
-  userController.getWorkoutDetail,
-);
-
-userRoute.get(
-  USER_ROUTES.GET_SUBSCRIPTIONS,
-  ROLE_GUARD.USER_GUARD,
-  userController.getSubscriptions,
-);
-userRoute.get(
-  USER_ROUTES.GET_MY_SUBSCRIPTION,
-  ROLE_GUARD.USER_GUARD,
-  userController.getMySubscription,
-);
 userRoute.post(
   USER_ROUTES.CREATE_CHECKOUT_SESSION,
   ROLE_GUARD.USER_GUARD,
@@ -65,7 +44,11 @@ userRoute.get(
   userController.getTrainers,
 );
 
-userRoute.get(USER_ROUTES.GET_TRAINERS_BY_ID, ROLE_GUARD.USER_GUARD, userController.getTrainerById)
+userRoute.get(
+  USER_ROUTES.GET_TRAINERS_BY_ID,
+  ROLE_GUARD.USER_GUARD,
+  userController.getTrainerById,
+);
 
 userRoute.patch(
   USER_ROUTES.CHANGE_PASSWORD,
@@ -73,15 +56,6 @@ userRoute.patch(
   userController.changePassword,
 );
 
-userRoute.get(USER_ROUTES.GET_PREFER_TIME,ROLE_GUARD.USER_GUARD,userController.getWorkoutTimes)
-userRoute.get(USER_ROUTES.GET_FITNESS_GOALS,ROLE_GUARD.USER_GUARD,userController.getWorkoutGoals)
-userRoute.get(USER_ROUTES.GET_ONBOARDING_WORKOUTS,ROLE_GUARD.USER_GUARD,userController.fetchWorkout)
-userRoute.get(USER_ROUTES.GET_ONBOARDING_OPTIONS,ROLE_GUARD.USER_GUARD,userController.getOnboardingOptions)
 
-userRoute.post(
-  USER_ROUTES.SUBMIT_ONBOARDING,
-  ROLE_GUARD.USER_GUARD,
-  userController.submitPremiumOnboarding
-);
 
 export default userRoute;

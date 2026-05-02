@@ -1,7 +1,8 @@
 import nodemailer, { Transporter } from "nodemailer";
-import { AppError } from "@/utils/appError";
-import { STATUS } from "@/constants/statuscode";
-import { IMailService } from "@/interfaces/otp/mail-service.interface";
+import { AppError } from "../../../utils/appError";
+import { STATUS } from "../../../constants/statuscode";
+import { IMailService } from "../../../interfaces/service-interface/otp/mail-service.interface";
+
 
 export class MailService implements IMailService {
   private _transporter: Transporter;

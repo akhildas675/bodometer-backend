@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express";
-import { IAuthService } from "@/interfaces/auth/auth-service.interface";
-import { OtpVerifyDto, RegisterDto } from "@/dto/auth/auth.dto";
-import { ResendOtpDto } from "@/dto/otp/otp.dto";
-import { redis } from "@/config/redis";
-import { AppError } from "@/utils/appError";
-import { STATUS } from "@/constants/statuscode";
-import { Logger } from "@/utils/logger";
-import { MESSAGES } from "@/constants/messages";
+import { Logger } from "../../utils/logger";
+import { IAuthService } from "../../interfaces/service-interface/auth/auth-service.interface";
+import { OtpVerifyDto, RegisterDto } from "../../dto/auth/auth.dto";
+import { STATUS } from "../../constants/statuscode";
+import { MESSAGES } from "../../constants/messages";
+import { ResendOtpDto } from "../../dto/otp/otp.dto";
+import { redis } from "../../config/redis";
+import { AppError } from "../../utils/appError";
 
 const logger = new Logger("AuthController");
 
@@ -137,6 +137,8 @@ export class AuthController {
     try {
       const { response: loginResponse, refreshToken } =
         await this._authService.login(req.body);
+
+        // console.log("login response",loginResponse)
 
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,

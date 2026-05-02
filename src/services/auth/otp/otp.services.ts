@@ -1,15 +1,12 @@
-import { redis } from "@/config/redis";
-import { AppError } from "@/utils/appError";
-import { STATUS } from "@/constants/statuscode";
-import { generateOtp } from "@/utils/generateOtp";
-import { OtpPurpose } from "@/constants/otp.constants";
-import { IOtpService } from "@/interfaces/otp/otp-service.interface";
-import {
-  GenerateOtpPayload,
-  VerifyOtpPayload,
-} from "@/interfaces/otp/otp.interface";
-import { IMailService } from "@/interfaces/otp/mail-service.interface";
-import { MESSAGES } from "@/constants/messages";
+import { redis } from "../../../config/redis";
+import { MESSAGES } from "../../../constants/messages";
+import { OtpPurpose } from "../../../constants/otp.constants";
+import { STATUS } from "../../../constants/statuscode";
+import { IMailService } from "../../../interfaces/service-interface/otp/mail-service.interface";
+import { IOtpService } from "../../../interfaces/service-interface/otp/otp-service.interface";
+import { GenerateOtpPayload, VerifyOtpPayload } from "../../../interfaces/service-interface/otp/otp.interface";
+import { AppError } from "../../../utils/appError";
+
 
 
 export class OtpService implements IOtpService {
@@ -71,3 +68,7 @@ export class OtpService implements IOtpService {
     await redis.del(attemptsKey);
   }
 }
+function generateOtp(arg0: number) {
+  throw new Error("Function not implemented.");
+}
+

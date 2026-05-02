@@ -1,11 +1,5 @@
-
-import { VerificationStatus } from "@/constants/verification.constants";
-import { Gender, GENDER } from "@/constants/identity.constants";
-
-export interface WorkoutListDto {
-  id: string;
-  workoutList: string;
-}
+import { Gender } from "../../constants/identity.constants";
+import { VerificationStatus } from "../../constants/verification.constants";
 
 export interface CreateTrainerProfileDto {
   experienceInYears: number;
@@ -78,7 +72,7 @@ export interface GetTrainerByIdResponseDto {
   profile: {
     _id: string;
     userId: string;
-     specializationIds: { _id: string; workoutName: string }[];
+
     experienceInYears: number;
     coverPhoto:string;
     certifications: string[];
@@ -149,5 +143,5 @@ export interface TrainerProfileDto {
   gender: Gender;
   experienceInYears: number;            
   bio: string;
-  specializationIds: string[];           
+
 }

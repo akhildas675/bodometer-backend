@@ -6,6 +6,7 @@ import { connectDB } from "./config/db";
 import { connectRedis } from "./config/redis";
 import { AppError } from "./utils/appError";
 import { STATUS } from "./constants/statuscode";
+import logger from "./config/logger.config";
 
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
@@ -23,7 +24,7 @@ async function start() {
     connectRedis();
 
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      logger.info(`Server running on port ${PORT}`)
     });
   } catch (err) {
     console.error("Server failed to start:", err);

@@ -1,7 +1,7 @@
-import type { Role } from "@/constants/roles";
-import { OtpPurpose } from "@/constants/otp.constants";
-import { VerificationStatus } from "@/constants/verification.constants";
-import { SubscriptionStatus } from "@/constants/subscription";
+import { OtpPurpose } from "../../constants/otp.constants";
+import { Role } from "../../constants/roles";
+import { VerificationStatus } from "../../constants/verification.constants";
+
 
 export interface RegisterDto {
   name: string;
@@ -33,7 +33,7 @@ export interface LoginResponseDto {
     name: string;
     userName: string;
     email: string;
-    phoneNumber: string | null;
+    phoneNumber: string;
     profilePic: string | null;
     gender: string | null;
     role: string;
@@ -41,10 +41,6 @@ export interface LoginResponseDto {
     dateOfBirth: string | null;
     isBlocked: boolean;
 
-    subscription: {
-      status: SubscriptionStatus;
-      endDate: string | null;
-    };
   };
 
   trainerStatus?: {

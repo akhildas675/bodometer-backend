@@ -61,12 +61,3 @@ export const uploadProfilePictureSchema = z.object({
         .refine((file) => file !== undefined, { message: "File is required" }),
 });
 
-export const getWorkoutListSchema = z.object({
-    query: z.object({
-        page: z.coerce.number().min(1).optional(),
-        limit: z.coerce.number().min(1).optional(),
-        search: z.string().optional(),
-        sortBy: z.string().optional(),
-        sortOrder: z.enum(["asc", "desc"]).optional(),
-    }),
-});

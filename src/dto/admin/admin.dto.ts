@@ -1,13 +1,4 @@
-import { Role } from "@/constants/roles";
-import { PlanType } from "@/constants/subscription";
-
-export interface OnboardingSectionResponseDto {
-  id: string;
-  key: string;
-  title: string;
-  order: number;
-  isActive: boolean;
-}
+import { Role } from "../../constants/roles";
 
 export interface PaginationMetaDto {
   currentPage: number;
@@ -33,77 +24,9 @@ export interface AdminBaseUserResponseDto {
   createdAt: string;
   profilePic?: string | null;
 }
-export interface AddWorkoutDto {
-  workoutName: string;
-  workoutDescription: string;
-  targetMuscles: string[];
-  equipment: string[];
-  benefits: string[];
-  workoutImageFile: Express.Multer.File;
-  coverPhotoFile?: Express.Multer.File;
-  introVideoFile?: Express.Multer.File; 
-}
-
-export interface WorkoutResponseDto {
-  id: string;
-  workoutName: string;
-  workoutDescription: string;
-  workoutImage?: string;
-  coverPhoto?: string;
-  introVideo?: string;
-  targetMuscles: string[];
-  equipment: string[];
-  benefits: string[];
-  isActive: boolean;
-  createdAt: string;
-}
-
-export interface UpdateWorkoutDto {
-  workoutName?: string;
-  workoutDescription?: string;
-  targetMuscles?: string[];
-  equipment?: string[];
-  benefits?: string[];
-  workoutImageFile?: Express.Multer.File;
-  coverPhotoFile?: Express.Multer.File;
-  introVideoFile?: Express.Multer.File;
-}
 
 
-//subscription
 
-export interface CreateSubscriptionDTO {
-  subscriptionName: string;
-  description: string;
-  price: number;
-  durationDays: number;
-  features: string[];
-  liveSessionCount: number;
-  planType:PlanType,
-}
-
-export interface SubscriptionResponseDTO {
-  id: string;
-  subscriptionName: string;
-  description: string;
-  price: number;
-  durationDays: number;
-  features: string[];
-  liveSessionCount: number;
-  planType: string;
-  isActive: boolean;
-  createdAt: Date;
-}
-
-export interface UpdateSubscriptionDTO {
-  subscriptionName?: string;
-  description?: string;
-  price?: number;
-  durationDays?: number;
-  features?: string[];
-  liveSessionCount?: number;
-  planType?: PlanType;
-}
 
 
 //trainer
@@ -117,8 +40,7 @@ export interface AdminGetTrainersDto {
   sortOrder?: "asc" | "desc";
 }
 
-export interface AdminGetTrainersResponseDto
-  extends AdminBaseUserResponseDto {}
+export type AdminGetTrainersResponseDto = AdminBaseUserResponseDto
 
 export interface AdminBlockUnblockTrainerDto {
   trainerId: string;
@@ -155,54 +77,10 @@ export interface AdminGetUsersDto {
   sortOrder?: "asc" | "desc";
 }
 
-export interface AdminGetUsersResponseDto
-  extends AdminBaseUserResponseDto {}
+export type AdminGetUsersResponseDto = AdminBaseUserResponseDto
 
 export interface AdminBlockUnBlockUserDto {
   userId: string;
 }
 
 
-export interface GetSubscriptionsResponseDto {
-  id: string;
-  subscriptionName: string;
-  description: string;
-  price: number;
-  durationDays: number;
-  features: string[];
-  liveSessionCount: number;
-  planType: PlanType;
-}
-
-export interface CreateQuestionDto {
-  key: string;
-  schemaKey?: string | null;
-  isCoreLocked?: boolean;
-  question: string;
-  section: string;
-  order: number;
-  isActive?: boolean;
-  type: string;
-  options?: any[];
-  followUp?: any;
-  config?: any;
-  validation?: any;
-}
-
-export interface OnboardingQuestionResponseDto {
-  id: string;
-  key: string;
-  schemaKey: string | null;
-  isCoreLocked: boolean;
-  question: string;
-  section: string;
-  order: number;
-  isActive: boolean;
-  type: string;
-  options: any[];
-  followUp: any;
-  config: any;
-  validation: any;
-  createdAt?: string;
-  updatedAt?: string;
-}

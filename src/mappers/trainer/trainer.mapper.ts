@@ -1,6 +1,6 @@
-import { UserInterface } from "@/interfaces/user/user.interface";
-import { TrainerWorkoutList } from "@/interfaces/trainer/trainer.interface";
-import { FindTrainerResponseDto, WorkoutListDto } from "@/dto/trainer/trainer.dto";
+import { UserInterface } from "@/interfaces/domain.interface/user.interface/user.interface";
+
+import { FindTrainerResponseDto } from "@/dto/trainer/trainer.dto";
 import { Gender } from "@/constants/identity.constants";
 
 export class TrainerMapper {
@@ -21,14 +21,5 @@ export class TrainerMapper {
     return users.map((user) => this.toProfileResponse(user));
   }
 
-  static toTrainerWorkoutList(workout: TrainerWorkoutList): WorkoutListDto {
-    return {
-      id: workout.id,
-      workoutList: workout.workoutName,
-    };
-  }
 
-  static toTrainerWorkoutListResponse(workoutList: TrainerWorkoutList[]): WorkoutListDto[] {
-    return workoutList.map((w) => this.toTrainerWorkoutList(w));
-  }
 }

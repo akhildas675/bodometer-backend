@@ -8,11 +8,7 @@ import { ROLE_GUARD } from "@/constants/role.guard";
 const trainerRoute = Router();
 const { trainerController } = createTrainerModule();
 
-trainerRoute.get(
-  TRAINER_ROUTES.GET_WORKOUT_LIST,
-  ROLE_GUARD.TRAINER_GUARD,
-  trainerController.getWorkoutList,
-);
+
 
 trainerRoute.post(
   TRAINER_ROUTES.SUBMIT_PROFILE_DATA,

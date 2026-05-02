@@ -4,10 +4,11 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
-    "lint:check": "eslint . --ext .ts --max-warnings 0",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:check": "eslint . --max-warnings 0",
     "dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/server.ts",
+    "seed:sections": "ts-node src/utils/onboarding.seed.ts",
     "dev:stripe": "stripe listen --forward-to localhost:5000/api/user/stripe/webhook",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:stripe\"",
     "build": "tsc && tsc-alias",
@@ -72,6 +73,7 @@
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.58.2"
   }
 }

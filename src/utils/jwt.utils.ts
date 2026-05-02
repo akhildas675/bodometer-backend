@@ -1,8 +1,6 @@
 import jwt, { SignOptions, Secret } from "jsonwebtoken";
-import {
-  AccessTokenPayload,
-  RefreshTokenPayload,
-} from "@/interfaces/auth/auth.interface";
+import { AccessTokenPayload, RefreshTokenPayload } from "../interfaces/service-interface/auth/auth.interface";
+
 
 if (!process.env.JWT_ACCESS_SECRET || !process.env.JWT_REFRESH_SECRET) {
   throw new Error("JWT secrets are missing in environment variables");

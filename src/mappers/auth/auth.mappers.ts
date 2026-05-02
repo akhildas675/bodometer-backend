@@ -1,7 +1,7 @@
-import { UserInterface } from "@/interfaces/user/user.interface";
-import { LoginResponseDto, RegisterResponseDto } from "@/dto/auth/auth.dto";
-import { VerificationStatus } from "@/constants/verification.constants";
-import { SubscriptionStatus } from "@/constants/subscription";
+import { VerificationStatus } from "../../constants/verification.constants";
+import { LoginResponseDto, RegisterResponseDto } from "../../dto/auth/auth.dto";
+import { UserInterface } from "../../interfaces/service-interface/auth/auth.interface";
+
 
 export class AuthMapper {
   static toRegisterResponse(user: UserInterface): RegisterResponseDto {
@@ -21,10 +21,7 @@ export class AuthMapper {
     verificationStatus?: VerificationStatus;
     rejectionReason?: string | null;
   },
-  subscription?: {
-    status: SubscriptionStatus;
-    endDate: Date | null;
-  }
+ 
 ): LoginResponseDto {
   return {
     accessToken,
@@ -33,25 +30,13 @@ export class AuthMapper {
       name: user.name,
       userName: user.userName,
       email: user.email,
-      phoneNumber: user.phoneNumber ?? null,
+      phoneNumber: user.phoneNumber ?? "",
       profilePic: user.profilePic ?? null,
       gender: user.gender ?? null,
       role: user.role,
       isVerified: user.isVerified,
       dateOfBirth: user.dateOfBirth?.toISOString() ?? null,
       isBlocked: user.isBlocked,
-
-      subscription: subscription
-        ? {
-            status: subscription.status,
-            endDate: subscription.endDate
-              ? subscription.endDate.toISOString()
-              : null,
-          }
-        : {
-            status: "none",
-            endDate: null,
-          },
     },
 
     ...(trainerStatus && { trainerStatus }),

@@ -1,11 +1,11 @@
-import { ITrainerWithProfile, PopulatedTrainerProfile, ReapplyTrainerData, TrainerProfile, TrainerStatusResponse } from "@/interfaces/trainer/trainer.interface";
-import { ITrainerProfileDocument, TrainerProfileModel } from "@/models/trainer-profile.model";
-import { BaseRepository } from "./base/base.repository";
-import { ITrainerProfileRepository } from "@/interfaces/trainer/trainer.profile-repository.interface";
-import { VERIFICATION_STATUS, VerificationStatus } from "@/constants/verification.constants";
-import { PaginationMeta } from "@/interfaces/admin/admin.interface";
 import mongoose, { PipelineStage } from "mongoose";
-import { IUserDocument } from "@/models/user.model";
+import { VERIFICATION_STATUS, VerificationStatus } from "../constants/verification.constants";
+import { PaginationMeta } from "../interfaces/domain.interface/admin.interface/admin.interface";
+import { ITrainerWithProfile, PopulatedTrainerProfile, ReapplyTrainerData, TrainerProfile, TrainerStatusResponse } from "../interfaces/domain.interface/trainer.interface/trainer.interface";
+import { ITrainerProfileRepository } from "../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
+import { ITrainerProfileDocument, TrainerProfileModel } from "../models/trainer-profile.model";
+import { BaseRepository } from "./base/base.repository";
+import { IUserDocument } from "../models/user.model";
 
 
 export default class TrainerProfileRepository
@@ -49,7 +49,6 @@ export default class TrainerProfileRepository
           certifications: data.certifications,
           coverPhoto: data.coverPhoto,
           bio: data.bio,
-          specializationIds: data.specializationIds,
           verificationStatus: VERIFICATION_STATUS.PENDING,
           rejectionReason: null,
         },
@@ -153,10 +152,6 @@ export default class TrainerProfileRepository
         path: "userId",
         select: "_id name userName email phoneNumber profilePic gender role isVerified dateOfBirth isBlocked createdAt updatedAt",
       })
-      .populate<{ specializationIds: { _id: mongoose.Types.ObjectId; workoutName: string }[] }>({
-        path: "specializationIds",
-        select: "_id workoutName",
-      })
       .lean<PopulatedTrainerProfile>();
 
     if (!trainerProfile) return null;
@@ -183,25 +178,6 @@ export default class TrainerProfileRepository
       .lean<ITrainerProfileDocument>();
   }
 
-  async getTrainersBySpecialization(workoutId: string): Promise<ITrainerWithProfile[]> {
-    const profiles = await TrainerProfileModel.find({
-      specializationIds: new mongoose.Types.ObjectId(workoutId),
-      verificationStatus: VERIFICATION_STATUS.APPROVED,
-    })
-      .populate<{ userId: IUserDocument }>({
-        path: "userId",
-        select: "_id name profilePic bio",
-      })
-      .lean<PopulatedTrainerProfile[]>();
-
-    return profiles.map((p) => {
-      const { userId, ...profileData } = p;
-      return {
-        user: userId,
-        profile: { ...profileData, userId: userId._id } as ITrainerProfileDocument,
-      };
-    });
-  }
 
   async getApprovedTrainersPaginated(
     page: number,
@@ -224,14 +200,7 @@ export default class TrainerProfileRepository
         },
       },
       { $unwind: "$userId" },
-      {
-        $lookup: {
-          from: "workouts",
-          localField: "specializationIds",
-          foreignField: "_id",
-          as: "specializationIds",
-        },
-      },
+
     ];
 
     if (search) {
@@ -245,13 +214,6 @@ export default class TrainerProfileRepository
       });
     }
 
-    if (specializationId) {
-      pipeline.push({
-        $match: {
-          "specializationIds._id": new mongoose.Types.ObjectId(specializationId),
-        },
-      });
-    }
 
     if (sortBy) {
       const sortField = sortBy === "name" ? "userId.name" : sortBy;
@@ -292,10 +254,6 @@ export default class TrainerProfileRepository
       select:"_id name profilePic",
     })
 
-    .populate<{specializationIds:{id:mongoose.Types.ObjectId; workoutName:string}[]}>({
-      path:"specializationIds",
-      select:"_id workoutName",
-    })
     .lean<PopulatedTrainerProfile>();
 
     if(!profile) return null;

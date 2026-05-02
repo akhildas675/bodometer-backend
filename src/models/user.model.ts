@@ -1,6 +1,7 @@
-import { GENDER, Gender } from "@/constants/identity.constants";
-import { Role, ROLES } from "@/constants/roles";
+
 import mongoose, { Document, Schema } from "mongoose";
+import { GENDER, Gender } from "../constants/identity.constants";
+import { Role, ROLES } from "../constants/roles";
 
 
 

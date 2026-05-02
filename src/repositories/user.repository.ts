@@ -1,8 +1,9 @@
-import { IUserDocument, UserModel } from "@/models/user.model";
-import { BaseRepository } from "@/repositories/base/base.repository";
-import { PaginationMeta } from "@/interfaces/admin/admin.interface";
-import { IUserRepository } from "@/interfaces/user/user-repository.interface";
-import { UpdateUserProfileInterface, UserInterface } from "@/interfaces/user/user.interface";
+import { PaginationMeta } from "../interfaces/domain.interface/admin.interface/admin.interface";
+import { UpdateUserProfileInterface, UserInterface } from "../interfaces/domain.interface/user.interface/user.interface";
+import { IUserRepository } from "../interfaces/repository-interface/user/user-repository.interface";
+import { IUserDocument, UserModel } from "../models/user.model";
+import { BaseRepository } from "./base/base.repository";
+
 
 
 export default class UserRepository

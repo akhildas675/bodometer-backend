@@ -1,18 +1,11 @@
-import type { Role } from "@/constants/roles";
-import { UserInterface } from "@/interfaces/user/user.interface";
-import { ITrainerWithProfile } from "@/interfaces/trainer/trainer.interface";
-import { ITrainerProfileDocument } from "@/models/trainer-profile.model";
+import { Role } from "../../constants/roles";
+import { AdminGetUsersResponseDto } from "../../dto/admin/admin.dto";
+import { ApproveTrainerResponseDto, GetTrainerAppointmentsResponseDto, GetTrainerByIdResponseDto, RejectTrainerResponseDto } from "../../dto/trainer/trainer.dto";
+import { ITrainerWithProfile } from "../../interfaces/domain.interface/trainer.interface/trainer.interface";
+import { UserInterface } from "../../interfaces/domain.interface/user.interface/user.interface";
+import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
+import { IUserDocument } from "../../models/user.model";
 
-import {
-  ApproveTrainerResponseDto,
-  GetTrainerAppointmentsResponseDto,
-  GetTrainerByIdResponseDto,
-  RejectTrainerResponseDto,
-} from "@/dto/trainer/trainer.dto";
-import { AdminGetUsersResponseDto, OnboardingSectionResponseDto, OnboardingQuestionResponseDto } from "@/dto/admin/admin.dto";
-import { IUserDocument } from "@/models/user.model";
-import { IOnboardingSection } from "@/models/onboarding-section.model";
-import { IOnboardingQuestion } from "@/models/onboarding-question.model";
 
 // Admin Account Mapper (User & Trainer list)
 export class AdminAccountMapper {
@@ -33,39 +26,14 @@ export class AdminAccountMapper {
     return users.map((u) => AdminAccountMapper.toResponse(u));
   }
 
-  static toSectionResponse(section: IOnboardingSection): OnboardingSectionResponseDto {
-    return {
-      id: section._id?.toString() || "",
-      key: section.key,
-      title: section.title,
-      order: section.order,
-      isActive: section.isActive,
-    };
-  }
 
-  static toQuestionResponse(question: IOnboardingQuestion): OnboardingQuestionResponseDto {
-    return {
-      id: question._id?.toString() || "",
-      key: question.key,
-      schemaKey: question.schemaKey,
-      isCoreLocked: question.isCoreLocked,
-      question: question.question,
-      section: question.section,
-      order: question.order,
-      isActive: question.isActive,
-      type: question.type,
-      options: question.options || [],
-      followUp: question.followUp,
-      config: question.config,
-      validation: question.validation,
-      createdAt: question.createdAt?.toISOString(),
-      updatedAt: question.updatedAt?.toISOString(),
-    };
-  }
 }
 
 // --- TRAINERS ---
 export class TrainerMapper {
+  static toProfileResponse(updatedUser: UserInterface): import("../../dto/trainer/trainer.dto").FindTrainerResponseDto | PromiseLike<import("../../dto/trainer/trainer.dto").FindTrainerResponseDto> {
+    throw new Error("Method not implemented.");
+  }
   private static mapTrainerUser(user: IUserDocument) {
     return {
       _id: user._id?.toString() || "",
@@ -99,13 +67,6 @@ export class TrainerMapper {
     };
   }
 
-  private static mapSpecializations(specializationIds: unknown) {
-    const specs = (specializationIds || []) as any[];
-    return specs.map((s) => ({
-      _id: s._id?.toString() || "",
-      workoutName: s.workoutName || "",
-    }));
-  }
 
   static toDto(trainer: ITrainerWithProfile): GetTrainerAppointmentsResponseDto {
     return {
@@ -125,7 +86,7 @@ export class TrainerMapper {
       user: this.mapTrainerUser(trainer.user),
       profile: {
         ...baseProfile,
-        specializationIds: this.mapSpecializations(trainer.profile.specializationIds),
+
         applyCount: trainer.profile.applyCount ?? 0,
       },
     };
@@ -152,4 +113,4 @@ export class TrainerMapper {
     };
   }
 }
-
+

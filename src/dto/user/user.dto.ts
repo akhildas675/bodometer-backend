@@ -1,5 +1,5 @@
-import { Gender } from "@/constants/identity.constants";
-import { PlanType } from "@/constants/subscription";
+import { Gender } from "../../constants/identity.constants";
+
 
 export interface FindUserDto {
   userId: string;
@@ -42,49 +42,6 @@ export interface ChangePasswordDto {
 
 
 
-export interface GetUserWorkoutsQueryDto {
-  page?: number;
-  limit?: number;
-  search?: string;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
-}
-
-export interface UserWorkoutResponseDto {
-  id: string;
-  workoutName: string;
-  workoutDescription: string;
-  workoutImage: string;
-  coverPhoto: string;
-}
-
-export interface RelatedTrainerDto {
-  _id: string;
-  name: string;
-  profilePic: string | null;
-  experienceInYears: number;
-  bio: string;
-}
-export interface GetSubscriptionsResponseDto {
-  id: string;
-  subscriptionName: string;
-  description: string;
-  price: number;
-  durationDays: number;
-  features: string[];
-  liveSessionCount: number;
-  planType: PlanType;
-}
-
-export interface ActiveSubscriptionDto {
-  planId: string;
-  subscriptionName: string;
-  planType: PlanType;
-  startDate: string;
-  endDate: string;
-  daysRemaining: number;
-}
-
 export interface CreateCheckoutSessionDto {
   planId: string;
 }
@@ -107,11 +64,11 @@ export interface TrainerListItemDto {
   _id: string;
   name: string;
   profilePic: string | null;
-  profileId: string; 
+  profileId: string;
   experienceInYears: number;
-  coverPhoto:string;
+  coverPhoto: string;
   bio: string;
-  specializations: { _id: string; workoutName: string }[];
+
 }
 
 export interface TrainerListResponseDto {
@@ -124,19 +81,6 @@ export interface TrainerListResponseDto {
   };
 }
 
-export interface WorkoutDetailResponseDto {
-  id: string;
-  workoutName: string;
-  workoutDescription: string;
-  workoutImage: string;
-  coverPhoto: string;
-  introVideo: string;
-  targetMuscles: string[];
-  equipment: string[];
-  benefits: string[];
-  isActive: boolean;
-  createdAt: string;
-}
 
 export interface RelatedTrainerDto {
   _id: string;
@@ -144,12 +88,6 @@ export interface RelatedTrainerDto {
   profilePic: string | null;
   experienceInYears: number;
   bio: string;
-}
-
-export interface WorkoutDetailPageDto {
-  workout: WorkoutDetailResponseDto;
-  relatedTrainers: RelatedTrainerDto[];
-  relatedWorkouts: WorkoutDetailResponseDto[];
 }
 
 
@@ -160,22 +98,7 @@ export interface TrainerDetailDto {
   coverPhoto: string;
   bio: string;
   experienceInYears: number;
-  specializations: { _id: string; workoutName: string }[];
-}
- 
 
-//fitness
-
-
-export interface WorkoutTimeResponseDto {
-  workoutTimes: string[];
-}
-export interface WorkoutGoalsResponseDto {
-  fitnessGoals: string[];
 }
 
 
-export interface GetWorkoutResponseDto{
-  id:string;
-  workoutName:string;
-}

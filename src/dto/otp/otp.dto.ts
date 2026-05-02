@@ -1,4 +1,5 @@
-import { OtpPurpose } from "@/constants/otp.constants";
+import { OtpPurpose } from "../../constants/otp.constants";
+
 
 export interface GenerateOtpDto {
   email: string;

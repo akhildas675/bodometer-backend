@@ -1,14 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { Jwt } from "@/utils/jwt.utils";
-import { AppError } from "@/utils/appError";
-import { STATUS } from "@/constants/statuscode";
-import { redis } from "@/config/redis";
-import {
-  AccessTokenPayload,
-  RefreshTokenPayload,
-} from "@/interfaces/auth/auth.interface";
-import { UserModel } from "@/models/user.model";
-import { Role } from "@/constants/roles";
+import { Role } from "../constants/roles";
+import { UserModel } from "../models/user.model";
+import { AppError } from "../utils/appError";
+import { STATUS } from "../constants/statuscode";
+import { AccessTokenPayload, RefreshTokenPayload } from "../interfaces/service-interface/auth/auth.interface";
+import { redis } from "../config/redis";
+import { Jwt } from "../utils/jwt.utils";
 
 export interface AuthRequest extends Request {
   file?: Express.Multer.File | undefined;

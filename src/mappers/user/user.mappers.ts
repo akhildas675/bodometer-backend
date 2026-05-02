@@ -1,8 +1,8 @@
-import { UserInterface } from "@/interfaces/user/user.interface";
-import { FindUserResponseDto, GetWorkoutResponseDto, TrainerDetailDto, TrainerListItemDto, UserWorkoutResponseDto, WorkoutDetailPageDto } from "@/dto/user/user.dto";
-import { PaginationMeta, Workout } from "@/interfaces/admin/admin.interface";
-import { ITrainerWithProfile } from "@/interfaces/trainer/trainer.interface";
 import mongoose from "mongoose";
+import { FindUserResponseDto, TrainerDetailDto, TrainerListItemDto } from "../../dto/user/user.dto";
+import { ITrainerWithProfile } from "../../interfaces/domain.interface/trainer.interface/trainer.interface";
+import { UserInterface } from "../../interfaces/domain.interface/user.interface/user.interface";
+
 
 export class UserMapper {
 
@@ -22,57 +22,8 @@ export class UserMapper {
 
 
 export class UserMappers {
-  static toDetailDto(
-    workout: Workout,
-    trainers: ITrainerWithProfile[],
-    relatedWorkouts: Workout[],
-  ): WorkoutDetailPageDto {
-    return {
-      workout: {
-        id: workout.id!,
-        workoutName: workout.workoutName,
-        workoutDescription: workout.workoutDescription,
-        workoutImage: workout.workoutImage,
-        coverPhoto: workout.coverPhoto,
-        introVideo: workout.introVideo,
-        targetMuscles: workout.targetMuscles,
-        benefits: workout.benefits,
-        equipment: workout.equipment,
-        isActive: workout.isActive,
-        createdAt: workout.createdAt?.toISOString() ?? "",
-      },
-      relatedTrainers: trainers.map((t) => ({
-        _id: t.user._id?.toString() || "",
-        name: t.user.name,
-        profilePic: t.user.profilePic || null,
-        experienceInYears: t.profile.experienceInYears,
-        bio: t.profile.bio,
-      })),
-      relatedWorkouts: relatedWorkouts.map((w) => ({
-        id: w.id!,
-        workoutName: w.workoutName,
-        workoutDescription: w.workoutDescription,
-        workoutImage: w.workoutImage || "",
-        coverPhoto: w.coverPhoto || "",
-        introVideo: w.introVideo || "",
-        targetMuscles: w.targetMuscles ?? [],
-        equipment: w.equipment ?? [],
-        benefits: w.benefits ?? [],
-        isActive: w.isActive,
-        createdAt: w.createdAt?.toISOString() ?? "",
-      })),
-    };
-  }
+ 
 
-  static toResponseDto(workout: Workout): UserWorkoutResponseDto {
-    return {
-      id: workout.id,
-      workoutName: workout.workoutName,
-      workoutDescription: workout.workoutDescription,
-      workoutImage: workout.workoutImage,
-      coverPhoto: workout.coverPhoto || "",
-    };
-  }
 
 
   static toListItemDto(trainer: ITrainerWithProfile): TrainerListItemDto {
@@ -84,13 +35,7 @@ export class UserMappers {
       experienceInYears: trainer.profile.experienceInYears,
       bio: trainer.profile.bio,
       coverPhoto:trainer.profile.coverPhoto,
-      specializations: (trainer.profile.specializationIds as unknown as {
-        _id: { toString(): string };
-        workoutName: string;
-      }[]).map((s) => ({
-        _id: s._id.toString(),
-        workoutName: s.workoutName,
-      })),
+
     };
   }
 
@@ -98,22 +43,7 @@ export class UserMappers {
     return trainers.map((t) => this.toListItemDto(t));
   }
 
-  static toResponseDtoList(
-    workouts: Workout[],
-    pagination: PaginationMeta,
-  ): { data: UserWorkoutResponseDto[]; pagination: PaginationMeta } {
-    return {
-      data: workouts.map((w) => this.toResponseDto(w)),
-      pagination,
-    };
-  }
   static toTrainerDetailDto(data: ITrainerWithProfile): TrainerDetailDto {
-    const specializations = (
-      data.profile.specializationIds as unknown as { _id: mongoose.Types.ObjectId; workoutName: string }[]
-    ).map((s) => ({
-      _id: s._id.toString(),
-      workoutName: s.workoutName,
-    }));
 
       return {
     _id: (data.profile._id as mongoose.Types.ObjectId).toString(),
@@ -122,18 +52,12 @@ export class UserMappers {
     coverPhoto: data.profile.coverPhoto ?? "",
     bio: data.profile.bio,
     experienceInYears: data.profile.experienceInYears,
-    specializations,
+
   };
   }
 
-  static toWorkoutResponse(workout:Workout):GetWorkoutResponseDto{
-    return {
-      id:workout.id,
-      workoutName:workout.workoutName
-    }
-  }
-  static toWorkoutResponseList(workout:Workout[]):GetWorkoutResponseDto[]{
-    return workout.map(this.toWorkoutResponse)
-  }
+
+
+  
 }
 

@@ -1,5 +1,6 @@
-import { IStripeService } from "@/interfaces/payment/stripe-service.interface";
+
 import Stripe from "stripe";
+import { IStripeService } from "../../interfaces/service-interface/payment/stripe-service.interface";
 
 export class StripeService implements IStripeService {
   private stripe: Stripe;

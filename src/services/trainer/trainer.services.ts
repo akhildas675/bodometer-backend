@@ -1,28 +1,20 @@
-import { STATUS } from "@/constants/statuscode";
-import { MESSAGES } from "@/constants/messages";
-import { VERIFICATION_STATUS } from "@/constants/verification.constants";
-import {
-  FindTrainerResponseDto,
-  TrainerProfileDto,
-  TrainerStatusResponseDto,
-  UpdateTrainerProfileDto,
-} from "@/dto/trainer/trainer.dto";
-import { IS3Service } from "@/interfaces/s3/s3-service.interface";
-import { ITrainerProfileRepository } from "@/interfaces/trainer/trainer.profile-repository.interface";
-import { ITrainerService } from "@/interfaces/trainer/trainer-service.interface";
-import { IUserRepository } from "@/interfaces/user/user-repository.interface";
-import { IWorkoutRepository } from "@/interfaces/workout/workout-repository.interface";
 
-import { TrainerWorkoutList } from "@/interfaces/trainer/trainer.interface";
-import { AppError } from "@/utils/appError";
-import { TrainerMapper } from "@/mappers/trainer/trainer.mapper";
 import mongoose from "mongoose";
+import { ITrainerService } from "../../interfaces/service-interface/trainer/trainer-service.interface";
+import { IUserRepository } from "../../interfaces/repository-interface/user/user-repository.interface";
+import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
+import { IS3Service } from "../../interfaces/service-interface/s3/s3-service.interface";
+import { FindTrainerResponseDto, TrainerProfileDto, TrainerStatusResponseDto, UpdateTrainerProfileDto } from "../../dto/trainer/trainer.dto";
+import { AppError } from "../../utils/appError";
+import { STATUS } from "../../constants/statuscode";
+import { MESSAGES } from "../../constants/messages";
+import { TrainerMapper } from "../../mappers/admin/admin.mappers";
+import { VERIFICATION_STATUS } from "../../constants/verification.constants";
 
 export class TrainerService implements ITrainerService {
   constructor(
     private _userRepo: IUserRepository,
     private _trainerProfileRepo: ITrainerProfileRepository,
-    private _workoutRepo: IWorkoutRepository,
     private _s3Service: IS3Service,
   ) { }
 
@@ -122,16 +114,14 @@ export class TrainerService implements ITrainerService {
       dateOfBirth: new Date(data.dateOfBirth),
     });
 
-    const specializationObjectIds = data.specializationIds.map(
-      (id) => new mongoose.Types.ObjectId(id)
-    );
+
 
     if (existing?.verificationStatus === VERIFICATION_STATUS.REJECTED) {
       await this._trainerProfileRepo.updateToReapply(userId, {
         experienceInYears: data.experienceInYears,
         certifications: [certificateUrl],
         bio: data.bio,
-        specializationIds: specializationObjectIds,
+
         coverPhoto:coverPhotoUrl,
       });
       return;
@@ -139,7 +129,7 @@ export class TrainerService implements ITrainerService {
 
     await this._trainerProfileRepo.createProfile({
       userId: new mongoose.Types.ObjectId(userId),
-      specializationIds: specializationObjectIds, 
+
       experienceInYears: data.experienceInYears,
       coverPhoto:coverPhotoUrl,
       certifications: [certificateUrl],
@@ -163,8 +153,5 @@ export class TrainerService implements ITrainerService {
     return response;
   }
 
-  //  Workout
-  async fetchWorkoutList(): Promise<TrainerWorkoutList[]> {
-    return this._workoutRepo.getWorkoutNameList();
-  }
+
 }

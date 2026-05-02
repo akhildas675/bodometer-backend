@@ -1,30 +1,20 @@
-import { googleClient } from "@/config/google";
-import { STATUS } from "@/constants/statuscode";
-import {
-  ForgotPasswordResponseDto,
-  GoogleLoginDto,
-  LoginDto,
-  LoginResponseDto,
-  RegisterDto,
-  RegisterResponseDto,
-  ResetPasswordDto,
-} from "@/dto/auth/auth.dto";
-import { ResendOtpDto, VerifyOtpDto } from "@/dto/otp/otp.dto";
-import { IAuthService } from "@/interfaces/auth/auth-service.interface";
-import { AuthMapper } from "@/mappers/auth/auth.mappers";
-import { AppError } from "@/utils/appError";
-import { Jwt } from "@/utils/jwt.utils";
-import { hashPassword } from "@/utils/password";
-import bcrypt from "bcrypt";
-import { VerificationStatus } from "@/constants/verification.constants";
-import { ITrainerProfileRepository } from "@/interfaces/trainer/trainer.profile-repository.interface";
-import { ISessionService } from "@/interfaces/auth/session-service.interface";
-import { IOtpService } from "@/interfaces/otp/otp-service.interface";
-import { MESSAGES } from "@/constants/messages";
-import { ROLES } from "@/constants/roles";
-import { IUserRepository } from "@/interfaces/user/user-repository.interface";
-import { SUBSCRIPTION_STATUS } from "@/constants/subscription";
-import { ISubscriptionTransactionRepository } from "@/interfaces/subscription/subscription.transaction-repository.interface";
+import { googleClient } from "../../config/google";
+import { MESSAGES } from "../../constants/messages";
+import { ROLES } from "../../constants/roles";
+import { STATUS } from "../../constants/statuscode";
+import { VerificationStatus } from "../../constants/verification.constants";
+import { ForgotPasswordResponseDto, GoogleLoginDto, LoginDto, LoginResponseDto, RegisterDto, RegisterResponseDto, ResetPasswordDto } from "../../dto/auth/auth.dto";
+import { ResendOtpDto, VerifyOtpDto } from "../../dto/otp/otp.dto";
+import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
+import { IUserRepository } from "../../interfaces/repository-interface/user/user-repository.interface";
+import { IAuthService } from "../../interfaces/service-interface/auth/auth-service.interface";
+import { ISessionService } from "../../interfaces/service-interface/auth/session-service.interface";
+import { IOtpService } from "../../interfaces/service-interface/otp/otp-service.interface";
+import { AuthMapper } from "../../mappers/auth/auth.mappers";
+import { AppError } from "../../utils/appError";
+import { Jwt } from "../../utils/jwt.utils";
+import { hashPassword } from "../../utils/password";
+import bcrypt from "bcrypt"
 
 export class AuthService implements IAuthService {
   constructor(
@@ -32,7 +22,7 @@ export class AuthService implements IAuthService {
     private _otpService: IOtpService,
     private _sessionService: ISessionService,
     private _trainerProfileRepo: ITrainerProfileRepository,
-    private _subscriptionTransactionRepository: ISubscriptionTransactionRepository
+   
   ) { }
 
   async initiateRegister(data: RegisterDto): Promise<void> {
@@ -124,33 +114,7 @@ export class AuthService implements IAuthService {
         };
     }
 
-    const subscriptionDoc = await this._subscriptionTransactionRepository.findLatestByUserId(user.id);
-
-    console.log("subscription.....ss",subscriptionDoc)
-
-    let subscription;
-
-    if (!subscriptionDoc) {
-      subscription = {
-        status: SUBSCRIPTION_STATUS.NONE,
-        endDate: null,
-      };
-    } else {
-      const now = new Date();
-
-      if (subscriptionDoc.endDate && subscriptionDoc.endDate >= now) {
-        subscription = {
-          status: SUBSCRIPTION_STATUS.ACTIVE,
-          endDate: subscriptionDoc.endDate,
-        };
-      } else {
-        subscription = {
-          status: SUBSCRIPTION_STATUS.EXPIRED,
-          endDate: subscriptionDoc.endDate,
-        };
-      }
-    }
-
+  
     /* ---------- TOKENS ---------- */
     const accessToken = Jwt.signAccess({ sub: user.id, role: user.role });
 
@@ -167,7 +131,7 @@ export class AuthService implements IAuthService {
         user,
         accessToken,
         trainerStatus,
-        subscription
+       
       ),
       refreshToken,
     };

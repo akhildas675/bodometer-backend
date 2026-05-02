@@ -1,10 +1,10 @@
-import { NextFunction, Request, Response } from "express";
-import { ITrainerService } from "@/interfaces/trainer/trainer-service.interface";
-import { AuthRequest } from "@/middleware/authGuard";
-import { AppError } from "@/utils/appError";
-import { STATUS } from "@/constants/statuscode";
-import { TrainerProfileDto, UpdateTrainerProfileDto } from "@/dto/trainer/trainer.dto";
-import { MESSAGES } from "@/constants/messages";
+import { NextFunction,Request,Response } from "express";
+import { ITrainerService } from "../../interfaces/service-interface/trainer/trainer-service.interface";
+import { AuthRequest } from "../../middleware/authGuard";
+import { AppError } from "../../utils/appError";
+import { STATUS } from "../../constants/statuscode";
+import { TrainerProfileDto, UpdateTrainerProfileDto } from "../../dto/trainer/trainer.dto";
+import { MESSAGES } from "../../constants/messages";
 
 
 export class TrainerController {
@@ -92,18 +92,6 @@ export class TrainerController {
     };
 
 
-  getWorkoutList = async (req: AuthRequest, res: Response, next: NextFunction) => {
-    try {
-      const workoutList = await this._trainerService.fetchWorkoutList();
-      res.status(STATUS.OK).json({
-        success: true,
-        data: workoutList,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
 
   //Trainer profile
 
@@ -114,13 +102,9 @@ createProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
       throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
     }
 
-    const { dateOfBirth, gender, experience, bio, specializationIds } = req.body;
+    const { dateOfBirth, gender, experience, bio } = req.body;
 
-    
-    // Debug logs
-    console.log("Content-Type:", req.headers["content-type"]);
-    console.log("Body:", req.body);
-    console.log("Files:", req.files);
+
 
     const files = req.files as Record<string, Express.Multer.File[]> | undefined;
 
@@ -140,9 +124,7 @@ createProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
       throw new AppError(STATUS.BAD_REQUEST,"Cover image is required")
     }
 
-    const specializationArray = Array.isArray(specializationIds)
-      ? specializationIds
-      : [specializationIds];
+
       
       const data: TrainerProfileDto = {
       profileImageFile,
@@ -152,9 +134,9 @@ createProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
       gender,
       experienceInYears: Number(experience),
       bio,
-      specializationIds: specializationArray,
+
     };
-    console.log("data from the appointment...",data)
+  
 
     await this._trainerService.createProfile(req.user.id, data);
 

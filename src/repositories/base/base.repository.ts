@@ -1,5 +1,6 @@
-import { Document, Model } from "mongoose";
-import { IBaseRepository } from "@/interfaces/base/base-repository.interface";
+import { Document, Model, UpdateQuery } from "mongoose";
+import { IBaseRepository } from "../../interfaces/base/base-repository.interface";
+
 
 export abstract class BaseRepository<T, D extends Document>
   implements IBaseRepository<T, D>
@@ -25,9 +26,9 @@ export abstract class BaseRepository<T, D extends Document>
 
   async upsert(filter: Record<string, unknown>, data: Partial<T>): Promise<T> {
     const doc = await this.model
-      .findOneAndUpdate(filter, { $set: data }, { new: true, upsert: true, runValidators: true })
+      .findOneAndUpdate(filter, { $set: data } as UpdateQuery<D>, { new: true, upsert: true, runValidators: true })
       .exec();
-    return this.toInterface(doc as D);
+    return this.toInterface(doc as unknown as D);
   }
 
   async findOne(filter: Record<string, unknown>): Promise<T | null> {
@@ -42,9 +43,9 @@ export abstract class BaseRepository<T, D extends Document>
 
 async updateById(id: string, data: Partial<D>): Promise<T | null> {
     const doc = await this.model
-      .findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true })
+      .findByIdAndUpdate(id, { $set: data } as UpdateQuery<D>, { new: true, runValidators: true })
       .exec();
-    return doc ? this.toInterface(doc) : null;
+    return doc ? this.toInterface(doc as unknown as D) : null;
 }
 
   async deleteById(id: string): Promise<boolean> {
