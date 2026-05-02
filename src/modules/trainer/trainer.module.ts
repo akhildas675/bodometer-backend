@@ -1,14 +1,12 @@
-import { TrainerController } from "@/controllers/trainer/trainer.controller";
-import { IS3Service } from "@/interfaces/service-interface/s3/s3-service.interface";
+import { TrainerController } from "../../controllers/trainer/trainer.controller";
+import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
+import { IS3Service } from "../../interfaces/service-interface/s3/s3-service.interface";
+import { ITrainerService } from "../../interfaces/service-interface/trainer/trainer-service.interface";
+import TrainerProfileRepository from "../../repositories/trainer-profile.repository";
+import UserRepository from "../../repositories/user.repository";
+import { S3Service } from "../../services/s3/s3.service";
+import { TrainerService } from "../../services/trainer/trainer.services";
 
-import { ITrainerService } from "@/interfaces/service-interface/trainer/trainer-service.interface";
-import { ITrainerProfileRepository } from "@/interfaces/repository-interface/trainer/trainer.profile-repository.interface";
-
-import TrainerProfileRepository from "@/repositories/trainer-profile.repository";
-import UserRepository from "@/repositories/user.repository";
-import { S3Service } from "@/services/s3/s3.service";
-
-import { TrainerService } from "@/services/trainer/trainer.services";
 
 export function createTrainerModule(){
     const userRepository = new UserRepository()
@@ -27,4 +25,4 @@ export function createTrainerModule(){
     const trainerController = new TrainerController(trainerService)
 
     return {trainerController}
-}
+}

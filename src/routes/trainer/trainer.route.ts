@@ -1,10 +1,8 @@
 import { Router } from "express";
-
-import {  mediaUpload } from "@/config/multer";
-import { createTrainerModule } from "@/modules/trainer/trainer.module";
-import { TRAINER_ROUTES } from "@/constants/routes.constant/trainer-routes.constant";
-import { ROLE_GUARD } from "@/constants/role.guard";
-
+import { TRAINER_ROUTES } from "../../constants/routes.constant/trainer-routes.constant";
+import { ROLE_GUARD } from "../../constants/role.guard";
+import { createTrainerModule } from "../../modules/trainer/trainer.module";
+import { mediaUpload } from "../../config/multer";
 const trainerRoute = Router();
 const { trainerController } = createTrainerModule();
 

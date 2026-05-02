@@ -9,6 +9,9 @@ import { ChangePasswordDto, GetTrainersQueryDto, UpdateUserProfileDto } from "..
 
 
 export class UserController {
+  stripeWebhook(STRIPE_WEBHOOK: string, stripeWebhook: any) {
+    throw new Error("Method not implemented.");
+  }
    private logger = new Logger("UserController");
   constructor(private _userService: IUserService) {}
 

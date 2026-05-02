@@ -1,14 +1,14 @@
-import { UserController } from "@/controllers/user/user.controller";
-import { IStripeService } from "@/interfaces/service-interface/payment/stripe-service.interface";
-import { IS3Service } from "@/interfaces/service-interface/s3/s3-service.interface";
-import { ITrainerProfileRepository } from "@/interfaces/repository-interface/trainer/trainer.profile-repository.interface";
-import { IUserRepository } from "@/interfaces/repository-interface/user/user-repository.interface";
-import { IUserService } from "@/interfaces/service-interface/user/user-service.interface";
-import TrainerProfileRepository from "@/repositories/trainer-profile.repository";
-import UserRepository from "@/repositories/user.repository";
-import { StripeService } from "@/services/payments/stripe.service";
-import { S3Service } from "@/services/s3/s3.service";
-import { UserService } from "@/services/user/user.services";
+import { UserController } from "../../controllers/user/user.controller";
+import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
+import { IUserRepository } from "../../interfaces/repository-interface/user/user-repository.interface";
+import { IStripeService } from "../../interfaces/service-interface/payment/stripe-service.interface";
+import { IS3Service } from "../../interfaces/service-interface/s3/s3-service.interface";
+import { IUserService } from "../../interfaces/service-interface/user/user-service.interface";
+import TrainerProfileRepository from "../../repositories/trainer-profile.repository";
+import UserRepository from "../../repositories/user.repository";
+import { StripeService } from "../../services/payments/stripe.service";
+import { S3Service } from "../../services/s3/s3.service";
+import { UserService } from "../../services/user/user.services";
 
 export function createUserModule(){
 
@@ -28,4 +28,4 @@ export function createUserModule(){
     const userController = new UserController(userService);
 
     return {userController}
-}
+}

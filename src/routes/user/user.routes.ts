@@ -1,13 +1,11 @@
 import { Router } from "express";
-import { USER_ROUTES } from "@/constants/routes.constant/user-routes.constant";
-import { ROLE_GUARD } from "@/constants/role.guard";
-import { validate } from "@/middleware/validate";
-import {
-  updateUserProfileSchema,
-  uploadProfilePictureSchema,
-} from "@/validators/user/user.validator";
-import { createUserModule } from "@/modules/user/user.module";
-import { mediaUpload } from "@/config/multer";
+import { createUserModule } from "../../modules/user/user.module";
+import { USER_ROUTES } from "../../constants/routes.constant/user-routes.constant";
+import { ROLE_GUARD } from "../../constants/role.guard";
+import { validate } from "../../middleware/validate";
+import { updateUserProfileSchema, uploadProfilePictureSchema } from "../../validators/user/user.validator";
+import { mediaUpload } from "../../config/multer";
+
 
 const userRoute = Router();
 const { userController } = createUserModule();
@@ -30,11 +28,7 @@ userRoute.post(
   validate(uploadProfilePictureSchema),
   userController.uploadProfilePicture,
 );
-userRoute.post(
-  USER_ROUTES.CREATE_CHECKOUT_SESSION,
-  ROLE_GUARD.USER_GUARD,
-  userController.createCheckoutSession,
-);
+
 
 userRoute.post(USER_ROUTES.STRIPE_WEBHOOK, userController.stripeWebhook);
 

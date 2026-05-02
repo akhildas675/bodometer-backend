@@ -1,12 +1,19 @@
 import { Router } from "express";
-import { ADMIN_ROUTES } from "@/constants/routes.constant/admin-routes.constant";
-import { ROLE_GUARD } from "@/constants/role.guard";
-import { validate } from "@/middleware/validate";
-import { createAdminModule } from "@/modules/admin/admin.module";
-
-import { getTrainerAppointmentsSchema, getTrainersSchema, profileIdParamSchema, rejectTrainerSchema, trainerIdParamSchema } from "@/validators/admin/admin-trainer.validator";
-import { getUsersSchema, userIdParamSchema } from "@/validators/admin/admin-user.validator";
-import { mediaUpload } from "@/config/multer";
+import { ADMIN_ROUTES } from "../../constants/routes.constant/admin-routes.constant";
+import { createAdminModule } from "../../modules/admin/admin.module";
+import { ROLE_GUARD } from "../../constants/role.guard";
+import { validate } from "../../middleware/validate";
+import {
+  getTrainersSchema,
+  trainerIdParamSchema,
+  getTrainerAppointmentsSchema,
+  profileIdParamSchema,
+  rejectTrainerSchema,
+} from "../../validators/admin/admin-trainer.validator";
+import {
+  getUsersSchema,
+  userIdParamSchema,
+} from "../../validators/admin/admin-user.validator";
 
 const adminRoute = Router();
 const { adminController } = createAdminModule();
