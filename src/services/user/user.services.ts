@@ -112,15 +112,14 @@ export class UserService implements IUserService {
     const page = query.page || 1;
     const limit = query.limit || 9;
 
-    const { data, total } =
-      await this._trainerProfileRepo.getApprovedTrainersPaginated(
-        page,
-        limit,
-        query.search,
-        query.sortBy,
-        query.sortOrder,
-        query.specializationId,
-      );
+    const { data, total } = await this._trainerProfileRepo.getApprovedTrainersPaginated(
+      page,
+      limit,
+      query.search,
+      query.sortBy,
+      query.sortOrder,
+      query.specializationId,
+    );
 
     return {
       data: UserMappers.toListItemDtoArray(data),
@@ -134,9 +133,7 @@ export class UserService implements IUserService {
   }
 
   async getTrainerById(trainerId: string): Promise<TrainerDetailDto> {
-    const data =
-      await this._trainerProfileRepo.getTrainerByIdWithUser(trainerId);
-   
+    const data = await this._trainerProfileRepo.getTrainerByIdWithUser(trainerId);
     if (!data) {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND);
     }

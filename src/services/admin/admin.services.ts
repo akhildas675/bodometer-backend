@@ -115,8 +115,6 @@ export class AdminService implements IAdminService {
       query.status,
     );
 
-    console.log("hit here in admin service")
-
     return {
       data: TrainerMapper.toDtoArray(data),
       pagination,

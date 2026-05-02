@@ -119,6 +119,7 @@ export class UserController {
 
 
 
+
   //subscriptions
 
   // getSubscriptions = async (
@@ -220,7 +221,6 @@ export class UserController {
       const { id } = req.params;
 
       console.log("id in trainer details", id);
-
       if (!id) {
         throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
       }

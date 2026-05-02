@@ -136,7 +136,7 @@ createProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
       bio,
 
     };
-  
+
 
     await this._trainerService.createProfile(req.user.id, data);
 

@@ -15,7 +15,10 @@ import {
 
 
 export class AdminController {
-  constructor(private _adminService: IAdminService) {}
+  constructor(private _adminService: IAdminService) { }
+
+
+
 
   //Trainer
 

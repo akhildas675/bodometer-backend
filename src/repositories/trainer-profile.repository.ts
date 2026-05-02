@@ -258,8 +258,6 @@ export default class TrainerProfileRepository
 
     if(!profile) return null;
 
-    console.log("Profile in repository...",profile)
-
     const {userId,...profileData}=profile;
 
     return{
