@@ -37,6 +37,7 @@ export class TrainerMapper {
   private static mapTrainerUser(user: IUserDocument) {
     return {
       _id: user._id?.toString() || "",
+      id: user._id?.toString() || "",
       name: user.name,
       userName: user.userName,
       email: user.email,

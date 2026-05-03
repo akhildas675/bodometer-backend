@@ -1,18 +1,6 @@
 import { Role } from "../../constants/roles";
-
-export interface PaginationMetaDto {
-  currentPage: number;
-  totalPages: number;
-  totalItems: number;
-  itemsPerPage: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-}
-
-export interface PaginatedResponseDto<T> {
-  data: T[];
-  pagination: PaginationMetaDto;
-}
+import { PaginationQueryDto } from "../common.dto";
+export { PaginationMetaDto, PaginatedResponseDto, PaginationQueryDto } from "../common.dto";
 
 export interface AdminBaseUserResponseDto {
   id: string;
@@ -31,13 +19,8 @@ export interface AdminBaseUserResponseDto {
 
 //trainer
 
-export interface AdminGetTrainersDto {
-  page?: number;
-  limit?: number;
-  search?: string;
+export interface AdminGetTrainersDto extends PaginationQueryDto {
   isBlocked?: boolean;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
 }
 
 export type AdminGetTrainersResponseDto = AdminBaseUserResponseDto
@@ -54,12 +37,7 @@ export interface RejectTrainerBodyDto {
   reason: string;
 }
 
-export interface GetTrainerAppointmentsQueryDto {
-  search?: string;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-  page?: number;
-  limit?: number;
+export interface GetTrainerAppointmentsQueryDto extends PaginationQueryDto {
   status?: string;
 }
 
@@ -67,14 +45,9 @@ export interface GetTrainerAppointmentsQueryDto {
 //user
 
 
-export interface AdminGetUsersDto {
-  page?: number;
-  limit?: number;
-  search?: string;
+export interface AdminGetUsersDto extends PaginationQueryDto {
   role?: Exclude<Role, "admin">;
   isBlocked?: boolean;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
 }
 
 export type AdminGetUsersResponseDto = AdminBaseUserResponseDto

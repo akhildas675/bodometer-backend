@@ -1,7 +1,7 @@
 import { OtpPurpose } from "../../constants/otp.constants";
 import { Role } from "../../constants/roles";
 import { VerificationStatus } from "../../constants/verification.constants";
-
+import { BaseUserDto } from "../common.dto";
 
 export interface RegisterDto {
   name: string;
@@ -28,20 +28,7 @@ export interface LoginDto {
 export interface LoginResponseDto {
   accessToken: string;
 
-  user: {
-    id: string;
-    name: string;
-    userName: string;
-    email: string;
-    phoneNumber: string;
-    profilePic: string | null;
-    gender: string | null;
-    role: string;
-    isVerified: boolean;
-    dateOfBirth: string | null;
-    isBlocked: boolean;
-
-  };
+  user: BaseUserDto;
 
   trainerStatus?: {
     profileExists: boolean;

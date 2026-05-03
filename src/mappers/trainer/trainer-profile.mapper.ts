@@ -1,4 +1,4 @@
-import { TrainerProfile, TrainerProfileDataInterface } from "@/interfaces/domain.interface/trainer.interface/trainer.interface";
+import { TrainerProfile } from "@/interfaces/domain.interface/trainer.interface/trainer.interface";
 import { ITrainerProfileDocument } from "@/models/trainer-profile.model";
 
 export class TrainerProfileMapper {
@@ -15,7 +15,7 @@ export class TrainerProfileMapper {
   };
   }
 
-  static toDocument(profile: TrainerProfileDataInterface) {
+  static toDocument(profile: TrainerProfile) {
     return {
       userId: profile.userId,
       experienceInYears: profile.experienceInYears,

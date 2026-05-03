@@ -1,4 +1,5 @@
 import { Role, ROLES } from "../../../constants/roles";
+export { PaginationMeta, PaginatedResult } from "../common.interface";
 
 
 
@@ -19,17 +20,5 @@ export interface AdminUserActionDto {
   userId: string;
 }
 
-
-export interface PaginationMeta {
-  currentPage: number;
-  totalPages: number;
-  totalItems: number;
-  itemsPerPage: number;
-}
-
-export interface PaginatedResult<T> {
-  data: T[];
-  pagination: PaginationMeta;
-}
 
 

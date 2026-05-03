@@ -1,20 +1,11 @@
 import { Gender } from "../../constants/identity.constants";
-
+import { BaseUserProfileDto, PaginationQueryDto, PaginatedResponseDto } from "../common.dto";
 
 export interface FindUserDto {
   userId: string;
 }
 
-export interface FindUserResponseDto {
-  id: string;
-  name: string;
-  email: string;
-  userName: string;
-  phoneNumber: string;
-  gender: string | null;
-  profilePic: string | null;
-  dateOfBirth: string | null;
-}
+export interface FindUserResponseDto extends BaseUserProfileDto {}
 
 export interface UpdateUserProfileDto {
   name?: string;
@@ -51,12 +42,7 @@ export interface CheckoutSessionResponseDto {
   url: string;
 }
 
-export interface GetTrainersQueryDto {
-  page?: number;
-  limit?: number;
-  search?: string;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
+export interface GetTrainersQueryDto extends PaginationQueryDto {
   specializationId?: string;
 }
 
@@ -71,15 +57,7 @@ export interface TrainerListItemDto {
 
 }
 
-export interface TrainerListResponseDto {
-  data: TrainerListItemDto[];
-  pagination: {
-    currentPage: number;
-    totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
-  };
-}
+export type TrainerListResponseDto = PaginatedResponseDto<TrainerListItemDto>;
 
 
 export interface RelatedTrainerDto {

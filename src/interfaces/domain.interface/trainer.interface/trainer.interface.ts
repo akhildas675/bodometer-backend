@@ -29,16 +29,7 @@ export interface TrainerProfile {
   applyCount: number;
 }
 
-export interface TrainerProfileDataInterface {
-  userId: string;
-  experienceInYears: number;
-  certifications: string[];
-  coverPhoto:string;
-  bio: string;
-  verificationStatus: VerificationStatus;
-  rejectionReason?: string | null;
-  applyCount:number
-}
+
 
 export interface PopulatedTrainerProfile extends Omit<ITrainerProfileDocument, 'userId'> {
   userId: IUserDocument;

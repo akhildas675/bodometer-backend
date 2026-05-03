@@ -1,37 +1,15 @@
 import { Gender } from "../../constants/identity.constants";
 import { VerificationStatus } from "../../constants/verification.constants";
+import { BaseUserProfileDto, BaseUserDto } from "../common.dto";
 
 export interface CreateTrainerProfileDto {
   experienceInYears: number;
   bio: string;
   certificateUrl: string;
 }
-export interface TrainerProfileResponseDto {
-  id: string;
-  name: string;
-  email: string;
-  userName: string;
-  phoneNumber: string;
-  gender: string | null;
-  profilePic: string | null;
-  dateOfBirth: string | null;
-}
+export interface TrainerProfileResponseDto extends BaseUserProfileDto {}
 export interface GetTrainerAppointmentsResponseDto {
-  user: {
-    _id: string;
-    name: string;
-    userName: string;
-    email: string;
-    phoneNumber: string |null;
-    profilePic: string | null;
-    gender: string;
-    role: string;
-    isVerified: boolean;
-    dateOfBirth: string | null;
-    isBlocked: boolean;
-    createdAt: string;
-    updatedAt: string;
-  };
+  user: BaseUserDto & { _id: string };
   profile: {
     _id: string;
     userId: string;
@@ -54,21 +32,7 @@ export interface GetTrainerByIdRequestDto {
 
 
 export interface GetTrainerByIdResponseDto {
-  user: {
-    _id: string;
-    name: string;
-    userName: string;
-    email: string;
-    phoneNumber: string | null;
-    profilePic: string | null;
-    gender: string;
-    role: string;
-    isVerified: boolean;
-    dateOfBirth: string | null;
-    isBlocked: boolean;
-    createdAt: string;
-    updatedAt: string;
-  };
+  user: BaseUserDto & { _id: string };
   profile: {
     _id: string;
     userId: string;
@@ -119,16 +83,7 @@ export interface UpdateTrainerProfileDto {
   profilePic?: string;
   dateOfBirth?: Date;  
 }
-export interface FindTrainerResponseDto {
-  id: string;
-  name: string;
-  email: string;
-  userName: string;
-  phoneNumber: string;
-  gender: Gender | null;       
-  profilePic: string | null;
-  dateOfBirth: string | null;
-}
+export interface FindTrainerResponseDto extends BaseUserProfileDto {}
 export interface TrainerStatusResponseDto {
   name: string,
   verificationStatus: VerificationStatus,
