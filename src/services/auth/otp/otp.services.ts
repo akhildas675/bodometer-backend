@@ -1,3 +1,4 @@
+import { generateOtp } from "@/utils/generateOtp";
 import { redis } from "../../../config/redis";
 import { MESSAGES } from "../../../constants/messages";
 import { OtpPurpose } from "../../../constants/otp.constants";
@@ -67,8 +68,5 @@ export class OtpService implements IOtpService {
     await redis.del(otpKey);
     await redis.del(attemptsKey);
   }
-}
-function generateOtp(arg0: number) {
-  throw new Error("Function not implemented.");
 }
 
