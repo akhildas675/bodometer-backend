@@ -8,6 +8,7 @@ export const USER_ROUTES = {
   STRIPE_WEBHOOK: '/user/stripe/webhook',
   GET_TRAINERS: '/user/trainers',
   GET_TRAINERS_BY_ID:'/user/trainers/:id',
- 
+  GET_CATEGORIES: '/user/categories',
+  GET_CATEGORY_BY_ID: '/user/categories/:id',
 
 } as const;

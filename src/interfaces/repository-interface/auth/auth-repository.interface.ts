@@ -1,4 +1,4 @@
-import { UserInterface } from "../service-interface/auth/auth.interface";
+import { UserInterface } from "../../service-interface/auth/auth.interface";
 
 export interface IAuthRepository {
     findByUsername(username: string): Promise<UserInterface | null>;

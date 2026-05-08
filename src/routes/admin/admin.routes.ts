@@ -14,6 +14,7 @@ import {
   getUsersSchema,
   userIdParamSchema,
 } from "../../validators/admin/admin-user.validator";
+import { mediaUpload } from "@/config/multer";
 
 const adminRoute = Router();
 const { adminController } = createAdminModule();
@@ -91,6 +92,12 @@ adminRoute.patch(
   adminController.unblockUser,
 );
 
+
+adminRoute.post(ADMIN_ROUTES.CREATE_CATEGORY,ROLE_GUARD.ADMIN_GUARD,mediaUpload.single("image"),adminController.createCategory)
+adminRoute.put(ADMIN_ROUTES.UPDATE_CATEGORY,ROLE_GUARD.ADMIN_GUARD,mediaUpload.single("image"),adminController.updateCategory)
+adminRoute.get(ADMIN_ROUTES.GET_CATEGORIES, ROLE_GUARD.ADMIN_GUARD, adminController.getAllCategories)
+adminRoute.get(ADMIN_ROUTES.GET_CATEGORY_BY_ID, ROLE_GUARD.ADMIN_GUARD, adminController.getCategoryById)
+adminRoute.patch(ADMIN_ROUTES.TOGGLE_CATEGORY_STATUS, ROLE_GUARD.ADMIN_GUARD, adminController.toggleCategoryStatus)
 
 
 export default adminRoute;

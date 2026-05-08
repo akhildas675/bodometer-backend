@@ -50,6 +50,12 @@ userRoute.patch(
   userController.changePassword,
 );
 
+userRoute.get(
+  USER_ROUTES.GET_CATEGORIES,
+  ROLE_GUARD.USER_GUARD,
+  userController.getCategories,
+);
+
 
 
 export default userRoute;

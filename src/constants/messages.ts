@@ -152,9 +152,7 @@ export const MESSAGES = {
     VERIFICATION_APPROVED_FAILED: "Trainer profile approved failed.",
     VERIFICATION_REJECTED: "Trainer profile verification rejected.",
     CERTIFICATE_REQUIRED: "Certificate upload required.",
-    CATEGORY_CREATED: "Category created successfully.",
-    CATEGORY_UPDATED: "Category updated successfully.",
-    CATEGORY_DELETED: "Category deleted successfully.",
+
     EXERCISE_CREATED: "Exercise created successfully.",
     EXERCISE_UPDATED: "Exercise updated successfully.",
     EXERCISE_DELETED: "Exercise deleted successfully.",
@@ -167,6 +165,24 @@ export const MESSAGES = {
     WORKOUT_FETCHED: "Workout fetched successfully.",
     WORKOUTS_FETCHED: "Workouts fetched successfully.",
     WORKOUT_UPLOAD_FAILED: "Failed to upload workout image.",
+    CATEGORY_CREATED: "Category created successfully.",
+    CATEGORY_CREATION_FAILED: "Failed to create category.",
+
+    CATEGORY_UPDATED: "Category updated successfully.",
+    CATEGORY_UPDATE_FAILED: "Failed to update category.",
+
+    CATEGORY_DELETED: "Category deleted successfully.",
+    CATEGORY_DELETE_FAILED: "Failed to delete category.",
+
+    CATEGORY_FETCHED: "Category fetched successfully.",
+    CATEGORIES_FETCHED: "Categories fetched successfully.",
+    CATEGORY_FETCH_FAILED: "Failed to fetch category.",
+
+    CATEGORY_NOT_FOUND: "Category not found.",
+    CATEGORY_ALREADY_EXISTS: "Category already exists.",
+
+    CATEGORY_IMAGE_REQUIRED: "Category image is required.",
+    CATEGORY_IMAGE_UPLOAD_FAILED: "Failed to upload category image.",
   },
 
   VALIDATION: {

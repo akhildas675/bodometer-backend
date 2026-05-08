@@ -1,5 +1,5 @@
 import { Role } from "../../constants/roles";
-import { PaginationQueryDto } from "../common.dto";
+import { PaginationMetaDto, PaginationQueryDto } from "../common.dto";
 export { PaginationMetaDto, PaginatedResponseDto, PaginationQueryDto } from "../common.dto";
 
 export interface AdminBaseUserResponseDto {
@@ -57,3 +57,44 @@ export interface AdminBlockUnBlockUserDto {
 }
 
 
+export interface CreateCategoryDto {
+  name: string;
+  description: string;
+  image?: Express.Multer.File;
+}
+export interface UpdateCategoryDto {
+  categoryId: string;
+  name?: string;
+  description?: string;
+  image?: Express.Multer.File;
+}
+
+export interface GetCategoryByIdResponseDto {
+  categoryId: string;
+  name: string;
+  description: string;
+  image: string;
+  isActive: boolean;
+}
+
+export interface CategoryResponseDto {
+  categoryId: string;
+  name: string;
+  description: string;
+  image: string;
+  isActive: boolean;
+}
+
+export interface CategoryQueryDto extends PaginationQueryDto {
+  search?: string;
+}
+
+export interface GetCategoriesResponseDto {
+  data: CategoryResponseDto[];
+  pagination: PaginationMetaDto;
+}
+
+export interface ToggleCategoryStatusResponseDto {
+  message: string;
+  category: CategoryResponseDto;
+}

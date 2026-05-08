@@ -17,4 +17,11 @@ export const ADMIN_ROUTES = {
   // Appointment Management
   GET_TRAINER_APPOINTMENTS: '/admin/get-trainer-appointments',
 
+  CREATE_CATEGORY: "/admin/create-category",
+  UPDATE_CATEGORY: "/admin/update-category/:id",
+  GET_CATEGORIES: "/admin/get-categories",
+  GET_CATEGORY_BY_ID: "/admin/categories/:categoryId",
+  DELETE_CATEGORY: "/admin/delete-category/:id",
+  TOGGLE_CATEGORY_STATUS: "/admin/categories/:id/toggle",
+
 } as const;

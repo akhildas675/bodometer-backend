@@ -11,6 +11,8 @@ import bcrypt from "bcrypt"
 import { hashPassword } from "../../utils/password";
 import { PaginationMeta } from "../../interfaces/domain.interface/admin.interface/admin.interface";
 import { ChangePasswordDto, FindUserResponseDto, GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto, UpdateUserProfileDto } from "../../dto/user/user.dto";
+import { ICategoryRepository } from "../../interfaces/repository-interface/category/category-repository.interface";
+import { CategoryQuery, GetAllCategoriesResponse } from "../../interfaces/domain.interface/admin.interface/admin.interface";
 
 export class UserService implements IUserService {
   constructor(
@@ -18,7 +20,7 @@ export class UserService implements IUserService {
     private _s3Service: IS3Service,
     private _trainerProfileRepo: ITrainerProfileRepository,
     private _stripeService: IStripeService,
-   
+    private _categoryRepo: ICategoryRepository,
   ) { }
 
   async fetchUser(userId: string): Promise<FindUserResponseDto> {
@@ -138,6 +140,10 @@ export class UserService implements IUserService {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND);
     }
     return UserMappers.toTrainerDetailDto(data);
+  }
+
+  async getCategories(query: CategoryQuery): Promise<GetAllCategoriesResponse> {
+    return this._categoryRepo.getAllCategories({ ...query, isActive: true } as CategoryQuery);
   }
 
 }
