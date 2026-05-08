@@ -24,7 +24,11 @@ export interface Category {
   categoryId?: string;
   name: string;
   description: string;
-  image: string;
+  media: {
+    image: {
+      url: string;
+    };
+  };
   isActive?: boolean;
 }
 

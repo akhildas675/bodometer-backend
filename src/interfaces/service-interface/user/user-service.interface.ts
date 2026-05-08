@@ -1,5 +1,5 @@
 import { CategoryQuery, GetAllCategoriesResponse } from "../../../interfaces/domain.interface/admin.interface/admin.interface";
-import { ChangePasswordDto, FindUserResponseDto, GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto, UpdateUserProfileDto } from "../../../dto/user/user.dto";
+import { CategoryDetailDto, ChangePasswordDto, FindUserResponseDto, GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto, UpdateUserProfileDto } from "../../../dto/user/user.dto";
 
 
 
@@ -15,5 +15,6 @@ export interface IUserService {
   getTrainerById(id: string): Promise<TrainerDetailDto>;
 
   getCategories(query: CategoryQuery): Promise<GetAllCategoriesResponse>;
+  getCategoryById(id: string): Promise<CategoryDetailDto>;
 
 }

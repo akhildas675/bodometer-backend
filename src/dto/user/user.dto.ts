@@ -80,3 +80,14 @@ export interface TrainerDetailDto {
 }
 
 
+export interface CategoryDetailDto{
+  categoryId: string;
+  name: string;
+  description: string;
+  media: {
+    image: {
+      url: string;
+    };
+  };
+  isActive: boolean;
+}

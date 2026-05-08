@@ -9,22 +9,25 @@ export default class CategoryRepository extends BaseRepository<Category, ICatego
     }
 
     protected toInterface(doc: ICategory): Category {
-        return {
-            categoryId: doc._id.toString(),
-            name: doc.name,
-            description: doc.description,
-            image: doc.media?.image?.url || '',
-            isActive: doc.isActive,
-        };
-    }
-
+    return {
+        categoryId: doc._id.toString(),
+        name: doc.name,
+        description: doc.description,
+        media: {          
+            image: {
+                url: doc.media?.image?.url || "",
+            },
+        },
+        isActive: doc.isActive,
+    };
+}
     async createCategory(data: Category): Promise<void> {
         await CategoryModel.create({
             name: data.name,
             description: data.description,
             media: {
                 image: {
-                    url: data.image,
+                    url: data.media.image.url
                 },
             },
         });
@@ -41,7 +44,7 @@ export default class CategoryRepository extends BaseRepository<Category, ICatego
             description: data.description,
             media: {
                 image: {
-                    url: data.image,
+                    url: data.media.image.url
                 },
             },
         });

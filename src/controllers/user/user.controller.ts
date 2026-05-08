@@ -249,6 +249,8 @@ export class UserController {
       if (req.query.sortBy) query.sortBy = String(req.query.sortBy);
       if (req.query.sortOrder) query.sortOrder = req.query.sortOrder as "asc" | "desc";
 
+      console.log("hit the function")
+
       const result = await this._userService.getCategories(query);
       res.status(STATUS.OK).json({
         success: true,
@@ -260,6 +262,26 @@ export class UserController {
       next(error);
     }
   };
+
+  getCategoryById = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const { id } = req.params;  // ✅ must match the route param name
+
+        if (!id) {
+            throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
+        }
+
+        const result = await this._userService.getCategoryById(id);
+
+        res.status(STATUS.OK).json({
+            success: true,
+            message: MESSAGES.COMMON.SUCCESS,
+            data: result,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
   
 }

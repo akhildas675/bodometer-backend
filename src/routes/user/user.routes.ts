@@ -56,6 +56,11 @@ userRoute.get(
   userController.getCategories,
 );
 
+userRoute.get(
+  USER_ROUTES.GET_CATEGORY_BY_ID,
+  ROLE_GUARD.USER_GUARD,
+  userController.getCategoryById,
+);
 
 
 export default userRoute;

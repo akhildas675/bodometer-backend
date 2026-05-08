@@ -10,9 +10,10 @@ import { AppError } from "../../utils/appError";
 import bcrypt from "bcrypt"
 import { hashPassword } from "../../utils/password";
 import { PaginationMeta } from "../../interfaces/domain.interface/admin.interface/admin.interface";
-import { ChangePasswordDto, FindUserResponseDto, GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto, UpdateUserProfileDto } from "../../dto/user/user.dto";
+import { CategoryDetailDto, ChangePasswordDto, FindUserResponseDto, GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto, UpdateUserProfileDto } from "../../dto/user/user.dto";
 import { ICategoryRepository } from "../../interfaces/repository-interface/category/category-repository.interface";
 import { CategoryQuery, GetAllCategoriesResponse } from "../../interfaces/domain.interface/admin.interface/admin.interface";
+import { CategoryMappers } from "@/mappers/category/category.mapper";
 
 export class UserService implements IUserService {
   constructor(
@@ -145,5 +146,13 @@ export class UserService implements IUserService {
   async getCategories(query: CategoryQuery): Promise<GetAllCategoriesResponse> {
     return this._categoryRepo.getAllCategories({ ...query, isActive: true } as CategoryQuery);
   }
+
+  async getCategoryById(id: string): Promise<CategoryDetailDto> {
+    const category = await this._categoryRepo.getCategoryById(id);
+    if (!category)
+      throw new AppError(STATUS.NOT_FOUND, "Category not found");
+    return CategoryMappers.toCategoryDetailDto(category);
+  }
+
 
 }
