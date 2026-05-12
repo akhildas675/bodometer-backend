@@ -1,3 +1,4 @@
+import { FeatureType } from "@/constants/subscription.constant";
 import { Role } from "../../constants/roles";
 import { PaginationMetaDto, PaginationQueryDto } from "../common.dto";
 export { PaginationMetaDto, PaginatedResponseDto, PaginationQueryDto } from "../common.dto";
@@ -74,7 +75,6 @@ export interface GetCategoryByIdResponseDto {
   name: string;
   description: string;
   image: string;
-  isActive: boolean;
 }
 
 export interface CategoryResponseDto {
@@ -82,14 +82,13 @@ export interface CategoryResponseDto {
   name: string;
   description: string;
   image: string;
-  isActive: boolean;
 }
 
 export interface CategoryQueryDto extends PaginationQueryDto {
   search?: string;
 }
 
-export interface GetCategoriesResponseDto {
+export interface GetAllCategoriesResponseDto {
   data: CategoryResponseDto[];
   pagination: PaginationMetaDto;
 }
@@ -97,4 +96,97 @@ export interface GetCategoriesResponseDto {
 export interface ToggleCategoryStatusResponseDto {
   message: string;
   category: CategoryResponseDto;
+}
+
+export interface SubscriptionFeatureQueryDto extends PaginationQueryDto {
+  search?: string;
+}
+
+export interface SubscriptionFeatureDto {
+  subscriptionFeatureId: string;
+  key: string;
+  title: string;
+  description: string;
+  type: FeatureType
+  isActive: boolean;
+}
+
+export interface GetAllSubscriptionFeaturesResponseDto {
+  data: SubscriptionFeatureDto[];
+  pagination: PaginationMetaDto;
+}
+
+export interface CreateSubscriptionFeatureDto {
+  title: string;
+  description: string;
+  type: FeatureType
+
+}
+
+export interface UpdateSubscriptionFeatureDto {
+  subscriptionFeatureId: string;
+  title?: string;
+  description?: string;
+  type?: FeatureType
+}
+
+export interface ToggleSubscriptionFeatureStatusResponseDto {
+  message: string;
+  feature: SubscriptionFeatureDto;
+}
+
+export interface CreateSubscriptionPlanDto {
+  name: string;
+  description: string;
+  price: number;
+  durationInDays: number;
+  isPopular?: boolean;
+  features: Array<{ featureId: string; limit?: number; limitType?: string }>;
+}
+
+export interface SubscriptionPlanQueryDto extends PaginationQueryDto {
+  search?: string;
+}
+
+export interface SubscriptionPlanDto {
+  subscriptionPlanId: string;
+  name: string;
+  description: string;
+  price: number;
+  durationInDays: number;
+  isPopular: boolean;
+  isActive: boolean;
+  features: Array<{ featureId: string; limit?: number; limitType?: string }>;
+}
+
+export interface GetAllSubscriptionPlansResponseDto {
+  data: SubscriptionPlanDto[];
+  pagination: PaginationMetaDto;
+}
+
+export interface ToggleSubscriptionPlanStatusResponseDto {
+  message: string;
+  plan: SubscriptionPlanDto;
+}
+
+export interface GetSubscriptionPlanByIdResponseDto {
+  subscriptionPlanId: string;
+  name: string;
+  description: string;
+  price: number;
+  durationInDays: number;
+  isPopular: boolean;
+  isActive: boolean;
+  features: Array<{ featureId: string; limit?: number; limitType?: string }>;
+}
+
+export interface UpdateSubscriptionPlanDto {
+  subscriptionPlanId: string;
+  name?: string;
+  description?: string;
+  price?: number;
+  durationInDays?: number;
+  isPopular?: boolean;
+  isActive?: boolean;
+  features?: Array<{ featureId: string; limit?: number; limitType?: string }>;
 }

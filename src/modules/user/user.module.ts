@@ -12,12 +12,23 @@ import { StripeService } from "../../services/payments/stripe.service";
 import { S3Service } from "../../services/s3/s3.service";
 import { UserService } from "../../services/user/user.services";
 
+import SubscriptionPlanRepository from "../../repositories/subscription-plan.repository";
+import { ISubscriptionPlanRepository } from "../../interfaces/repository-interface/subscription/subscription-plan.repository";
+
+import { SubscriptionTransactionRepository } from "../../repositories/subscription-transaction.repository";
+import { UserSubscriptionRepository } from "../../repositories/user-subscription.repository";
+import { ISubscriptionTransactionRepository } from "../../interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
+import { IUserSubscriptionRepository } from "../../interfaces/repository-interface/subscription/user.subscription.repository.interface";
+
 export function createUserModule(){
 
     const userRepository:IUserRepository=new UserRepository();
     const s3Service:IS3Service=new S3Service();
     const trainerProfileRepository:ITrainerProfileRepository=new TrainerProfileRepository();
     const categoryRepository:ICategoryRepository=new CategoryRepository();
+    const subscriptionPlanRepository:ISubscriptionPlanRepository = new SubscriptionPlanRepository();
+    const subscriptionTransactionRepository:ISubscriptionTransactionRepository = new SubscriptionTransactionRepository();
+    const userSubscriptionRepository:IUserSubscriptionRepository = new UserSubscriptionRepository();
 
     const stripeService:IStripeService=new StripeService();
 
@@ -27,6 +38,9 @@ export function createUserModule(){
         trainerProfileRepository,
         stripeService,
         categoryRepository,
+        subscriptionPlanRepository,
+        subscriptionTransactionRepository,
+        userSubscriptionRepository,
     );
 
     const userController = new UserController(userService);

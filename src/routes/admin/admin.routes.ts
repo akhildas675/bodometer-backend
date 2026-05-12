@@ -93,11 +93,21 @@ adminRoute.patch(
 );
 
 
-adminRoute.post(ADMIN_ROUTES.CREATE_CATEGORY,ROLE_GUARD.ADMIN_GUARD,mediaUpload.single("image"),adminController.createCategory)
-adminRoute.put(ADMIN_ROUTES.UPDATE_CATEGORY,ROLE_GUARD.ADMIN_GUARD,mediaUpload.single("image"),adminController.updateCategory)
-adminRoute.get(ADMIN_ROUTES.GET_CATEGORIES, ROLE_GUARD.ADMIN_GUARD, adminController.getAllCategories)
+adminRoute.post(ADMIN_ROUTES.CREATE_CATEGORY, ROLE_GUARD.ADMIN_GUARD, mediaUpload.single("image"), adminController.createCategory)
+adminRoute.put(ADMIN_ROUTES.UPDATE_CATEGORY, ROLE_GUARD.ADMIN_GUARD, mediaUpload.single("image"), adminController.updateCategory)
 adminRoute.get(ADMIN_ROUTES.GET_CATEGORY_BY_ID, ROLE_GUARD.ADMIN_GUARD, adminController.getCategoryById)
+adminRoute.get(ADMIN_ROUTES.GET_ALL_CATEGORIES, ROLE_GUARD.ADMIN_GUARD, adminController.getAllCategories)
 adminRoute.patch(ADMIN_ROUTES.TOGGLE_CATEGORY_STATUS, ROLE_GUARD.ADMIN_GUARD, adminController.toggleCategoryStatus)
+adminRoute.get(ADMIN_ROUTES.GET_ALL_FEATURES, ROLE_GUARD.ADMIN_GUARD, adminController.getAllSubscriptionFeatures)
+adminRoute.post(ADMIN_ROUTES.CREATE_FEATURE, ROLE_GUARD.ADMIN_GUARD, adminController.createSubscriptionFeature)
+adminRoute.patch(ADMIN_ROUTES.UPDATE_FEATURE, ROLE_GUARD.ADMIN_GUARD, adminController.updateSubscriptionFeature)
+adminRoute.patch(ADMIN_ROUTES.TOGGLE_FEATURE_STATUS, ROLE_GUARD.ADMIN_GUARD, adminController.toggleSubscriptionFeatureStatus)
+adminRoute.get(ADMIN_ROUTES.GET_FEATURE_BY_ID, ROLE_GUARD.ADMIN_GUARD, adminController.getSubscriptionFeatureById)
+adminRoute.post(ADMIN_ROUTES.CREATE_SUBSCRIPTION_PLAN, ROLE_GUARD.ADMIN_GUARD, adminController.createSubscriptionPlan)
+adminRoute.get(ADMIN_ROUTES.GET_ALL_SUBSCRIPTION_PLANS, ROLE_GUARD.ADMIN_GUARD, adminController.getAllSubscriptionPlans)
+adminRoute.patch(ADMIN_ROUTES.TOGGLE_SUBSCRIPTION_PLAN_STATUS, ROLE_GUARD.ADMIN_GUARD, adminController.toggleSubscriptionPlanStatus)
+adminRoute.get(ADMIN_ROUTES.GET_SUBSCRIPTION_PLAN_BY_ID, ROLE_GUARD.ADMIN_GUARD, adminController.getSubscriptionPlanById)
+adminRoute.put(ADMIN_ROUTES.UPDATE_SUBSCRIPTION_PLAN, ROLE_GUARD.ADMIN_GUARD, adminController.updateSubscriptionPlan)
 
 
 export default adminRoute;

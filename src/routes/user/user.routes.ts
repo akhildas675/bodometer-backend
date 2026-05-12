@@ -30,7 +30,7 @@ userRoute.post(
 );
 
 
-userRoute.post(USER_ROUTES.STRIPE_WEBHOOK, userController.stripeWebhook);
+// userRoute.post(USER_ROUTES.STRIPE_WEBHOOK, userController.stripeWebhook);
 
 userRoute.get(
   USER_ROUTES.GET_TRAINERS,
@@ -62,5 +62,25 @@ userRoute.get(
   userController.getCategoryById,
 );
 
+
+userRoute.get(
+  USER_ROUTES.GET_MY_SUBSCRIPTIONS, ROLE_GUARD.USER_GUARD, userController.getMySubscriptions,
+)
+
+userRoute.post(
+  USER_ROUTES.CHECKOUT_SESSION, ROLE_GUARD.USER_GUARD, userController.createCheckoutSession,
+);
+
+userRoute.get(
+  USER_ROUTES.VERIFY_PAYMENT,
+  ROLE_GUARD.USER_GUARD,
+  userController.verifyPayment,
+);
+
+userRoute.get(
+  USER_ROUTES.GET_ACTIVE_SUBSCRIPTION,
+  ROLE_GUARD.USER_GUARD,
+  userController.getActiveSubscription,
+);
 
 export default userRoute;

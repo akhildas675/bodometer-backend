@@ -1,12 +1,7 @@
-import Stripe from "stripe";
+import { CheckoutResult, CreateCheckoutParams, ParsedWebhookEvent } from "@/interfaces/domain.interface/payment.interface/stripe.interface";
 
-export interface IStripeService {
-    createCheckoutSession(
-        params: Stripe.Checkout.SessionCreateParams,
-    ): Promise<Stripe.Checkout.Session>;
-    constructWebhookEvent(
-        payload: Buffer,
-        signature: string,
-        secret: string,
-    ): Stripe.Event;
+
+export interface IPaymentService {
+  createCheckoutSession(params: CreateCheckoutParams): Promise<CheckoutResult>;
+  constructWebhookEvent(payload: Buffer, signature: string): ParsedWebhookEvent;
 }

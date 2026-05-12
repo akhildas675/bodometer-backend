@@ -1,4 +1,4 @@
-import { AdminGetTrainersDto, AdminGetTrainersResponseDto, AdminGetUsersDto, AdminGetUsersResponseDto, CategoryQueryDto, CreateCategoryDto, GetCategoriesResponseDto, GetCategoryByIdResponseDto, GetTrainerAppointmentsQueryDto, PaginatedResponseDto, ToggleCategoryStatusResponseDto, UpdateCategoryDto } from "../../../dto/admin/admin.dto";
+import { AdminGetTrainersDto, AdminGetTrainersResponseDto, AdminGetUsersDto, AdminGetUsersResponseDto, CategoryQueryDto, CreateCategoryDto, CreateSubscriptionFeatureDto, GetAllCategoriesResponseDto, GetAllSubscriptionFeaturesResponseDto, GetCategoryByIdResponseDto, GetTrainerAppointmentsQueryDto, PaginatedResponseDto, SubscriptionFeatureQueryDto, ToggleCategoryStatusResponseDto, ToggleSubscriptionFeatureStatusResponseDto, UpdateCategoryDto, UpdateSubscriptionFeatureDto, SubscriptionFeatureDto, CreateSubscriptionPlanDto, SubscriptionPlanQueryDto, GetAllSubscriptionPlansResponseDto, GetSubscriptionPlanByIdResponseDto, UpdateSubscriptionPlanDto, ToggleSubscriptionPlanStatusResponseDto } from "../../../dto/admin/admin.dto";
 import { ApproveTrainerResponseDto, GetTrainerAppointmentsResponseDto, GetTrainerByIdResponseDto, RejectTrainerResponseDto } from "../../../dto/trainer/trainer.dto";
 import { PaginatedResult } from "../../domain.interface/admin.interface/admin.interface";
 
@@ -19,9 +19,26 @@ export interface IAdminService {
   approveTrainer(profileId: string): Promise<ApproveTrainerResponseDto>;
   rejectTrainer(profileId: string, reason: string): Promise<RejectTrainerResponseDto>;
 
-  createCategory(data: CreateCategoryDto): Promise<void>;
-  updateCategory(data: UpdateCategoryDto): Promise<void>;
-  getCategoryById(categoryId: string): Promise<GetCategoryByIdResponseDto>;
-  getAllCategories(query: CategoryQueryDto): Promise<GetCategoriesResponseDto>;
-  toggleCategoryStatus(categoryId: string): Promise<ToggleCategoryStatusResponseDto>;
-}
+  createCategory(data: CreateCategoryDto): Promise<void>
+  updateCategory(data: UpdateCategoryDto): Promise<void>
+  getCategoryById(categoryId: string): Promise<GetCategoryByIdResponseDto>
+  getAllCategories(query: CategoryQueryDto): Promise<GetAllCategoriesResponseDto>;
+  toggleCategoryStatus(categoryId: string): Promise<ToggleCategoryStatusResponseDto>
+
+  getAllSubscriptionFeatures(query: SubscriptionFeatureQueryDto): Promise<GetAllSubscriptionFeaturesResponseDto>;
+  createSubscriptionFeature(data: CreateSubscriptionFeatureDto): Promise<void>
+  updateSubscriptionFeature(data: UpdateSubscriptionFeatureDto): Promise<void>
+  toggleSubscriptionFeatureStatus(subscriptionFeatureId: string): Promise<ToggleSubscriptionFeatureStatusResponseDto>
+  getSubscriptionFeatureById(subscriptionFeatureId: string): Promise<SubscriptionFeatureDto>
+
+  //subscription plan
+  createSubscriptionPlan(data: CreateSubscriptionPlanDto): Promise<void>
+  getAllSubscriptionPlans(query: SubscriptionPlanQueryDto): Promise<GetAllSubscriptionPlansResponseDto>;
+  getSubscriptionPlanById(subscriptionPlanId: string): Promise<GetSubscriptionPlanByIdResponseDto>;
+  updateSubscriptionPlan(data: UpdateSubscriptionPlanDto): Promise<void>;
+  toggleSubscriptionPlanStatus(subscriptionPlanId: string): Promise<ToggleSubscriptionPlanStatusResponseDto>;
+
+
+
+
+}

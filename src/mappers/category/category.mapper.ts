@@ -12,7 +12,7 @@ export class CategoryMappers {
           url: category.media?.image?.url || "",
         },
       },
-       isActive: category.isActive ?? true,
+      isActive: category.isActive,
     };
-  } 
+  }
 }

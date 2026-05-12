@@ -6,14 +6,13 @@ import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
 import { MESSAGES } from "../../constants/messages";
 import { ChangePasswordDto, GetTrainersQueryDto, UpdateUserProfileDto } from "../../dto/user/user.dto";
+import { success } from "zod";
 
 
 export class UserController {
-  stripeWebhook(STRIPE_WEBHOOK: string, stripeWebhook: any) {
-    throw new Error("Method not implemented.");
-  }
-   private logger = new Logger("UserController");
-  constructor(private _userService: IUserService) {}
+
+  private logger = new Logger("UserController");
+  constructor(private _userService: IUserService) { }
 
   getUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
@@ -121,77 +120,6 @@ export class UserController {
   };
 
 
-
-
-  //subscriptions
-
-  // getSubscriptions = async (
-  //   req: AuthRequest,
-  //   res: Response,
-  //   next: NextFunction,
-  // ) => {
-  //   try {
-  //     const result = await this._userService.getActiveSubscriptions();
-  //     res.status(STATUS.OK).json({
-  //       success: true,
-  //       message: MESSAGES.COMMON.SUCCESS,
-  //       data: result,
-  //     });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // };
-
-  // getMySubscription = async (
-  //   req: AuthRequest,
-  //   res: Response,
-  //   next: NextFunction,
-  // ) => {
-  //   try {
-  //     if (!req.user)
-  //       throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
-  //     const result = await this._userService.getUserActiveSubscription(
-  //       req.user.id,
-  //     );
-  //     res.status(STATUS.OK).json({
-  //       success: true,
-  //       message: MESSAGES.COMMON.SUCCESS,
-  //       data: result,
-  //     });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // };
-
-  // createCheckoutSession = async (
-  //   req: AuthRequest,
-  //   res: Response,
-  //   next: NextFunction,
-  // ) => {
-  //   try {
-  //     if (!req.user)
-  //       throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
-  //     const dto: CreateCheckoutSessionDto = { planId: req.body.planId };
-  //     const result = await this._userService.createCheckoutSession(
-  //       req.user.id,
-  //       dto,
-  //     );
-  //     res.status(STATUS.OK).json({ success: true, data: result });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // };
-
-  // stripeWebhook = async (req: Request, res: Response, next: NextFunction) => {
-  //   try {
-  //     const signature = req.headers["stripe-signature"] as string;
-  //     await this._userService.handleStripeWebhook(req.body, signature);
-  //     res.status(STATUS.OK).json({ received: true });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // };
-
   getTrainers = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const query: GetTrainersQueryDto = {};
@@ -263,25 +191,112 @@ export class UserController {
     }
   };
 
-  getCategoryById = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  getCategoryById = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
-        const { id } = req.params;  // ✅ must match the route param name
+      const { categoryId } = req.params;
 
-        if (!id) {
-            throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
-        }
+      console.log("id in category details", categoryId);
+      if (!categoryId) {
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
+      }
 
-        const result = await this._userService.getCategoryById(id);
+      const result = await this._userService.getCategoryById(categoryId);
+      console.log("result", result);
 
-        res.status(STATUS.OK).json({
-            success: true,
-            message: MESSAGES.COMMON.SUCCESS,
-            data: result,
-        });
+      res.status(STATUS.OK).json({
+        success: true,
+        message: MESSAGES.COMMON.SUCCESS,
+        data: result,
+      });
     } catch (error) {
-        next(error);
+      next(error);
     }
-};
+  };
 
-  
+
+  getMySubscriptions = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+
+      console.log("my subscription hit")
+      if (!req.user?.id) {
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.USER.USER_NOT_FOUND)
+
+      }
+
+      const result = await this._userService.getMySubscriptions()
+
+      console.log("result of subscriptions", result)
+      res.status(STATUS.OK).json({
+        success: true,
+        message: MESSAGES.COMMON.SUCCESS,
+        data: result
+      })
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  createCheckoutSession = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user?.id) {
+      throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+    }
+ 
+    const { planId } = req.body;
+    if (!planId) {
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
+    }
+ 
+    // Pass userId so it lands in Stripe session metadata
+    const result = await this._userService.createCheckoutSession(req.user.id, planId);
+ 
+    res.status(STATUS.OK).json({
+      success: true,
+      message: MESSAGES.COMMON.SUCCESS,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+ 
+// ─── verifyPayment — already in your file, no change needed ──────────────────
+  verifyPayment = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const { session_id } = req.query;
+      if (!session_id || typeof session_id !== "string") {
+        throw new AppError(STATUS.BAD_REQUEST, "Missing session_id");
+      }
+
+      const result = await this._userService.verifyPaymentAndSave(req.user!.id, session_id);
+
+      res.status(STATUS.OK).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getActiveSubscription = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user?.id) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      }
+
+      const result = await this._userService.getActiveSubscription(req.user.id);
+
+      res.status(STATUS.OK).json({
+        success: true,
+        message: MESSAGES.COMMON.SUCCESS,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+
 }

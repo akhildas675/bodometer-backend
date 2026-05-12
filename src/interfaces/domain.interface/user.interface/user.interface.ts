@@ -1,5 +1,6 @@
 import { Gender } from "../../../constants/identity.constants";
 import { Role } from "../../../constants/roles";
+import { SubscriptionPlan } from "../admin.interface/admin.interface";
 
 export interface UserProfile {
   id: string;
@@ -39,3 +40,18 @@ export interface UserInterface {
   updatedAt: Date;
 }
 
+export interface UserSubscriptions{
+   subscriptionPlanId?: string;
+  name: string;
+  description: string;
+  price: number;
+  durationInDays: number;
+  features: {
+    featureId: string;
+    limit?: number;
+    limitType?: string;
+  }[];
+  isPopular: boolean;
+
+  isActive?: boolean;
+}

@@ -91,3 +91,32 @@ export interface CategoryDetailDto{
   };
   isActive: boolean;
 }
+
+
+export interface UserSubscriptionPlanResponseDto{
+   subscriptionPlanId?: string;
+  name: string;
+  description: string;
+  price: number;
+  durationInDays: number;
+  features: {
+    featureId: string;
+    title?: string;
+    limit?: number;
+    limitType?: string;
+  }[];
+  isPopular: boolean;
+
+  isActive?: boolean;
+}
+
+export interface ActiveSubscriptionDto {
+  subscriptionId: string;
+  planId: string;
+  planName: string;
+  startDate: Date;
+  endDate: Date;
+  status: string;
+  daysRemaining: number;
+}
+ 

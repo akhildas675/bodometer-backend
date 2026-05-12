@@ -8,12 +8,18 @@ import UserRepository from "../../repositories/user.repository";
 import { AdminService } from "../../services/admin/admin.services";
 import { S3Service } from "../../services/s3/s3.service";
 import CategoryRepository from "@/repositories/category.repository";
+import { ISubscriptionFeatureRepository } from "@/interfaces/repository-interface/subscription/feature-repository.interface";
+import SubscriptionFeatureRepository from "@/repositories/subscription-feature.repository";
+import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/subscription/subscription-plan.repository";
+import SubscriptionPlanRepository from "@/repositories/subscription-plan.repository";
 
 export function createAdminModule() {
 
   const userRepository: IUserRepository = new UserRepository();
   const trainerProfileRepository: ITrainerProfileRepository = new TrainerProfileRepository();
-  const categoryRepository:ICategoryRepository = new CategoryRepository()
+  const categoryRepository: ICategoryRepository = new CategoryRepository();
+  const subscriptionFeatureRepository: ISubscriptionFeatureRepository = new SubscriptionFeatureRepository();
+  const subscriptionPlanRepository: ISubscriptionPlanRepository = new SubscriptionPlanRepository();
 
   const s3Service: IS3Service = new S3Service();
   const adminService = new AdminService(
@@ -21,6 +27,8 @@ export function createAdminModule() {
     trainerProfileRepository,
     s3Service,
     categoryRepository,
+    subscriptionFeatureRepository,
+    subscriptionPlanRepository,
   );
 
   const adminController = new AdminController(adminService)
