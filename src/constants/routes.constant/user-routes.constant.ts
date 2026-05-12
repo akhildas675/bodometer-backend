@@ -9,7 +9,7 @@ export const USER_ROUTES = {
   GET_TRAINERS: '/user/trainers',
   GET_TRAINERS_BY_ID: '/user/trainers/:id',
   GET_CATEGORIES: '/user/categories',
-  GET_CATEGORY_BY_ID: '/user/categories/:id',
+  GET_CATEGORY_BY_ID: '/user/categories/:categoryId',
 
   //subscriptions
 

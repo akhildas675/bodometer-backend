@@ -30,6 +30,7 @@ export default class CategoryRepository extends BaseRepository<Category, ICatego
                     url: data.media.image.url
                 },
             },
+            isActive: data.isActive ?? true,
         });
     }
 
@@ -60,7 +61,7 @@ export default class CategoryRepository extends BaseRepository<Category, ICatego
             filter.name = { $regex: query.search, $options: 'i' };
         }
         if (query.isActive !== undefined) {
-            filter.isActive = query.isActive;
+            filter.isActive = query.isActive === true ? { $ne: false } : false;
         }
 
         const [docs, totalItems] = await Promise.all([

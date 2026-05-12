@@ -177,7 +177,6 @@ export class UserController {
       if (req.query.sortBy) query.sortBy = String(req.query.sortBy);
       if (req.query.sortOrder) query.sortOrder = req.query.sortOrder as "asc" | "desc";
 
-      console.log("hit the function")
 
       const result = await this._userService.getCategories(query);
       res.status(STATUS.OK).json({
@@ -186,6 +185,7 @@ export class UserController {
         data: result.data,
         pagination: result.pagination,
       });
+
     } catch (error) {
       next(error);
     }
@@ -229,7 +229,6 @@ export class UserController {
 
       const result = await this._userService.getMySubscriptions()
 
-      console.log("result of subscriptions", result)
       res.status(STATUS.OK).json({
         success: true,
         message: MESSAGES.COMMON.SUCCESS,
@@ -251,7 +250,7 @@ export class UserController {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
     }
  
-    // Pass userId so it lands in Stripe session metadata
+
     const result = await this._userService.createCheckoutSession(req.user.id, planId);
  
     res.status(STATUS.OK).json({
@@ -264,7 +263,7 @@ export class UserController {
   }
 };
  
-// ─── verifyPayment — already in your file, no change needed ──────────────────
+
   verifyPayment = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { session_id } = req.query;

@@ -229,7 +229,7 @@ export class AdminController {
     try {
 
       const data: UpdateCategoryDto = {
-        categoryId: req.body.categoryId?.trim(),
+        categoryId: (req.params.categoryId || req.body.categoryId)?.trim(),
         name: req.body.name?.trim(),
         description: req.body.description?.trim(),
         image: req.file,
