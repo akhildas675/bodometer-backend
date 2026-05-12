@@ -26,6 +26,7 @@ export interface TrainerProfile {
   coverPhoto:string,
   certifications: string[],
   bio: string;
+  specializations: string[];
   applyCount: number;
 }
 
@@ -50,6 +51,6 @@ export interface ReapplyTrainerData {
   experienceInYears: number;
   certifications: string[];
   bio: string;
-
+  specializations: string[];
   coverPhoto:string;
 }

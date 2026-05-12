@@ -5,6 +5,8 @@ import { IUserRepository } from "../../interfaces/repository-interface/user/user
 import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
 import { IS3Service } from "../../interfaces/service-interface/s3/s3-service.interface";
 import { FindTrainerResponseDto, TrainerProfileDto, TrainerStatusResponseDto, UpdateTrainerProfileDto } from "../../dto/trainer/trainer.dto";
+import { ICategoryRepository } from "../../interfaces/repository-interface/category/category-repository.interface";
+import { CategoryQuery, GetAllCategoriesResponse } from "../../interfaces/domain.interface/admin.interface/admin.interface";
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
 import { MESSAGES } from "../../constants/messages";
@@ -16,6 +18,7 @@ export class TrainerService implements ITrainerService {
     private _userRepo: IUserRepository,
     private _trainerProfileRepo: ITrainerProfileRepository,
     private _s3Service: IS3Service,
+    private _categoryRepo: ICategoryRepository,
   ) { }
 
   //Profile 
@@ -123,6 +126,7 @@ export class TrainerService implements ITrainerService {
         bio: data.bio,
 
         coverPhoto:coverPhotoUrl,
+        specializations: data.specializationIds,
       });
       return;
     }
@@ -134,6 +138,7 @@ export class TrainerService implements ITrainerService {
       coverPhoto:coverPhotoUrl,
       certifications: [certificateUrl],
       bio: data.bio,
+      specializations: data.specializationIds.map(id => new mongoose.Types.ObjectId(id)),
       verificationStatus: VERIFICATION_STATUS.PENDING,
       rejectionReason: null,
       applyCount: 1,
@@ -153,5 +158,7 @@ export class TrainerService implements ITrainerService {
     return response;
   }
 
-
+  async getCategories(query: CategoryQuery): Promise<GetAllCategoriesResponse> {
+    return this._categoryRepo.getAllCategories({ ...query, isActive: true } as CategoryQuery);
+  }
 }

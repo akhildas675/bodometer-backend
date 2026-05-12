@@ -65,6 +65,10 @@ export class TrainerMapper {
       rejectionReason: profile.rejectionReason || null,
       createdAt: profile.createdAt?.toISOString() || "",
       updatedAt: profile.updatedAt?.toISOString() || "",
+      specializations: (profile.specializations as unknown as any[] || []).map(spec => ({
+        _id: spec._id?.toString() || "",
+        name: spec.name || "",
+      })),
     };
   }
 

@@ -54,7 +54,7 @@ export interface TrainerListItemDto {
   experienceInYears: number;
   coverPhoto: string;
   bio: string;
-
+  specializations: { _id: string; name: string }[];
 }
 
 export type TrainerListResponseDto = PaginatedResponseDto<TrainerListItemDto>;
@@ -76,7 +76,7 @@ export interface TrainerDetailDto {
   coverPhoto: string;
   bio: string;
   experienceInYears: number;
-
+  specializations: { _id: string; name: string }[];
 }
 
 

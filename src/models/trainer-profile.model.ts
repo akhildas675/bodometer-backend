@@ -9,6 +9,7 @@ export interface ITrainerProfileDocument extends Document {
     coverPhoto:string,
     certifications: string[];
     bio: string;
+    specializations: mongoose.Types.ObjectId[];
     verificationStatus: VerificationStatus;
     rejectionReason?: string | null;
     createdAt: Date;
@@ -45,6 +46,13 @@ const TrainerProfileSchema = new Schema<ITrainerProfileDocument>(
             type: String,
             default: "",
         },
+        
+        specializations: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: "Category",
+            },
+        ],
 
         verificationStatus: {
             type: String,

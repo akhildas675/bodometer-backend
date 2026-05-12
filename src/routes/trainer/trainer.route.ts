@@ -28,5 +28,6 @@ trainerRoute.put(TRAINER_ROUTES.TRAINER_PROFILE_UPDATE, ROLE_GUARD.TRAINER_GUARD
 trainerRoute.post(TRAINER_ROUTES.TRAINER_PROFILE_PICTURE_UPDATE, mediaUpload.single("file"), ROLE_GUARD.TRAINER_GUARD, trainerController.uploadProfilePicture)
 
 trainerRoute.get("/trainer/profile/status",ROLE_GUARD.TRAINER_GUARD,trainerController .getProfileStatus)
+trainerRoute.get(TRAINER_ROUTES.GET_CATEGORIES, ROLE_GUARD.TRAINER_GUARD, trainerController.getCategories)
 
 export default trainerRoute;

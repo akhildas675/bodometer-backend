@@ -35,7 +35,10 @@ export class UserMappers {
       experienceInYears: trainer.profile.experienceInYears,
       bio: trainer.profile.bio,
       coverPhoto:trainer.profile.coverPhoto,
-
+      specializations: (trainer.profile.specializations as unknown as any[] || []).map(spec => ({
+        _id: String(spec._id),
+        name: spec.name || "",
+      })),
     };
   }
 
@@ -52,7 +55,10 @@ export class UserMappers {
     coverPhoto: data.profile.coverPhoto ?? "",
     bio: data.profile.bio,
     experienceInYears: data.profile.experienceInYears,
-
+    specializations: (data.profile.specializations as unknown as any[] || []).map(spec => ({
+        _id: String(spec._id),
+        name: spec.name || "",
+    })),
   };
   }
 

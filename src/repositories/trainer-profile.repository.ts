@@ -25,6 +25,7 @@ export default class TrainerProfileRepository
       certifications: doc.certifications,
       experienceInYears: doc.experienceInYears,
       applyCount: doc.applyCount,
+      specializations: doc.specializations?.map(id => id.toString()) ?? [],
     };
   }
 
@@ -49,6 +50,7 @@ export default class TrainerProfileRepository
           certifications: data.certifications,
           coverPhoto: data.coverPhoto,
           bio: data.bio,
+          specializations: data.specializations?.map(id => new mongoose.Types.ObjectId(id)) ?? [],
           verificationStatus: VERIFICATION_STATUS.PENDING,
           rejectionReason: null,
         },
@@ -96,6 +98,14 @@ export default class TrainerProfileRepository
         },
       },
       { $unwind: "$userId" },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "specializations",
+          foreignField: "_id",
+          as: "specializations",
+        },
+      },
     ];
 
     if (search) {
@@ -152,6 +162,7 @@ export default class TrainerProfileRepository
         path: "userId",
         select: "_id name userName email phoneNumber profilePic gender role isVerified dateOfBirth isBlocked createdAt updatedAt",
       })
+      .populate("specializations", "_id name")
       .lean<PopulatedTrainerProfile>();
 
     if (!trainerProfile) return null;
@@ -189,8 +200,13 @@ export default class TrainerProfileRepository
   ): Promise<{ data: ITrainerWithProfile[]; total: number }> {
     const skip = (page - 1) * limit;
 
+    const matchStage: Record<string, any> = { verificationStatus: VERIFICATION_STATUS.APPROVED };
+    if (specializationId) {
+      matchStage.specializations = new mongoose.Types.ObjectId(specializationId);
+    }
+
     const pipeline: PipelineStage[] = [
-      { $match: { verificationStatus: VERIFICATION_STATUS.APPROVED } },
+      { $match: matchStage },
       {
         $lookup: {
           from: "users",
@@ -200,7 +216,14 @@ export default class TrainerProfileRepository
         },
       },
       { $unwind: "$userId" },
-
+      {
+        $lookup: {
+          from: "categories",
+          localField: "specializations",
+          foreignField: "_id",
+          as: "specializations",
+        },
+      },
     ];
 
     if (search) {
@@ -253,7 +276,7 @@ export default class TrainerProfileRepository
       path:"userId",
       select:"_id name profilePic",
     })
-
+    .populate("specializations", "_id name")
     .lean<PopulatedTrainerProfile>();
 
     if(!profile) return null;

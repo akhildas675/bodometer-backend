@@ -1,3 +1,4 @@
+import { CategoryQuery, GetAllCategoriesResponse } from "../../../interfaces/domain.interface/admin.interface/admin.interface";
 import { FindTrainerResponseDto, TrainerProfileDto, TrainerStatusResponseDto, UpdateTrainerProfileDto } from "../../../dto/trainer/trainer.dto";
 
 
@@ -7,5 +8,5 @@ export interface ITrainerService {
   uploadTrainerProfilePicture(trainerId: string, file: Express.Multer.File): Promise<string>;
   createProfile(userId: string, data: TrainerProfileDto): Promise<void>;
   getTrainerStatus(userId: string): Promise<TrainerStatusResponseDto>;
- 
+  getCategories(query: CategoryQuery): Promise<GetAllCategoriesResponse>;
 }

@@ -102,7 +102,8 @@ createProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
       throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
     }
 
-    const { dateOfBirth, gender, experience, bio } = req.body;
+    const { dateOfBirth, gender, experience, bio, specializationIds } = req.body;
+    const specsArray = Array.isArray(specializationIds) ? specializationIds : specializationIds ? [specializationIds] : [];
 
 
 
@@ -134,7 +135,7 @@ createProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
       gender,
       experienceInYears: Number(experience),
       bio,
-
+      specializationIds: specsArray,
     };
 
 
@@ -165,4 +166,25 @@ createProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
         next(err)
       }
   }
+
+  getCategories = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const query: { page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: "asc" | "desc" } = {};
+      if (req.query.page) query.page = Number(req.query.page);
+      if (req.query.limit) query.limit = Number(req.query.limit);
+      if (req.query.search) query.search = String(req.query.search);
+      if (req.query.sortBy) query.sortBy = String(req.query.sortBy);
+      if (req.query.sortOrder) query.sortOrder = req.query.sortOrder as "asc" | "desc";
+
+      const result = await this._trainerService.getCategories(query);
+      res.status(STATUS.OK).json({
+        success: true,
+        message: MESSAGES.COMMON.SUCCESS,
+        data: result.data,
+        pagination: result.pagination,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

@@ -21,6 +21,7 @@ export interface GetTrainerAppointmentsResponseDto {
     rejectionReason: string | null;
     createdAt: string;
     updatedAt: string;
+    specializations: { _id: string; name: string }[];
   };
 }
 
@@ -46,6 +47,7 @@ export interface GetTrainerByIdResponseDto {
     applyCount: number;
     createdAt: string;
     updatedAt: string;
+    specializations: { _id: string; name: string }[];
   };
 }
 
@@ -98,5 +100,5 @@ export interface TrainerProfileDto {
   gender: Gender;
   experienceInYears: number;            
   bio: string;
-
+  specializationIds: string[];
 }
