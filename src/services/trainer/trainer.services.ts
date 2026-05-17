@@ -77,6 +77,29 @@ export class TrainerService implements ITrainerService {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND);
     }
 
+    const profileFields: Record<string, any> = {};
+    if (updateData.experienceInYears !== undefined) {
+      profileFields.experienceInYears = updateData.experienceInYears;
+    }
+    if (updateData.bio !== undefined) {
+      profileFields.bio = updateData.bio;
+    }
+    if (updateData.gender !== undefined) {
+      profileFields.gender = updateData.gender;
+    }
+    if (updateData.dateOfBirth !== undefined) {
+      profileFields.dateOfBirth = new Date(updateData.dateOfBirth);
+    }
+    if (updateData.specializations !== undefined) {
+      profileFields.specializations = updateData.specializations.map(
+        (id) => new mongoose.Types.ObjectId(id)
+      );
+    }
+
+    if (Object.keys(profileFields).length > 0) {
+      await this._trainerProfileRepo.upsert({ userId: trainerId }, profileFields);
+    }
+
     const profile = await this._trainerProfileRepo.findByUserId(trainerId);
     return TrainerMapper.toProfileResponse(updatedUser, profile);
   }

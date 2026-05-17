@@ -8,6 +8,11 @@ export class TrainerMapper {
     profile?: {
       gender?: string | null;
       dateOfBirth?: Date | string | null;
+      experienceInYears?: number;
+      coverPhoto?: string;
+      certifications?: string[];
+      bio?: string;
+      specializations?: string[];
     } | null,
   ): FindTrainerResponseDto {
     return {
@@ -21,6 +26,11 @@ export class TrainerMapper {
       dateOfBirth: profile?.dateOfBirth
         ? new Date(profile.dateOfBirth).toISOString()
         : null,
+      experienceInYears: profile?.experienceInYears ?? 0,
+      coverPhoto: profile?.coverPhoto ?? "",
+      certifications: profile?.certifications ?? [],
+      bio: profile?.bio ?? "",
+      specializations: profile?.specializations ?? [],
     };
   }
 

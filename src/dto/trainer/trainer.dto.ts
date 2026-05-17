@@ -83,9 +83,18 @@ export interface UpdateTrainerProfileDto {
   gender?: Gender;
   profilePic?: string;
   dateOfBirth?: Date;  
+  experienceInYears?: number;
+  bio?: string;
+  specializations?: string[];
 }
 
-export interface FindTrainerResponseDto extends BaseUserProfileDto {}
+export interface FindTrainerResponseDto extends BaseUserProfileDto {
+  experienceInYears?: number;
+  bio?: string;
+  specializations?: string[];
+  coverPhoto?: string;
+  certifications?: string[];
+}
 
 export interface TrainerStatusResponseDto {
   name: string;
