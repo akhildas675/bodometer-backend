@@ -4,7 +4,8 @@ import { CategoryQueryDto, CreateCategoryDto, UpdateCategoryDto, GetCategoryById
 import { SubscriptionFeatureQueryDto, GetAllSubscriptionFeaturesResponseDto, CreateSubscriptionFeatureDto, UpdateSubscriptionFeatureDto, ToggleSubscriptionFeatureStatusResponseDto, SubscriptionFeatureDto, CreateSubscriptionPlanDto, SubscriptionPlanQueryDto, GetAllSubscriptionPlansResponseDto, GetSubscriptionPlanByIdResponseDto, UpdateSubscriptionPlanDto, ToggleSubscriptionPlanStatusResponseDto } from "../../../dto/subscription/subscription.dto";
 import { CreateQuestionGroupDto, UpdateQuestionGroupDto, GetAllQuestionGroupsResponseDto, QuestionQueryDto, CreateQuestionDto, UpdateQuestionDto, GetAllQuestionsResponseDto, QuestionGroupResponseDto, OnboardingQuestionResponseDto } from "../../../dto/onboarding/onboarding.dto";
 import { PaginatedResponseDto } from "../../../dto/common.dto";
-import { PaginatedResult, QuestionGroupQuery } from "../../domain.interface/admin.interface/admin.interface";
+import { PaginatedResult } from "../../domain.interface/common.interface";
+import { QuestionGroupQuery } from "../../domain.interface/onboarding.interface";
 
 
 

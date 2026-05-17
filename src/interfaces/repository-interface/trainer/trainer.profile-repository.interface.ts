@@ -1,7 +1,7 @@
 import { ITrainerProfileDocument } from "../../../models/trainer-profile.model";
 import { IBaseRepository } from "../../base/base-repository.interface";
-import { PaginationMeta } from "../../domain.interface/admin.interface/admin.interface";
-import { ITrainerWithProfile, ReapplyTrainerData, TrainerProfile, TrainerStatusResponse } from "../../domain.interface/trainer.interface/trainer.interface";
+import { PaginationMeta } from "../../domain.interface/common.interface";
+import { ITrainerWithProfile, ReapplyTrainerData, TrainerProfile, TrainerStatusResponse } from "../../domain.interface/trainer.interface";
 
 export interface ITrainerProfileRepository
   extends IBaseRepository<TrainerProfile, ITrainerProfileDocument> 

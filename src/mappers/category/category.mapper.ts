@@ -1,5 +1,5 @@
 import { CategoryDetailDto } from "../../dto/category/category.dto";
-import { Category } from "../../interfaces/domain.interface/admin.interface/admin.interface";
+import { Category } from "../../interfaces/domain.interface/category.interface";
 
 export class CategoryMappers {
   static toCategoryDetailDto(category: Category): CategoryDetailDto {

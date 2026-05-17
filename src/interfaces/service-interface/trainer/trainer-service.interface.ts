@@ -1,4 +1,4 @@
-import { CategoryQuery, GetAllCategoriesResponse } from "../../../interfaces/domain.interface/admin.interface/admin.interface";
+import { CategoryQuery, GetAllCategoriesResponse } from "../../../interfaces/domain.interface/category.interface";
 import { FindTrainerResponseDto, TrainerProfileDto, TrainerStatusResponseDto, UpdateTrainerProfileDto } from "../../../dto/trainer/trainer.dto";
 
 

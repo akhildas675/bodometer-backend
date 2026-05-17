@@ -1,4 +1,4 @@
-import { Category, CategoryQuery, GetAllCategoriesResponse } from "@/interfaces/domain.interface/admin.interface/admin.interface";
+import { Category, CategoryQuery, GetAllCategoriesResponse } from "@/interfaces/domain.interface/category.interface";
 import { BaseRepository } from "./base/base.repository";
 import { CategoryModel, ICategory } from "@/models/category.model";
 import { ICategoryRepository } from "@/interfaces/repository-interface/category/category-repository.interface";

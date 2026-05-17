@@ -1,6 +1,6 @@
 
-import { PaginationMeta } from "../../domain.interface/admin.interface/admin.interface";
-import { UpdateUserProfileInterface, UserInterface } from "../../domain.interface/user.interface/user.interface";
+import { PaginationMeta } from "../../domain.interface/common.interface";
+import { UpdateUserProfileInterface, UserInterface } from "../../domain.interface/user.interface";
 
 
 export interface IUserRepository {

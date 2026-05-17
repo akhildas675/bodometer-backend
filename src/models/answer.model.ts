@@ -2,7 +2,7 @@ import mongoose, {
     Schema,
     Document
 } from "mongoose";
-import { OnboardingValue } from "@/interfaces/domain.interface/admin.interface/admin.interface";
+import { OnboardingValue } from "@/interfaces/domain.interface/onboarding.interface";
 
 
 

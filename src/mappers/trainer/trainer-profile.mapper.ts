@@ -1,4 +1,4 @@
-import { TrainerProfile } from "@/interfaces/domain.interface/trainer.interface/trainer.interface";
+import { TrainerProfile } from "@/interfaces/domain.interface/trainer.interface";
 import { ITrainerProfileDocument } from "@/models/trainer-profile.model";
 
 export class TrainerProfileMapper {

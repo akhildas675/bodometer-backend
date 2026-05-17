@@ -1,4 +1,4 @@
-import { QuestionGroup, QuestionGroupQuery, GetAllQuestionGroupsResponse } from "@/interfaces/domain.interface/admin.interface/admin.interface";
+import { QuestionGroup, QuestionGroupQuery, GetAllQuestionGroupsResponse } from "@/interfaces/domain.interface/onboarding.interface";
 
 export interface IGroupRepository {
   createGroup(data: QuestionGroup): Promise<void>;

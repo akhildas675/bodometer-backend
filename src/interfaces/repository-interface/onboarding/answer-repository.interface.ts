@@ -1,4 +1,4 @@
-import { UserAnswerSubmission } from "@/interfaces/domain.interface/admin.interface/admin.interface";
+import { UserAnswerSubmission } from "@/interfaces/domain.interface/onboarding.interface";
 
 export interface IAnswerRepository {
   saveUserAnswers(data: UserAnswerSubmission): Promise<void>;

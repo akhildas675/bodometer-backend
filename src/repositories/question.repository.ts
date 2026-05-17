@@ -1,4 +1,4 @@
-import { OnboardingQuestion, QuestionQuery, GetAllQuestionsResponse, OnboardingValue } from "@/interfaces/domain.interface/admin.interface/admin.interface";
+import { OnboardingQuestion, QuestionQuery, GetAllQuestionsResponse, OnboardingValue } from "@/interfaces/domain.interface/onboarding.interface";
 import { BaseRepository } from "./base/base.repository";
 import { QuestionModel, IQuestion } from "@/models/question.model";
 import { IQuestionRepository } from "@/interfaces/repository-interface/onboarding/question-repository.interface";

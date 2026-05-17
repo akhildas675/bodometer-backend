@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import { FindUserResponseDto } from "../../dto/user/user.dto";
 import { TrainerDetailDto, TrainerListItemDto } from "../../dto/trainer/trainer.dto";
-import { ITrainerWithProfile } from "../../interfaces/domain.interface/trainer.interface/trainer.interface";
-import { UserInterface } from "../../interfaces/domain.interface/user.interface/user.interface";
+import { ITrainerWithProfile } from "../../interfaces/domain.interface/trainer.interface";
+import { UserInterface } from "../../interfaces/domain.interface/user.interface";
 
 
 export class UserMapper {

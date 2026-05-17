@@ -1,5 +1,5 @@
-import { PaginationMeta } from "../interfaces/domain.interface/admin.interface/admin.interface";
-import { UpdateUserProfileInterface, UserInterface } from "../interfaces/domain.interface/user.interface/user.interface";
+import { PaginationMeta } from "../interfaces/domain.interface/common.interface";
+import { UpdateUserProfileInterface, UserInterface } from "../interfaces/domain.interface/user.interface";
 import { IUserRepository } from "../interfaces/repository-interface/user/user-repository.interface";
 import { IUserDocument, UserModel } from "../models/user.model";
 import { BaseRepository } from "./base/base.repository";

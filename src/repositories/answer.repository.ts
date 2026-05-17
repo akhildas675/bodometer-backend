@@ -1,4 +1,4 @@
-import { UserAnswerSubmission } from "@/interfaces/domain.interface/admin.interface/admin.interface";
+import { UserAnswerSubmission } from "@/interfaces/domain.interface/onboarding.interface";
 import { AnswerModel, IAnswer } from "@/models/answer.model";
 import { IAnswerRepository } from "@/interfaces/repository-interface/onboarding/answer-repository.interface";
 import mongoose from "mongoose";

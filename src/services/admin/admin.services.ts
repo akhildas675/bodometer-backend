@@ -9,7 +9,10 @@ import { CategoryQueryDto, CreateCategoryDto, UpdateCategoryDto, GetCategoryById
 import { SubscriptionFeatureQueryDto, GetAllSubscriptionFeaturesResponseDto, CreateSubscriptionFeatureDto, UpdateSubscriptionFeatureDto, ToggleSubscriptionFeatureStatusResponseDto, SubscriptionFeatureDto, CreateSubscriptionPlanDto, SubscriptionPlanQueryDto, GetAllSubscriptionPlansResponseDto, GetSubscriptionPlanByIdResponseDto, UpdateSubscriptionPlanDto, ToggleSubscriptionPlanStatusResponseDto } from "../../dto/subscription/subscription.dto";
 import { CreateQuestionGroupDto, UpdateQuestionGroupDto, GetAllQuestionGroupsResponseDto, QuestionQueryDto, CreateQuestionDto, UpdateQuestionDto, GetAllQuestionsResponseDto, QuestionGroupResponseDto, OnboardingQuestionResponseDto } from "../../dto/onboarding/onboarding.dto";
 import { PaginatedResponseDto } from "../../dto/common.dto";
-import { Category, PaginatedResult, SubscriptionFeature, SubscriptionPlan, QuestionGroupQuery } from "../../interfaces/domain.interface/admin.interface/admin.interface";
+import { Category } from "../../interfaces/domain.interface/category.interface";
+import { PaginatedResult } from "../../interfaces/domain.interface/common.interface";
+import { SubscriptionFeature, SubscriptionPlan } from "../../interfaces/domain.interface/subscription.interface";
+import { QuestionGroupQuery } from "../../interfaces/domain.interface/onboarding.interface";
 import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
 import { IUserRepository } from "../../interfaces/repository-interface/user/user-repository.interface";
 import { IAdminService } from "../../interfaces/service-interface/admin/admin-service.interface";

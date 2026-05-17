@@ -1,7 +1,7 @@
 import mongoose, { PipelineStage } from "mongoose";
 import { VERIFICATION_STATUS, VerificationStatus } from "../constants/verification.constants";
-import { PaginationMeta } from "../interfaces/domain.interface/admin.interface/admin.interface";
-import { ITrainerWithProfile, PopulatedTrainerProfile, ReapplyTrainerData, TrainerProfile, TrainerStatusResponse } from "../interfaces/domain.interface/trainer.interface/trainer.interface";
+import { PaginationMeta } from "../interfaces/domain.interface/common.interface";
+import { ITrainerWithProfile, PopulatedTrainerProfile, ReapplyTrainerData, TrainerProfile, TrainerStatusResponse } from "../interfaces/domain.interface/trainer.interface";
 import { ITrainerProfileRepository } from "../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
 import { ITrainerProfileDocument, TrainerProfileModel } from "../models/trainer-profile.model";
 import { BaseRepository } from "./base/base.repository";

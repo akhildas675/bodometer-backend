@@ -1,6 +1,7 @@
 import { ISubscriptionFeature, SubscriptionFeatureModel } from "@/models/subscription-feature.model";
 import { BaseRepository } from "./base/base.repository";
-import { SubscriptionFeature, SubscriptionFeatureQuery, PaginatedResult } from "@/interfaces/domain.interface/admin.interface/admin.interface";
+import { SubscriptionFeature, SubscriptionFeatureQuery } from "@/interfaces/domain.interface/subscription.interface";
+import { PaginatedResult } from "@/interfaces/domain.interface/common.interface";
 import { ISubscriptionFeatureRepository } from "@/interfaces/repository-interface/subscription/feature-repository.interface";
 
 export default class SubscriptionFeatureRepository extends BaseRepository<SubscriptionFeature, ISubscriptionFeature> implements ISubscriptionFeatureRepository {

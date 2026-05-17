@@ -1,4 +1,4 @@
-import { QuestionGroup, QuestionGroupQuery, GetAllQuestionGroupsResponse } from "@/interfaces/domain.interface/admin.interface/admin.interface";
+import { QuestionGroup, QuestionGroupQuery, GetAllQuestionGroupsResponse } from "@/interfaces/domain.interface/onboarding.interface";
 import { BaseRepository } from "./base/base.repository";
 import { GroupModel, IGroup } from "@/models/group.model";
 import { IGroupRepository } from "@/interfaces/repository-interface/onboarding/group-repository.interface";

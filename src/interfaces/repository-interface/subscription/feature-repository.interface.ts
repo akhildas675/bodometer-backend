@@ -1,4 +1,5 @@
-import { PaginatedResult, SubscriptionFeature, SubscriptionFeatureQuery } from "@/interfaces/domain.interface/admin.interface/admin.interface";
+import { SubscriptionFeature, SubscriptionFeatureQuery } from "@/interfaces/domain.interface/subscription.interface";
+import { PaginatedResult } from "@/interfaces/domain.interface/common.interface";
 
 
 export interface ISubscriptionFeatureRepository {

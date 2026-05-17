@@ -1,4 +1,4 @@
-import { UserInterface } from "@/interfaces/domain.interface/user.interface/user.interface";
+import { UserInterface } from "@/interfaces/domain.interface/user.interface";
 
 import { FindTrainerResponseDto } from "@/dto/trainer/trainer.dto";
 

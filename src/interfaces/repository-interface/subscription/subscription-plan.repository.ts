@@ -1,4 +1,4 @@
-import { GetAllSubscriptionPlansResponse, SubscriptionPlan, SubscriptionPlanQuery } from "@/interfaces/domain.interface/admin.interface/admin.interface";
+import { GetAllSubscriptionPlansResponse, SubscriptionPlan, SubscriptionPlanQuery } from "@/interfaces/domain.interface/subscription.interface";
 
 export interface ISubscriptionPlanRepository {
     createSubscriptionPlan(data: SubscriptionPlan): Promise<SubscriptionPlan>;

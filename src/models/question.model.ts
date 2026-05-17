@@ -1,5 +1,5 @@
 import { CONDITION_OPERATORS, ConditionOperator, DATA_SOURCES, DataSource, QUESTION_TYPES, QuestionType } from "@/constants/question.constant";
-import { OnboardingValue } from "@/interfaces/domain.interface/admin.interface/admin.interface";
+import { OnboardingValue } from "@/interfaces/domain.interface/onboarding.interface";
 import mongoose, {
     Schema,
     Document

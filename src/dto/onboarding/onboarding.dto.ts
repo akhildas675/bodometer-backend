@@ -1,4 +1,4 @@
-import { OnboardingValue } from "../../interfaces/domain.interface/admin.interface/admin.interface";
+import { OnboardingValue } from "../../interfaces/domain.interface/onboarding.interface";
 import { PaginationMetaDto, PaginationQueryDto } from "../common.dto";
 
 export interface QuestionGroupResponseDto {

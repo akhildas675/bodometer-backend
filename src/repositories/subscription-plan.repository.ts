@@ -3,7 +3,7 @@ import { ISubscriptionFeature } from "@/models/subscription-feature.model";
 import { BaseRepository } from "./base/base.repository";
 import { Types } from "mongoose";
 import { LimitType } from "@/constants/subscription.constant";
-import { GetAllSubscriptionPlansResponse, SubscriptionPlan, SubscriptionPlanQuery } from "@/interfaces/domain.interface/admin.interface/admin.interface";
+import { GetAllSubscriptionPlansResponse, SubscriptionPlan, SubscriptionPlanQuery } from "@/interfaces/domain.interface/subscription.interface";
 import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/subscription/subscription-plan.repository";
 
 

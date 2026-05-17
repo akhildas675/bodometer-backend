@@ -1,4 +1,4 @@
-import { OnboardingQuestion, QuestionQuery, GetAllQuestionsResponse } from "@/interfaces/domain.interface/admin.interface/admin.interface";
+import { OnboardingQuestion, QuestionQuery, GetAllQuestionsResponse } from "@/interfaces/domain.interface/onboarding.interface";
 
 export interface IQuestionRepository {
   createQuestion(data: OnboardingQuestion): Promise<void>;

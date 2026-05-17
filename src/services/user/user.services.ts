@@ -2,7 +2,7 @@ import { MESSAGES } from "../../constants/messages";
 import { STATUS } from "../../constants/statuscode";
 import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
 import { IUserRepository } from "../../interfaces/repository-interface/user/user-repository.interface";
-import { IPaymentService,} from "../../interfaces/service-interface/payment/stripe-service.interface";
+import { IPaymentService, } from "../../interfaces/service-interface/payment/stripe-service.interface";
 import { IS3Service } from "../../interfaces/service-interface/s3/s3-service.interface";
 import { IUserService } from "../../interfaces/service-interface/user/user-service.interface";
 import { UserMapper, UserMappers } from "../../mappers/user/user.mappers";
@@ -14,7 +14,8 @@ import { ActiveSubscriptionDto, UserSubscriptionPlanResponseDto } from "../../dt
 import { GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto } from "../../dto/trainer/trainer.dto";
 import { CategoryDetailDto } from "../../dto/category/category.dto";
 import { ICategoryRepository } from "../../interfaces/repository-interface/category/category-repository.interface";
-import { CategoryQuery, GetAllCategoriesResponse, GetAllQuestionGroupsResponse, GetAllQuestionsResponse, OnboardingValue, UserAnswerSubmission } from "../../interfaces/domain.interface/admin.interface/admin.interface";
+import { CategoryQuery, GetAllCategoriesResponse } from "../../interfaces/domain.interface/category.interface";
+import { GetAllQuestionGroupsResponse, GetAllQuestionsResponse, OnboardingValue, UserAnswerSubmission } from "../../interfaces/domain.interface/onboarding.interface";
 import { CategoryMappers } from "@/mappers/category/category.mapper";
 import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/subscription/subscription-plan.repository";
 import Stripe from "stripe";
@@ -31,11 +32,11 @@ export class UserService implements IUserService {
     private _userRepo: IUserRepository,
     private _s3Service: IS3Service,
     private _trainerProfileRepo: ITrainerProfileRepository,
-    private _paymentService:IPaymentService,
+    private _paymentService: IPaymentService,
     private _categoryRepo: ICategoryRepository,
     private _subscriptionPlanRepository: ISubscriptionPlanRepository,
-    private _subscriptionTransactionRepository:ISubscriptionTransactionRepository,
-    private _userSubscriptionRepository:IUserSubscriptionRepository,
+    private _subscriptionTransactionRepository: ISubscriptionTransactionRepository,
+    private _userSubscriptionRepository: IUserSubscriptionRepository,
     private _groupRepo: IGroupRepository,
     private _questionRepo: IQuestionRepository,
     private _answerRepo: IAnswerRepository
@@ -196,133 +197,133 @@ export class UserService implements IUserService {
     return this._subscriptionPlanRepository.getActiveSubscriptionPlans();
   }
 
-async createCheckoutSession(userId: string, planId: string): Promise<{ checkoutUrl: string }> {
-  const activeSub = await this._userSubscriptionRepository.findActiveByUserId(userId);
-  if (activeSub) {
-    throw new AppError(STATUS.BAD_REQUEST, "User already has an active subscription. Cannot purchase another at this time.");
+  async createCheckoutSession(userId: string, planId: string): Promise<{ checkoutUrl: string }> {
+    const activeSub = await this._userSubscriptionRepository.findActiveByUserId(userId);
+    if (activeSub) {
+      throw new AppError(STATUS.BAD_REQUEST, "User already has an active subscription. Cannot purchase another at this time.");
+    }
+
+    const plan = await this._subscriptionPlanRepository.getSubscriptionPlanById(planId);
+    if (!plan) {
+      throw new AppError(STATUS.NOT_FOUND, "Plan not found");
+    }
+
+    const result = await this._paymentService.createCheckoutSession({
+      planName: plan.name,
+      description: plan.description ?? "Bodometer Premium Access",
+      amount: Math.round(plan.price * 100),
+      currency: "inr",
+      successUrl: `${process.env.CLIENT_URL}/subscription-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancelUrl: `${process.env.CLIENT_URL}/subscription-cancel`,
+      metadata: {
+        userId,
+        planId,
+      },
+    });
+
+    return { checkoutUrl: result.url };
   }
 
-  const plan = await this._subscriptionPlanRepository.getSubscriptionPlanById(planId);
-  if (!plan) {
-    throw new AppError(STATUS.NOT_FOUND, "Plan not found");
-  }
- 
-  const result = await this._paymentService.createCheckoutSession({
-    planName: plan.name,
-    description: plan.description ?? "Bodometer Premium Access",
-    amount: Math.round(plan.price * 100),
-    currency: "inr",
-    successUrl: `${process.env.CLIENT_URL}/subscription-success?session_id={CHECKOUT_SESSION_ID}`,
-    cancelUrl: `${process.env.CLIENT_URL}/subscription-cancel`,
-    metadata: {
-      userId,   
+  //verifyPaymentAndSave 
+
+  async verifyPaymentAndSave(userId: string, sessionId: string): Promise<ActiveSubscriptionDto> {
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+
+    if (session.payment_status !== "paid") {
+      throw new AppError(STATUS.BAD_REQUEST, "Payment not completed");
+    }
+
+
+    const sessionUserId = session.metadata?.userId;
+    if (sessionUserId !== userId) {
+      throw new AppError(STATUS.FORBIDDEN, "Session does not belong to this user");
+    }
+
+    const planId = session.metadata?.planId;
+    if (!planId) {
+      throw new AppError(STATUS.BAD_REQUEST, "Missing planId in session metadata");
+    }
+
+    const existing = await this._subscriptionTransactionRepository.findByTransactionId(sessionId);
+    if (existing) {
+      const activeSub = await this.getActiveSubscription(userId);
+      if (!activeSub) throw new AppError(STATUS.NOT_FOUND, "No active subscription found for existing session");
+      return activeSub;
+    }
+
+
+    const plan = await this._subscriptionPlanRepository.getSubscriptionPlanById(planId);
+    if (!plan) {
+      throw new AppError(STATUS.NOT_FOUND, "Plan not found");
+    }
+
+
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + (plan.durationInDays ?? 30));
+
+    const userSubscription = await this._userSubscriptionRepository.create({
+      userId,
+      subscriptionPlanId: planId,
+      startDate,
+      endDate,
+    });
+
+
+    await this._subscriptionTransactionRepository.create({
+      userId,
+      subscriptionPlanId: planId,
+      userSubscriptionId: String(userSubscription._id),
+      amount: (session.amount_total ?? 0) / 100,
+      currency: (session.currency ?? "inr").toUpperCase(),
+      paymentMethod: "card",
+      paymentGateway: "stripe",
+      transactionId: sessionId,
+      paymentStatus: "success",
+      paidAt: new Date(),
+      meta: {
+        stripeSessionId: sessionId,
+        customerEmail: session.customer_details?.email,
+      },
+    });
+
+
+    return {
+      subscriptionId: String(userSubscription._id),
       planId,
-    },
-  });
- 
-  return { checkoutUrl: result.url };
-}
- 
-//verifyPaymentAndSave 
- 
-async verifyPaymentAndSave(userId: string, sessionId: string): Promise<ActiveSubscriptionDto> {
-
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-  const session = await stripe.checkout.sessions.retrieve(sessionId);
- 
-
-  if (session.payment_status !== "paid") {
-    throw new AppError(STATUS.BAD_REQUEST, "Payment not completed");
+      planName: plan.name,
+      startDate,
+      endDate,
+      status: "active",
+      daysRemaining: plan.durationInDays ?? 30,
+    };
   }
- 
- 
-  const sessionUserId = session.metadata?.userId;
-  if (sessionUserId !== userId) {
-    throw new AppError(STATUS.FORBIDDEN, "Session does not belong to this user");
+
+
+  async getActiveSubscription(userId: string): Promise<ActiveSubscriptionDto | null> {
+    const sub = await this._userSubscriptionRepository.findActiveByUserId(userId);
+    if (!sub) return null;
+
+    const plan = sub.subscriptionPlanId as unknown as { _id: unknown; name: string };
+
+    const daysRemaining = Math.max(
+      0,
+      Math.ceil((new Date(sub.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    );
+
+    return {
+      subscriptionId: String(sub._id),
+      planId: String(plan?._id ?? sub.subscriptionPlanId),
+      planName: plan?.name ?? "Unknown",
+      startDate: sub.startDate,
+      endDate: sub.endDate,
+      status: sub.status,
+      daysRemaining,
+    };
   }
- 
-  const planId = session.metadata?.planId;
-  if (!planId) {
-    throw new AppError(STATUS.BAD_REQUEST, "Missing planId in session metadata");
-  }
- 
-  const existing = await this._subscriptionTransactionRepository.findByTransactionId(sessionId);
-  if (existing) {
-    const activeSub = await this.getActiveSubscription(userId);
-    if (!activeSub) throw new AppError(STATUS.NOT_FOUND, "No active subscription found for existing session");
-    return activeSub;
-  }
- 
-
-  const plan = await this._subscriptionPlanRepository.getSubscriptionPlanById(planId);
-  if (!plan) {
-    throw new AppError(STATUS.NOT_FOUND, "Plan not found");
-  }
- 
-
-  const startDate = new Date();
-  const endDate = new Date();
-  endDate.setDate(endDate.getDate() + (plan.durationInDays ?? 30));
- 
-  const userSubscription = await this._userSubscriptionRepository.create({
-    userId,
-    subscriptionPlanId: planId,
-    startDate,
-    endDate,
-  });
- 
- 
-  await this._subscriptionTransactionRepository.create({
-    userId,
-    subscriptionPlanId: planId,
-    userSubscriptionId: String(userSubscription._id),
-    amount: (session.amount_total ?? 0) / 100,
-    currency: (session.currency ?? "inr").toUpperCase(),
-    paymentMethod: "card",
-    paymentGateway: "stripe",
-    transactionId: sessionId,
-    paymentStatus: "success",
-    paidAt: new Date(),
-    meta: {
-      stripeSessionId: sessionId,
-      customerEmail: session.customer_details?.email,
-    },
-  });
- 
-
-  return {
-    subscriptionId: String(userSubscription._id),
-    planId,
-    planName: plan.name,
-    startDate,
-    endDate,
-    status: "active",
-    daysRemaining: plan.durationInDays ?? 30,
-  };
-}
- 
-
-async getActiveSubscription(userId: string): Promise<ActiveSubscriptionDto | null> {
-  const sub = await this._userSubscriptionRepository.findActiveByUserId(userId);
-  if (!sub) return null;
-
-  const plan = sub.subscriptionPlanId as unknown as { _id: unknown; name: string };
-  
-  const daysRemaining = Math.max(
-    0,
-    Math.ceil((new Date(sub.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-  );
-
-  return {
-    subscriptionId: String(sub._id),
-    planId: String(plan?._id ?? sub.subscriptionPlanId),
-    planName: plan?.name ?? "Unknown",
-    startDate: sub.startDate,
-    endDate: sub.endDate,
-    status: sub.status,
-    daysRemaining,
-  };
-}
 
   private async _buildActiveSubscriptionDto(userId: string): Promise<ActiveSubscriptionDto> {
     const sub = await this.getActiveSubscription(userId);

@@ -1,8 +1,8 @@
 import { Role } from "../../constants/roles";
 import { AdminGetUsersResponseDto } from "../../dto/user/user.dto";
 import { ApproveTrainerResponseDto, GetTrainerAppointmentsResponseDto, GetTrainerByIdResponseDto, RejectTrainerResponseDto } from "../../dto/trainer/trainer.dto";
-import { ITrainerWithProfile } from "../../interfaces/domain.interface/trainer.interface/trainer.interface";
-import { UserInterface } from "../../interfaces/domain.interface/user.interface/user.interface";
+import { ITrainerWithProfile } from "../../interfaces/domain.interface/trainer.interface";
+import { UserInterface } from "../../interfaces/domain.interface/user.interface";
 import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
 import { IUserDocument } from "../../models/user.model";
 import mongoose from "mongoose";

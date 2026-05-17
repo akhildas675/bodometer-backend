@@ -6,7 +6,7 @@ import { ITrainerProfileRepository } from "../../interfaces/repository-interface
 import { IS3Service } from "../../interfaces/service-interface/s3/s3-service.interface";
 import { FindTrainerResponseDto, TrainerProfileDto, TrainerStatusResponseDto, UpdateTrainerProfileDto } from "../../dto/trainer/trainer.dto";
 import { ICategoryRepository } from "../../interfaces/repository-interface/category/category-repository.interface";
-import { CategoryQuery, GetAllCategoriesResponse } from "../../interfaces/domain.interface/admin.interface/admin.interface";
+import { CategoryQuery, GetAllCategoriesResponse } from "../../interfaces/domain.interface/category.interface";
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
 import { MESSAGES } from "../../constants/messages";

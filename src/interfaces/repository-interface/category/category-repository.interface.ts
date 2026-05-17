@@ -1,4 +1,4 @@
-import { Category, CategoryQuery, GetAllCategoriesResponse } from "@/interfaces/domain.interface/admin.interface/admin.interface";
+import { Category, CategoryQuery, GetAllCategoriesResponse } from "@/interfaces/domain.interface/category.interface";
 
 export interface ICategoryRepository {
     createCategory(data: Category): Promise<void>
