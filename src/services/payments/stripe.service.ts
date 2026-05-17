@@ -2,7 +2,7 @@ import { CheckoutResult, CreateCheckoutParams, ParsedWebhookEvent } from "@/inte
 import { IPaymentService } from "@/interfaces/service-interface/payment/stripe-service.interface";
 import Stripe from "stripe";
 
-export class StripeService implements IPaymentService {
+export class PaymentService implements IPaymentService {
   private stripe: Stripe;
   private webhookSecret: string;
 

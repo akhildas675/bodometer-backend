@@ -2,20 +2,39 @@ import { MESSAGES } from "../../constants/messages";
 import { STATUS } from "../../constants/statuscode";
 import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
 import { IUserRepository } from "../../interfaces/repository-interface/user/user-repository.interface";
-import { IPaymentService, } from "../../interfaces/service-interface/payment/stripe-service.interface";
+import { IPaymentService } from "../../interfaces/service-interface/payment/stripe-service.interface";
 import { IS3Service } from "../../interfaces/service-interface/s3/s3-service.interface";
 import { IUserService } from "../../interfaces/service-interface/user/user-service.interface";
 import { UserMapper, UserMappers } from "../../mappers/user/user.mappers";
 import { AppError } from "../../utils/appError";
-import bcrypt from "bcrypt"
+import bcrypt from "bcrypt";
 import { hashPassword } from "../../utils/password";
-import { ChangePasswordDto, FindUserResponseDto, UpdateUserProfileDto } from "../../dto/user/user.dto";
-import { ActiveSubscriptionDto, UserSubscriptionPlanResponseDto } from "../../dto/subscription/subscription.dto";
-import { GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto } from "../../dto/trainer/trainer.dto";
+import {
+  ChangePasswordDto,
+  FindUserResponseDto,
+  UpdateUserProfileDto,
+} from "../../dto/user/user.dto";
+import {
+  ActiveSubscriptionDto,
+  UserSubscriptionPlanResponseDto,
+} from "../../dto/subscription/subscription.dto";
+import {
+  GetTrainersQueryDto,
+  TrainerDetailDto,
+  TrainerListResponseDto,
+} from "../../dto/trainer/trainer.dto";
 import { CategoryDetailDto } from "../../dto/category/category.dto";
 import { ICategoryRepository } from "../../interfaces/repository-interface/category/category-repository.interface";
-import { CategoryQuery, GetAllCategoriesResponse } from "../../interfaces/domain.interface/category.interface";
-import { GetAllQuestionGroupsResponse, GetAllQuestionsResponse, OnboardingValue, UserAnswerSubmission } from "../../interfaces/domain.interface/onboarding.interface";
+import {
+  CategoryQuery,
+  GetAllCategoriesResponse,
+} from "../../interfaces/domain.interface/category.interface";
+import {
+  GetAllQuestionGroupsResponse,
+  GetAllQuestionsResponse,
+  OnboardingValue,
+  UserAnswerSubmission,
+} from "../../interfaces/domain.interface/onboarding.interface";
 import { CategoryMappers } from "@/mappers/category/category.mapper";
 import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/subscription/subscription-plan.repository";
 import Stripe from "stripe";
@@ -24,7 +43,6 @@ import { IUserSubscriptionRepository } from "@/interfaces/repository-interface/s
 import { IGroupRepository } from "@/interfaces/repository-interface/onboarding/group-repository.interface";
 import { IQuestionRepository } from "@/interfaces/repository-interface/onboarding/question-repository.interface";
 import { IAnswerRepository } from "@/interfaces/repository-interface/onboarding/answer-repository.interface";
-import { GENDER, Gender } from "@/constants/identity.constants";
 import { ROLES } from "@/constants/roles";
 
 export class UserService implements IUserService {
@@ -39,8 +57,8 @@ export class UserService implements IUserService {
     private _userSubscriptionRepository: IUserSubscriptionRepository,
     private _groupRepo: IGroupRepository,
     private _questionRepo: IQuestionRepository,
-    private _answerRepo: IAnswerRepository
-  ) { }
+    private _answerRepo: IAnswerRepository,
+  ) {}
 
   async fetchUser(userId: string): Promise<FindUserResponseDto> {
     const user = await this._userRepo.findById(userId);
@@ -63,7 +81,9 @@ export class UserService implements IUserService {
       throw new AppError(STATUS.BAD_REQUEST, "No fields to update");
     }
     if (updateData.userName) {
-      const existingUser = await this._userRepo.findByUsername(updateData.userName);
+      const existingUser = await this._userRepo.findByUsername(
+        updateData.userName,
+      );
       if (existingUser && existingUser.id !== userId) {
         throw new AppError(STATUS.CONFLICT, "Username already exists");
       }
@@ -91,7 +111,9 @@ export class UserService implements IUserService {
     if (updateData.gender || updateData.dateOfBirth) {
       const profileUpdates = {
         gender: updateData.gender,
-        dateOfBirth: updateData.dateOfBirth ? new Date(updateData.dateOfBirth) : undefined
+        dateOfBirth: updateData.dateOfBirth
+          ? new Date(updateData.dateOfBirth)
+          : undefined,
       };
 
       if (updatedUser.role === ROLES.TRAINER) {
@@ -147,21 +169,21 @@ export class UserService implements IUserService {
     await this._userRepo.updatePassword(userId, hashedPassword);
   }
 
-
   async getTrainers(
     query: GetTrainersQueryDto,
   ): Promise<TrainerListResponseDto> {
     const page = query.page || 1;
     const limit = query.limit || 9;
 
-    const { data, total } = await this._trainerProfileRepo.getApprovedTrainersPaginated(
-      page,
-      limit,
-      query.search,
-      query.sortBy,
-      query.sortOrder,
-      query.specializationId,
-    );
+    const { data, total } =
+      await this._trainerProfileRepo.getApprovedTrainersPaginated(
+        page,
+        limit,
+        query.search,
+        query.sortBy,
+        query.sortOrder,
+        query.specializationId,
+      );
 
     return {
       data: UserMappers.toListItemDtoArray(data),
@@ -175,7 +197,8 @@ export class UserService implements IUserService {
   }
 
   async getTrainerById(trainerId: string): Promise<TrainerDetailDto> {
-    const data = await this._trainerProfileRepo.getTrainerByIdWithUser(trainerId);
+    const data =
+      await this._trainerProfileRepo.getTrainerByIdWithUser(trainerId);
     if (!data) {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND);
     }
@@ -183,27 +206,39 @@ export class UserService implements IUserService {
   }
 
   async getCategories(query: CategoryQuery): Promise<GetAllCategoriesResponse> {
-    return this._categoryRepo.getAllCategories({ ...query, isActive: true } as CategoryQuery);
+    return this._categoryRepo.getAllCategories({
+      ...query,
+      isActive: true,
+    } as CategoryQuery);
   }
 
   async getCategoryById(id: string): Promise<CategoryDetailDto> {
     const category = await this._categoryRepo.getCategoryById(id);
-    if (!category)
-      throw new AppError(STATUS.NOT_FOUND, "Category not found");
+    if (!category) throw new AppError(STATUS.NOT_FOUND, "Category not found");
     return CategoryMappers.toCategoryDetailDto(category);
   }
 
-  async getMySubscriptions(): Promise<UserSubscriptionPlanResponseDto[] | null> {
+  async getMySubscriptions(): Promise<
+    UserSubscriptionPlanResponseDto[] | null
+  > {
     return this._subscriptionPlanRepository.getActiveSubscriptionPlans();
   }
 
-  async createCheckoutSession(userId: string, planId: string): Promise<{ checkoutUrl: string }> {
-    const activeSub = await this._userSubscriptionRepository.findActiveByUserId(userId);
+  async createCheckoutSession(
+    userId: string,
+    planId: string,
+  ): Promise<{ checkoutUrl: string }> {
+    const activeSub =
+      await this._userSubscriptionRepository.findActiveByUserId(userId);
     if (activeSub) {
-      throw new AppError(STATUS.BAD_REQUEST, "User already has an active subscription. Cannot purchase another at this time.");
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        "User already has an active subscription. Cannot purchase another at this time.",
+      );
     }
 
-    const plan = await this._subscriptionPlanRepository.getSubscriptionPlanById(planId);
+    const plan =
+      await this._subscriptionPlanRepository.getSubscriptionPlanById(planId);
     if (!plan) {
       throw new AppError(STATUS.NOT_FOUND, "Plan not found");
     }
@@ -224,42 +259,54 @@ export class UserService implements IUserService {
     return { checkoutUrl: result.url };
   }
 
-  //verifyPaymentAndSave 
+  //verifyPaymentAndSave
 
-  async verifyPaymentAndSave(userId: string, sessionId: string): Promise<ActiveSubscriptionDto> {
-
+  async verifyPaymentAndSave(
+    userId: string,
+    sessionId: string,
+  ): Promise<ActiveSubscriptionDto> {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-
 
     if (session.payment_status !== "paid") {
       throw new AppError(STATUS.BAD_REQUEST, "Payment not completed");
     }
 
-
     const sessionUserId = session.metadata?.userId;
     if (sessionUserId !== userId) {
-      throw new AppError(STATUS.FORBIDDEN, "Session does not belong to this user");
+      throw new AppError(
+        STATUS.FORBIDDEN,
+        "Session does not belong to this user",
+      );
     }
 
     const planId = session.metadata?.planId;
     if (!planId) {
-      throw new AppError(STATUS.BAD_REQUEST, "Missing planId in session metadata");
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        "Missing planId in session metadata",
+      );
     }
 
-    const existing = await this._subscriptionTransactionRepository.findByTransactionId(sessionId);
+    const existing =
+      await this._subscriptionTransactionRepository.findByTransactionId(
+        sessionId,
+      );
     if (existing) {
       const activeSub = await this.getActiveSubscription(userId);
-      if (!activeSub) throw new AppError(STATUS.NOT_FOUND, "No active subscription found for existing session");
+      if (!activeSub)
+        throw new AppError(
+          STATUS.NOT_FOUND,
+          "No active subscription found for existing session",
+        );
       return activeSub;
     }
 
-
-    const plan = await this._subscriptionPlanRepository.getSubscriptionPlanById(planId);
+    const plan =
+      await this._subscriptionPlanRepository.getSubscriptionPlanById(planId);
     if (!plan) {
       throw new AppError(STATUS.NOT_FOUND, "Plan not found");
     }
-
 
     const startDate = new Date();
     const endDate = new Date();
@@ -271,7 +318,6 @@ export class UserService implements IUserService {
       startDate,
       endDate,
     });
-
 
     await this._subscriptionTransactionRepository.create({
       userId,
@@ -290,7 +336,6 @@ export class UserService implements IUserService {
       },
     });
 
-
     return {
       subscriptionId: String(userSubscription._id),
       planId,
@@ -302,16 +347,23 @@ export class UserService implements IUserService {
     };
   }
 
-
-  async getActiveSubscription(userId: string): Promise<ActiveSubscriptionDto | null> {
-    const sub = await this._userSubscriptionRepository.findActiveByUserId(userId);
+  async getActiveSubscription(
+    userId: string,
+  ): Promise<ActiveSubscriptionDto | null> {
+    const sub =
+      await this._userSubscriptionRepository.findActiveByUserId(userId);
     if (!sub) return null;
 
-    const plan = sub.subscriptionPlanId as unknown as { _id: unknown; name: string };
+    const plan = sub.subscriptionPlanId as unknown as {
+      _id: unknown;
+      name: string;
+    };
 
     const daysRemaining = Math.max(
       0,
-      Math.ceil((new Date(sub.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+      Math.ceil(
+        (new Date(sub.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+      ),
     );
 
     return {
@@ -325,9 +377,12 @@ export class UserService implements IUserService {
     };
   }
 
-  private async _buildActiveSubscriptionDto(userId: string): Promise<ActiveSubscriptionDto> {
+  private async _buildActiveSubscriptionDto(
+    userId: string,
+  ): Promise<ActiveSubscriptionDto> {
     const sub = await this.getActiveSubscription(userId);
-    if (!sub) throw new AppError(STATUS.NOT_FOUND, "No active subscription found");
+    if (!sub)
+      throw new AppError(STATUS.NOT_FOUND, "No active subscription found");
     return sub;
   }
 
@@ -339,16 +394,20 @@ export class UserService implements IUserService {
     return this._questionRepo.getAllQuestions({ limit: 500, isActive: true });
   }
 
-  async submitOnboarding(userId: string, data: { answers: { questionId: string; key: string; value: OnboardingValue }[] }): Promise<void> {
-
+  async submitOnboarding(
+    userId: string,
+    data: {
+      answers: { questionId: string; key: string; value: OnboardingValue }[];
+    },
+  ): Promise<void> {
     const submission: UserAnswerSubmission = {
       userId,
-      answers: data.answers.map(ans => ({
+      answers: data.answers.map((ans) => ({
         questionId: ans.questionId,
         questionKey: ans.key,
-        answer: ans.value
+        answer: ans.value,
       })),
-      completed: true
+      completed: true,
     };
     await this._answerRepo.saveUserAnswers(submission);
   }
@@ -358,7 +417,9 @@ export class UserService implements IUserService {
     return { completed: userAnswers?.completed ?? false };
   }
 
-  async getOnboardingAnswers(userId: string): Promise<UserAnswerSubmission | null> {
+  async getOnboardingAnswers(
+    userId: string,
+  ): Promise<UserAnswerSubmission | null> {
     return this._answerRepo.getUserAnswers(userId);
   }
 }

@@ -1,9 +1,16 @@
-import { QuestionGroup, QuestionGroupQuery, GetAllQuestionGroupsResponse } from "@/interfaces/domain.interface/onboarding.interface";
+import {
+  QuestionGroup,
+  QuestionGroupQuery,
+  GetAllQuestionGroupsResponse,
+} from "@/interfaces/domain.interface/onboarding.interface";
 import { BaseRepository } from "./base/base.repository";
 import { GroupModel, IGroup } from "@/models/group.model";
 import { IGroupRepository } from "@/interfaces/repository-interface/onboarding/group-repository.interface";
 
-export default class GroupRepository extends BaseRepository<QuestionGroup, IGroup> implements IGroupRepository {
+export default class GroupRepository
+  extends BaseRepository<QuestionGroup, IGroup>
+  implements IGroupRepository
+{
   constructor() {
     super(GroupModel);
   }
@@ -40,7 +47,9 @@ export default class GroupRepository extends BaseRepository<QuestionGroup, IGrou
     });
   }
 
-  async getAllGroups(query: QuestionGroupQuery): Promise<GetAllQuestionGroupsResponse> {
+  async getAllGroups(
+    query: QuestionGroupQuery,
+  ): Promise<GetAllQuestionGroupsResponse> {
     const page = query.page || 1;
     const limit = query.limit || 10;
     const skip = (page - 1) * limit;
@@ -48,8 +57,8 @@ export default class GroupRepository extends BaseRepository<QuestionGroup, IGrou
     const filter: Record<string, unknown> = {};
     if (query.search) {
       filter.$or = [
-        { title: { $regex: query.search, $options: 'i' } },
-        { key: { $regex: query.search, $options: 'i' } }
+        { title: { $regex: query.search, $options: "i" } },
+        { key: { $regex: query.search, $options: "i" } },
       ];
     }
     if (query.isActive !== undefined) {
@@ -81,7 +90,7 @@ export default class GroupRepository extends BaseRepository<QuestionGroup, IGrou
     const doc = await GroupModel.findByIdAndUpdate(
       groupId,
       { $set: { isActive: !existing.isActive } },
-      { new: true }
+      { new: true },
     ).exec();
     return doc ? this.toInterface(doc as IGroup) : null;
   }

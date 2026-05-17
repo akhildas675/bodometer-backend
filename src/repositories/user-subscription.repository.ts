@@ -1,10 +1,11 @@
 import { IUserSubscriptionRepository } from "@/interfaces/repository-interface/subscription/user.subscription.repository.interface";
-import { UserSubscriptionModel, IUserSubscription } from "@/models/user-subscription.model";
+import {
+  UserSubscriptionModel,
+  IUserSubscription,
+} from "@/models/user-subscription.model";
 import mongoose from "mongoose";
 
-
 export class UserSubscriptionRepository implements IUserSubscriptionRepository {
-
   async create(data: {
     userId: string;
     subscriptionPlanId: string;

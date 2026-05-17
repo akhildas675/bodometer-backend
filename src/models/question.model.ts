@@ -1,185 +1,175 @@
-import { CONDITION_OPERATORS, ConditionOperator, DATA_SOURCES, DataSource, QUESTION_TYPES, QuestionType } from "@/constants/question.constant";
+import {
+  CONDITION_OPERATORS,
+  ConditionOperator,
+  DATA_SOURCES,
+  DataSource,
+  QUESTION_TYPES,
+  QuestionType,
+} from "@/constants/question.constant";
 import { OnboardingValue } from "@/interfaces/domain.interface/onboarding.interface";
-import mongoose, {
-    Schema,
-    Document
-} from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
+export interface IQuestion extends Document {
+  key: string;
 
+  question: string;
 
-export interface IQuestion
-    extends Document {
+  description?: string;
 
-    key: string;
+  groupId: mongoose.Types.ObjectId;
 
-    question: string;
+  order: number;
 
-    description?: string;
+  isActive: boolean;
 
-    groupId: mongoose.Types.ObjectId;
+  type: QuestionType;
 
-    order: number;
+  options?: {
+    label: string;
 
-    isActive: boolean;
+    value: OnboardingValue;
+  }[];
 
-    type: QuestionType;
+  dataSource?: DataSource;
 
- 
-    options?: {
-        label: string;
+  next?: {
+    condition: {
+      operator: ConditionOperator;
 
-        value: OnboardingValue;
-    }[];
-
-  
-    dataSource?: DataSource;
-
- 
-    next?: {
-        condition: {
-            operator: ConditionOperator;
-
-            value?: OnboardingValue;
-        };
-
-        nextQuestionId: mongoose.Types.ObjectId;
-    }[];
-
-  
-    numberConfig?: {
-        min?: number;
-
-        max?: number;
-
-        step?: number;
-
-        unit?: string;
+      value?: OnboardingValue;
     };
 
-    validation?: {
-        required?: boolean;
-    };
+    nextQuestionId: mongoose.Types.ObjectId;
+  }[];
 
-    createdBy: mongoose.Types.ObjectId;
+  numberConfig?: {
+    min?: number;
 
-    updatedBy?: mongoose.Types.ObjectId;
+    max?: number;
 
-    createdAt: Date;
-    updatedAt: Date;
+    step?: number;
+
+    unit?: string;
+  };
+
+  validation?: {
+    required?: boolean;
+  };
+
+  createdBy: mongoose.Types.ObjectId;
+
+  updatedBy?: mongoose.Types.ObjectId;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
+const QuestionSchema = new Schema<IQuestion>(
+  {
+    key: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
 
+    question: {
+      type: String,
+      required: true,
+    },
 
-const QuestionSchema =
-    new Schema<IQuestion>(
-        {
-            key: {
-                type: String,
-                required: true,
-                unique: true,
-                lowercase: true,
-                trim: true
-            },
+    description: {
+      type: String,
+    },
 
-            question: {
-                type: String,
-                required: true
-            },
+    groupId: {
+      type: Schema.Types.ObjectId,
+      ref: "QuestionGroup",
+      required: true,
+    },
 
-            description: {
-                type: String
-            },
+    order: {
+      type: Number,
+      required: true,
+    },
 
-            groupId: {
-                type: Schema.Types.ObjectId,
-                ref: "QuestionGroup",
-                required: true
-            },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
 
-            order: {
-                type: Number,
-                required: true
-            },
+    type: {
+      type: String,
+      enum: QUESTION_TYPES,
+      required: true,
+    },
 
-            isActive: {
-                type: Boolean,
-                default: true
-            },
+    options: [
+      {
+        label: String,
 
-            type: {
-                type: String,
-                enum: QUESTION_TYPES,
-                required: true
-            },
+        value: Schema.Types.Mixed,
+      },
+    ],
 
-            options: [
-                {
-                    label: String,
+    dataSource: {
+      type: String,
+      enum: DATA_SOURCES,
+    },
 
-                    value: Schema.Types.Mixed
-                }
-            ],
+    next: [
+      {
+        condition: {
+          operator: {
+            type: String,
+            enum: CONDITION_OPERATORS,
+            default: "equals",
+          },
 
-            dataSource: {
-                type: String,
-                enum: DATA_SOURCES
-            },
-
-            next: [
-                {
-                    condition: {
-                        operator: {
-                            type: String,
-                            enum: CONDITION_OPERATORS,
-                            default: "equals"
-                        },
-
-                        value: Schema.Types.Mixed
-                    },
-
-                    nextQuestionId: {
-                        type: Schema.Types.ObjectId,
-                        ref: "Question",
-                        required: true
-                    }
-                }
-            ],
-
-            numberConfig: {
-                min: Number,
-
-                max: Number,
-
-                step: Number,
-
-                unit: String
-            },
-
-            validation: {
-                required: {
-                    type: Boolean,
-                    default: false
-                }
-            },
-
-            createdBy: {
-                type: Schema.Types.ObjectId,
-                ref: "User",
-                required: true
-            },
-
-            updatedBy: {
-                type: Schema.Types.ObjectId,
-                ref: "User"
-            }
+          value: Schema.Types.Mixed,
         },
-        { timestamps: true }
-    );
 
+        nextQuestionId: {
+          type: Schema.Types.ObjectId,
+          ref: "Question",
+          required: true,
+        },
+      },
+    ],
 
+    numberConfig: {
+      min: Number,
 
-export const QuestionModel =
-    mongoose.model<IQuestion>(
-        "Question",
-        QuestionSchema
-    );
+      max: Number,
+
+      step: Number,
+
+      unit: String,
+    },
+
+    validation: {
+      required: {
+        type: Boolean,
+        default: false,
+      },
+    },
+
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    updatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  },
+  { timestamps: true },
+);
+
+export const QuestionModel = mongoose.model<IQuestion>(
+  "Question",
+  QuestionSchema,
+);

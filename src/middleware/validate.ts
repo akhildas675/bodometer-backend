@@ -5,14 +5,12 @@ import { STATUS } from "@/constants/statuscode";
 export const validate =
   (schema: ZodObject) => (req: Request, res: Response, next: NextFunction) => {
     try {
- 
-
       schema.parse({
         body: req.body,
         query: req.query,
         params: req.params,
-        file:req.file,
-        files:req.files,
+        file: req.file,
+        files: req.files,
       });
 
       return next();

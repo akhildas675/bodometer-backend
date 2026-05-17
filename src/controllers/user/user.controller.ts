@@ -5,15 +5,15 @@ import { IUserService } from "../../interfaces/service-interface/user/user-servi
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
 import { MESSAGES } from "../../constants/messages";
-import { ChangePasswordDto, UpdateUserProfileDto } from "../../dto/user/user.dto";
+import {
+  ChangePasswordDto,
+  UpdateUserProfileDto,
+} from "../../dto/user/user.dto";
 import { GetTrainersQueryDto } from "../../dto/trainer/trainer.dto";
-import { success } from "zod";
-
 
 export class UserController {
-
   private logger = new Logger("UserController");
-  constructor(private _userService: IUserService) { }
+  constructor(private _userService: IUserService) {}
 
   getUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
@@ -120,7 +120,6 @@ export class UserController {
     }
   };
 
-
   getTrainers = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const query: GetTrainersQueryDto = {};
@@ -152,7 +151,6 @@ export class UserController {
     try {
       const { id } = req.params;
 
- 
       if (!id) {
         throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
       }
@@ -169,15 +167,25 @@ export class UserController {
     }
   };
 
-  getCategories = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  getCategories = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
-      const query: { page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: "asc" | "desc" } = {};
+      const query: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        sortBy?: string;
+        sortOrder?: "asc" | "desc";
+      } = {};
       if (req.query.page) query.page = Number(req.query.page);
       if (req.query.limit) query.limit = Number(req.query.limit);
       if (req.query.search) query.search = String(req.query.search);
       if (req.query.sortBy) query.sortBy = String(req.query.sortBy);
-      if (req.query.sortOrder) query.sortOrder = req.query.sortOrder as "asc" | "desc";
-
+      if (req.query.sortOrder)
+        query.sortOrder = req.query.sortOrder as "asc" | "desc";
 
       const result = await this._userService.getCategories(query);
       res.status(STATUS.OK).json({
@@ -186,7 +194,6 @@ export class UserController {
         data: result.data,
         pagination: result.pagination,
       });
-
     } catch (error) {
       next(error);
     }
@@ -200,13 +207,12 @@ export class UserController {
     try {
       const { categoryId } = req.params;
 
-     
       if (!categoryId) {
         throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
       }
 
       const result = await this._userService.getCategoryById(categoryId);
-     
+
       res.status(STATUS.OK).json({
         success: true,
         message: MESSAGES.COMMON.SUCCESS,
@@ -217,61 +223,73 @@ export class UserController {
     }
   };
 
-
-  getMySubscriptions = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  getMySubscriptions = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
-
-   
       if (!req.user?.id) {
-        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.USER.USER_NOT_FOUND)
-
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.USER.USER_NOT_FOUND);
       }
 
-      const result = await this._userService.getMySubscriptions()
+      const result = await this._userService.getMySubscriptions();
 
       res.status(STATUS.OK).json({
         success: true,
         message: MESSAGES.COMMON.SUCCESS,
-        data: result
-      })
+        data: result,
+      });
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  createCheckoutSession = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    if (!req.user?.id) {
-      throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+  createCheckoutSession = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      if (!req.user?.id) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      }
+
+      const { planId } = req.body;
+      if (!planId) {
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
+      }
+
+      const result = await this._userService.createCheckoutSession(
+        req.user.id,
+        planId,
+      );
+
+      res.status(STATUS.OK).json({
+        success: true,
+        message: MESSAGES.COMMON.SUCCESS,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
     }
- 
-    const { planId } = req.body;
-    if (!planId) {
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
-    }
- 
+  };
 
-    const result = await this._userService.createCheckoutSession(req.user.id, planId);
- 
-    res.status(STATUS.OK).json({
-      success: true,
-      message: MESSAGES.COMMON.SUCCESS,
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
- 
-
-  verifyPayment = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  verifyPayment = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const { session_id } = req.query;
       if (!session_id || typeof session_id !== "string") {
         throw new AppError(STATUS.BAD_REQUEST, "Missing session_id");
       }
 
-      const result = await this._userService.verifyPaymentAndSave(req.user!.id, session_id);
+      const result = await this._userService.verifyPaymentAndSave(
+        req.user!.id,
+        session_id,
+      );
 
       res.status(STATUS.OK).json({ success: true, data: result });
     } catch (error) {
@@ -279,7 +297,11 @@ export class UserController {
     }
   };
 
-  getActiveSubscription = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  getActiveSubscription = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       if (!req.user?.id) {
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
@@ -297,35 +319,47 @@ export class UserController {
     }
   };
 
-  getOnboardingGroups = async (req: Request, res: Response, next: NextFunction) => {
+  getOnboardingGroups = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const result = await this._userService.getOnboardingGroups();
       res.status(STATUS.OK).json({
         success: true,
         message: MESSAGES.COMMON.SUCCESS,
         data: result.data,
-        pagination: result.pagination
+        pagination: result.pagination,
       });
     } catch (error) {
       next(error);
     }
   };
 
-  getOnboardingQuestions = async (req: Request, res: Response, next: NextFunction) => {
+  getOnboardingQuestions = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const result = await this._userService.getOnboardingQuestions();
       res.status(STATUS.OK).json({
         success: true,
         message: MESSAGES.COMMON.SUCCESS,
         data: result.data,
-        pagination: result.pagination
+        pagination: result.pagination,
       });
     } catch (error) {
       next(error);
     }
   };
 
-  submitOnboarding = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  submitOnboarding = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       if (!req.user?.id) {
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
@@ -333,14 +367,18 @@ export class UserController {
       await this._userService.submitOnboarding(req.user.id, req.body);
       res.status(STATUS.OK).json({
         success: true,
-        message: "Onboarding answers saved successfully"
+        message: "Onboarding answers saved successfully",
       });
     } catch (error) {
       next(error);
     }
   };
 
-  getOnboardingStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  getOnboardingStatus = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       if (!req.user?.id) {
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
@@ -349,14 +387,18 @@ export class UserController {
       res.status(STATUS.OK).json({
         success: true,
         message: MESSAGES.COMMON.SUCCESS,
-        data: result
+        data: result,
       });
     } catch (error) {
       next(error);
     }
   };
 
-  getOnboardingAnswers = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  getOnboardingAnswers = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       if (!req.user?.id) {
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
@@ -365,7 +407,7 @@ export class UserController {
       res.status(STATUS.OK).json({
         success: true,
         message: MESSAGES.COMMON.SUCCESS,
-        data: result
+        data: result,
       });
     } catch (error) {
       next(error);

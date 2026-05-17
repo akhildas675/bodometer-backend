@@ -1,10 +1,11 @@
 import { PaginationMeta } from "../interfaces/domain.interface/common.interface";
-import { UpdateUserProfileInterface, UserInterface } from "../interfaces/domain.interface/user.interface";
+import {
+  UpdateUserProfileInterface,
+  UserInterface,
+} from "../interfaces/domain.interface/user.interface";
 import { IUserRepository } from "../interfaces/repository-interface/user/user-repository.interface";
 import { IUserDocument, UserModel } from "../models/user.model";
 import { BaseRepository } from "./base/base.repository";
-
-
 
 export default class UserRepository
   extends BaseRepository<UserInterface, IUserDocument>
@@ -31,7 +32,7 @@ export default class UserRepository
     };
   }
 
-  // Auth 
+  // Auth
   async findByEmail(email: string): Promise<UserInterface | null> {
     return this.findOne({ email });
   }
@@ -55,14 +56,17 @@ export default class UserRepository
   ): Promise<UserInterface | null> {
     const updateFields: Partial<IUserDocument> = {};
     if (updateData.name !== undefined) updateFields.name = updateData.name;
-    if (updateData.userName !== undefined) updateFields.userName = updateData.userName;
-    if (updateData.phoneNumber !== undefined) updateFields.phoneNumber = updateData.phoneNumber;
-    if (updateData.profilePic !== undefined) updateFields.profilePic = updateData.profilePic;
+    if (updateData.userName !== undefined)
+      updateFields.userName = updateData.userName;
+    if (updateData.phoneNumber !== undefined)
+      updateFields.phoneNumber = updateData.phoneNumber;
+    if (updateData.profilePic !== undefined)
+      updateFields.profilePic = updateData.profilePic;
 
     return this.updateById(userId, updateFields);
   }
 
-  //admin paginated list by role 
+  //admin paginated list by role
   async findByRolePaginated(
     role: string,
     search?: string,

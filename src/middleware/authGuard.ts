@@ -3,7 +3,10 @@ import { Role } from "../constants/roles";
 import { UserModel } from "../models/user.model";
 import { AppError } from "../utils/appError";
 import { STATUS } from "../constants/statuscode";
-import { AccessTokenPayload, RefreshTokenPayload } from "../interfaces/service-interface/auth/auth.interface";
+import {
+  AccessTokenPayload,
+  RefreshTokenPayload,
+} from "../interfaces/service-interface/auth/auth.interface";
 import { redis } from "../config/redis";
 import { Jwt } from "../utils/jwt.utils";
 
@@ -27,23 +30,23 @@ export const authGuard = (allowedRoles: Role[] = []) => {
         try {
           const payload = Jwt.verifyAccess(accessToken) as AccessTokenPayload;
 
-          const user = await UserModel.findById(payload.sub).select("isBlocked role");
+          const user = await UserModel.findById(payload.sub).select(
+            "isBlocked role",
+          );
 
           if (!user) {
             return next(new AppError(STATUS.UNAUTHORIZED, "User not found"));
           }
 
           if (user.isBlocked) {
-          
             await redis.del(`refresh:${payload.sub}`);
 
             res.clearCookie("refreshToken");
 
             return next(
-              new AppError(STATUS.FORBIDDEN, "Account blocked by admin")
+              new AppError(STATUS.FORBIDDEN, "Account blocked by admin"),
             );
           }
-
 
           if (allowedRoles.length && !allowedRoles.includes(payload.role)) {
             return next(new AppError(STATUS.FORBIDDEN, "Access denied"));
@@ -51,7 +54,7 @@ export const authGuard = (allowedRoles: Role[] = []) => {
 
           req.user = { id: payload.sub, role: payload.role };
           return next();
-        } catch { }
+        } catch {}
       }
 
       return await handleRefresh(req, res, next, allowedRoles);

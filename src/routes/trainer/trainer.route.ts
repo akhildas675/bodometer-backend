@@ -6,8 +6,6 @@ import { mediaUpload } from "../../config/multer";
 const trainerRoute = Router();
 const { trainerController } = createTrainerModule();
 
-
-
 trainerRoute.post(
   TRAINER_ROUTES.SUBMIT_PROFILE_DATA,
   ROLE_GUARD.TRAINER_GUARD,
@@ -16,18 +14,37 @@ trainerRoute.post(
     { name: "certificate", maxCount: 1 },
     { name: "coverImage", maxCount: 1 },
   ]),
-  trainerController .createProfile
-)
-
-trainerRoute.get(
-  TRAINER_ROUTES.GET_TRAINER_PROFILE, ROLE_GUARD.TRAINER_GUARD, trainerController.getTrainer
+  trainerController.createProfile,
 );
 
-trainerRoute.put(TRAINER_ROUTES.TRAINER_PROFILE_UPDATE, ROLE_GUARD.TRAINER_GUARD, trainerController.updateProfile)
+trainerRoute.get(
+  TRAINER_ROUTES.GET_TRAINER_PROFILE,
+  ROLE_GUARD.TRAINER_GUARD,
+  trainerController.getTrainer,
+);
 
-trainerRoute.post(TRAINER_ROUTES.TRAINER_PROFILE_PICTURE_UPDATE, mediaUpload.single("file"), ROLE_GUARD.TRAINER_GUARD, trainerController.uploadProfilePicture)
+trainerRoute.put(
+  TRAINER_ROUTES.TRAINER_PROFILE_UPDATE,
+  ROLE_GUARD.TRAINER_GUARD,
+  trainerController.updateProfile,
+);
 
-trainerRoute.get("/trainer/profile/status",ROLE_GUARD.TRAINER_GUARD,trainerController .getProfileStatus)
-trainerRoute.get(TRAINER_ROUTES.GET_CATEGORIES, ROLE_GUARD.TRAINER_GUARD, trainerController.getCategories)
+trainerRoute.post(
+  TRAINER_ROUTES.TRAINER_PROFILE_PICTURE_UPDATE,
+  mediaUpload.single("file"),
+  ROLE_GUARD.TRAINER_GUARD,
+  trainerController.uploadProfilePicture,
+);
+
+trainerRoute.get(
+  "/trainer/profile/status",
+  ROLE_GUARD.TRAINER_GUARD,
+  trainerController.getProfileStatus,
+);
+trainerRoute.get(
+  TRAINER_ROUTES.GET_CATEGORIES,
+  ROLE_GUARD.TRAINER_GUARD,
+  trainerController.getCategories,
+);
 
 export default trainerRoute;

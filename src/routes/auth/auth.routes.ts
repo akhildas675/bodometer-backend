@@ -32,11 +32,7 @@ authRoute.post(
   authController.resendOtp,
 );
 
-authRoute.post(
-  AUTH_ROUTES.LOGIN,
-  validate(loginSchema),
-  authController.login,
-);
+authRoute.post(AUTH_ROUTES.LOGIN, validate(loginSchema), authController.login);
 
 authRoute.post(
   AUTH_ROUTES.COMPLETE_REGISTER,
@@ -60,14 +56,8 @@ authRoute.post(
   authController.googleLogin,
 );
 
-authRoute.post(
-  AUTH_ROUTES.REFRESH_TOKEN,
-  authController.refreshToken,
-);
+authRoute.post(AUTH_ROUTES.REFRESH_TOKEN, authController.refreshToken);
 
-authRoute.post(
-  AUTH_ROUTES.LOGOUT,
-  authController.logout,
-);
+authRoute.post(AUTH_ROUTES.LOGOUT, authController.logout);
 
 export default authRoute;

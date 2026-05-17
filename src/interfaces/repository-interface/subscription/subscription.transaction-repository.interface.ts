@@ -1,6 +1,9 @@
 import { ISubscriptionTransaction } from "@/models/subscription-transaction.model";
-import { PaymentGateway, TransactionStatus } from "@/constants/subscription.constant";
- 
+import {
+  PaymentGateway,
+  TransactionStatus,
+} from "@/constants/subscription.constant";
+
 export interface ISubscriptionTransactionRepository {
   create(data: {
     userId: string;
@@ -15,6 +18,8 @@ export interface ISubscriptionTransactionRepository {
     paidAt: Date;
     meta?: Record<string, unknown>;
   }): Promise<ISubscriptionTransaction>;
- 
-  findByTransactionId(transactionId: string): Promise<ISubscriptionTransaction | null>;
+
+  findByTransactionId(
+    transactionId: string,
+  ): Promise<ISubscriptionTransaction | null>;
 }

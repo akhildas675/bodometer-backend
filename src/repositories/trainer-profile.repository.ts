@@ -1,16 +1,28 @@
 import mongoose, { PipelineStage } from "mongoose";
-import { VERIFICATION_STATUS, VerificationStatus } from "../constants/verification.constants";
+import {
+  VERIFICATION_STATUS,
+  VerificationStatus,
+} from "../constants/verification.constants";
 import { PaginationMeta } from "../interfaces/domain.interface/common.interface";
-import { ITrainerWithProfile, PopulatedTrainerProfile, ReapplyTrainerData, TrainerProfile, TrainerStatusResponse } from "../interfaces/domain.interface/trainer.interface";
+import {
+  ITrainerWithProfile,
+  PopulatedTrainerProfile,
+  ReapplyTrainerData,
+  TrainerProfile,
+  TrainerStatusResponse,
+} from "../interfaces/domain.interface/trainer.interface";
 import { ITrainerProfileRepository } from "../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
-import { ITrainerProfileDocument, TrainerProfileModel } from "../models/trainer-profile.model";
+import {
+  ITrainerProfileDocument,
+  TrainerProfileModel,
+} from "../models/trainer-profile.model";
 import { BaseRepository } from "./base/base.repository";
 import { IUserDocument } from "../models/user.model";
 
-
 export default class TrainerProfileRepository
   extends BaseRepository<TrainerProfile, ITrainerProfileDocument>
-  implements ITrainerProfileRepository {
+  implements ITrainerProfileRepository
+{
   constructor() {
     super(TrainerProfileModel);
   }
@@ -27,7 +39,7 @@ export default class TrainerProfileRepository
       gender: doc.gender,
       dateOfBirth: doc.dateOfBirth,
       applyCount: doc.applyCount,
-      specializations: doc.specializations?.map(id => id.toString()) ?? [],
+      specializations: doc.specializations?.map((id) => id.toString()) ?? [],
     };
   }
 
@@ -54,7 +66,10 @@ export default class TrainerProfileRepository
           bio: data.bio,
           gender: data.gender,
           dateOfBirth: data.dateOfBirth,
-          specializations: data.specializations?.map(id => new mongoose.Types.ObjectId(id)) ?? [],
+          specializations:
+            data.specializations?.map(
+              (id) => new mongoose.Types.ObjectId(id),
+            ) ?? [],
           verificationStatus: VERIFICATION_STATUS.PENDING,
           rejectionReason: null,
         },
@@ -62,7 +77,9 @@ export default class TrainerProfileRepository
       },
     );
   }
-  async fetchTrainerStatus(userId: string): Promise<TrainerStatusResponse | null> {
+  async fetchTrainerStatus(
+    userId: string,
+  ): Promise<TrainerStatusResponse | null> {
     const profile = await TrainerProfileModel.findOne({ userId }).populate<{
       userId: { name: string };
     }>("userId", "name");
@@ -75,7 +92,7 @@ export default class TrainerProfileRepository
       rejectionReason: profile.rejectionReason ?? null,
     };
   }
-  //Admin: paginated list with user info 
+  //Admin: paginated list with user info
   async findAllWithUserPaginated(
     search?: string,
     sortBy?: string,
@@ -133,18 +150,25 @@ export default class TrainerProfileRepository
     }
 
     const countPipeline: PipelineStage[] = [...pipeline, { $count: "total" }];
-    const countResult = await TrainerProfileModel.aggregate<{ total: number }>(countPipeline);
+    const countResult = await TrainerProfileModel.aggregate<{ total: number }>(
+      countPipeline,
+    );
     const totalItems = countResult[0]?.total || 0;
 
     pipeline.push({ $skip: skip }, { $limit: limitNum });
 
-    const trainerProfiles = await TrainerProfileModel.aggregate<ITrainerProfileDocument & { userId: IUserDocument }>(pipeline);
+    const trainerProfiles = await TrainerProfileModel.aggregate<
+      ITrainerProfileDocument & { userId: IUserDocument }
+    >(pipeline);
 
     const data: ITrainerWithProfile[] = trainerProfiles.map((profile) => {
       const { userId, ...profileData } = profile;
       return {
         user: userId,
-        profile: { ...profileData, userId: userId._id } as unknown as ITrainerProfileDocument,
+        profile: {
+          ...profileData,
+          userId: userId._id,
+        } as unknown as ITrainerProfileDocument,
       };
     });
 
@@ -160,11 +184,14 @@ export default class TrainerProfileRepository
   }
 
   // get single profile with populated user
-  async findByIdWithUser(profileId: string): Promise<ITrainerWithProfile | null> {
+  async findByIdWithUser(
+    profileId: string,
+  ): Promise<ITrainerWithProfile | null> {
     const trainerProfile = await TrainerProfileModel.findById(profileId)
       .populate<{ userId: IUserDocument }>({
         path: "userId",
-        select: "_id name userName email phoneNumber profilePic gender role isVerified dateOfBirth isBlocked createdAt updatedAt",
+        select:
+          "_id name userName email phoneNumber profilePic gender role isVerified dateOfBirth isBlocked createdAt updatedAt",
       })
       .populate("specializations", "_id name")
       .lean<PopulatedTrainerProfile>();
@@ -174,25 +201,32 @@ export default class TrainerProfileRepository
     const { userId, ...profileData } = trainerProfile;
     return {
       user: userId,
-      profile: { ...profileData, userId: userId._id } as ITrainerProfileDocument,
+      profile: {
+        ...profileData,
+        userId: userId._id,
+      } as ITrainerProfileDocument,
     };
   }
 
-  // admin: update verification status 
+  // admin: update verification status
   async updateVerificationStatus(
     profileId: string,
     status: string,
     rejectionReason?: string | null,
   ): Promise<ITrainerProfileDocument | null> {
-    const updateData: { verificationStatus: string; rejectionReason?: string | null } = {
+    const updateData: {
+      verificationStatus: string;
+      rejectionReason?: string | null;
+    } = {
       verificationStatus: status,
     };
-    if (rejectionReason !== undefined) updateData.rejectionReason = rejectionReason;
+    if (rejectionReason !== undefined)
+      updateData.rejectionReason = rejectionReason;
 
-    return TrainerProfileModel.findByIdAndUpdate(profileId, updateData, { new: true })
-      .lean<ITrainerProfileDocument>();
+    return TrainerProfileModel.findByIdAndUpdate(profileId, updateData, {
+      new: true,
+    }).lean<ITrainerProfileDocument>();
   }
-
 
   async getApprovedTrainersPaginated(
     page: number,
@@ -204,9 +238,13 @@ export default class TrainerProfileRepository
   ): Promise<{ data: ITrainerWithProfile[]; total: number }> {
     const skip = (page - 1) * limit;
 
-    const matchStage: Record<string, string | mongoose.Types.ObjectId> = { verificationStatus: VERIFICATION_STATUS.APPROVED };
+    const matchStage: Record<string, string | mongoose.Types.ObjectId> = {
+      verificationStatus: VERIFICATION_STATUS.APPROVED,
+    };
     if (specializationId) {
-      matchStage.specializations = new mongoose.Types.ObjectId(specializationId);
+      matchStage.specializations = new mongoose.Types.ObjectId(
+        specializationId,
+      );
     }
 
     const pipeline: PipelineStage[] = [
@@ -241,7 +279,6 @@ export default class TrainerProfileRepository
       });
     }
 
-
     if (sortBy) {
       const sortField = sortBy === "name" ? "userId.name" : sortBy;
       pipeline.push({ $sort: { [sortField]: sortOrder === "desc" ? -1 : 1 } });
@@ -250,49 +287,55 @@ export default class TrainerProfileRepository
     }
 
     const countPipeline: PipelineStage[] = [...pipeline, { $count: "total" }];
-    const countResult = await TrainerProfileModel.aggregate<{ total: number }>(countPipeline);
+    const countResult = await TrainerProfileModel.aggregate<{ total: number }>(
+      countPipeline,
+    );
     const total = countResult[0]?.total || 0;
 
     pipeline.push({ $skip: skip }, { $limit: limit });
 
-
-    const profiles = await TrainerProfileModel.aggregate<ITrainerProfileDocument & { userId: IUserDocument }>(pipeline);
-
-    
+    const profiles = await TrainerProfileModel.aggregate<
+      ITrainerProfileDocument & { userId: IUserDocument }
+    >(pipeline);
 
     const data: ITrainerWithProfile[] = profiles.map((profile) => {
       const { userId, ...profileData } = profile;
       return {
         user: userId,
-        profile: { ...profileData, userId: userId._id } as unknown as ITrainerProfileDocument,
+        profile: {
+          ...profileData,
+          userId: userId._id,
+        } as unknown as ITrainerProfileDocument,
       };
     });
 
     return { data, total };
   }
 
-  async getTrainerByIdWithUser(trainerId: string): Promise<ITrainerWithProfile | null> {
+  async getTrainerByIdWithUser(
+    trainerId: string,
+  ): Promise<ITrainerWithProfile | null> {
     const profile = await TrainerProfileModel.findOne({
-      _id:new mongoose.Types.ObjectId(trainerId),
-      verificationStatus:VERIFICATION_STATUS.APPROVED,
+      _id: new mongoose.Types.ObjectId(trainerId),
+      verificationStatus: VERIFICATION_STATUS.APPROVED,
     })
-    .populate<{userId:IUserDocument}>({
-      path:"userId",
-      select:"_id name profilePic",
-    })
-    .populate("specializations", "_id name")
-    .lean<PopulatedTrainerProfile>();
+      .populate<{ userId: IUserDocument }>({
+        path: "userId",
+        select: "_id name profilePic",
+      })
+      .populate("specializations", "_id name")
+      .lean<PopulatedTrainerProfile>();
 
-    if(!profile) return null;
+    if (!profile) return null;
 
-    const {userId,...profileData}=profile;
+    const { userId, ...profileData } = profile;
 
-    return{
-      user:userId,
-      profile:{...profileData,userId:userId._id} as ITrainerProfileDocument,
+    return {
+      user: userId,
+      profile: {
+        ...profileData,
+        userId: userId._id,
+      } as ITrainerProfileDocument,
     };
-
   }
-
-
 }

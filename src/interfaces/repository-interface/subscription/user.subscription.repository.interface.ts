@@ -1,5 +1,5 @@
 import { IUserSubscription } from "@/models/user-subscription.model";
- 
+
 export interface IUserSubscriptionRepository {
   create(data: {
     userId: string;
@@ -7,7 +7,6 @@ export interface IUserSubscriptionRepository {
     startDate: Date;
     endDate: Date;
   }): Promise<IUserSubscription>;
- 
+
   findActiveByUserId(userId: string): Promise<IUserSubscription | null>;
 }
- 

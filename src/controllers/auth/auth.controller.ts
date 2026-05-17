@@ -10,9 +10,8 @@ import { AppError } from "../../utils/appError";
 
 const logger = new Logger("AuthController");
 
-
 export class AuthController {
-  constructor(private _authService: IAuthService) { }
+  constructor(private _authService: IAuthService) {}
 
   //send OTP
   register = async (req: Request, res: Response, next: NextFunction) => {
@@ -23,7 +22,6 @@ export class AuthController {
         email: body.email,
         role: body.role,
       });
-
 
       await this._authService.initiateRegister(body);
 
@@ -145,7 +143,6 @@ export class AuthController {
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
       return res.status(STATUS.OK).json({
-
         success: true,
         message: MESSAGES.LOGIN.SUCCESS,
         data: loginResponse,

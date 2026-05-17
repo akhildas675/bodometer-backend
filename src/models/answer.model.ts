@@ -1,80 +1,64 @@
-import mongoose, {
-    Schema,
-    Document
-} from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 import { OnboardingValue } from "@/interfaces/domain.interface/onboarding.interface";
 
+export interface IAnswer extends Document {
+  userId: mongoose.Types.ObjectId;
 
+  answers: {
+    questionId: mongoose.Types.ObjectId;
 
-export interface IAnswer
-    extends Document {
+    questionKey?: string;
 
-    userId: mongoose.Types.ObjectId;
+    answer: OnboardingValue;
+  }[];
 
-    answers: {
-        questionId: mongoose.Types.ObjectId;
+  completed: boolean;
 
-        questionKey?: string;
+  completedAt?: Date;
 
-        answer: OnboardingValue;
-    }[];
-
-    completed: boolean;
-
-    completedAt?: Date;
-
-    createdAt: Date;
-    updatedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
+const AnswerSchema = new Schema<IAnswer>(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true,
+      index: true,
+    },
 
-
-const AnswerSchema =
-    new Schema<IAnswer>(
-        {
-            userId: {
-                type: Schema.Types.ObjectId,
-                ref: "User",
-                required: true,
-                unique: true,
-                index: true
-            },
-
-            answers: [
-                {
-                    questionId: {
-                        type: Schema.Types.ObjectId,
-                        ref: "Question",
-                        required: true
-                    },
-
-                    questionKey: {
-                        type: String
-                    },
-
-                    answer: {
-                        type: Schema.Types.Mixed,
-                        required: true
-                    }
-                }
-            ],
-
-            completed: {
-                type: Boolean,
-                default: false
-            },
-
-            completedAt: {
-                type: Date
-            }
+    answers: [
+      {
+        questionId: {
+          type: Schema.Types.ObjectId,
+          ref: "Question",
+          required: true,
         },
-        { timestamps: true }
-    );
 
+        questionKey: {
+          type: String,
+        },
 
+        answer: {
+          type: Schema.Types.Mixed,
+          required: true,
+        },
+      },
+    ],
 
-export const AnswerModel =
-    mongoose.model<IAnswer>(
-        "Answer",
-        AnswerSchema
-    );
+    completed: {
+      type: Boolean,
+      default: false,
+    },
+
+    completedAt: {
+      type: Date,
+    },
+  },
+  { timestamps: true },
+);
+
+export const AnswerModel = mongoose.model<IAnswer>("Answer", AnswerSchema);

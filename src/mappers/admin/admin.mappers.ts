@@ -1,12 +1,16 @@
 import { Role } from "../../constants/roles";
 import { AdminGetUsersResponseDto } from "../../dto/user/user.dto";
-import { ApproveTrainerResponseDto, GetTrainerAppointmentsResponseDto, GetTrainerByIdResponseDto, RejectTrainerResponseDto } from "../../dto/trainer/trainer.dto";
+import {
+  ApproveTrainerResponseDto,
+  GetTrainerAppointmentsResponseDto,
+  GetTrainerByIdResponseDto,
+  RejectTrainerResponseDto,
+} from "../../dto/trainer/trainer.dto";
 import { ITrainerWithProfile } from "../../interfaces/domain.interface/trainer.interface";
 import { UserInterface } from "../../interfaces/domain.interface/user.interface";
 import { ITrainerProfileDocument } from "../../models/trainer-profile.model";
 import { IUserDocument } from "../../models/user.model";
 import mongoose from "mongoose";
-
 
 // Admin Account Mapper (User & Trainer list)
 export class AdminAccountMapper {
@@ -26,16 +30,23 @@ export class AdminAccountMapper {
   static toResponseList(users: UserInterface[]): AdminGetUsersResponseDto[] {
     return users.map((u) => AdminAccountMapper.toResponse(u));
   }
-
-
 }
 
 // --- TRAINERS ---
 export class TrainerMapper {
-  static toProfileResponse(updatedUser: UserInterface): import("../../dto/trainer/trainer.dto").FindTrainerResponseDto | PromiseLike<import("../../dto/trainer/trainer.dto").FindTrainerResponseDto> {
+  static toProfileResponse(
+    updatedUser: UserInterface,
+  ):
+    | import("../../dto/trainer/trainer.dto").FindTrainerResponseDto
+    | PromiseLike<
+        import("../../dto/trainer/trainer.dto").FindTrainerResponseDto
+      > {
     throw new Error("Method not implemented.");
   }
-  private static mapTrainerUser(user: IUserDocument, profile: ITrainerProfileDocument) {
+  private static mapTrainerUser(
+    user: IUserDocument,
+    profile: ITrainerProfileDocument,
+  ) {
     return {
       _id: user._id?.toString() || "",
       id: user._id?.toString() || "",
@@ -66,28 +77,36 @@ export class TrainerMapper {
       rejectionReason: profile.rejectionReason || null,
       createdAt: profile.createdAt?.toISOString() || "",
       updatedAt: profile.updatedAt?.toISOString() || "",
-      specializations: (profile.specializations as unknown as { _id: string | mongoose.Types.ObjectId; name?: string }[] || []).map(spec => ({
+      specializations: (
+        (profile.specializations as unknown as {
+          _id: string | mongoose.Types.ObjectId;
+          name?: string;
+        }[]) || []
+      ).map((spec) => ({
         _id: String(spec._id),
         name: spec.name || "",
       })),
     };
   }
 
-
-  static toDto(trainer: ITrainerWithProfile): GetTrainerAppointmentsResponseDto {
+  static toDto(
+    trainer: ITrainerWithProfile,
+  ): GetTrainerAppointmentsResponseDto {
     return {
       user: this.mapTrainerUser(trainer.user, trainer.profile),
       profile: this.mapTrainerBaseProfile(trainer.profile),
     };
   }
 
-  static toDtoArray(trainers: ITrainerWithProfile[]): GetTrainerAppointmentsResponseDto[] {
+  static toDtoArray(
+    trainers: ITrainerWithProfile[],
+  ): GetTrainerAppointmentsResponseDto[] {
     return trainers.map((t) => TrainerMapper.toDto(t));
   }
 
   static toDetailDto(trainer: ITrainerWithProfile): GetTrainerByIdResponseDto {
     const baseProfile = this.mapTrainerBaseProfile(trainer.profile);
-    
+
     return {
       user: this.mapTrainerUser(trainer.user, trainer.profile),
       profile: {
@@ -98,7 +117,9 @@ export class TrainerMapper {
     };
   }
 
-  static toApproveDto(profile: ITrainerProfileDocument): ApproveTrainerResponseDto {
+  static toApproveDto(
+    profile: ITrainerProfileDocument,
+  ): ApproveTrainerResponseDto {
     return {
       message: "Trainer approved successfully",
       profile: {
@@ -108,7 +129,9 @@ export class TrainerMapper {
     };
   }
 
-  static toRejectDto(profile: ITrainerProfileDocument): RejectTrainerResponseDto {
+  static toRejectDto(
+    profile: ITrainerProfileDocument,
+  ): RejectTrainerResponseDto {
     return {
       message: "Trainer rejected successfully",
       profile: {
@@ -119,4 +142,3 @@ export class TrainerMapper {
     };
   }
 }
-

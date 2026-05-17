@@ -28,7 +28,6 @@ export function createAdminModule() {
   const subscriptionPlanRepository: ISubscriptionPlanRepository = new SubscriptionPlanRepository();
   const groupRepository: IGroupRepository = new GroupRepository();
   const questionRepository: IQuestionRepository = new QuestionRepository();
-  const answerRepository: IAnswerRepository = new AnswerRepository();
 
   const s3Service: IS3Service = new S3Service();
   const adminService = new AdminService(
@@ -40,7 +39,6 @@ export function createAdminModule() {
     subscriptionPlanRepository,
     groupRepository,
     questionRepository,
-    answerRepository,
   );
 
   const adminController = new AdminController(adminService)

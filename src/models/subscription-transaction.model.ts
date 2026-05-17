@@ -1,9 +1,12 @@
-import { PAYMENT_GATEWAYS, PaymentGateway, TRANSACTION_STATUSES, TransactionStatus } from "@/constants/subscription.constant";
+import {
+  PAYMENT_GATEWAYS,
+  PaymentGateway,
+  TRANSACTION_STATUSES,
+  TransactionStatus,
+} from "@/constants/subscription.constant";
 import mongoose, { Document, Schema } from "mongoose";
 
-export interface ISubscriptionTransaction
-  extends Document {
-
+export interface ISubscriptionTransaction extends Document {
   userId: mongoose.Types.ObjectId;
 
   subscriptionPlanId: mongoose.Types.ObjectId;
@@ -30,73 +33,72 @@ export interface ISubscriptionTransaction
   updatedAt: Date;
 }
 
-const SubscriptionTransactionSchema =
-  new Schema<ISubscriptionTransaction>(
-    {
-      userId: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-        index: true
-      },
-
-      subscriptionPlanId: {
-        type: Schema.Types.ObjectId,
-        ref: "SubscriptionPlan",
-        required: true
-      },
-
-      userSubscriptionId: {
-        type: Schema.Types.ObjectId,
-        ref: "UserSubscription"
-      },
-
-      amount: {
-        type: Number,
-        required: true,
-        min: 0
-      },
-
-      currency: {
-        type: String,
-        default: "INR"
-      },
-
-      paymentMethod: {
-        type: String,
-        required: true
-      },
-
-      paymentGateway: {
-        type: String,
-        enum: PAYMENT_GATEWAYS,
-        required: true
-      },
-
-      transactionId: {
-        type: String
-      },
-
-      paymentStatus: {
-        type: String,
-        enum: TRANSACTION_STATUSES,
-        default: "pending",
-        index: true
-      },
-
-      paidAt: {
-        type: Date
-      },
-
-      meta: {
-        type: Schema.Types.Mixed
-      }
+const SubscriptionTransactionSchema = new Schema<ISubscriptionTransaction>(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
     },
-    { timestamps: true }
-  );
+
+    subscriptionPlanId: {
+      type: Schema.Types.ObjectId,
+      ref: "SubscriptionPlan",
+      required: true,
+    },
+
+    userSubscriptionId: {
+      type: Schema.Types.ObjectId,
+      ref: "UserSubscription",
+    },
+
+    amount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    currency: {
+      type: String,
+      default: "INR",
+    },
+
+    paymentMethod: {
+      type: String,
+      required: true,
+    },
+
+    paymentGateway: {
+      type: String,
+      enum: PAYMENT_GATEWAYS,
+      required: true,
+    },
+
+    transactionId: {
+      type: String,
+    },
+
+    paymentStatus: {
+      type: String,
+      enum: TRANSACTION_STATUSES,
+      default: "pending",
+      index: true,
+    },
+
+    paidAt: {
+      type: Date,
+    },
+
+    meta: {
+      type: Schema.Types.Mixed,
+    },
+  },
+  { timestamps: true },
+);
 
 export const SubscriptionTransactionModel =
   mongoose.model<ISubscriptionTransaction>(
     "SubscriptionTransaction",
-    SubscriptionTransactionSchema
+    SubscriptionTransactionSchema,
   );

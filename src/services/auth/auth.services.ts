@@ -3,7 +3,15 @@ import { MESSAGES } from "../../constants/messages";
 import { ROLES } from "../../constants/roles";
 import { STATUS } from "../../constants/statuscode";
 import { VerificationStatus } from "../../constants/verification.constants";
-import { ForgotPasswordResponseDto, GoogleLoginDto, LoginDto, LoginResponseDto, RegisterDto, RegisterResponseDto, ResetPasswordDto } from "../../dto/auth/auth.dto";
+import {
+  ForgotPasswordResponseDto,
+  GoogleLoginDto,
+  LoginDto,
+  LoginResponseDto,
+  RegisterDto,
+  RegisterResponseDto,
+  ResetPasswordDto,
+} from "../../dto/auth/auth.dto";
 import { ResendOtpDto, VerifyOtpDto } from "../../dto/otp/otp.dto";
 import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
 import { IUserRepository } from "../../interfaces/repository-interface/user/user-repository.interface";
@@ -16,7 +24,7 @@ import { AuthMapper } from "../../mappers/auth/auth.mappers";
 import { AppError } from "../../utils/appError";
 import { Jwt } from "../../utils/jwt.utils";
 import { hashPassword } from "../../utils/password";
-import bcrypt from "bcrypt"
+import bcrypt from "bcrypt";
 
 export class AuthService implements IAuthService {
   constructor(
@@ -25,8 +33,8 @@ export class AuthService implements IAuthService {
     private _sessionService: ISessionService,
     private _trainerProfileRepo: ITrainerProfileRepository,
     private _userSubscriptionRepo: IUserSubscriptionRepository,
-    private _answerRepo: IAnswerRepository
-  ) { }
+    private _answerRepo: IAnswerRepository,
+  ) {}
 
   async initiateRegister(data: RegisterDto): Promise<void> {
     if (data.role === ROLES.ADMIN) {
@@ -37,13 +45,19 @@ export class AuthService implements IAuthService {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.REGISTER.INVALID_ROLE);
     }
 
-    const existing = await this._userRepo.findByEmail(data.email.toLowerCase().trim());
+    const existing = await this._userRepo.findByEmail(
+      data.email.toLowerCase().trim(),
+    );
     if (existing) {
       throw new AppError(STATUS.CONFLICT, MESSAGES.REGISTER.EMAIL_EXISTS);
     }
 
-    const otpPurpose = data.role === ROLES.TRAINER ? "TRAINER_REGISTER" : "USER_REGISTER";
-    await this._otpService.generateAndSendOtp({ email: data.email, purpose: otpPurpose });
+    const otpPurpose =
+      data.role === ROLES.TRAINER ? "TRAINER_REGISTER" : "USER_REGISTER";
+    await this._otpService.generateAndSendOtp({
+      email: data.email,
+      purpose: otpPurpose,
+    });
   }
 
   async verifyOtp(data: VerifyOtpDto): Promise<void> {
@@ -51,7 +65,10 @@ export class AuthService implements IAuthService {
   }
 
   async resendOtp(data: ResendOtpDto): Promise<void> {
-    await this._otpService.generateAndSendOtp({ email: data.email, purpose: data.purpose });
+    await this._otpService.generateAndSendOtp({
+      email: data.email,
+      purpose: data.purpose,
+    });
   }
 
   async register(data: RegisterDto): Promise<RegisterResponseDto> {
@@ -60,7 +77,10 @@ export class AuthService implements IAuthService {
     const baseUsername = normalizedEmail.split("@")[0];
 
     if (!baseUsername) {
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.REGISTER.INVALID_EMAIL_FORMAT);
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        MESSAGES.REGISTER.INVALID_EMAIL_FORMAT,
+      );
     }
 
     let userName = baseUsername;
@@ -85,14 +105,23 @@ export class AuthService implements IAuthService {
   }
 
   async login(
-    data: LoginDto
+    data: LoginDto,
   ): Promise<{ response: LoginResponseDto; refreshToken: string }> {
-
-    const user = await this._userRepo.findByEmail(data.email.toLowerCase().trim());
-    if (!user) throw new AppError(STATUS.BAD_REQUEST, MESSAGES.LOGIN.INVALID_CREDENTIALS);
+    const user = await this._userRepo.findByEmail(
+      data.email.toLowerCase().trim(),
+    );
+    if (!user)
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        MESSAGES.LOGIN.INVALID_CREDENTIALS,
+      );
 
     const match = await bcrypt.compare(data.password, user.password);
-    if (!match) throw new AppError(STATUS.BAD_REQUEST, MESSAGES.LOGIN.INVALID_CREDENTIALS);
+    if (!match)
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        MESSAGES.LOGIN.INVALID_CREDENTIALS,
+      );
 
     if (user.isBlocked) {
       throw new AppError(STATUS.FORBIDDEN, MESSAGES.LOGIN.ACCOUNT_BLOCKED);
@@ -100,21 +129,23 @@ export class AuthService implements IAuthService {
 
     let trainerStatus:
       | {
-        profileExists: boolean;
-        verificationStatus?: VerificationStatus;
-        rejectionReason?: string | null;
-      }
+          profileExists: boolean;
+          verificationStatus?: VerificationStatus;
+          rejectionReason?: string | null;
+        }
       | undefined;
 
     if (user.role === ROLES.TRAINER) {
-      const trainerProfile = await this._trainerProfileRepo.findByUserId(user.id);
+      const trainerProfile = await this._trainerProfileRepo.findByUserId(
+        user.id,
+      );
       trainerStatus = !trainerProfile
         ? { profileExists: false }
         : {
-          profileExists: true,
-          verificationStatus: trainerProfile.verificationStatus,
-          rejectionReason: trainerProfile.rejectionReason ?? null,
-        };
+            profileExists: true,
+            verificationStatus: trainerProfile.verificationStatus,
+            rejectionReason: trainerProfile.rejectionReason ?? null,
+          };
     }
 
     let onboardingComplete: boolean | undefined;
@@ -132,14 +163,16 @@ export class AuthService implements IAuthService {
     /* ---------- TOKENS ---------- */
     const accessToken = Jwt.signAccess({ sub: user.id, role: user.role });
 
-    const refreshToken = await this._sessionService.createRefreshToken(user.id, {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      isBlocked: user.isBlocked,
-    });
+    const refreshToken = await this._sessionService.createRefreshToken(
+      user.id,
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        isBlocked: user.isBlocked,
+      },
+    );
 
-   
     let profile = null;
     if (user.role === ROLES.TRAINER) {
       profile = await this._trainerProfileRepo.findByUserId(user.id);
@@ -152,7 +185,7 @@ export class AuthService implements IAuthService {
         trainerStatus,
         onboardingComplete,
         hasActiveSubscription,
-        profile
+        profile,
       ),
       refreshToken,
     };
@@ -161,10 +194,16 @@ export class AuthService implements IAuthService {
   async googleLogin({ idToken }: GoogleLoginDto): Promise<LoginResponseDto> {
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
     if (!GOOGLE_CLIENT_ID) {
-      throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.COMMON.GOOGLE_CLIENT_ID_MISSING);
+      throw new AppError(
+        STATUS.INTERNAL_ERROR,
+        MESSAGES.COMMON.GOOGLE_CLIENT_ID_MISSING,
+      );
     }
 
-    const ticket = await googleClient.verifyIdToken({ idToken, audience: GOOGLE_CLIENT_ID });
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: GOOGLE_CLIENT_ID,
+    });
     const payload = ticket.getPayload();
 
     if (!payload || !payload.email || !payload.email_verified) {
@@ -174,8 +213,10 @@ export class AuthService implements IAuthService {
     const email = payload.email.toLowerCase().trim();
     const user = await this._userRepo.findByEmail(email);
 
-    if (!user) throw new AppError(STATUS.NOT_FOUND, MESSAGES.REGISTER.NO_ACCOUNT_FOUND);
-    if (user.isBlocked) throw new AppError(STATUS.FORBIDDEN, MESSAGES.LOGIN.ACCOUNT_BLOCKED);
+    if (!user)
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.REGISTER.NO_ACCOUNT_FOUND);
+    if (user.isBlocked)
+      throw new AppError(STATUS.FORBIDDEN, MESSAGES.LOGIN.ACCOUNT_BLOCKED);
 
     let onboardingComplete: boolean | undefined;
     let hasActiveSubscription: boolean | undefined;
@@ -190,12 +231,15 @@ export class AuthService implements IAuthService {
     }
 
     const accessToken = Jwt.signAccess({ sub: user.id, role: user.role });
-    const refreshToken = await this._sessionService.createRefreshToken(user.id, {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      isBlocked: user.isBlocked,
-    });
+    const refreshToken = await this._sessionService.createRefreshToken(
+      user.id,
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        isBlocked: user.isBlocked,
+      },
+    );
 
     let profile = null;
     if (user.role === ROLES.TRAINER) {
@@ -208,20 +252,35 @@ export class AuthService implements IAuthService {
       undefined,
       onboardingComplete,
       hasActiveSubscription,
-      profile
+      profile,
     );
   }
 
   async refreshAccessToken(refreshToken: string): Promise<LoginResponseDto> {
     if (!refreshToken) {
-      throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.REFRESH_TOKEN_INVALID);
+      throw new AppError(
+        STATUS.UNAUTHORIZED,
+        MESSAGES.TOKEN.REFRESH_TOKEN_INVALID,
+      );
     }
 
-    const userId = await this._sessionService.findUserByRefreshToken(refreshToken);
-    if (!userId) throw new AppError(STATUS.UNAUTHORIZED, "Invalid or expired refresh token");
+    const userId =
+      await this._sessionService.findUserByRefreshToken(refreshToken);
+    if (!userId)
+      throw new AppError(
+        STATUS.UNAUTHORIZED,
+        "Invalid or expired refresh token",
+      );
 
-    const isValid = await this._sessionService.validateRefreshToken(userId, refreshToken);
-    if (!isValid) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.REFRESH_TOKEN_INVALID);
+    const isValid = await this._sessionService.validateRefreshToken(
+      userId,
+      refreshToken,
+    );
+    if (!isValid)
+      throw new AppError(
+        STATUS.UNAUTHORIZED,
+        MESSAGES.TOKEN.REFRESH_TOKEN_INVALID,
+      );
 
     const sessionData = await this._sessionService.getUserSessionData(userId);
     if (!sessionData || sessionData.isBlocked) {
@@ -229,7 +288,8 @@ export class AuthService implements IAuthService {
     }
 
     const user = await this._userRepo.findById(userId);
-    if (!user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+    if (!user)
+      throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
 
     let onboardingComplete: boolean | undefined;
     let hasActiveSubscription: boolean | undefined;
@@ -255,7 +315,7 @@ export class AuthService implements IAuthService {
       undefined,
       onboardingComplete,
       hasActiveSubscription,
-      profile
+      profile,
     );
   }
 
@@ -263,30 +323,47 @@ export class AuthService implements IAuthService {
     await this._sessionService.deleteSession(refreshToken);
   }
 
-  async forgotPassword(data: { email: string }): Promise<ForgotPasswordResponseDto> {
+  async forgotPassword(data: {
+    email: string;
+  }): Promise<ForgotPasswordResponseDto> {
     const email = data.email.toLowerCase().trim();
     const user = await this._userRepo.findByEmail(email);
 
     if (!user) return { role: null };
 
-    await this._otpService.generateAndSendOtp({ email, purpose: "FORGET_PASSWORD" });
+    await this._otpService.generateAndSendOtp({
+      email,
+      purpose: "FORGET_PASSWORD",
+    });
     return { role: user.role };
   }
 
   async resetPassword(data: ResetPasswordDto): Promise<void> {
     const normalizedEmail = data.email.toLowerCase().trim();
 
-    const isVerified = await this._sessionService.isOtpVerified("FORGET_PASSWORD", normalizedEmail);
-    if (!isVerified) throw new AppError(STATUS.FORBIDDEN, MESSAGES.OTP.OTP_NOT_VERIFIED);
+    const isVerified = await this._sessionService.isOtpVerified(
+      "FORGET_PASSWORD",
+      normalizedEmail,
+    );
+    if (!isVerified)
+      throw new AppError(STATUS.FORBIDDEN, MESSAGES.OTP.OTP_NOT_VERIFIED);
 
     const user = await this._userRepo.findByEmail(normalizedEmail);
-    if (!user) throw new AppError(STATUS.NOT_FOUND, MESSAGES.USER.USER_NOT_FOUND);
+    if (!user)
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.USER.USER_NOT_FOUND);
 
     const match = await bcrypt.compare(data.password, user.password);
-    if (match) throw new AppError(STATUS.BAD_REQUEST, MESSAGES.PASSWORD.NEW_PASSWORD_SAME_AS_OLD);
+    if (match)
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        MESSAGES.PASSWORD.NEW_PASSWORD_SAME_AS_OLD,
+      );
 
     const hashedPassword = await hashPassword(data.password);
     await this._userRepo.updatePassword(user.id, hashedPassword);
-    await this._sessionService.clearOtpVerification("FORGET_PASSWORD", normalizedEmail);
+    await this._sessionService.clearOtpVerification(
+      "FORGET_PASSWORD",
+      normalizedEmail,
+    );
   }
 }
