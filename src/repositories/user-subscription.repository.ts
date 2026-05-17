@@ -1,5 +1,6 @@
 import { IUserSubscriptionRepository } from "@/interfaces/repository-interface/subscription/user.subscription.repository.interface";
 import { UserSubscriptionModel, IUserSubscription } from "@/models/user-subscription.model";
+import mongoose from "mongoose";
 
 
 export class UserSubscriptionRepository implements IUserSubscriptionRepository {
@@ -15,7 +16,7 @@ export class UserSubscriptionRepository implements IUserSubscriptionRepository {
 
   async findActiveByUserId(userId: string): Promise<IUserSubscription | null> {
     return UserSubscriptionModel.findOne({
-      userId,
+      userId: new mongoose.Types.ObjectId(userId),
       status: "active",
       endDate: { $gte: new Date() },
     })

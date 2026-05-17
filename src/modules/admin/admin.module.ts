@@ -12,6 +12,12 @@ import { ISubscriptionFeatureRepository } from "@/interfaces/repository-interfac
 import SubscriptionFeatureRepository from "@/repositories/subscription-feature.repository";
 import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/subscription/subscription-plan.repository";
 import SubscriptionPlanRepository from "@/repositories/subscription-plan.repository";
+import GroupRepository from "@/repositories/group.repository";
+import QuestionRepository from "@/repositories/question.repository";
+import AnswerRepository from "@/repositories/answer.repository";
+import { IGroupRepository } from "@/interfaces/repository-interface/onboarding/group-repository.interface";
+import { IQuestionRepository } from "@/interfaces/repository-interface/onboarding/question-repository.interface";
+import { IAnswerRepository } from "@/interfaces/repository-interface/onboarding/answer-repository.interface";
 
 export function createAdminModule() {
 
@@ -20,6 +26,9 @@ export function createAdminModule() {
   const categoryRepository: ICategoryRepository = new CategoryRepository();
   const subscriptionFeatureRepository: ISubscriptionFeatureRepository = new SubscriptionFeatureRepository();
   const subscriptionPlanRepository: ISubscriptionPlanRepository = new SubscriptionPlanRepository();
+  const groupRepository: IGroupRepository = new GroupRepository();
+  const questionRepository: IQuestionRepository = new QuestionRepository();
+  const answerRepository: IAnswerRepository = new AnswerRepository();
 
   const s3Service: IS3Service = new S3Service();
   const adminService = new AdminService(
@@ -29,6 +38,9 @@ export function createAdminModule() {
     categoryRepository,
     subscriptionFeatureRepository,
     subscriptionPlanRepository,
+    groupRepository,
+    questionRepository,
+    answerRepository,
   );
 
   const adminController = new AdminController(adminService)

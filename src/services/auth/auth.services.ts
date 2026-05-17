@@ -7,6 +7,8 @@ import { ForgotPasswordResponseDto, GoogleLoginDto, LoginDto, LoginResponseDto, 
 import { ResendOtpDto, VerifyOtpDto } from "../../dto/otp/otp.dto";
 import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
 import { IUserRepository } from "../../interfaces/repository-interface/user/user-repository.interface";
+import { IUserSubscriptionRepository } from "../../interfaces/repository-interface/subscription/user.subscription.repository.interface";
+import { IAnswerRepository } from "../../interfaces/repository-interface/onboarding/answer-repository.interface";
 import { IAuthService } from "../../interfaces/service-interface/auth/auth-service.interface";
 import { ISessionService } from "../../interfaces/service-interface/auth/session-service.interface";
 import { IOtpService } from "../../interfaces/service-interface/otp/otp-service.interface";
@@ -22,7 +24,8 @@ export class AuthService implements IAuthService {
     private _otpService: IOtpService,
     private _sessionService: ISessionService,
     private _trainerProfileRepo: ITrainerProfileRepository,
-   
+    private _userSubscriptionRepo: IUserSubscriptionRepository,
+    private _answerRepo: IAnswerRepository
   ) { }
 
   async initiateRegister(data: RegisterDto): Promise<void> {
@@ -114,7 +117,18 @@ export class AuthService implements IAuthService {
         };
     }
 
-  
+    let onboardingComplete: boolean | undefined;
+    let hasActiveSubscription: boolean | undefined;
+
+    if (user.role === ROLES.USER) {
+      const [activeSub, userAnswers] = await Promise.all([
+        this._userSubscriptionRepo.findActiveByUserId(user.id),
+        this._answerRepo.getUserAnswers(user.id),
+      ]);
+      hasActiveSubscription = !!activeSub;
+      onboardingComplete = userAnswers?.completed ?? false;
+    }
+
     /* ---------- TOKENS ---------- */
     const accessToken = Jwt.signAccess({ sub: user.id, role: user.role });
 
@@ -126,12 +140,19 @@ export class AuthService implements IAuthService {
     });
 
    
+    let profile = null;
+    if (user.role === ROLES.TRAINER) {
+      profile = await this._trainerProfileRepo.findByUserId(user.id);
+    }
+
     return {
       response: AuthMapper.toLoginResponse(
         user,
         accessToken,
         trainerStatus,
-       
+        onboardingComplete,
+        hasActiveSubscription,
+        profile
       ),
       refreshToken,
     };
@@ -156,6 +177,18 @@ export class AuthService implements IAuthService {
     if (!user) throw new AppError(STATUS.NOT_FOUND, MESSAGES.REGISTER.NO_ACCOUNT_FOUND);
     if (user.isBlocked) throw new AppError(STATUS.FORBIDDEN, MESSAGES.LOGIN.ACCOUNT_BLOCKED);
 
+    let onboardingComplete: boolean | undefined;
+    let hasActiveSubscription: boolean | undefined;
+
+    if (user.role === ROLES.USER) {
+      const [activeSub, userAnswers] = await Promise.all([
+        this._userSubscriptionRepo.findActiveByUserId(user.id),
+        this._answerRepo.getUserAnswers(user.id),
+      ]);
+      hasActiveSubscription = !!activeSub;
+      onboardingComplete = userAnswers?.completed ?? false;
+    }
+
     const accessToken = Jwt.signAccess({ sub: user.id, role: user.role });
     const refreshToken = await this._sessionService.createRefreshToken(user.id, {
       id: user.id,
@@ -164,7 +197,19 @@ export class AuthService implements IAuthService {
       isBlocked: user.isBlocked,
     });
 
-    return AuthMapper.toLoginResponse(user, accessToken);
+    let profile = null;
+    if (user.role === ROLES.TRAINER) {
+      profile = await this._trainerProfileRepo.findByUserId(user.id);
+    }
+
+    return AuthMapper.toLoginResponse(
+      user,
+      accessToken,
+      undefined,
+      onboardingComplete,
+      hasActiveSubscription,
+      profile
+    );
   }
 
   async refreshAccessToken(refreshToken: string): Promise<LoginResponseDto> {
@@ -186,8 +231,32 @@ export class AuthService implements IAuthService {
     const user = await this._userRepo.findById(userId);
     if (!user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
 
+    let onboardingComplete: boolean | undefined;
+    let hasActiveSubscription: boolean | undefined;
+
+    if (user.role === ROLES.USER) {
+      const [activeSub, userAnswers] = await Promise.all([
+        this._userSubscriptionRepo.findActiveByUserId(user.id),
+        this._answerRepo.getUserAnswers(user.id),
+      ]);
+      hasActiveSubscription = !!activeSub;
+      onboardingComplete = userAnswers?.completed ?? false;
+    }
+
+    let profile = null;
+    if (user.role === ROLES.TRAINER) {
+      profile = await this._trainerProfileRepo.findByUserId(user.id);
+    }
+
     const accessToken = Jwt.signAccess({ sub: user.id, role: user.role });
-    return AuthMapper.toLoginResponse(user, accessToken);
+    return AuthMapper.toLoginResponse(
+      user,
+      accessToken,
+      undefined,
+      onboardingComplete,
+      hasActiveSubscription,
+      profile
+    );
   }
 
   async logout(refreshToken: string): Promise<void> {

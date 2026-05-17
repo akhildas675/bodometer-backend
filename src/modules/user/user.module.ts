@@ -20,6 +20,13 @@ import { UserSubscriptionRepository } from "../../repositories/user-subscription
 import { ISubscriptionTransactionRepository } from "../../interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
 import { IUserSubscriptionRepository } from "../../interfaces/repository-interface/subscription/user.subscription.repository.interface";
 
+import { IGroupRepository } from "../../interfaces/repository-interface/onboarding/group-repository.interface";
+import { IQuestionRepository } from "../../interfaces/repository-interface/onboarding/question-repository.interface";
+import { IAnswerRepository } from "../../interfaces/repository-interface/onboarding/answer-repository.interface";
+import GroupRepository from "../../repositories/group.repository";
+import QuestionRepository from "../../repositories/question.repository";
+import AnswerRepository from "../../repositories/answer.repository";
+
 export function createUserModule(){
 
     const userRepository:IUserRepository=new UserRepository();
@@ -29,6 +36,9 @@ export function createUserModule(){
     const subscriptionPlanRepository:ISubscriptionPlanRepository = new SubscriptionPlanRepository();
     const subscriptionTransactionRepository:ISubscriptionTransactionRepository = new SubscriptionTransactionRepository();
     const userSubscriptionRepository:IUserSubscriptionRepository = new UserSubscriptionRepository();
+    const groupRepository: IGroupRepository = new GroupRepository();
+    const questionRepository: IQuestionRepository = new QuestionRepository();
+    const answerRepository: IAnswerRepository = new AnswerRepository();
 
     const stripeService:IStripeService=new StripeService();
 
@@ -41,6 +51,9 @@ export function createUserModule(){
         subscriptionPlanRepository,
         subscriptionTransactionRepository,
         userSubscriptionRepository,
+        groupRepository,
+        questionRepository,
+        answerRepository
     );
 
     const userController = new UserController(userService);

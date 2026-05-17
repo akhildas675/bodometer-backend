@@ -14,32 +14,36 @@ export class AuthMapper {
   }
 
   static toLoginResponse(
-  user: UserInterface,
-  accessToken: string,
-  trainerStatus?: {
-    profileExists: boolean;
-    verificationStatus?: VerificationStatus;
-    rejectionReason?: string | null;
-  },
- 
-): LoginResponseDto {
-  return {
-    accessToken,
-    user: {
-      id: user.id,
-      name: user.name,
-      userName: user.userName,
-      email: user.email,
-      phoneNumber: user.phoneNumber ?? "",
-      profilePic: user.profilePic ?? null,
-      gender: user.gender ?? null,
-      role: user.role,
-      isVerified: user.isVerified,
-      dateOfBirth: user.dateOfBirth?.toISOString() ?? null,
-      isBlocked: user.isBlocked,
+    user: UserInterface,
+    accessToken: string,
+    trainerStatus?: {
+      profileExists: boolean;
+      verificationStatus?: VerificationStatus;
+      rejectionReason?: string | null;
     },
+    onboardingComplete?: boolean,
+    hasActiveSubscription?: boolean,
+    profile?: { gender?: string | null; dateOfBirth?: Date | string | null } | null
+  ): LoginResponseDto {
+    return {
+      accessToken,
+      user: {
+        id: user.id,
+        name: user.name,
+        userName: user.userName,
+        email: user.email,
+        phoneNumber: user.phoneNumber ?? "",
+        profilePic: user.profilePic ?? null,
+        gender: profile?.gender ?? null,
+        role: user.role,
+        isVerified: user.isVerified,
+        dateOfBirth: profile?.dateOfBirth ? new Date(profile.dateOfBirth).toISOString() : null,
+        isBlocked: user.isBlocked,
+      },
 
-    ...(trainerStatus && { trainerStatus }),
-  };
-}
+      ...(trainerStatus && { trainerStatus }),
+      ...(typeof onboardingComplete === "boolean" && { onboardingComplete }),
+      ...(typeof hasActiveSubscription === "boolean" && { hasActiveSubscription }),
+    };
+  }
 }

@@ -23,10 +23,8 @@ export default class UserRepository
       phoneNumber: doc.phoneNumber ?? null,
       password: doc.password,
       profilePic: doc.profilePic ?? null,
-      gender: doc.gender ?? null,
       role: doc.role,
       isVerified: doc.isVerified,
-      dateOfBirth: doc.dateOfBirth ?? null,
       isBlocked: doc.isBlocked,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
@@ -51,20 +49,18 @@ export default class UserRepository
   }
 
   // Profile (user & trainer)
-async updateProfile(
+  async updateProfile(
     userId: string,
     updateData: UpdateUserProfileInterface,
-): Promise<UserInterface | null> {
-    const updateFields: Partial<IUserDocument> = {}; 
+  ): Promise<UserInterface | null> {
+    const updateFields: Partial<IUserDocument> = {};
     if (updateData.name !== undefined) updateFields.name = updateData.name;
     if (updateData.userName !== undefined) updateFields.userName = updateData.userName;
     if (updateData.phoneNumber !== undefined) updateFields.phoneNumber = updateData.phoneNumber;
-    if (updateData.gender !== undefined) updateFields.gender = updateData.gender;
     if (updateData.profilePic !== undefined) updateFields.profilePic = updateData.profilePic;
-    if (updateData.dateOfBirth !== undefined) updateFields.dateOfBirth = updateData.dateOfBirth;
 
-    return this.updateById(userId, updateFields); 
-}
+    return this.updateById(userId, updateFields);
+  }
 
   //admin paginated list by role 
   async findByRolePaginated(

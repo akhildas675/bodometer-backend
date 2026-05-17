@@ -3,9 +3,9 @@ import { MESSAGES } from "../../constants/messages";
 import { ROLES } from "../../constants/roles";
 import { STATUS } from "../../constants/statuscode";
 import { VERIFICATION_STATUS } from "../../constants/verification.constants";
-import { AdminGetTrainersDto, AdminGetTrainersResponseDto, AdminGetUsersDto, AdminGetUsersResponseDto, CategoryQueryDto, CreateCategoryDto, GetTrainerAppointmentsQueryDto, PaginatedResponseDto, UpdateCategoryDto, GetCategoryByIdResponseDto, GetAllCategoriesResponseDto, ToggleCategoryStatusResponseDto, SubscriptionFeatureQueryDto, GetAllSubscriptionFeaturesResponseDto, CreateSubscriptionFeatureDto, UpdateSubscriptionFeatureDto, ToggleSubscriptionFeatureStatusResponseDto, SubscriptionFeatureDto, CreateSubscriptionPlanDto, SubscriptionPlanQueryDto, GetAllSubscriptionPlansResponseDto, GetSubscriptionPlanByIdResponseDto, UpdateSubscriptionPlanDto, ToggleSubscriptionPlanStatusResponseDto } from "../../dto/admin/admin.dto";
+import { AdminGetTrainersDto, AdminGetTrainersResponseDto, AdminGetUsersDto, AdminGetUsersResponseDto, CategoryQueryDto, CreateCategoryDto, GetTrainerAppointmentsQueryDto, PaginatedResponseDto, UpdateCategoryDto, GetCategoryByIdResponseDto, GetAllCategoriesResponseDto, ToggleCategoryStatusResponseDto, SubscriptionFeatureQueryDto, GetAllSubscriptionFeaturesResponseDto, CreateSubscriptionFeatureDto, UpdateSubscriptionFeatureDto, ToggleSubscriptionFeatureStatusResponseDto, SubscriptionFeatureDto, CreateSubscriptionPlanDto, SubscriptionPlanQueryDto, GetAllSubscriptionPlansResponseDto, GetSubscriptionPlanByIdResponseDto, UpdateSubscriptionPlanDto, ToggleSubscriptionPlanStatusResponseDto, CreateQuestionGroupDto, UpdateQuestionGroupDto, GetAllQuestionGroupsResponseDto, QuestionQueryDto, CreateQuestionDto, UpdateQuestionDto, GetAllQuestionsResponseDto, QuestionGroupResponseDto, OnboardingQuestionResponseDto } from "../../dto/admin/admin.dto";
 import { ApproveTrainerResponseDto, GetTrainerAppointmentsResponseDto, GetTrainerByIdResponseDto, RejectTrainerResponseDto } from "../../dto/trainer/trainer.dto";
-import { Category, PaginatedResult, SubscriptionFeature, SubscriptionPlan } from "../../interfaces/domain.interface/admin.interface/admin.interface";
+import { Category, PaginatedResult, SubscriptionFeature, SubscriptionPlan, QuestionGroup, OnboardingQuestion, QuestionGroupQuery } from "../../interfaces/domain.interface/admin.interface/admin.interface";
 import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
 import { IUserRepository } from "../../interfaces/repository-interface/user/user-repository.interface";
 import { IAdminService } from "../../interfaces/service-interface/admin/admin-service.interface";
@@ -14,6 +14,9 @@ import { AdminAccountMapper, TrainerMapper } from "../../mappers/admin/admin.map
 import { AppError } from "../../utils/appError";
 import { ISubscriptionFeatureRepository } from "@/interfaces/repository-interface/subscription/feature-repository.interface";
 import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/subscription/subscription-plan.repository";
+import { IGroupRepository } from "@/interfaces/repository-interface/onboarding/group-repository.interface";
+import { IQuestionRepository } from "@/interfaces/repository-interface/onboarding/question-repository.interface";
+import { IAnswerRepository } from "@/interfaces/repository-interface/onboarding/answer-repository.interface";
 
 
 
@@ -26,8 +29,29 @@ export class AdminService implements IAdminService {
     private _categoryRepository: ICategoryRepository,
     private _subscriptionFeatureRepository: ISubscriptionFeatureRepository,
     private _subscriptionPlanRepository: ISubscriptionPlanRepository,
+    private _groupRepository: IGroupRepository,
+    private _questionRepository: IQuestionRepository,
+    private _answerRepository: IAnswerRepository,
 
   ) { }
+
+  private generateKeySlug(text: string): string {
+    const base = text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s-]+/g, "_")
+      .substring(0, 50);
+    return `${base}`.replace(/_+/g, "_");
+  }
+
+  private generateOptionValue(text: string): string {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s]/g, "")
+      .replace(/[\s-]+/g, "_");
+  }
 
   //  Users
   async fetchUsers(
@@ -377,8 +401,6 @@ export class AdminService implements IAdminService {
 
     };
 
-    console.log("planData", planData)
-
     await this._subscriptionPlanRepository.createSubscriptionPlan(planData);
 
   }
@@ -462,6 +484,119 @@ export class AdminService implements IAdminService {
     };
   }
 
+  // Question Groups
+  async createQuestionGroup(data: CreateQuestionGroupDto): Promise<void> {
+    await this._groupRepository.createGroup({
+      key: this.generateKeySlug(data.title),
+      title: data.title,
+      order: data.order,
+    });
+  }
+
+  async getAllQuestionGroups(query: QuestionGroupQuery): Promise<GetAllQuestionGroupsResponseDto> {
+    const result = await this._groupRepository.getAllGroups(query);
+    return {
+      data: result.data.map(g => ({
+        groupId: g.groupId!,
+        key: g.key,
+        title: g.title,
+        order: g.order,
+        isActive: g.isActive ?? true,
+      })),
+      pagination: result.pagination
+    };
+  }
+
+  async getQuestionGroupById(groupId: string): Promise<QuestionGroupResponseDto> {
+    const group = await this._groupRepository.getGroupById(groupId);
+    if (!group) throw new AppError(STATUS.NOT_FOUND, "Group not found");
+    return {
+      groupId: group.groupId!,
+      key: group.key,
+      title: group.title,
+      order: group.order,
+      isActive: group.isActive ?? true,
+    };
+  }
+
+  async updateQuestionGroup(groupId: string, data: UpdateQuestionGroupDto): Promise<void> {
+    await this._groupRepository.updateGroup(groupId, { title: data.title, order: data.order, key: "" });
+  }
+
+  async toggleQuestionGroupStatus(groupId: string): Promise<void> {
+    await this._groupRepository.toggleGroupStatus(groupId);
+  }
+
+  // Questions
+  async createQuestion(data: CreateQuestionDto, adminId: string): Promise<void> {
+    await this._questionRepository.createQuestion({
+      ...data,
+      key: this.generateKeySlug(data.question),
+      createdBy: adminId,
+      options: data.options?.map(o => ({
+        label: o.label.trim(),
+        value: this.generateOptionValue(o.label)
+      })),
+    });
+  }
+
+  async getAllQuestions(query: QuestionQueryDto): Promise<GetAllQuestionsResponseDto> {
+    const result = await this._questionRepository.getAllQuestions(query);
+    return {
+      data: result.data.map(q => ({
+        questionId: q.questionId!,
+        key: q.key,
+        question: q.question,
+        description: q.description,
+        groupId: q.groupId,
+        order: q.order,
+        isActive: q.isActive ?? true,
+        type: q.type,
+        options: q.options,
+        dataSource: q.dataSource,
+        next: q.next,
+        numberConfig: q.numberConfig,
+        validation: q.validation,
+        createdAt: q.createdAt,
+      })),
+      pagination: result.pagination
+    };
+  }
+
+  async getQuestionById(questionId: string): Promise<OnboardingQuestionResponseDto> {
+    const q = await this._questionRepository.getQuestionById(questionId);
+    if (!q) throw new AppError(STATUS.NOT_FOUND, "Question not found");
+    return {
+      questionId: q.questionId!,
+      key: q.key,
+      question: q.question,
+      description: q.description,
+      groupId: q.groupId,
+      order: q.order,
+      isActive: q.isActive ?? true,
+      type: q.type,
+      options: q.options,
+      dataSource: q.dataSource,
+      next: q.next,
+      numberConfig: q.numberConfig,
+      validation: q.validation,
+      createdAt: q.createdAt,
+    };
+  }
+
+  async updateQuestion(questionId: string, data: UpdateQuestionDto): Promise<void> {
+    await this._questionRepository.updateQuestion(questionId, { 
+      ...data,
+      options: data.options?.map(o => ({
+        label: o.label.trim(),
+        value: this.generateOptionValue(o.label)
+      })),
+    });
+  }
+
+  async toggleQuestionStatus(questionId: string): Promise<void> {
+    await this._questionRepository.toggleQuestionStatus(questionId);
+  }
 }
 
 //

@@ -109,5 +109,18 @@ adminRoute.patch(ADMIN_ROUTES.TOGGLE_SUBSCRIPTION_PLAN_STATUS, ROLE_GUARD.ADMIN_
 adminRoute.get(ADMIN_ROUTES.GET_SUBSCRIPTION_PLAN_BY_ID, ROLE_GUARD.ADMIN_GUARD, adminController.getSubscriptionPlanById)
 adminRoute.put(ADMIN_ROUTES.UPDATE_SUBSCRIPTION_PLAN, ROLE_GUARD.ADMIN_GUARD, adminController.updateSubscriptionPlan)
 
+// Question Group Routes
+adminRoute.post(ADMIN_ROUTES.CREATE_QUESTION_GROUP, ROLE_GUARD.ADMIN_GUARD, adminController.createQuestionGroup)
+adminRoute.get(ADMIN_ROUTES.GET_ALL_QUESTION_GROUPS, ROLE_GUARD.ADMIN_GUARD, adminController.getAllQuestionGroups)
+adminRoute.get(ADMIN_ROUTES.GET_QUESTION_GROUP_BY_ID, ROLE_GUARD.ADMIN_GUARD, adminController.getQuestionGroupById)
+adminRoute.put(ADMIN_ROUTES.UPDATE_QUESTION_GROUP, ROLE_GUARD.ADMIN_GUARD, adminController.updateQuestionGroup)
+adminRoute.patch(ADMIN_ROUTES.TOGGLE_QUESTION_GROUP_STATUS, ROLE_GUARD.ADMIN_GUARD, adminController.toggleQuestionGroupStatus)
+
+// Question Routes
+adminRoute.post(ADMIN_ROUTES.CREATE_QUESTION, ROLE_GUARD.ADMIN_GUARD, adminController.createQuestion)
+adminRoute.get(ADMIN_ROUTES.GET_ALL_QUESTIONS, ROLE_GUARD.ADMIN_GUARD, adminController.getAllQuestions)
+adminRoute.get(ADMIN_ROUTES.GET_QUESTION_BY_ID, ROLE_GUARD.ADMIN_GUARD, adminController.getQuestionById)
+adminRoute.put(ADMIN_ROUTES.UPDATE_QUESTION, ROLE_GUARD.ADMIN_GUARD, adminController.updateQuestion)
+adminRoute.patch(ADMIN_ROUTES.TOGGLE_QUESTION_STATUS, ROLE_GUARD.ADMIN_GUARD, adminController.toggleQuestionStatus)
 
 export default adminRoute;

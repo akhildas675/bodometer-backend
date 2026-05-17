@@ -37,5 +37,17 @@ export const ADMIN_ROUTES = {
   UPDATE_SUBSCRIPTION_PLAN: "/admin/update-subscription-plan/:id",
   TOGGLE_SUBSCRIPTION_PLAN_STATUS: "/admin/toggle-subscription-plan/:id",
 
+  // Question Groups
+  CREATE_QUESTION_GROUP: "/admin/create-question-group",
+  GET_ALL_QUESTION_GROUPS: "/admin/get-question-groups",
+  GET_QUESTION_GROUP_BY_ID: "/admin/get-question-group/:id",
+  UPDATE_QUESTION_GROUP: "/admin/update-question-group/:id",
+  TOGGLE_QUESTION_GROUP_STATUS: "/admin/toggle-question-group/:id",
 
+  // Questions
+  CREATE_QUESTION: "/admin/create-question",
+  GET_ALL_QUESTIONS: "/admin/get-questions",
+  GET_QUESTION_BY_ID: "/admin/get-question/:id",
+  UPDATE_QUESTION: "/admin/update-question/:id",
+  TOGGLE_QUESTION_STATUS: "/admin/toggle-question/:id",
 } as const;

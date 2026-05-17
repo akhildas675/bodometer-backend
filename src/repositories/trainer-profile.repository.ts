@@ -24,6 +24,8 @@ export default class TrainerProfileRepository
       bio: doc.bio,
       certifications: doc.certifications,
       experienceInYears: doc.experienceInYears,
+      gender: doc.gender,
+      dateOfBirth: doc.dateOfBirth,
       applyCount: doc.applyCount,
       specializations: doc.specializations?.map(id => id.toString()) ?? [],
     };
@@ -50,6 +52,8 @@ export default class TrainerProfileRepository
           certifications: data.certifications,
           coverPhoto: data.coverPhoto,
           bio: data.bio,
+          gender: data.gender,
+          dateOfBirth: data.dateOfBirth,
           specializations: data.specializations?.map(id => new mongoose.Types.ObjectId(id)) ?? [],
           verificationStatus: VERIFICATION_STATUS.PENDING,
           rejectionReason: null,
@@ -200,7 +204,7 @@ export default class TrainerProfileRepository
   ): Promise<{ data: ITrainerWithProfile[]; total: number }> {
     const skip = (page - 1) * limit;
 
-    const matchStage: Record<string, any> = { verificationStatus: VERIFICATION_STATUS.APPROVED };
+    const matchStage: Record<string, string | mongoose.Types.ObjectId> = { verificationStatus: VERIFICATION_STATUS.APPROVED };
     if (specializationId) {
       matchStage.specializations = new mongoose.Types.ObjectId(specializationId);
     }

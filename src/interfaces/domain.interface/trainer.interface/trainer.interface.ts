@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { Gender } from "../../../constants/identity.constants";
 import { VerificationStatus } from "../../../constants/verification.constants";
 import { ITrainerProfileDocument } from "../../../models/trainer-profile.model";
 import { IUserDocument } from "../../../models/user.model";
@@ -27,6 +28,8 @@ export interface TrainerProfile {
   certifications: string[],
   bio: string;
   specializations: string[];
+  gender: Gender;
+  dateOfBirth: Date | null;
   applyCount: number;
 }
 
@@ -53,4 +56,6 @@ export interface ReapplyTrainerData {
   bio: string;
   specializations: string[];
   coverPhoto:string;
+  gender: Gender;
+  dateOfBirth: Date | null;
 }

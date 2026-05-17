@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
+import { GENDER, Gender } from "../constants/identity.constants";
 import { VERIFICATION_STATUS, VerificationStatus } from "../constants/verification.constants";
 
 
@@ -10,6 +11,8 @@ export interface ITrainerProfileDocument extends Document {
     certifications: string[];
     bio: string;
     specializations: mongoose.Types.ObjectId[];
+    gender: Gender;
+    dateOfBirth: Date | null;
     verificationStatus: VerificationStatus;
     rejectionReason?: string | null;
     createdAt: Date;
@@ -25,7 +28,16 @@ const TrainerProfileSchema = new Schema<ITrainerProfileDocument>(
             unique: true,
         },
 
+        gender: {
+            type: String,
+            enum: Object.values(GENDER),
+            default: GENDER.PREFER_NOT_SAY
+        },
 
+        dateOfBirth: { 
+            type: Date, 
+            default: null 
+        },
 
         experienceInYears: {
             type: Number,

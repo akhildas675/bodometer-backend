@@ -1,6 +1,6 @@
-import { AdminGetTrainersDto, AdminGetTrainersResponseDto, AdminGetUsersDto, AdminGetUsersResponseDto, CategoryQueryDto, CreateCategoryDto, CreateSubscriptionFeatureDto, GetAllCategoriesResponseDto, GetAllSubscriptionFeaturesResponseDto, GetCategoryByIdResponseDto, GetTrainerAppointmentsQueryDto, PaginatedResponseDto, SubscriptionFeatureQueryDto, ToggleCategoryStatusResponseDto, ToggleSubscriptionFeatureStatusResponseDto, UpdateCategoryDto, UpdateSubscriptionFeatureDto, SubscriptionFeatureDto, CreateSubscriptionPlanDto, SubscriptionPlanQueryDto, GetAllSubscriptionPlansResponseDto, GetSubscriptionPlanByIdResponseDto, UpdateSubscriptionPlanDto, ToggleSubscriptionPlanStatusResponseDto } from "../../../dto/admin/admin.dto";
+import { AdminGetTrainersDto, AdminGetTrainersResponseDto, AdminGetUsersDto, AdminGetUsersResponseDto, CategoryQueryDto, CreateCategoryDto, CreateSubscriptionFeatureDto, GetAllCategoriesResponseDto, GetAllSubscriptionFeaturesResponseDto, GetCategoryByIdResponseDto, GetTrainerAppointmentsQueryDto, PaginatedResponseDto, SubscriptionFeatureQueryDto, ToggleCategoryStatusResponseDto, ToggleSubscriptionFeatureStatusResponseDto, UpdateCategoryDto, UpdateSubscriptionFeatureDto, SubscriptionFeatureDto, CreateSubscriptionPlanDto, SubscriptionPlanQueryDto, GetAllSubscriptionPlansResponseDto, GetSubscriptionPlanByIdResponseDto, UpdateSubscriptionPlanDto, ToggleSubscriptionPlanStatusResponseDto, CreateQuestionGroupDto, UpdateQuestionGroupDto, GetAllQuestionGroupsResponseDto, QuestionQueryDto, CreateQuestionDto, UpdateQuestionDto, GetAllQuestionsResponseDto, QuestionGroupResponseDto, OnboardingQuestionResponseDto } from "../../../dto/admin/admin.dto";
 import { ApproveTrainerResponseDto, GetTrainerAppointmentsResponseDto, GetTrainerByIdResponseDto, RejectTrainerResponseDto } from "../../../dto/trainer/trainer.dto";
-import { PaginatedResult } from "../../domain.interface/admin.interface/admin.interface";
+import { PaginatedResult, QuestionGroupQuery } from "../../domain.interface/admin.interface/admin.interface";
 
 
 
@@ -38,7 +38,17 @@ export interface IAdminService {
   updateSubscriptionPlan(data: UpdateSubscriptionPlanDto): Promise<void>;
   toggleSubscriptionPlanStatus(subscriptionPlanId: string): Promise<ToggleSubscriptionPlanStatusResponseDto>;
 
+  // Question Groups
+  createQuestionGroup(data: CreateQuestionGroupDto): Promise<void>;
+  getAllQuestionGroups(query: QuestionGroupQuery): Promise<GetAllQuestionGroupsResponseDto>;
+  getQuestionGroupById(groupId: string): Promise<QuestionGroupResponseDto>;
+  updateQuestionGroup(groupId: string, data: UpdateQuestionGroupDto): Promise<void>;
+  toggleQuestionGroupStatus(groupId: string): Promise<void>;
 
-
-
+  // Questions
+  createQuestion(data: CreateQuestionDto, adminId: string): Promise<void>;
+  getAllQuestions(query: QuestionQueryDto): Promise<GetAllQuestionsResponseDto>;
+  getQuestionById(questionId: string): Promise<OnboardingQuestionResponseDto>;
+  updateQuestion(questionId: string, data: UpdateQuestionDto): Promise<void>;
+  toggleQuestionStatus(questionId: string): Promise<void>;
 }

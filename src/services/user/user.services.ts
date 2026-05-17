@@ -9,16 +9,19 @@ import { UserMapper, UserMappers } from "../../mappers/user/user.mappers";
 import { AppError } from "../../utils/appError";
 import bcrypt from "bcrypt"
 import { hashPassword } from "../../utils/password";
-import { PaginationMeta } from "../../interfaces/domain.interface/admin.interface/admin.interface";
 import { ActiveSubscriptionDto, CategoryDetailDto, ChangePasswordDto, FindUserResponseDto, GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto, UpdateUserProfileDto, UserSubscriptionPlanResponseDto } from "../../dto/user/user.dto";
 import { ICategoryRepository } from "../../interfaces/repository-interface/category/category-repository.interface";
-import { CategoryQuery, GetAllCategoriesResponse } from "../../interfaces/domain.interface/admin.interface/admin.interface";
+import { CategoryQuery, GetAllCategoriesResponse, GetAllQuestionGroupsResponse, GetAllQuestionsResponse, OnboardingValue, UserAnswerSubmission } from "../../interfaces/domain.interface/admin.interface/admin.interface";
 import { CategoryMappers } from "@/mappers/category/category.mapper";
 import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/subscription/subscription-plan.repository";
-import { UserSubscriptions } from "@/interfaces/domain.interface/user.interface/user.interface";
 import Stripe from "stripe";
 import { ISubscriptionTransactionRepository } from "@/interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
 import { IUserSubscriptionRepository } from "@/interfaces/repository-interface/subscription/user.subscription.repository.interface";
+import { IGroupRepository } from "@/interfaces/repository-interface/onboarding/group-repository.interface";
+import { IQuestionRepository } from "@/interfaces/repository-interface/onboarding/question-repository.interface";
+import { IAnswerRepository } from "@/interfaces/repository-interface/onboarding/answer-repository.interface";
+import { GENDER, Gender } from "@/constants/identity.constants";
+import { ROLES } from "@/constants/roles";
 
 export class UserService implements IUserService {
   constructor(
@@ -29,14 +32,23 @@ export class UserService implements IUserService {
     private _categoryRepo: ICategoryRepository,
     private _subscriptionPlanRepository: ISubscriptionPlanRepository,
     private _subscriptionTransactionRepository:ISubscriptionTransactionRepository,
-    private _userSubscriptionRepository:IUserSubscriptionRepository
+    private _userSubscriptionRepository:IUserSubscriptionRepository,
+    private _groupRepo: IGroupRepository,
+    private _questionRepo: IQuestionRepository,
+    private _answerRepo: IAnswerRepository
   ) { }
 
   async fetchUser(userId: string): Promise<FindUserResponseDto> {
     const user = await this._userRepo.findById(userId);
     if (!user)
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.USER.USER_NOT_FOUND);
-    return UserMapper.toFindUserResponse(user);
+
+    let profileData = null;
+    if (user.role === ROLES.TRAINER) {
+      profileData = await this._trainerProfileRepo.findByUserId(userId);
+    }
+
+    return UserMapper.toFindUserResponse(user, profileData);
   }
 
   async updateProfile(
@@ -46,29 +58,44 @@ export class UserService implements IUserService {
     if (Object.keys(updateData).length === 0) {
       throw new AppError(STATUS.BAD_REQUEST, "No fields to update");
     }
+    if (updateData.userName) {
+      const existingUser = await this._userRepo.findByUsername(updateData.userName);
+      if (existingUser && existingUser.id !== userId) {
+        throw new AppError(STATUS.CONFLICT, "Username already exists");
+      }
+    }
     if (updateData.gender && updateData.gender === "prefer_not_say") {
       throw new AppError(STATUS.BAD_REQUEST, "Please select a valid gender");
     }
-    if (!updateData.dateOfBirth) {
-      throw new AppError(
-        STATUS.BAD_REQUEST,
-        MESSAGES.COMMON.SELECT_CORRECT_DOB,
+    if (updateData.dateOfBirth) {
+      const dob = new Date(updateData.dateOfBirth);
+      const today = new Date();
+      const limitDate = new Date(
+        today.getFullYear() - 18,
+        today.getMonth(),
+        today.getDate(),
       );
-    }
-    const dob = new Date(updateData.dateOfBirth);
-    const today = new Date();
-    const limitDate = new Date(
-      today.getFullYear() - 18,
-      today.getMonth(),
-      today.getDate(),
-    );
-    if (dob > limitDate) {
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.USER.AGE_RESTRICTION);
+      if (dob > limitDate) {
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.USER.AGE_RESTRICTION);
+      }
     }
     const updatedUser = await this._userRepo.updateProfile(userId, updateData);
     if (!updatedUser)
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.USER.USER_NOT_FOUND);
-    return UserMapper.toFindUserResponse(updatedUser);
+
+    // Update profile data
+    if (updateData.gender || updateData.dateOfBirth) {
+      const profileUpdates = {
+        gender: updateData.gender,
+        dateOfBirth: updateData.dateOfBirth ? new Date(updateData.dateOfBirth) : undefined
+      };
+
+      if (updatedUser.role === ROLES.TRAINER) {
+        await this._trainerProfileRepo.upsert({ userId }, profileUpdates);
+      }
+    }
+
+    return this.fetchUser(userId);
   }
 
   async uploadProfilePicture(
@@ -185,7 +212,7 @@ async createCheckoutSession(userId: string, planId: string): Promise<{ checkoutU
     successUrl: `${process.env.CLIENT_URL}/subscription-success?session_id={CHECKOUT_SESSION_ID}`,
     cancelUrl: `${process.env.CLIENT_URL}/subscription-cancel`,
     metadata: {
-      userId,    // ← needed so verifyPaymentAndSave can trust the userId
+      userId,   
       planId,
     },
   });
@@ -193,19 +220,19 @@ async createCheckoutSession(userId: string, planId: string): Promise<{ checkoutU
   return { checkoutUrl: result.url };
 }
  
-// ─── 3. ADD verifyPaymentAndSave ──────────────────────────────────────────────
+//verifyPaymentAndSave 
  
 async verifyPaymentAndSave(userId: string, sessionId: string): Promise<ActiveSubscriptionDto> {
-  // 1. Fetch the Stripe session directly (no webhook needed)
+
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const session = await stripe.checkout.sessions.retrieve(sessionId);
  
-  // 2. Verify it's actually paid
+
   if (session.payment_status !== "paid") {
     throw new AppError(STATUS.BAD_REQUEST, "Payment not completed");
   }
  
-  // 3. Verify the session belongs to this user (metadata set during checkout)
+ 
   const sessionUserId = session.metadata?.userId;
   if (sessionUserId !== userId) {
     throw new AppError(STATUS.FORBIDDEN, "Session does not belong to this user");
@@ -216,7 +243,6 @@ async verifyPaymentAndSave(userId: string, sessionId: string): Promise<ActiveSub
     throw new AppError(STATUS.BAD_REQUEST, "Missing planId in session metadata");
   }
  
-  // 4. Idempotency — if already processed, just return active subscription
   const existing = await this._subscriptionTransactionRepository.findByTransactionId(sessionId);
   if (existing) {
     const activeSub = await this.getActiveSubscription(userId);
@@ -224,13 +250,13 @@ async verifyPaymentAndSave(userId: string, sessionId: string): Promise<ActiveSub
     return activeSub;
   }
  
-  // 5. Fetch plan for duration
+
   const plan = await this._subscriptionPlanRepository.getSubscriptionPlanById(planId);
   if (!plan) {
     throw new AppError(STATUS.NOT_FOUND, "Plan not found");
   }
  
-  // 6. Create UserSubscription
+
   const startDate = new Date();
   const endDate = new Date();
   endDate.setDate(endDate.getDate() + (plan.durationInDays ?? 30));
@@ -242,7 +268,7 @@ async verifyPaymentAndSave(userId: string, sessionId: string): Promise<ActiveSub
     endDate,
   });
  
-  // 7. Create SubscriptionTransaction
+ 
   await this._subscriptionTransactionRepository.create({
     userId,
     subscriptionPlanId: planId,
@@ -260,7 +286,7 @@ async verifyPaymentAndSave(userId: string, sessionId: string): Promise<ActiveSub
     },
   });
  
-  // 8. Return the active subscription data
+
   return {
     subscriptionId: String(userSubscription._id),
     planId,
@@ -295,10 +321,40 @@ async getActiveSubscription(userId: string): Promise<ActiveSubscriptionDto | nul
   };
 }
 
-private async _buildActiveSubscriptionDto(userId: string): Promise<ActiveSubscriptionDto> {
-  const sub = await this.getActiveSubscription(userId);
-  if (!sub) throw new AppError(STATUS.NOT_FOUND, "No active subscription found");
-  return sub;
-}
+  private async _buildActiveSubscriptionDto(userId: string): Promise<ActiveSubscriptionDto> {
+    const sub = await this.getActiveSubscription(userId);
+    if (!sub) throw new AppError(STATUS.NOT_FOUND, "No active subscription found");
+    return sub;
+  }
 
+  async getOnboardingGroups(): Promise<GetAllQuestionGroupsResponse> {
+    return this._groupRepo.getAllGroups({ limit: 100, isActive: true });
+  }
+
+  async getOnboardingQuestions(): Promise<GetAllQuestionsResponse> {
+    return this._questionRepo.getAllQuestions({ limit: 500, isActive: true });
+  }
+
+  async submitOnboarding(userId: string, data: { answers: { questionId: string; key: string; value: OnboardingValue }[] }): Promise<void> {
+
+    const submission: UserAnswerSubmission = {
+      userId,
+      answers: data.answers.map(ans => ({
+        questionId: ans.questionId,
+        questionKey: ans.key,
+        answer: ans.value
+      })),
+      completed: true
+    };
+    await this._answerRepo.saveUserAnswers(submission);
+  }
+
+  async getOnboardingStatus(userId: string): Promise<{ completed: boolean }> {
+    const userAnswers = await this._answerRepo.getUserAnswers(userId);
+    return { completed: userAnswers?.completed ?? false };
+  }
+
+  async getOnboardingAnswers(userId: string): Promise<UserAnswerSubmission | null> {
+    return this._answerRepo.getUserAnswers(userId);
+  }
 }

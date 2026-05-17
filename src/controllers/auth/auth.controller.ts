@@ -12,7 +12,7 @@ const logger = new Logger("AuthController");
 
 
 export class AuthController {
-  constructor(private _authService: IAuthService) {}
+  constructor(private _authService: IAuthService) { }
 
   //send OTP
   register = async (req: Request, res: Response, next: NextFunction) => {
@@ -137,8 +137,6 @@ export class AuthController {
     try {
       const { response: loginResponse, refreshToken } =
         await this._authService.login(req.body);
-
-        // console.log("login response",loginResponse)
 
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,

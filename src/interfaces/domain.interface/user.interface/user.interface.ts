@@ -31,10 +31,8 @@ export interface UserInterface {
   phoneNumber?: string | null;
   password: string;
   profilePic?: string | null;
-  gender: Gender | null; 
   role: Role;
   isVerified: boolean;
-  dateOfBirth: Date | null;
   isBlocked: boolean;
   createdAt: Date;
   updatedAt: Date;

@@ -34,7 +34,7 @@ export class TrainerMapper {
   static toProfileResponse(updatedUser: UserInterface): import("../../dto/trainer/trainer.dto").FindTrainerResponseDto | PromiseLike<import("../../dto/trainer/trainer.dto").FindTrainerResponseDto> {
     throw new Error("Method not implemented.");
   }
-  private static mapTrainerUser(user: IUserDocument) {
+  private static mapTrainerUser(user: IUserDocument, profile: ITrainerProfileDocument) {
     return {
       _id: user._id?.toString() || "",
       id: user._id?.toString() || "",
@@ -43,10 +43,10 @@ export class TrainerMapper {
       email: user.email,
       phoneNumber: user.phoneNumber || null,
       profilePic: user.profilePic || null,
-      gender: user.gender,
+      gender: profile.gender,
       role: user.role,
       isVerified: user.isVerified,
-      dateOfBirth: user.dateOfBirth?.toISOString() || null,
+      dateOfBirth: profile.dateOfBirth?.toISOString() || null,
       isBlocked: user.isBlocked,
       createdAt: user.createdAt?.toISOString() || "",
       updatedAt: user.updatedAt?.toISOString() || "",
@@ -65,8 +65,8 @@ export class TrainerMapper {
       rejectionReason: profile.rejectionReason || null,
       createdAt: profile.createdAt?.toISOString() || "",
       updatedAt: profile.updatedAt?.toISOString() || "",
-      specializations: (profile.specializations as unknown as any[] || []).map(spec => ({
-        _id: spec._id?.toString() || "",
+      specializations: (profile.specializations as unknown as { _id: string | mongoose.Types.ObjectId; name?: string }[] || []).map(spec => ({
+        _id: String(spec._id),
         name: spec.name || "",
       })),
     };
@@ -75,7 +75,7 @@ export class TrainerMapper {
 
   static toDto(trainer: ITrainerWithProfile): GetTrainerAppointmentsResponseDto {
     return {
-      user: this.mapTrainerUser(trainer.user),
+      user: this.mapTrainerUser(trainer.user, trainer.profile),
       profile: this.mapTrainerBaseProfile(trainer.profile),
     };
   }
@@ -88,7 +88,7 @@ export class TrainerMapper {
     const baseProfile = this.mapTrainerBaseProfile(trainer.profile);
     
     return {
-      user: this.mapTrainerUser(trainer.user),
+      user: this.mapTrainerUser(trainer.user, trainer.profile),
       profile: {
         ...baseProfile,
 

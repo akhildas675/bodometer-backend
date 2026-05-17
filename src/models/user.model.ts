@@ -12,10 +12,8 @@ export interface IUserDocument extends Document {
     phoneNumber: string | null;
     password: string;
     profilePic?: string | null;
-    gender: Gender,
     role: Role;
     isVerified: boolean;
-    dateOfBirth?: Date | null;
     isBlocked: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -52,11 +50,6 @@ const UserSchema = new Schema<IUserDocument>(
             type: String,
             default: null
         },
-        gender: {
-            type: String,
-            enum: Object.values(GENDER),
-            default: GENDER.PREFER_NOT_SAY
-        },
         role: {
             type: String,
             enum: Object.values(ROLES),
@@ -67,7 +60,6 @@ const UserSchema = new Schema<IUserDocument>(
             default: false
         },
 
-        dateOfBirth: { type: Date, default: null },
         isBlocked: { type: Boolean, default: false }
     },
 

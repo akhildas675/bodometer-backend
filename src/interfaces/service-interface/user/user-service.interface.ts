@@ -1,4 +1,4 @@
-import { CategoryQuery, GetAllCategoriesResponse } from "../../../interfaces/domain.interface/admin.interface/admin.interface";
+import { CategoryQuery, GetAllCategoriesResponse, GetAllQuestionGroupsResponse, GetAllQuestionsResponse, OnboardingValue, UserAnswerSubmission } from "../../../interfaces/domain.interface/admin.interface/admin.interface";
 import { ActiveSubscriptionDto, CategoryDetailDto, ChangePasswordDto, FindUserResponseDto, GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto, UpdateUserProfileDto, UserSubscriptionPlanResponseDto } from "../../../dto/user/user.dto";
 import { UserSubscriptions } from "@/interfaces/domain.interface/user.interface/user.interface";
 
@@ -26,4 +26,10 @@ export interface IUserService {
  
   verifyPaymentAndSave(userId: string, sessionId: string): Promise<ActiveSubscriptionDto>;
   getActiveSubscription(userId: string): Promise<ActiveSubscriptionDto | null>;
+
+  getOnboardingGroups(): Promise<GetAllQuestionGroupsResponse>;
+  getOnboardingQuestions(): Promise<GetAllQuestionsResponse>;
+  submitOnboarding(userId: string, data: { answers: { questionId: string; key: string; value: OnboardingValue }[] }): Promise<void>;
+  getOnboardingStatus(userId: string): Promise<{ completed: boolean }>;
+  getOnboardingAnswers(userId: string): Promise<UserAnswerSubmission | null>;
 }

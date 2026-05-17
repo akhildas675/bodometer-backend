@@ -24,7 +24,7 @@ export interface ISubscriptionTransaction
 
   paidAt?: Date;
 
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
 
   createdAt: Date;
   updatedAt: Date;

@@ -20,6 +20,11 @@ import {
   UpdateCategoryDto,
   UpdateSubscriptionFeatureDto,
   UpdateSubscriptionPlanDto,
+  CreateQuestionGroupDto,
+  UpdateQuestionGroupDto,
+  CreateQuestionDto,
+  UpdateQuestionDto,
+  QuestionQueryDto,
 } from "../../dto/admin/admin.dto";
 import { AuthRequest } from "@/middleware/authGuard";
 
@@ -261,7 +266,7 @@ export class AdminController {
   }
 
   getAllCategories = async (req: Request, res: Response, next: NextFunction) => {
-    console.log("function call hua reeee ")
+ 
     try {
       const query: CategoryQueryDto = {
         search: req.query.search?.toString().trim() || "",
@@ -272,7 +277,6 @@ export class AdminController {
       };
 
       const { data, pagination } = await this._adminService.getAllCategories(query);
-      console.log(data, pagination);
 
 
       res.status(200).json({
@@ -393,7 +397,7 @@ export class AdminController {
   createSubscriptionPlan = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
 
-      console.log("hit create subscription plan")
+  
       const data: CreateSubscriptionPlanDto = {
         name: req.body.name?.trim(),
         description: req.body.description?.trim(),
@@ -402,7 +406,7 @@ export class AdminController {
         isPopular: req.body.isPopular,
         features: req.body.features,
       };
-      console.log("data", data);
+  
       await this._adminService.createSubscriptionPlan(data);
       res.status(201).json({
         success: true,
@@ -485,8 +489,127 @@ export class AdminController {
     }
   };
 
+  // Question Groups
+  getAllQuestionGroups = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const query = {
+        search: req.query.search?.toString().trim() || "",
+        page: parseInt(req.query.page as string) || 1,
+        limit: parseInt(req.query.limit as string) || 10,
+      };
+      const { data, pagination } = await this._adminService.getAllQuestionGroups(query);
+      res.status(200).json({ success: true, data, pagination });
+    } catch (error) {
+      next(error);
+    }
+  };
 
+  createQuestionGroup = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const data: CreateQuestionGroupDto = {
+        key: req.body.key?.trim(),
+        title: req.body.title?.trim(),
+        order: Number(req.body.order),
+      };
 
+     
+      await this._adminService.createQuestionGroup(data);
+      res.status(201).json({ success: true, message: "Question group created successfully" });
+    } catch (error) {
+      next(error);
+    }
+  };
 
+  updateQuestionGroup = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const data: UpdateQuestionGroupDto = {
+        title: req.body.title?.trim(),
+        order: Number(req.body.order),
+      };
+      await this._adminService.updateQuestionGroup(id, data);
+      res.status(200).json({ success: true, message: "Question group updated successfully" });
+    } catch (error) {
+      next(error);
+    }
+  };
 
+  toggleQuestionGroupStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      await this._adminService.toggleQuestionGroupStatus(req.params.id);
+      res.status(200).json({ success: true, message: "Group status updated" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getQuestionGroupById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const group = await this._adminService.getQuestionGroupById(req.params.id);
+      res.status(200).json({ success: true, data: group });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Questions
+  getAllQuestions = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const query: QuestionQueryDto = {
+        search: req.query.search?.toString().trim() || "",
+        groupId: req.query.groupId?.toString(),
+        page: parseInt(req.query.page as string) || 1,
+        limit: parseInt(req.query.limit as string) || 10,
+        sortBy: req.query.sortBy?.toString() || "createdAt",
+        sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
+      };
+      const { data, pagination } = await this._adminService.getAllQuestions(query);
+      res.status(200).json({ success: true, data, pagination });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  createQuestion = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const data: CreateQuestionDto = req.body;
+      const adminId = req.user?.id;
+      
+      if (!adminId) throw new AppError(STATUS.UNAUTHORIZED, "Unauthorized context");
+   
+      await this._adminService.createQuestion(data, adminId);
+      res.status(201).json({ success: true, message: "Question created successfully" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateQuestion = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+
+      await this._adminService.updateQuestion(req.params.id, req.body);
+      
+      res.status(200).json({ success: true, message: "Question updated successfully" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  toggleQuestionStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      await this._adminService.toggleQuestionStatus(req.params.id);
+      res.status(200).json({ success: true, message: "Question status updated" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getQuestionById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const question = await this._adminService.getQuestionById(req.params.id);
+      res.status(200).json({ success: true, data: question });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

@@ -35,6 +35,9 @@ export interface LoginResponseDto {
     verificationStatus?: VerificationStatus;
     rejectionReason?: string | null;
   };
+
+  onboardingComplete?: boolean;
+  hasActiveSubscription?: boolean;
 }
 export interface OtpVerifyDto {
   email: string;

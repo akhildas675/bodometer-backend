@@ -6,16 +6,16 @@ import { UserInterface } from "../../interfaces/domain.interface/user.interface/
 
 export class UserMapper {
 
-  static toFindUserResponse(user: UserInterface): FindUserResponseDto {
+  static toFindUserResponse(user: UserInterface, profile: { gender?: string | null; dateOfBirth?: Date | string | null } | null): FindUserResponseDto {
     return {
       id: user.id,
       name: user.name,
       email: user.email,
       userName: user.userName,
       phoneNumber: user.phoneNumber ?? "",
-      gender: user.gender ?? null,
+      gender: profile?.gender ?? null,
       profilePic: user.profilePic ?? null,
-      dateOfBirth: user.dateOfBirth ? user.dateOfBirth.toISOString() : null,
+      dateOfBirth: profile?.dateOfBirth ? new Date(profile.dateOfBirth).toISOString() : null,
     };
   }
 }
@@ -35,7 +35,7 @@ export class UserMappers {
       experienceInYears: trainer.profile.experienceInYears,
       bio: trainer.profile.bio,
       coverPhoto:trainer.profile.coverPhoto,
-      specializations: (trainer.profile.specializations as unknown as any[] || []).map(spec => ({
+      specializations: (trainer.profile.specializations as unknown as { _id: string | mongoose.Types.ObjectId; name?: string }[] || []).map(spec => ({
         _id: String(spec._id),
         name: spec.name || "",
       })),
@@ -55,7 +55,7 @@ export class UserMappers {
     coverPhoto: data.profile.coverPhoto ?? "",
     bio: data.profile.bio,
     experienceInYears: data.profile.experienceInYears,
-    specializations: (data.profile.specializations as unknown as any[] || []).map(spec => ({
+    specializations: (data.profile.specializations as unknown as { _id: string | mongoose.Types.ObjectId; name?: string }[] || []).map(spec => ({
         _id: String(spec._id),
         name: spec.name || "",
     })),

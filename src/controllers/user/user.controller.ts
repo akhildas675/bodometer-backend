@@ -151,7 +151,7 @@ export class UserController {
     try {
       const { id } = req.params;
 
-      console.log("id in trainer details", id);
+ 
       if (!id) {
         throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
       }
@@ -199,14 +199,13 @@ export class UserController {
     try {
       const { categoryId } = req.params;
 
-      console.log("id in category details", categoryId);
+     
       if (!categoryId) {
         throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
       }
 
       const result = await this._userService.getCategoryById(categoryId);
-      console.log("result", result);
-
+     
       res.status(STATUS.OK).json({
         success: true,
         message: MESSAGES.COMMON.SUCCESS,
@@ -221,7 +220,7 @@ export class UserController {
   getMySubscriptions = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
 
-      console.log("my subscription hit")
+   
       if (!req.user?.id) {
         throw new AppError(STATUS.BAD_REQUEST, MESSAGES.USER.USER_NOT_FOUND)
 
@@ -297,5 +296,78 @@ export class UserController {
     }
   };
 
+  getOnboardingGroups = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await this._userService.getOnboardingGroups();
+      res.status(STATUS.OK).json({
+        success: true,
+        message: MESSAGES.COMMON.SUCCESS,
+        data: result.data,
+        pagination: result.pagination
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
+  getOnboardingQuestions = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await this._userService.getOnboardingQuestions();
+      res.status(STATUS.OK).json({
+        success: true,
+        message: MESSAGES.COMMON.SUCCESS,
+        data: result.data,
+        pagination: result.pagination
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  submitOnboarding = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user?.id) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      }
+      await this._userService.submitOnboarding(req.user.id, req.body);
+      res.status(STATUS.OK).json({
+        success: true,
+        message: "Onboarding answers saved successfully"
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getOnboardingStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user?.id) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      }
+      const result = await this._userService.getOnboardingStatus(req.user.id);
+      res.status(STATUS.OK).json({
+        success: true,
+        message: MESSAGES.COMMON.SUCCESS,
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getOnboardingAnswers = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user?.id) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      }
+      const result = await this._userService.getOnboardingAnswers(req.user.id);
+      res.status(STATUS.OK).json({
+        success: true,
+        message: MESSAGES.COMMON.SUCCESS,
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

@@ -18,4 +18,10 @@ export const USER_ROUTES = {
   VERIFY_PAYMENT: "/user/verify-payment",
   GET_ACTIVE_SUBSCRIPTION: "/user/active-subscription",
 
+  // onboarding
+  GET_ONBOARDING_GROUPS: "/user/onboarding-groups",
+  GET_ONBOARDING_QUESTIONS: "/user/onboarding-questions",
+  SUBMIT_ONBOARDING: "/user/submit-onboarding",
+  GET_ONBOARDING_STATUS: "/user/onboarding-status",
+  GET_ONBOARDING_ANSWERS: "/user/onboarding-answers",
 } as const;
