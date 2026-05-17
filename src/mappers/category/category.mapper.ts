@@ -1,4 +1,4 @@
-import { CategoryDetailDto } from "../../dto/user/user.dto";
+import { CategoryDetailDto } from "../../dto/category/category.dto";
 import { Category } from "../../interfaces/domain.interface/admin.interface/admin.interface";
 
 export class CategoryMappers {
@@ -12,7 +12,7 @@ export class CategoryMappers {
           url: category.media?.image?.url || "",
         },
       },
-      isActive: category.isActive,
+      isActive: category.isActive ?? false,
     };
   }
 }

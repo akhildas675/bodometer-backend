@@ -1,19 +1,22 @@
 import { UserInterface } from "@/interfaces/domain.interface/user.interface/user.interface";
 
 import { FindTrainerResponseDto } from "@/dto/trainer/trainer.dto";
-import { Gender } from "@/constants/identity.constants";
+
 
 export class TrainerMapper {
-  static toProfileResponse(user: UserInterface): FindTrainerResponseDto {
+  static toProfileResponse(
+    user: UserInterface,
+    profile?: { gender?: string | null; dateOfBirth?: Date | string | null } | null
+  ): FindTrainerResponseDto {
     return {
       id: user.id.toString(),
       name: user.name,
       email: user.email,
       userName: user.userName,
       phoneNumber: user.phoneNumber ?? "",
-      gender: (user.gender as Gender) ?? null,   
+      gender: profile?.gender ?? null,   
       profilePic: user.profilePic ?? null,
-      dateOfBirth: user.dateOfBirth ? user.dateOfBirth.toISOString() : null,
+      dateOfBirth: profile?.dateOfBirth ? new Date(profile.dateOfBirth).toISOString() : null,
     };
   }
 

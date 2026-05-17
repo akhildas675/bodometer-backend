@@ -1,5 +1,8 @@
 import { CategoryQuery, GetAllCategoriesResponse, GetAllQuestionGroupsResponse, GetAllQuestionsResponse, OnboardingValue, UserAnswerSubmission } from "../../../interfaces/domain.interface/admin.interface/admin.interface";
-import { ActiveSubscriptionDto, CategoryDetailDto, ChangePasswordDto, FindUserResponseDto, GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto, UpdateUserProfileDto, UserSubscriptionPlanResponseDto } from "../../../dto/user/user.dto";
+import { ChangePasswordDto, FindUserResponseDto, UpdateUserProfileDto } from "../../../dto/user/user.dto";
+import { ActiveSubscriptionDto, UserSubscriptionPlanResponseDto } from "../../../dto/subscription/subscription.dto";
+import { GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto } from "../../../dto/trainer/trainer.dto";
+import { CategoryDetailDto } from "../../../dto/category/category.dto";
 import { UserSubscriptions } from "@/interfaces/domain.interface/user.interface/user.interface";
 
 

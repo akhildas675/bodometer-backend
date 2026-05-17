@@ -5,7 +5,8 @@ import { IUserService } from "../../interfaces/service-interface/user/user-servi
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
 import { MESSAGES } from "../../constants/messages";
-import { ChangePasswordDto, GetTrainersQueryDto, UpdateUserProfileDto } from "../../dto/user/user.dto";
+import { ChangePasswordDto, UpdateUserProfileDto } from "../../dto/user/user.dto";
+import { GetTrainersQueryDto } from "../../dto/trainer/trainer.dto";
 import { success } from "zod";
 
 

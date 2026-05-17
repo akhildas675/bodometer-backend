@@ -1,5 +1,6 @@
 import { Gender } from "../../constants/identity.constants";
-import { BaseUserProfileDto, PaginationQueryDto, PaginatedResponseDto } from "../common.dto";
+import { Role } from "../../constants/roles";
+import { BaseUserProfileDto, PaginationQueryDto } from "../common.dto";
 
 export interface FindUserDto {
   userId: string;
@@ -31,92 +32,24 @@ export interface ChangePasswordDto {
   newPassword: string;
 }
 
-
-
-export interface CreateCheckoutSessionDto {
-  planId: string;
-}
-
-export interface CheckoutSessionResponseDto {
-  sessionId: string;
-  url: string;
-}
-
-export interface GetTrainersQueryDto extends PaginationQueryDto {
-  specializationId?: string;
-}
-
-export interface TrainerListItemDto {
-  _id: string;
+export interface AdminBaseUserResponseDto {
+  id: string;
   name: string;
-  profilePic: string | null;
-  profileId: string;
-  experienceInYears: number;
-  coverPhoto: string;
-  bio: string;
-  specializations: { _id: string; name: string }[];
+  email: string;
+  role: Exclude<Role, "admin">;
+  isBlocked: boolean;
+  isVerified: boolean;
+  createdAt: string;
+  profilePic?: string | null;
 }
 
-export type TrainerListResponseDto = PaginatedResponseDto<TrainerListItemDto>;
-
-
-export interface RelatedTrainerDto {
-  _id: string;
-  name: string;
-  profilePic: string | null;
-  experienceInYears: number;
-  bio: string;
+export interface AdminGetUsersDto extends PaginationQueryDto {
+  role?: Exclude<Role, "admin">;
+  isBlocked?: boolean;
 }
 
+export type AdminGetUsersResponseDto = AdminBaseUserResponseDto;
 
-export interface TrainerDetailDto {
-  _id: string;
-  name: string;
-  profilePic: string | null;
-  coverPhoto: string;
-  bio: string;
-  experienceInYears: number;
-  specializations: { _id: string; name: string }[];
+export interface AdminBlockUnBlockUserDto {
+  userId: string;
 }
-
-
-export interface CategoryDetailDto{
-  categoryId: string;
-  name: string;
-  description: string;
-  media: {
-    image: {
-      url: string;
-    };
-  };
-  isActive: boolean;
-}
-
-
-export interface UserSubscriptionPlanResponseDto{
-   subscriptionPlanId?: string;
-  name: string;
-  description: string;
-  price: number;
-  durationInDays: number;
-  features: {
-    featureId: string;
-    title?: string;
-    limit?: number;
-    limitType?: string;
-  }[];
-  isPopular: boolean;
-
-  isActive?: boolean;
-}
-
-export interface ActiveSubscriptionDto {
-  subscriptionId: string;
-  planId: string;
-  planName: string;
-  startDate: Date;
-  endDate: Date;
-  status: string;
-  daysRemaining: number;
-}
- 

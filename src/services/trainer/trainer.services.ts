@@ -10,7 +10,7 @@ import { CategoryQuery, GetAllCategoriesResponse } from "../../interfaces/domain
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
 import { MESSAGES } from "../../constants/messages";
-import { TrainerMapper } from "../../mappers/admin/admin.mappers";
+import { TrainerMapper } from "../../mappers/trainer/trainer.mapper";
 import { VERIFICATION_STATUS } from "../../constants/verification.constants";
 
 export class TrainerService implements ITrainerService {
@@ -27,7 +27,8 @@ export class TrainerService implements ITrainerService {
     if (!trainer) {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND);
     }
-    return TrainerMapper.toProfileResponse(trainer);
+    const profile = await this._trainerProfileRepo.findByUserId(trainerId);
+    return TrainerMapper.toProfileResponse(trainer, profile);
   }
 
   async updateTrainerProfile(
@@ -63,7 +64,8 @@ export class TrainerService implements ITrainerService {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND);
     }
 
-    return TrainerMapper.toProfileResponse(updatedUser);
+    const profile = await this._trainerProfileRepo.findByUserId(trainerId);
+    return TrainerMapper.toProfileResponse(updatedUser, profile);
   }
 
   async uploadTrainerProfilePicture(
@@ -124,20 +126,22 @@ export class TrainerService implements ITrainerService {
         experienceInYears: data.experienceInYears,
         certifications: [certificateUrl],
         bio: data.bio,
-
-        coverPhoto:coverPhotoUrl,
+        coverPhoto: coverPhotoUrl,
         specializations: data.specializationIds,
+        gender: data.gender,
+        dateOfBirth: new Date(data.dateOfBirth),
       });
       return;
     }
 
     await this._trainerProfileRepo.createProfile({
       userId: new mongoose.Types.ObjectId(userId),
-
       experienceInYears: data.experienceInYears,
-      coverPhoto:coverPhotoUrl,
+      coverPhoto: coverPhotoUrl,
       certifications: [certificateUrl],
       bio: data.bio,
+      gender: data.gender,
+      dateOfBirth: new Date(data.dateOfBirth),
       specializations: data.specializationIds.map(id => new mongoose.Types.ObjectId(id)),
       verificationStatus: VERIFICATION_STATUS.PENDING,
       rejectionReason: null,

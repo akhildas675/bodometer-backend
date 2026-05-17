@@ -4,28 +4,11 @@ import { AppError } from "../../utils/appError";
 import { IAdminService } from "../../interfaces/service-interface/admin/admin-service.interface";
 import { STATUS } from "../../constants/statuscode";
 import { MESSAGES } from "../../constants/messages";
-import {
-  AdminBlockUnblockTrainerDto,
-  AdminBlockUnBlockUserDto,
-  AdminGetTrainersDto,
-  AdminGetUsersDto,
-  CategoryQueryDto,
-  CreateCategoryDto,
-  CreateSubscriptionFeatureDto,
-  CreateSubscriptionPlanDto,
-  GetTrainerAppointmentsQueryDto,
-  RejectTrainerBodyDto,
-  SubscriptionFeatureQueryDto,
-  SubscriptionPlanQueryDto,
-  UpdateCategoryDto,
-  UpdateSubscriptionFeatureDto,
-  UpdateSubscriptionPlanDto,
-  CreateQuestionGroupDto,
-  UpdateQuestionGroupDto,
-  CreateQuestionDto,
-  UpdateQuestionDto,
-  QuestionQueryDto,
-} from "../../dto/admin/admin.dto";
+import { AdminBlockUnBlockUserDto, AdminGetUsersDto } from "../../dto/user/user.dto";
+import { AdminBlockUnblockTrainerDto, AdminGetTrainersDto, GetTrainerAppointmentsQueryDto, RejectTrainerBodyDto } from "../../dto/trainer/trainer.dto";
+import { CategoryQueryDto, CreateCategoryDto, UpdateCategoryDto } from "../../dto/category/category.dto";
+import { CreateSubscriptionFeatureDto, CreateSubscriptionPlanDto, SubscriptionFeatureQueryDto, SubscriptionPlanQueryDto, UpdateSubscriptionFeatureDto, UpdateSubscriptionPlanDto } from "../../dto/subscription/subscription.dto";
+import { CreateQuestionGroupDto, UpdateQuestionGroupDto, CreateQuestionDto, UpdateQuestionDto, QuestionQueryDto } from "../../dto/onboarding/onboarding.dto";
 import { AuthRequest } from "@/middleware/authGuard";
 
 
