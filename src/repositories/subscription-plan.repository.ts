@@ -24,6 +24,7 @@ export default class SubscriptionPlanRepository
   protected toInterface(doc: ISubscriptionPlan): SubscriptionPlan {
     return {
       subscriptionPlanId: doc._id.toString(),
+      planId: doc._id.toString(),
       name: doc.name,
       description: doc.description?.toString() ?? "",
       price: doc.price,
@@ -33,8 +34,11 @@ export default class SubscriptionPlanRepository
         limit: feature.limit,
         limitType: feature.limitType?.toString(),
       })),
+      featuresCount: doc.features?.length || 0,
       isPopular: doc.isPopular,
       isActive: doc.isActive,
+      createdAt: doc.createdAt?.toISOString(),
+      updatedAt: doc.updatedAt?.toISOString(),
     };
   }
 

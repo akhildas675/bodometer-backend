@@ -19,6 +19,7 @@ export interface SubscriptionFeatureQuery {
 
 export interface SubscriptionPlan {
   subscriptionPlanId?: string;
+  planId?: string;
   name: string;
   description: string;
   price: number;
@@ -28,8 +29,11 @@ export interface SubscriptionPlan {
     limit?: number;
     limitType?: string;
   }[];
+  featuresCount?: number;
   isPopular: boolean;
   isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface SubscriptionPlanQuery {
