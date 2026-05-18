@@ -28,7 +28,7 @@ export const ADMIN_ROUTES = {
   GET_FEATURE_BY_ID: "/admin/get-subscription-feature/:id",
   CREATE_FEATURE: "/admin/create-subscription-feature",
   UPDATE_FEATURE: "/admin/update-subscription-feature/:id",
-  TOGGLE_FEATURE_STATUS: "/admin/subscription-feature/:id",
+  TOGGLE_FEATURE_STATUS: "/admin/toggle-subscription-features/:id",
 
   //Subscription plans
   CREATE_SUBSCRIPTION_PLAN: "/admin/create-subscription-plan",

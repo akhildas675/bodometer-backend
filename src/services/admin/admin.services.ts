@@ -285,7 +285,7 @@ export class AdminService implements IAdminService {
       name: data.name,
       description: data.description,
       media: { image: { url: imageUrl } },
-      isActive: false,
+      isActive: true,
     };
 
     await this._categoryRepository.createCategory(categoryData);
@@ -325,12 +325,6 @@ export class AdminService implements IAdminService {
         MESSAGES.ADMIN.CATEGORY_CREATION_FAILED || "Description is required",
       );
     }
-    if (!data.image) {
-      throw new AppError(
-        STATUS.BAD_REQUEST,
-        MESSAGES.ADMIN.CATEGORY_CREATION_FAILED || "Image is required",
-      );
-    }
 
     const category = await this._categoryRepository.getCategoryById(
       data.categoryId,
@@ -342,7 +336,11 @@ export class AdminService implements IAdminService {
       );
     }
 
-    const imageUrl = await this._s3Service.uploadFile(data.image, data.name);
+    let imageUrl = category.media.image.url;
+    if (data.image) {
+      imageUrl = await this._s3Service.uploadFile(data.image, data.name);
+    }
+
     const categoryData: Category = {
       name: data.name,
       description: data.description,

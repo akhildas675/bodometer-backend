@@ -250,6 +250,7 @@ export class AdminController {
         description: req.body.description?.trim(),
         image: req.file,
       };
+      console.log("category data backend update...", data);
 
       await this._adminService.updateCategory(data);
 
@@ -584,12 +585,10 @@ export class AdminController {
       };
 
       await this._adminService.createQuestionGroup(data);
-      res
-        .status(201)
-        .json({
-          success: true,
-          message: "Question group created successfully",
-        });
+      res.status(201).json({
+        success: true,
+        message: "Question group created successfully",
+      });
     } catch (error) {
       next(error);
     }
@@ -607,12 +606,10 @@ export class AdminController {
         order: Number(req.body.order),
       };
       await this._adminService.updateQuestionGroup(id, data);
-      res
-        .status(200)
-        .json({
-          success: true,
-          message: "Question group updated successfully",
-        });
+      res.status(200).json({
+        success: true,
+        message: "Question group updated successfully",
+      });
     } catch (error) {
       next(error);
     }

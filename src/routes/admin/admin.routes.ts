@@ -132,7 +132,7 @@ adminRoute.post(
   ROLE_GUARD.ADMIN_GUARD,
   adminController.createSubscriptionFeature,
 );
-adminRoute.patch(
+adminRoute.put(
   ADMIN_ROUTES.UPDATE_FEATURE,
   ROLE_GUARD.ADMIN_GUARD,
   adminController.updateSubscriptionFeature,
