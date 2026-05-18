@@ -17,6 +17,7 @@ export const USER_ROUTES = {
   CHECKOUT_SESSION: "/user/checkout-session",
   VERIFY_PAYMENT: "/user/verify-payment",
   GET_ACTIVE_SUBSCRIPTION: "/user/active-subscription",
+  GET_MY_TRANSACTIONS: "/user/transactions",
 
   // onboarding
   GET_ONBOARDING_GROUPS: "/user/onboarding-groups",

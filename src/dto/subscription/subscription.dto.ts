@@ -127,3 +127,35 @@ export interface UpdateSubscriptionPlanDto {
   isActive?: boolean;
   features?: Array<{ featureId: string; limit?: number; limitType?: string }>;
 }
+
+export interface SubscriptionTransactionQueryDto extends PaginationQueryDto {
+  search?: string;
+  status?: string;
+}
+
+export interface SubscriptionTransactionDto {
+  _id: string;
+  userId: {
+    _id: string;
+    name: string;
+    email: string;
+  } | null;
+  subscriptionPlanId: {
+    _id: string;
+    name: string;
+  } | null;
+  amount: number;
+  currency: string;
+  paymentMethod: string;
+  paymentGateway: string;
+  transactionId?: string;
+  paymentStatus: string;
+  paidAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface GetAllSubscriptionTransactionsResponseDto {
+  data: SubscriptionTransactionDto[];
+  pagination: PaginationMetaDto;
+}

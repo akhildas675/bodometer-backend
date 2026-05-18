@@ -85,6 +85,12 @@ userRoute.get(
   userController.getActiveSubscription,
 );
 
+userRoute.get(
+  USER_ROUTES.GET_MY_TRANSACTIONS,
+  ROLE_GUARD.USER_GUARD,
+  userController.getUserTransactions,
+);
+
 // onboarding routes
 userRoute.get(
   USER_ROUTES.GET_ONBOARDING_GROUPS,

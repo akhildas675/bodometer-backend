@@ -26,6 +26,7 @@ import {
   SubscriptionPlanQueryDto,
   UpdateSubscriptionFeatureDto,
   UpdateSubscriptionPlanDto,
+  SubscriptionTransactionQueryDto,
 } from "../../dto/subscription/subscription.dto";
 import {
   CreateQuestionGroupDto,
@@ -720,6 +721,34 @@ export class AdminController {
     try {
       const question = await this._adminService.getQuestionById(req.params.id);
       res.status(200).json({ success: true, data: question });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getAllSubscriptionTransactions = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const query: SubscriptionTransactionQueryDto = {
+        search: req.query.search?.toString().trim() || "",
+        status: req.query.status?.toString().trim() || "",
+        page: parseInt(req.query.page as string) || 1,
+        limit: parseInt(req.query.limit as string) || 10,
+        sortBy: (req.query.sortBy as string) || "createdAt",
+        sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
+      };
+
+      const { data, pagination } =
+        await this._adminService.getAllSubscriptionTransactions(query);
+
+      res.status(STATUS.OK).json({
+        success: true,
+        data,
+        pagination,
+      });
     } catch (error) {
       next(error);
     }

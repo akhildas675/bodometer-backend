@@ -4,6 +4,7 @@ import { ChangePasswordDto, FindUserResponseDto, UpdateUserProfileDto } from "..
 import { ActiveSubscriptionDto, UserSubscriptionPlanResponseDto } from "../../../dto/subscription/subscription.dto";
 import { GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto } from "../../../dto/trainer/trainer.dto";
 import { CategoryDetailDto } from "../../../dto/category/category.dto";
+import { PaginationMeta } from "@/interfaces/domain.interface/common.interface";
 
 
 
@@ -25,4 +26,13 @@ export interface IUserService {
   submitOnboarding(userId: string, data: { answers: { questionId: string; key: string; value: OnboardingValue }[] }): Promise<void>;
   getOnboardingStatus(userId: string): Promise<{ completed: boolean }>;
   getOnboardingAnswers(userId: string): Promise<UserAnswerSubmission | null>;
+  getUserTransactions(
+    userId: string,
+    search?: string,
+    sortBy?: string,
+    sortOrder?: "asc" | "desc",
+    page?: number,
+    limit?: number,
+    status?: string,
+  ): Promise<{ data: any[]; pagination: PaginationMeta }>;
 }

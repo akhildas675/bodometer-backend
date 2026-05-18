@@ -227,4 +227,11 @@ adminRoute.patch(
   adminController.toggleQuestionStatus,
 );
 
+// Subscription Transactions
+adminRoute.get(
+  ADMIN_ROUTES.GET_ALL_SUBSCRIPTION_TRANSACTIONS,
+  ROLE_GUARD.ADMIN_GUARD,
+  adminController.getAllSubscriptionTransactions,
+);
+
 export default adminRoute;

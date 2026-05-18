@@ -413,4 +413,34 @@ export class UserController {
       next(error);
     }
   };
+
+  getUserTransactions = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      if (!req.user?.id) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      }
+      const { search, sortBy, sortOrder, page, limit, status } = req.query;
+      const result = await this._userService.getUserTransactions(
+        req.user.id,
+        search ? String(search) : undefined,
+        sortBy ? String(sortBy) : undefined,
+        sortOrder === "asc" || sortOrder === "desc" ? sortOrder : undefined,
+        page ? Number(page) : undefined,
+        limit ? Number(limit) : undefined,
+        status ? String(status) : undefined,
+      );
+      res.status(STATUS.OK).json({
+        success: true,
+        message: MESSAGES.COMMON.SUCCESS,
+        data: result.data,
+        pagination: result.pagination,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

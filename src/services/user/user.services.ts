@@ -44,6 +44,7 @@ import { IGroupRepository } from "@/interfaces/repository-interface/onboarding/g
 import { IQuestionRepository } from "@/interfaces/repository-interface/onboarding/question-repository.interface";
 import { IAnswerRepository } from "@/interfaces/repository-interface/onboarding/answer-repository.interface";
 import { ROLES } from "@/constants/roles";
+import { PaginationMeta } from "@/interfaces/domain.interface/common.interface";
 
 export class UserService implements IUserService {
   constructor(
@@ -421,5 +422,25 @@ export class UserService implements IUserService {
     userId: string,
   ): Promise<UserAnswerSubmission | null> {
     return this._answerRepo.getUserAnswers(userId);
+  }
+
+  async getUserTransactions(
+    userId: string,
+    search?: string,
+    sortBy?: string,
+    sortOrder?: "asc" | "desc",
+    page?: number,
+    limit?: number,
+    status?: string,
+  ): Promise<{ data: any[]; pagination: PaginationMeta }> {
+    return this._subscriptionTransactionRepository.findUserTransactionsPaginated(
+      userId,
+      search,
+      sortBy,
+      sortOrder,
+      page,
+      limit,
+      status
+    );
   }
 }

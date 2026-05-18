@@ -1,7 +1,7 @@
 import { AdminGetUsersDto, AdminGetUsersResponseDto } from "../../../dto/user/user.dto";
 import { AdminGetTrainersDto, AdminGetTrainersResponseDto, GetTrainerAppointmentsQueryDto, GetTrainerByIdResponseDto, ApproveTrainerResponseDto, RejectTrainerResponseDto, GetTrainerAppointmentsResponseDto } from "../../../dto/trainer/trainer.dto";
 import { CategoryQueryDto, CreateCategoryDto, UpdateCategoryDto, GetCategoryByIdResponseDto, GetAllCategoriesResponseDto, ToggleCategoryStatusResponseDto } from "../../../dto/category/category.dto";
-import { SubscriptionFeatureQueryDto, GetAllSubscriptionFeaturesResponseDto, CreateSubscriptionFeatureDto, UpdateSubscriptionFeatureDto, ToggleSubscriptionFeatureStatusResponseDto, SubscriptionFeatureDto, CreateSubscriptionPlanDto, SubscriptionPlanQueryDto, GetAllSubscriptionPlansResponseDto, GetSubscriptionPlanByIdResponseDto, UpdateSubscriptionPlanDto, ToggleSubscriptionPlanStatusResponseDto } from "../../../dto/subscription/subscription.dto";
+import { SubscriptionFeatureQueryDto, GetAllSubscriptionFeaturesResponseDto, CreateSubscriptionFeatureDto, UpdateSubscriptionFeatureDto, ToggleSubscriptionFeatureStatusResponseDto, SubscriptionFeatureDto, CreateSubscriptionPlanDto, SubscriptionPlanQueryDto, GetAllSubscriptionPlansResponseDto, GetSubscriptionPlanByIdResponseDto, UpdateSubscriptionPlanDto, ToggleSubscriptionPlanStatusResponseDto, SubscriptionTransactionQueryDto, GetAllSubscriptionTransactionsResponseDto } from "../../../dto/subscription/subscription.dto";
 import { CreateQuestionGroupDto, UpdateQuestionGroupDto, GetAllQuestionGroupsResponseDto, QuestionQueryDto, CreateQuestionDto, UpdateQuestionDto, GetAllQuestionsResponseDto, QuestionGroupResponseDto, OnboardingQuestionResponseDto } from "../../../dto/onboarding/onboarding.dto";
 import { PaginatedResponseDto } from "../../../dto/common.dto";
 import { PaginatedResult } from "../../domain.interface/common.interface";
@@ -56,4 +56,7 @@ export interface IAdminService {
   getQuestionById(questionId: string): Promise<OnboardingQuestionResponseDto>;
   updateQuestion(questionId: string, data: UpdateQuestionDto): Promise<void>;
   toggleQuestionStatus(questionId: string): Promise<void>;
+
+  // Subscription Transactions
+  getAllSubscriptionTransactions(query: SubscriptionTransactionQueryDto): Promise<GetAllSubscriptionTransactionsResponseDto>;
 }

@@ -37,6 +37,8 @@ import {
   GetSubscriptionPlanByIdResponseDto,
   UpdateSubscriptionPlanDto,
   ToggleSubscriptionPlanStatusResponseDto,
+  SubscriptionTransactionQueryDto,
+  GetAllSubscriptionTransactionsResponseDto,
 } from "../../dto/subscription/subscription.dto";
 import {
   CreateQuestionGroupDto,
@@ -75,7 +77,12 @@ import {
   generateOptionValue,
 } from "@/utils/string-formatters";
 
+import { SubscriptionTransactionRepository } from "../../repositories/subscription-transaction.repository";
+import { ISubscriptionTransactionRepository } from "../../interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
+
 export class AdminService implements IAdminService {
+  private _subscriptionTransactionRepository: ISubscriptionTransactionRepository = new SubscriptionTransactionRepository();
+
   constructor(
     private _userRepository: IUserRepository,
     private _trainerProfileRepository: ITrainerProfileRepository,
@@ -783,5 +790,48 @@ export class AdminService implements IAdminService {
 
   async toggleQuestionStatus(questionId: string): Promise<void> {
     await this._questionRepository.toggleQuestionStatus(questionId);
+  }
+
+  async getAllSubscriptionTransactions(
+    query: SubscriptionTransactionQueryDto,
+  ): Promise<GetAllSubscriptionTransactionsResponseDto> {
+    const { data, pagination } =
+      await this._subscriptionTransactionRepository.findAllPaginated(
+        query.search,
+        query.sortBy,
+        query.sortOrder,
+        query.page,
+        query.limit,
+        query.status,
+      );
+
+    return {
+      data: data.map((tx) => ({
+        _id: tx._id.toString(),
+        userId: tx.userId
+          ? {
+              _id: tx.userId._id.toString(),
+              name: tx.userId.name,
+              email: tx.userId.email,
+            }
+          : null,
+        subscriptionPlanId: tx.subscriptionPlanId
+          ? {
+              _id: tx.subscriptionPlanId._id.toString(),
+              name: tx.subscriptionPlanId.name,
+            }
+          : null,
+        amount: tx.amount,
+        currency: tx.currency,
+        paymentMethod: tx.paymentMethod,
+        paymentGateway: tx.paymentGateway,
+        transactionId: tx.transactionId,
+        paymentStatus: tx.paymentStatus,
+        paidAt: tx.paidAt,
+        createdAt: tx.createdAt,
+        updatedAt: tx.updatedAt,
+      })),
+      pagination,
+    };
   }
 }

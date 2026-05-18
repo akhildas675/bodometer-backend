@@ -7,6 +7,9 @@ import {
   TransactionStatus,
 } from "@/constants/subscription.constant";
 import { ISubscriptionTransactionRepository } from "@/interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
+import { PaginationMeta } from "../interfaces/domain.interface/common.interface";
+import { UserModel } from "@/models/user.model";
+import { SubscriptionPlanModel } from "@/models/subscription-plan.model";
 
 export class SubscriptionTransactionRepository implements ISubscriptionTransactionRepository {
   async create(data: {
@@ -31,5 +34,146 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
     return SubscriptionTransactionModel.findOne({
       transactionId,
     }).lean() as Promise<ISubscriptionTransaction | null>;
+  }
+
+  async findAllPaginated(
+    search?: string,
+    sortBy?: string,
+    sortOrder?: "asc" | "desc",
+    page?: number,
+    limit?: number,
+    status?: string,
+  ): Promise<{ data: any[]; pagination: PaginationMeta }> {
+    const filter: Record<string, any> = {};
+
+    if (status) {
+      filter.paymentStatus = status;
+    }
+
+    if (search) {
+     
+      const users = await UserModel.find({
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+        ],
+      }).select("_id");
+      const userIds = users.map((u) => u._id);
+
+    
+      const plans = await SubscriptionPlanModel.find({
+        name: { $regex: search, $options: "i" },
+      }).select("_id");
+      const planIds = plans.map((p) => p._id);
+
+      filter.$or = [
+        { transactionId: { $regex: search, $options: "i" } },
+        { userId: { $in: userIds } },
+        { subscriptionPlanId: { $in: planIds } },
+      ];
+    }
+
+    const sort: Record<string, 1 | -1> = {};
+    if (sortBy) {
+      sort[sortBy] = sortOrder === "desc" ? -1 : 1;
+    } else {
+      sort.createdAt = -1;
+    }
+
+    const pageNum = page || 1;
+    const limitNum = limit || 10;
+    const skip = (pageNum - 1) * limitNum;
+
+    const total = await SubscriptionTransactionModel.countDocuments(filter);
+    const docs = await SubscriptionTransactionModel.find(filter)
+      .populate("userId", "name email")
+      .populate("subscriptionPlanId", "name")
+      .sort(sort)
+      .skip(skip)
+      .limit(limitNum)
+      .lean();
+
+    return {
+      data: docs,
+      pagination: {
+        currentPage: pageNum,
+        totalPages: Math.ceil(total / limitNum),
+        totalItems: total,
+        itemsPerPage: limitNum,
+        hasNextPage: pageNum < Math.ceil(total / limitNum),
+        hasPreviousPage: pageNum > 1,
+      },
+    };
+  }
+
+  async findByUserId(userId: string): Promise<ISubscriptionTransaction[]> {
+    return SubscriptionTransactionModel.find({ userId })
+      .populate("subscriptionPlanId", "name")
+      .sort({ createdAt: -1 })
+      .lean() as Promise<ISubscriptionTransaction[]>;
+  }
+
+  async findUserTransactionsPaginated(
+    userId: string,
+    search?: string,
+    sortBy?: string,
+    sortOrder?: "asc" | "desc",
+    page?: number,
+    limit?: number,
+    status?: string,
+  ): Promise<{ data: any[]; pagination: PaginationMeta }> {
+    const filter: Record<string, any> = { userId };
+
+    if (status) {
+      filter.paymentStatus = status;
+    }
+
+    if (search) {
+      const plans = await SubscriptionPlanModel.find({
+        name: { $regex: search, $options: "i" },
+      }).select("_id");
+      const planIds = plans.map((p) => p._id);
+
+      filter.$and = [
+        { userId },
+        {
+          $or: [
+            { transactionId: { $regex: search, $options: "i" } },
+            { subscriptionPlanId: { $in: planIds } },
+          ],
+        },
+      ];
+    }
+
+    const sort: Record<string, 1 | -1> = {};
+    if (sortBy) {
+      sort[sortBy] = sortOrder === "desc" ? -1 : 1;
+    } else {
+      sort.createdAt = -1;
+    }
+
+    const pageNum = page || 1;
+    const limitNum = limit || 10;
+    const skip = (pageNum - 1) * limitNum;
+
+    const total = await SubscriptionTransactionModel.countDocuments(filter);
+    const docs = await SubscriptionTransactionModel.find(filter)
+      .populate("subscriptionPlanId", "name")
+      .sort(sort)
+      .skip(skip)
+      .limit(limitNum)
+      .lean();
+
+    return {
+      data: docs,
+      pagination: {
+        currentPage: pageNum,
+        totalPages: Math.ceil(total / limitNum),
+        totalItems: total,
+        itemsPerPage: limitNum,
+        hasNextPage: pageNum < Math.ceil(total / limitNum),
+        hasPreviousPage: pageNum > 1,
+      },
+    };
   }
 }
