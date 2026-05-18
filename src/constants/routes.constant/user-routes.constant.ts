@@ -25,4 +25,5 @@ export const USER_ROUTES = {
   SUBMIT_ONBOARDING: "/user/submit-onboarding",
   GET_ONBOARDING_STATUS: "/user/onboarding-status",
   GET_ONBOARDING_ANSWERS: "/user/onboarding-answers",
+  CALCULATE_BMI_PUBLIC: "/user/bmi/calculate",
 } as const;

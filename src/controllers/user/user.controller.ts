@@ -443,4 +443,71 @@ export class UserController {
       next(error);
     }
   };
+
+  calculateBmiPublic = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const { height, weight, unit, heightFt, heightIn } = req.body;
+
+      if (unit !== "metric" && unit !== "imperial") {
+        throw new AppError(STATUS.BAD_REQUEST, "Invalid unit type. Must be 'metric' or 'imperial'.");
+      }
+
+      let finalBmi = 0;
+      let finalHeight = 0;
+      let finalWeight = 0;
+
+      if (unit === "metric") {
+        if (!height || !weight) {
+          throw new AppError(STATUS.BAD_REQUEST, "Height and Weight are required for metric calculations.");
+        }
+        const h = Number(height) / 100;
+        finalBmi = parseFloat((Number(weight) / (h * h)).toFixed(1));
+        finalHeight = Number(height);
+        finalWeight = Number(weight);
+      } else {
+        const totalInches = Number(heightFt || 0) * 12 + Number(heightIn || 0);
+        if (!totalInches || !weight) {
+          throw new AppError(STATUS.BAD_REQUEST, "Height (feet/inches) and Weight are required for imperial calculations.");
+        }
+        finalBmi = parseFloat(
+          ((Number(weight) / (totalInches * totalInches)) * 703).toFixed(1)
+        );
+        finalHeight = Math.round(totalInches * 2.54);
+        finalWeight = parseFloat((Number(weight) * 0.453592).toFixed(1));
+      }
+
+      // Determine category
+      let categoryLabel = "Obese";
+      let categoryColor = "text-red-400";
+      if (finalBmi < 18.5) {
+        categoryLabel = "Underweight";
+        categoryColor = "text-blue-400";
+      } else if (finalBmi < 25) {
+        categoryLabel = "Normal Weight";
+        categoryColor = "text-green-400";
+      } else if (finalBmi < 30) {
+        categoryLabel = "Overweight";
+        categoryColor = "text-yellow-400";
+      }
+
+      res.status(STATUS.OK).json({
+        success: true,
+        data: {
+          bmi: finalBmi,
+          heightCm: finalHeight,
+          weightKg: finalWeight,
+          category: {
+            label: categoryLabel,
+            color: categoryColor
+          }
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

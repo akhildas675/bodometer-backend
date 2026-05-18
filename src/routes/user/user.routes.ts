@@ -122,4 +122,9 @@ userRoute.get(
   userController.getOnboardingAnswers,
 );
 
+userRoute.post(
+  USER_ROUTES.CALCULATE_BMI_PUBLIC,
+  userController.calculateBmiPublic,
+);
+
 export default userRoute;
