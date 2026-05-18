@@ -23,22 +23,36 @@ export default class QuestionRepository
   }
 
   protected toInterface(doc: IQuestion): OnboardingQuestion {
+    const isStepper = doc.type === "number" && doc.numberConfig;
     return {
       questionId: doc._id.toString(),
+      id: doc._id.toString(),
       key: doc.key,
+      schemaKey: null,
+      isCoreLocked: false,
       question: doc.question,
       description: doc.description,
       groupId: doc.groupId.toString(),
+      section: "",
       order: doc.order,
       isActive: doc.isActive,
-      type: doc.type,
-      options: doc.options,
+      type: isStepper ? "number_stepper" : doc.type,
+      options: doc.options?.map((o) => ({
+        label: o.label,
+        value: String(o.value ?? ""),
+      })),
       dataSource: doc.dataSource,
       next: doc.next?.map((n) => ({
         condition: n.condition,
         nextQuestionId: n.nextQuestionId.toString(),
       })),
       numberConfig: doc.numberConfig,
+      config: doc.numberConfig ? {
+        min: doc.numberConfig.min,
+        max: doc.numberConfig.max,
+        step: doc.numberConfig.step,
+        unit: doc.numberConfig.unit,
+      } : undefined,
       validation: doc.validation,
       createdBy: doc.createdBy?.toString(),
       createdAt: doc.createdAt?.toISOString(),

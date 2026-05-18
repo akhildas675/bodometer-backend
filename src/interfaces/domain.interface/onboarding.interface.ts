@@ -25,10 +25,14 @@ export interface GetAllQuestionGroupsResponse {
 
 export interface OnboardingQuestion {
   questionId?: string;
+  id?: string;
   key: string;
+  schemaKey?: string | null;
+  isCoreLocked?: boolean;
   question: string;
   description?: string;
   groupId: string;
+  section?: string;
   order: number;
   isActive?: boolean;
   type: string;
@@ -39,6 +43,7 @@ export interface OnboardingQuestion {
     nextQuestionId: string;
   }[];
   numberConfig?: { min?: number; max?: number; step?: number; unit?: string };
+  config?: { min?: number; max?: number; step?: number; unit?: string };
   validation?: { required?: boolean };
   createdBy?: string;
   createdAt?: string;
