@@ -6,7 +6,7 @@ import { IPaymentService } from "../../interfaces/service-interface/payment/stri
 import { IS3Service } from "../../interfaces/service-interface/s3/s3-service.interface";
 import { IUserService } from "../../interfaces/service-interface/user/user-service.interface";
 import { UserMapper, UserMappers } from "../../mappers/user/user.mappers";
-import { SubscriptionMapper } from "../../mappers/subscription/subscription.mapper";
+import { SubscriptionMapper } from "@/mappers/subscription/subscription.mapper";
 import { AppError } from "../../utils/appError";
 import bcrypt from "bcrypt";
 import { hashPassword } from "../../utils/password";
@@ -19,6 +19,7 @@ import {
 } from "../../dto/user/user.dto";
 import {
   ActiveSubscriptionDto,
+  SubscriptionTransactionDto,
   UserSubscriptionPlanResponseDto,
 } from "../../dto/subscription/subscription.dto";
 import {
@@ -440,15 +441,20 @@ export class UserService implements IUserService {
     limit?: number,
     status?: string,
   ): Promise<{ data: SubscriptionTransactionDto[]; pagination: PaginationMeta }> {
-    return this._subscriptionTransactionRepository.findUserTransactionsPaginated(
+    const result = await this._subscriptionTransactionRepository.findUserTransactionsPaginated(
       userId,
       search,
       sortBy,
       sortOrder,
       page,
       limit,
-      status
+      status,
     );
+
+    return {
+      data: SubscriptionMapper.toTransactionDtoList(result.data),
+      pagination: result.pagination,
+    };
   }
 
   async calculateBmi(data: UpdateBmiDto): Promise<UpdateBmiResponseDto> {

@@ -68,7 +68,7 @@ import {
   TrainerMapper,
 } from "../../mappers/admin/admin.mappers";
 import { CategoryMappers } from "../../mappers/category/category.mapper";
-import { SubscriptionMapper } from "../../mappers/subscription/subscription.mapper";
+import { SubscriptionMapper } from "@/mappers/subscription/subscription.mapper";
 import { AppError } from "../../utils/appError";
 import { ISubscriptionFeatureRepository } from "@/interfaces/repository-interface/subscription/feature-repository.interface";
 import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/subscription/subscription-plan.repository";
@@ -742,31 +742,7 @@ export class AdminService implements IAdminService {
       );
 
     return {
-      data: data.map((tx) => ({
-        _id: tx._id.toString(),
-        userId: tx.userId
-          ? {
-              _id: tx.userId._id.toString(),
-              name: tx.userId.name,
-              email: tx.userId.email,
-            }
-          : null,
-        subscriptionPlanId: tx.subscriptionPlanId
-          ? {
-              _id: tx.subscriptionPlanId._id.toString(),
-              name: tx.subscriptionPlanId.name,
-            }
-          : null,
-        amount: tx.amount,
-        currency: tx.currency,
-        paymentMethod: tx.paymentMethod,
-        paymentGateway: tx.paymentGateway,
-        transactionId: tx.transactionId,
-        paymentStatus: tx.paymentStatus,
-        paidAt: tx.paidAt,
-        createdAt: tx.createdAt,
-        updatedAt: tx.updatedAt,
-      })),
+      data: SubscriptionMapper.toTransactionDtoList(data),
       pagination,
     };
   }

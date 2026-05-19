@@ -8,7 +8,7 @@ import {
 } from "@/constants/subscription.constant";
 import { ISubscriptionTransactionRepository } from "@/interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
 import { PaginationMeta } from "../interfaces/domain.interface/common.interface";
-import { SubscriptionTransactionDto } from "@/dto/subscription/subscription.dto";
+import { PopulatedSubscriptionTransaction } from "@/mappers/subscription/subscription.mapper";
 import { FilterQuery } from "mongoose";
 import { UserModel } from "@/models/user.model";
 import { SubscriptionPlanModel } from "@/models/subscription-plan.model";
@@ -45,7 +45,7 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
     page?: number,
     limit?: number,
     status?: string,
-  ): Promise<{ data: SubscriptionTransactionDto[]; pagination: PaginationMeta }> {
+  ): Promise<{ data: PopulatedSubscriptionTransaction[]; pagination: PaginationMeta }> {
     const filter: FilterQuery<ISubscriptionTransaction> = {};
 
     if (status) {
@@ -96,7 +96,7 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
       .lean();
 
     return {
-      data: docs as unknown as SubscriptionTransactionDto[],
+      data: docs as unknown as PopulatedSubscriptionTransaction[],
       pagination: {
         currentPage: pageNum,
         totalPages: Math.ceil(total / limitNum),
@@ -123,7 +123,7 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
     page?: number,
     limit?: number,
     status?: string,
-  ): Promise<{ data: SubscriptionTransactionDto[]; pagination: PaginationMeta }> {
+  ): Promise<{ data: PopulatedSubscriptionTransaction[]; pagination: PaginationMeta }> {
     const filter: FilterQuery<ISubscriptionTransaction> = { userId };
 
     if (status) {
@@ -167,7 +167,7 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
       .lean();
 
     return {
-      data: docs as unknown as SubscriptionTransactionDto[],
+      data: docs as unknown as PopulatedSubscriptionTransaction[],
       pagination: {
         currentPage: pageNum,
         totalPages: Math.ceil(total / limitNum),

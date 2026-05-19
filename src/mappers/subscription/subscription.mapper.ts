@@ -1,13 +1,37 @@
+import mongoose from "mongoose";
 import {
   SubscriptionFeatureDto,
   SubscriptionPlanDto,
   GetSubscriptionPlanByIdResponseDto,
   UserSubscriptionPlanResponseDto,
+  SubscriptionTransactionDto,
 } from "../../dto/subscription/subscription.dto";
 import {
   SubscriptionFeature,
   SubscriptionPlan,
 } from "../../interfaces/domain.interface/subscription.interface";
+
+export interface PopulatedSubscriptionTransaction {
+  _id: mongoose.Types.ObjectId;
+  userId: {
+    _id: mongoose.Types.ObjectId;
+    name: string;
+    email: string;
+  } | null;
+  subscriptionPlanId: {
+    _id: mongoose.Types.ObjectId;
+    name: string;
+  } | null;
+  amount: number;
+  currency: string;
+  paymentMethod: string;
+  paymentGateway: string;
+  transactionId?: string;
+  paymentStatus: string;
+  paidAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export class SubscriptionMapper {
   static toFeatureDto(feature: SubscriptionFeature): SubscriptionFeatureDto {
@@ -83,5 +107,37 @@ export class SubscriptionMapper {
 
   static toUserPlanResponseDtoList(plans: SubscriptionPlan[]): UserSubscriptionPlanResponseDto[] {
     return plans.map((p) => this.toUserPlanResponseDto(p));
+  }
+
+  static toTransactionDto(tx: PopulatedSubscriptionTransaction): SubscriptionTransactionDto {
+    return {
+      _id: tx._id.toString(),
+      userId: tx.userId
+        ? {
+            _id: tx.userId._id.toString(),
+            name: tx.userId.name,
+            email: tx.userId.email,
+          }
+        : null,
+      subscriptionPlanId: tx.subscriptionPlanId
+        ? {
+            _id: tx.subscriptionPlanId._id.toString(),
+            name: tx.subscriptionPlanId.name,
+          }
+        : null,
+      amount: tx.amount,
+      currency: tx.currency,
+      paymentMethod: tx.paymentMethod,
+      paymentGateway: tx.paymentGateway,
+      transactionId: tx.transactionId,
+      paymentStatus: tx.paymentStatus,
+      paidAt: tx.paidAt,
+      createdAt: tx.createdAt,
+      updatedAt: tx.updatedAt,
+    };
+  }
+
+  static toTransactionDtoList(txList: PopulatedSubscriptionTransaction[]): SubscriptionTransactionDto[] {
+    return txList.map((tx) => this.toTransactionDto(tx));
   }
 }
