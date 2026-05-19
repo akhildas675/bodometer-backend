@@ -43,15 +43,15 @@ export class TrainerService implements ITrainerService {
     updateData: UpdateTrainerProfileDto,
   ): Promise<FindTrainerResponseDto> {
     if (Object.keys(updateData).length === 0) {
-      throw new AppError(STATUS.BAD_REQUEST, "No fields to update");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.NO_FIELDS_TO_UPDATE);
     }
 
     if (updateData.gender && updateData.gender === "prefer_not_say") {
-      throw new AppError(STATUS.BAD_REQUEST, "Please select a valid gender");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.INVALID_GENDER);
     }
 
     if (!updateData.dateOfBirth) {
-      throw new AppError(STATUS.BAD_REQUEST, "Please select the date of birth");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.COMMON.SELECT_CORRECT_DOB);
     }
 
     const dob = new Date(updateData.dateOfBirth);
@@ -65,7 +65,7 @@ export class TrainerService implements ITrainerService {
     if (dob > limitDate) {
       throw new AppError(
         STATUS.BAD_REQUEST,
-        "You must be at least 15 years old",
+        MESSAGES.TRAINER.AGE_RESTRICTION,
       );
     }
 
@@ -146,7 +146,7 @@ export class TrainerService implements ITrainerService {
     if (existing?.verificationStatus === VERIFICATION_STATUS.APPROVED) {
       throw new AppError(
         STATUS.BAD_REQUEST,
-        "Your profile is already approved",
+        MESSAGES.ADMIN.VERIFICATION_APPROVED_EXISTS,
       );
     }
     if (
@@ -155,7 +155,7 @@ export class TrainerService implements ITrainerService {
     ) {
       throw new AppError(
         STATUS.FORBIDDEN,
-        "You have reached the maximum number of applications.",
+        MESSAGES.TRAINER.MAX_APPLICATIONS_REACHED,
       );
     }
 

@@ -3,6 +3,7 @@ import { Role } from "../constants/roles";
 import { UserModel } from "../models/user.model";
 import { AppError } from "../utils/appError";
 import { STATUS } from "../constants/statuscode";
+import { MESSAGES } from "../constants/messages";
 import {
   AccessTokenPayload,
   RefreshTokenPayload,
@@ -35,7 +36,7 @@ export const authGuard = (allowedRoles: Role[] = []) => {
           );
 
           if (!user) {
-            return next(new AppError(STATUS.UNAUTHORIZED, "User not found"));
+            return next(new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND));
           }
 
           if (user.isBlocked) {
@@ -44,12 +45,12 @@ export const authGuard = (allowedRoles: Role[] = []) => {
             res.clearCookie("refreshToken");
 
             return next(
-              new AppError(STATUS.FORBIDDEN, "Account blocked by admin"),
+              new AppError(STATUS.FORBIDDEN, MESSAGES.LOGIN.ACCOUNT_BLOCKED),
             );
           }
 
           if (allowedRoles.length && !allowedRoles.includes(payload.role)) {
-            return next(new AppError(STATUS.FORBIDDEN, "Access denied"));
+            return next(new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED));
           }
 
           req.user = { id: payload.sub, role: payload.role };
@@ -73,7 +74,7 @@ async function handleRefresh(
   const refreshToken = req.cookies.refreshToken;
 
   if (!refreshToken) {
-    return next(new AppError(STATUS.UNAUTHORIZED, "Authentication required"));
+    return next(new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED));
   }
 
   try {
@@ -82,12 +83,12 @@ async function handleRefresh(
     const storedToken = await redis.get(`refresh:${payload.sub}`);
     if (!storedToken || storedToken !== refreshToken) {
       return next(
-        new AppError(STATUS.UNAUTHORIZED, "Session expired. Login again."),
+        new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.REFRESH_TOKEN_EXPIRED),
       );
     }
 
     if (allowedRoles.length && !allowedRoles.includes(payload.role)) {
-      return next(new AppError(STATUS.FORBIDDEN, "Access denied"));
+      return next(new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED));
     }
 
     const newAccessToken = Jwt.signAccess({
@@ -101,7 +102,7 @@ async function handleRefresh(
     return next();
   } catch {
     return next(
-      new AppError(STATUS.UNAUTHORIZED, "Session expired. Login again."),
+      new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.REFRESH_TOKEN_EXPIRED),
     );
   }
 }

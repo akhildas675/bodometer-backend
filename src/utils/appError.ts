@@ -1,11 +1,15 @@
+export interface ErrorDetail {
+  field?: string;
+  message: string;
+}
 export class AppError extends Error {
   public statusCode: number;
-  public details?: unknown;
+  public errors?: ErrorDetail[];
 
-  constructor(statusCode: number, message: string, details?: unknown) {
+  constructor(statusCode: number, message: string, errors?: ErrorDetail[]) {
     super(message);
     this.statusCode = statusCode;
-    this.details = details;
+    this.errors = errors;
 
     Object.setPrototypeOf(this, new.target.prototype);
     Error.captureStackTrace(this, this.constructor);

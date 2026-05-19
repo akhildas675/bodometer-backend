@@ -9,6 +9,7 @@ import {
   UpdateTrainerProfileDto,
 } from "../../dto/trainer/trainer.dto";
 import { MESSAGES } from "../../constants/messages";
+import { SuccessResponse } from "../../utils/success.response";
 
 export class TrainerController {
   constructor(private _trainerService: ITrainerService) {}
@@ -16,16 +17,17 @@ export class TrainerController {
   getTrainer = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       if (!req.user) {
-        throw new AppError(STATUS.UNAUTHORIZED, "User not authenticated");
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
       }
 
       const trainerId = req.user.id;
       const trainer = await this._trainerService.fetchTrainer(trainerId);
 
-      res.status(STATUS.OK).json({
-        success: true,
-        data: trainer,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.TRAINER.PROFILE_FETCHED,
+        trainer
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -38,7 +40,7 @@ export class TrainerController {
   ) => {
     try {
       if (!req.user) {
-        throw new AppError(STATUS.UNAUTHORIZED, "User not authenticated");
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
       }
 
       const trainerId = req.user.id;
@@ -50,11 +52,11 @@ export class TrainerController {
         updateData,
       );
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: "Profile updated successfully",
-        data: updatedTrainer,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.TRAINER.PROFILE_UPDATED,
+        updatedTrainer
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -67,11 +69,11 @@ export class TrainerController {
   ) => {
     try {
       if (!req.user) {
-        throw new AppError(STATUS.UNAUTHORIZED, "Trainer not authenticated");
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
       }
 
       if (!req.file) {
-        throw new AppError(STATUS.BAD_REQUEST, "No file uploaded");
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.FILE.FILE_REQUIRED);
       }
 
       const trainerId = req.user.id;
@@ -80,13 +82,11 @@ export class TrainerController {
       const profilePicUrl =
         await this._trainerService.uploadTrainerProfilePicture(trainerId, file);
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: "Trainer Profile picture uploaded successfully",
-        data: {
-          url: profilePicUrl,
-        },
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.USER.PROFILE_IMAGE_UPLOADED,
+        { url: profilePicUrl }
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -121,15 +121,15 @@ export class TrainerController {
       const coverImageFile = files?.coverImage?.[0];
 
       if (!profileImageFile) {
-        throw new AppError(STATUS.BAD_REQUEST, "Profile image is required");
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.FILE.PROFILE_IMAGE_REQUIRED);
       }
 
       if (!certificateFile) {
-        throw new AppError(STATUS.BAD_REQUEST, "Certificate is required");
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.CERTIFICATE_REQUIRED);
       }
 
       if (!coverImageFile) {
-        throw new AppError(STATUS.BAD_REQUEST, "Cover image is required");
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.FILE.COVER_IMAGE_REQUIRED);
       }
 
       const data: TrainerProfileDto = {
@@ -145,14 +145,15 @@ export class TrainerController {
 
       await this._trainerService.createProfile(req.user.id, data);
 
-      return res.status(STATUS.CREATED).json({
-        success: true,
-        message: "Trainer profile created successfully",
-      });
+      new SuccessResponse(
+        STATUS.CREATED,
+        MESSAGES.TRAINER.PROFILE_CREATED
+      ).send(res);
     } catch (error) {
       next(error);
     }
   };
+
   getProfileStatus = async (
     req: AuthRequest,
     res: Response,
@@ -165,10 +166,11 @@ export class TrainerController {
       const userId = req.user.id;
 
       const profileStatus = await this._trainerService.getTrainerStatus(userId);
-      return res.status(STATUS.OK).json({
-        success: true,
-        data: profileStatus,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.TRAINER.STATUS_FETCHED,
+        profileStatus
+      ).send(res);
     } catch (err) {
       next(err);
     }
@@ -183,12 +185,12 @@ export class TrainerController {
       const query = parsePaginationQuery(req);
 
       const result = await this._trainerService.getCategories(query);
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.COMMON.SUCCESS,
-        data: result.data,
-        pagination: result.pagination,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.COMMON.SUCCESS,
+        result.data,
+        result.pagination
+      ).send(res);
     } catch (error) {
       next(error);
     }

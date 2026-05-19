@@ -1,6 +1,7 @@
 import nodemailer, { Transporter } from "nodemailer";
 import { AppError } from "../../../utils/appError";
 import { STATUS } from "../../../constants/statuscode";
+import { MESSAGES } from "../../../constants/messages";
 import { IMailService } from "../../../interfaces/service-interface/otp/mail-service.interface";
 
 
@@ -11,7 +12,7 @@ export class MailService implements IMailService {
     const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
 
     if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
-      throw new AppError(STATUS.INTERNAL_ERROR, "SMTP configuration missing");
+      throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.COMMON.SMTP_CONFIG_MISSING);
     }
 
     this._transporter = nodemailer.createTransport({

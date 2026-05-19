@@ -6,13 +6,14 @@ import { connectDB } from "./config/db";
 import { connectRedis } from "./config/redis";
 import { AppError } from "./utils/appError";
 import { STATUS } from "./constants/statuscode";
+import { MESSAGES } from "./constants/messages";
 import logger from "./config/logger.config";
 
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
 if (!MONGO_URI) {
-  throw new AppError(STATUS.BAD_REQUEST, "mongo uri error");
+  throw new AppError(STATUS.BAD_REQUEST, MESSAGES.COMMON.MONGO_URI_ERROR);
 }
 
 const mongoUri: string = MONGO_URI;

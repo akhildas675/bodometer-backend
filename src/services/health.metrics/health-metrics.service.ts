@@ -1,5 +1,6 @@
 import { UNITS } from "@/constants/fitness.constant";
 import { STATUS } from "@/constants/statuscode";
+import { MESSAGES } from "@/constants/messages";
 import { UpdateBmiDto, UpdateBmiResponseDto } from "@/dto/user/user.dto";
 import { AppError } from "@/utils/appError";
 import { IHealthMetrics } from "@/interfaces/service-interface/health.metrics/health.metrics-service.interface";
@@ -9,7 +10,7 @@ export class HealthMetricsService implements IHealthMetrics {
     const { height, weight, unit, heightFt, heightIn } = data;
 
     if (UNITS.METRIC !== unit && UNITS.IMPERIAL !== unit) {
-      throw new AppError(STATUS.BAD_REQUEST, "In valid unit type. Must be 'Metrics' or 'Imperial'");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.INVALID_UNIT_TYPE);
     }
 
     let finalBmi = 0;
@@ -18,7 +19,7 @@ export class HealthMetricsService implements IHealthMetrics {
 
     if (UNITS.METRIC === unit) {
       if (!height || !weight) {
-        throw new AppError(STATUS.BAD_REQUEST, "Height and Weight are required for metric calculation");
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.METRIC_REQUIRED);
       }
 
       const h = Number(height) / 100;
@@ -30,7 +31,7 @@ export class HealthMetricsService implements IHealthMetrics {
     } else {
       const totalInches = Number(heightFt || 0) * 12 + Number(heightIn || 0);
       if (!totalInches || !weight) {
-        throw new AppError(STATUS.BAD_REQUEST, "Height (feet/inches) and Weight are required for imperial calculations.");
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.IMPERIAL_REQUIRED);
       }
       finalBmi = parseFloat(
         ((Number(weight) / (totalInches * totalInches)) * 703).toFixed(1)
@@ -64,4 +65,3 @@ export class HealthMetricsService implements IHealthMetrics {
     };
   }
 }
-

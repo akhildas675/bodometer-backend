@@ -100,6 +100,9 @@ export const MESSAGES = {
     USER_CREATED: "User created successfully.",
     USERS_FETCHED: "Users fetched successfully.",
     PROFILE_IMAGE_UPLOADED: "Profile image uploaded successfully.",
+    PAYMENT_VERIFIED: "Payment verified successfully.",
+    ONBOARDING_SAVED: "Onboarding answers saved successfully.",
+    BMI_CALCULATED: "BMI calculated successfully.",
   },
 
   TRAINER: {
@@ -128,7 +131,10 @@ export const MESSAGES = {
     TRAINERS_FETCHED: "Trainers fetched successfully.",
     TRAINERS_FETCHED_FAILED: "Trainers fetched failed.",
     TRAINER_BLOCKED_SUCCESS: "Trainer blocked successfully.",
-    TRAINER_UNBLOCKED_SUCCESS: "Trainer unblocked successfully."
+    TRAINER_UNBLOCKED_SUCCESS: "Trainer unblocked successfully.",
+    STATUS_FETCHED: "Trainer profile status retrieved successfully.",
+    AGE_RESTRICTION: "You must be at least 15 years old.",
+    MAX_APPLICATIONS_REACHED: "You have reached the maximum number of applications.",
   },
 
   ADMIN: {
@@ -221,8 +227,8 @@ export const MESSAGES = {
 
     SUBSCRIPTION_PLAN_IMAGE_REQUIRED: "Subscription plan image is required.",
     SUBSCRIPTION_PLAN_IMAGE_UPLOAD_FAILED: "Failed to upload subscription plan image.",
-
-
+    PROFILE_ID_REQUIRED: "Profile ID is required.",
+    UNAUTHORIZED_CONTEXT: "Unauthorized context.",
   },
 
   VALIDATION: {
@@ -244,6 +250,14 @@ export const MESSAGES = {
     USER_ID_REQUIRED: "User ID is required.",
     TRAINER_ID_REQUIRED: "Trainer ID is required.",
     PROFILE_ID_REQUIRED: "Profile ID is required.",
+    INVALID_UNIT_TYPE: "Invalid unit type. Must be 'metric' or 'imperial'.",
+    METRIC_REQUIRED: "Height and Weight are required for metric calculation.",
+    IMPERIAL_REQUIRED: "Height (feet/inches) and Weight are required for imperial calculations.",
+    NO_FIELDS_TO_UPDATE: "No fields to update.",
+    PAYMENT_NOT_COMPLETED: "Payment not completed.",
+    SESSION_ID_REQUIRED: "Session ID is required.",
+    SESSION_USER_MISMATCH: "Session does not belong to this user.",
+    PLAN_ID_REQUIRED: "Missing planId in session metadata.",
   },
 
   COMMON: {
@@ -267,6 +281,24 @@ export const MESSAGES = {
     TOO_MANY_REQUESTS: "Too many requests. Please try again later.",
     SESSION_INVALID: "Invalid session. Please login again.",
     RATE_LIMIT_EXCEEDED: "Rate limit exceeded. Please try again later.",
+    MONGO_URI_ERROR: "mongo uri error",
+    SMTP_CONFIG_MISSING: "SMTP configuration missing.",
+  },
+
+  ONBOARDING: {
+    GROUP_NOT_FOUND: "Question group not found.",
+    QUESTION_NOT_FOUND: "Question not found.",
+    STATUS_FETCHED: "Onboarding status fetched successfully.",
+    ANSWERS_FETCHED: "Onboarding answers fetched successfully.",
+    SAVED_SUCCESS: "Onboarding answers saved successfully.",
+    QUESTION_CREATED: "Question created successfully.",
+    QUESTION_UPDATED: "Question updated successfully.",
+    QUESTION_DELETED: "Question deleted successfully.",
+    QUESTION_STATUS_TOGGLED: "Question status updated successfully.",
+    GROUP_CREATED: "Question group created successfully.",
+    GROUP_UPDATED: "Question group updated successfully.",
+    GROUP_DELETED: "Question group deleted successfully.",
+    GROUP_STATUS_TOGGLED: "Group status updated successfully.",
   },
 
   FILE: {
@@ -277,6 +309,7 @@ export const MESSAGES = {
     FILE_REQUIRED: "File is required.",
     IMAGE_REQUIRED: "Image is required.",
     PROFILE_IMAGE_REQUIRED: "Profile image is required.",
+    COVER_IMAGE_REQUIRED: "Cover image is required.",
   },
 
   WORKOUT: {
@@ -318,6 +351,9 @@ export const MESSAGES = {
     PLAN_TYPE_EXISTS: "A plan of this type already exists.",
     ALREADY_ACTIVE: "Subscription plan is already active.",
     ALREADY_INACTIVE: "Subscription plan is already inactive.",
+    ALREADY_SUBSCRIBED: "User already has an active subscription. Cannot purchase another at this time.",
+    NO_ACTIVE_SUB_FOR_SESSION: "No active subscription found for existing session.",
+    NO_ACTIVE_SUB: "No active subscription found.",
 
     // Failed
     CREATE_FAILED: "Failed to create subscription plan.",

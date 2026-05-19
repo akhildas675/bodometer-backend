@@ -8,18 +8,20 @@ export const errorHandler = (
   res: Response,
   next: NextFunction,
 ) => {
-  console.error("Error:", err);
+  console.error("Global Error Handler Catch:", err);
 
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       success: false,
       message: err.message,
-      ...(err.details ? { errors: err.details } : {}),
+      ...(err.errors ? { errors: err.errors } : {}),
     });
   }
 
+  const defaultMessage = err instanceof Error ? err.message : "Internal server error";
+
   return res.status(STATUS.INTERNAL_ERROR).json({
     success: false,
-    message: "Internal server error",
+    message: defaultMessage,
   });
 };

@@ -83,18 +83,18 @@ export class UserService implements IUserService {
     updateData: UpdateUserProfileDto,
   ): Promise<FindUserResponseDto> {
     if (Object.keys(updateData).length === 0) {
-      throw new AppError(STATUS.BAD_REQUEST, "No fields to update");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.NO_FIELDS_TO_UPDATE);
     }
     if (updateData.userName) {
       const existingUser = await this._userRepo.findByUsername(
         updateData.userName,
       );
       if (existingUser && existingUser.id !== userId) {
-        throw new AppError(STATUS.CONFLICT, "Username already exists");
+        throw new AppError(STATUS.CONFLICT, MESSAGES.USER.USERNAME_ALREADY_EXISTS);
       }
     }
     if (updateData.gender && updateData.gender === "prefer_not_say") {
-      throw new AppError(STATUS.BAD_REQUEST, "Please select a valid gender");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.INVALID_GENDER);
     }
     if (updateData.dateOfBirth) {
       const dob = new Date(updateData.dateOfBirth);
@@ -219,7 +219,7 @@ export class UserService implements IUserService {
 
   async getCategoryById(id: string): Promise<CategoryDetailDto> {
     const category = await this._categoryRepo.getCategoryById(id);
-    if (!category) throw new AppError(STATUS.NOT_FOUND, "Category not found");
+    if (!category) throw new AppError(STATUS.NOT_FOUND, MESSAGES.ADMIN.CATEGORY_NOT_FOUND);
     return CategoryMappers.toCategoryDetailDto(category);
   }
 
@@ -238,14 +238,14 @@ export class UserService implements IUserService {
     if (activeSub) {
       throw new AppError(
         STATUS.BAD_REQUEST,
-        "User already has an active subscription. Cannot purchase another at this time.",
+        MESSAGES.SUBSCRIPTION_PLAN.ALREADY_SUBSCRIBED,
       );
     }
 
     const plan =
       await this._subscriptionPlanRepository.getSubscriptionPlanById(planId);
     if (!plan) {
-      throw new AppError(STATUS.NOT_FOUND, "Plan not found");
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.SUBSCRIPTION_PLAN.NOT_FOUND);
     }
 
     const result = await this._paymentService.createCheckoutSession({
@@ -274,14 +274,14 @@ export class UserService implements IUserService {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (session.payment_status !== "paid") {
-      throw new AppError(STATUS.BAD_REQUEST, "Payment not completed");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.PAYMENT_NOT_COMPLETED);
     }
 
     const sessionUserId = session.metadata?.userId;
     if (sessionUserId !== userId) {
       throw new AppError(
         STATUS.FORBIDDEN,
-        "Session does not belong to this user",
+        MESSAGES.VALIDATION.SESSION_USER_MISMATCH,
       );
     }
 
@@ -289,7 +289,7 @@ export class UserService implements IUserService {
     if (!planId) {
       throw new AppError(
         STATUS.BAD_REQUEST,
-        "Missing planId in session metadata",
+        MESSAGES.VALIDATION.PLAN_ID_REQUIRED,
       );
     }
 
@@ -302,7 +302,7 @@ export class UserService implements IUserService {
       if (!activeSub)
         throw new AppError(
           STATUS.NOT_FOUND,
-          "No active subscription found for existing session",
+          MESSAGES.SUBSCRIPTION_PLAN.NO_ACTIVE_SUB_FOR_SESSION,
         );
       return activeSub;
     }
@@ -310,7 +310,7 @@ export class UserService implements IUserService {
     const plan =
       await this._subscriptionPlanRepository.getSubscriptionPlanById(planId);
     if (!plan) {
-      throw new AppError(STATUS.NOT_FOUND, "Plan not found");
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.SUBSCRIPTION_PLAN.NOT_FOUND);
     }
 
     const startDate = new Date();
@@ -387,7 +387,7 @@ export class UserService implements IUserService {
   ): Promise<ActiveSubscriptionDto> {
     const sub = await this.getActiveSubscription(userId);
     if (!sub)
-      throw new AppError(STATUS.NOT_FOUND, "No active subscription found");
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.SUBSCRIPTION_PLAN.NO_ACTIVE_SUB);
     return sub;
   }
 

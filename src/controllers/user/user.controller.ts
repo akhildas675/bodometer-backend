@@ -12,6 +12,7 @@ import {
 } from "../../dto/user/user.dto";
 import { GetTrainersQueryDto } from "../../dto/trainer/trainer.dto";
 import { IUserService } from "@/interfaces/service-interface/user/user-service.interface";
+import { SuccessResponse } from "../../utils/success.response";
 
 export class UserController {
   private logger = new Logger("UserController");
@@ -26,10 +27,11 @@ export class UserController {
       const userId = req.user.id;
       const user = await this._userService.fetchUser(userId);
 
-      res.status(STATUS.OK).json({
-        success: true,
-        data: user,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.USER.PROFILE_FETCHED,
+        user
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -53,11 +55,11 @@ export class UserController {
         updateData,
       );
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.USER.PROFILE_UPDATED,
-        data: updatedUser,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.USER.PROFILE_UPDATED,
+        updatedUser
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -88,13 +90,11 @@ export class UserController {
         file,
       );
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.USER.PROFILE_PICTURE_UPDATED,
-        data: {
-          url: profilePicUrl,
-        },
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.USER.PROFILE_PICTURE_UPDATED,
+        { url: profilePicUrl }
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -113,10 +113,10 @@ export class UserController {
         newPassword: req.body.newPassword,
       };
       await this._userService.changePassword(req.user.id, dto);
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.PASSWORD.CHANGED_SUCCESS,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.PASSWORD.CHANGED_SUCCESS
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -130,12 +130,12 @@ export class UserController {
       };
 
       const result = await this._userService.getTrainers(query);
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.COMMON.SUCCESS,
-        data: result.data,
-        pagination: result.pagination,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.COMMON.SUCCESS,
+        result.data,
+        result.pagination
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -154,11 +154,11 @@ export class UserController {
 
       const result = await this._userService.getTrainerById(id);
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.COMMON.SUCCESS,
-        data: result,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.COMMON.SUCCESS,
+        result
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -173,12 +173,12 @@ export class UserController {
       const query = parsePaginationQuery(req);
 
       const result = await this._userService.getCategories(query);
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.COMMON.SUCCESS,
-        data: result.data,
-        pagination: result.pagination,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.COMMON.SUCCESS,
+        result.data,
+        result.pagination
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -198,11 +198,11 @@ export class UserController {
 
       const result = await this._userService.getCategoryById(categoryId);
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.COMMON.SUCCESS,
-        data: result,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.COMMON.SUCCESS,
+        result
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -220,11 +220,11 @@ export class UserController {
 
       const result = await this._userService.getMySubscriptions();
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.COMMON.SUCCESS,
-        data: result,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.COMMON.SUCCESS,
+        result
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -250,11 +250,11 @@ export class UserController {
         planId,
       );
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.COMMON.SUCCESS,
-        data: result,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.COMMON.SUCCESS,
+        result
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -268,7 +268,7 @@ export class UserController {
     try {
       const { session_id } = req.query;
       if (!session_id || typeof session_id !== "string") {
-        throw new AppError(STATUS.BAD_REQUEST, "Missing session_id");
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.SESSION_ID_REQUIRED);
       }
 
       const result = await this._userService.verifyPaymentAndSave(
@@ -276,7 +276,11 @@ export class UserController {
         session_id,
       );
 
-      res.status(STATUS.OK).json({ success: true, data: result });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.USER.PAYMENT_VERIFIED,
+        result
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -294,11 +298,11 @@ export class UserController {
 
       const result = await this._userService.getActiveSubscription(req.user.id);
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.COMMON.SUCCESS,
-        data: result,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.COMMON.SUCCESS,
+        result
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -311,12 +315,12 @@ export class UserController {
   ) => {
     try {
       const result = await this._userService.getOnboardingGroups();
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.COMMON.SUCCESS,
-        data: result.data,
-        pagination: result.pagination,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.COMMON.SUCCESS,
+        result.data,
+        result.pagination
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -329,12 +333,12 @@ export class UserController {
   ) => {
     try {
       const result = await this._userService.getOnboardingQuestions();
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.COMMON.SUCCESS,
-        data: result.data,
-        pagination: result.pagination,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.COMMON.SUCCESS,
+        result.data,
+        result.pagination
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -350,10 +354,10 @@ export class UserController {
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
       }
       await this._userService.submitOnboarding(req.user.id, req.body);
-      res.status(STATUS.OK).json({
-        success: true,
-        message: "Onboarding answers saved successfully",
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.USER.ONBOARDING_SAVED
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -369,11 +373,11 @@ export class UserController {
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
       }
       const result = await this._userService.getOnboardingStatus(req.user.id);
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.COMMON.SUCCESS,
-        data: result,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.COMMON.SUCCESS,
+        result
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -389,11 +393,11 @@ export class UserController {
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
       }
       const result = await this._userService.getOnboardingAnswers(req.user.id);
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.COMMON.SUCCESS,
-        data: result,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.COMMON.SUCCESS,
+        result
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -419,12 +423,12 @@ export class UserController {
         parsed.limit,
         status,
       );
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.COMMON.SUCCESS,
-        data: result.data,
-        pagination: result.pagination,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.COMMON.SUCCESS,
+        result.data,
+        result.pagination
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -439,10 +443,11 @@ export class UserController {
       const data: UpdateBmiDto = req.body;
       const result = await this._userService.calculateBmi(data)
 
-      res.status(STATUS.OK).json({
-        success: true,
-        data: result,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.USER.BMI_CALCULATED,
+        result
+      ).send(res);
     } catch (error) {
       next(error);
     }

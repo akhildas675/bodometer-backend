@@ -207,7 +207,7 @@ export class AuthService implements IAuthService {
     const payload = ticket.getPayload();
 
     if (!payload || !payload.email || !payload.email_verified) {
-      throw new AppError(STATUS.UNAUTHORIZED, "Invalid Google token");
+      throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.LOGIN.INVALID_GOOGLE_TOKEN);
     }
 
     const email = payload.email.toLowerCase().trim();
@@ -269,7 +269,7 @@ export class AuthService implements IAuthService {
     if (!userId)
       throw new AppError(
         STATUS.UNAUTHORIZED,
-        "Invalid or expired refresh token",
+        MESSAGES.TOKEN.REFRESH_TOKEN_INVALID,
       );
 
     const isValid = await this._sessionService.validateRefreshToken(

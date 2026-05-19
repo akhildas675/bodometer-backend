@@ -7,6 +7,7 @@ import { MESSAGES } from "../../constants/messages";
 import { ResendOtpDto } from "../../dto/otp/otp.dto";
 import { redis } from "../../config/redis";
 import { AppError } from "../../utils/appError";
+import { SuccessResponse } from "../../utils/success.response";
 
 const logger = new Logger("AuthController");
 
@@ -25,13 +26,11 @@ export class AuthController {
 
       await this._authService.initiateRegister(body);
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.OTP.SENT_SUCCESS,
-        data: {
-          email: body.email,
-        },
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.OTP.SENT_SUCCESS,
+        { email: body.email }
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -51,10 +50,10 @@ export class AuthController {
 
       await this._authService.verifyOtp(data);
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.OTP.VERIFIED_SUCCESS,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.OTP.VERIFIED_SUCCESS
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -73,10 +72,10 @@ export class AuthController {
 
       await this._authService.resendOtp(data);
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.OTP.RESENT_SUCCESS,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.OTP.RESENT_SUCCESS
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -120,11 +119,11 @@ export class AuthController {
 
       await redis.del(redisKey);
 
-      res.status(STATUS.CREATED).json({
-        success: true,
-        message: MESSAGES.REGISTER.SUCCESS,
-        data: user,
-      });
+      new SuccessResponse(
+        STATUS.CREATED,
+        MESSAGES.REGISTER.SUCCESS,
+        user
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -142,11 +141,12 @@ export class AuthController {
         sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-      return res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.LOGIN.SUCCESS,
-        data: loginResponse,
-      });
+
+      return new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.LOGIN.SUCCESS,
+        loginResponse
+      ).send(res);
     } catch (err) {
       next(err);
     }
@@ -158,13 +158,11 @@ export class AuthController {
 
       const result = await this._authService.forgotPassword({ email });
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.PASSWORD.RESET_EMAIL_SENT,
-        data: {
-          role: result.role,
-        },
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.PASSWORD.RESET_EMAIL_SENT,
+        { role: result.role }
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -183,11 +181,11 @@ export class AuthController {
 
       const result = await this._authService.refreshAccessToken(refreshToken);
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.TOKEN.REFRESH_SUCCESS,
-        data: result,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.TOKEN.REFRESH_SUCCESS,
+        result
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -207,10 +205,10 @@ export class AuthController {
         sameSite: "strict",
       });
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.LOGIN.LOGOUT_SUCCESS,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.LOGIN.LOGOUT_SUCCESS
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -229,10 +227,10 @@ export class AuthController {
 
       await this._authService.resetPassword(req.body);
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.PASSWORD.RESET_SUCCESS,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.PASSWORD.RESET_SUCCESS
+      ).send(res);
     } catch (error) {
       next(error);
     }
@@ -251,11 +249,11 @@ export class AuthController {
 
       const result = await this._authService.googleLogin({ idToken });
 
-      res.status(STATUS.OK).json({
-        success: true,
-        message: MESSAGES.LOGIN.GOOGLE_LOGIN_SUCCESS,
-        data: result,
-      });
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.LOGIN.GOOGLE_LOGIN_SUCCESS,
+        result
+      ).send(res);
     } catch (error) {
       next(error);
     }
