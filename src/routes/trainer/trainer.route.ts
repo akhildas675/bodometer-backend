@@ -3,11 +3,13 @@ import { TRAINER_ROUTES } from "../../constants/routes.constant/trainer-routes.c
 import { ROLE_GUARD } from "../../constants/role.guard";
 import { createTrainerModule } from "../../modules/trainer/trainer.module";
 import { mediaUpload } from "../../config/multer";
+import { validate } from "@/middleware/validate";
+import { createTrainerProfileSchema, updateTrainerProfileSchema, uploadProfilePictureSchema } from "@/validators/trainer/trainer.validator";
 const trainerRoute = Router();
 const { trainerController } = createTrainerModule();
 
 trainerRoute.post(
-  TRAINER_ROUTES.SUBMIT_PROFILE_DATA,
+  TRAINER_ROUTES.SUBMIT_PROFILE_DATA, validate(createTrainerProfileSchema),
   ROLE_GUARD.TRAINER_GUARD,
   mediaUpload.fields([
     { name: "profileImage", maxCount: 1 },
@@ -24,20 +26,19 @@ trainerRoute.get(
 );
 
 trainerRoute.put(
-  TRAINER_ROUTES.TRAINER_PROFILE_UPDATE,
+  TRAINER_ROUTES.TRAINER_PROFILE_UPDATE, validate(updateTrainerProfileSchema),
   ROLE_GUARD.TRAINER_GUARD,
   trainerController.updateProfile,
 );
 
 trainerRoute.post(
-  TRAINER_ROUTES.TRAINER_PROFILE_PICTURE_UPDATE,
-  mediaUpload.single("file"),
+  TRAINER_ROUTES.TRAINER_PROFILE_PICTURE_UPDATE, validate(uploadProfilePictureSchema),
   ROLE_GUARD.TRAINER_GUARD,
   trainerController.uploadProfilePicture,
 );
 
 trainerRoute.get(
-  "/trainer/profile/status",
+  TRAINER_ROUTES.GET_PROFILE_STATUS,
   ROLE_GUARD.TRAINER_GUARD,
   trainerController.getProfileStatus,
 );

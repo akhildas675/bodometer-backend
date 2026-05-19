@@ -3,7 +3,6 @@ import { GENDER } from "../../constants/identity.constants";
 
 
 
-
 export const createTrainerProfileSchema = z.object({
     body: z.object({
         experienceInYears: z.coerce
@@ -15,18 +14,25 @@ export const createTrainerProfileSchema = z.object({
             .min(10, "Bio must be at least 10 characters")
             .max(500, "Bio must not exceed 500 characters"),
     }),
-    file: z
+    files: z
         .object({
-            mimetype: z
-                .string()
-                .refine(
-                    (val) =>
-                        ["application/pdf", "image/jpeg", "image/png"].includes(val),
-                    { message: "Only PDF, jpeg, and png files are allowed" }
-                ),
-            size: z.number().max(10 * 1024 * 1024, "File size must not exceed 10MB"),
+            certificate: z.any().optional(),
         })
-        .refine((file) => file !== undefined, { message: "Certificate is required" }),
+        .refine((files) => {
+            if (files.certificate) {
+                const file = files.certificate;
+                const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+                const maxSize = 10 * 1024 * 1024;
+
+                if (!allowedTypes.includes(file.mimetype)) {
+                    throw new Error("Only PDF, jpeg, and png files are allowed");
+                }
+                if (file.size > maxSize) {
+                    throw new Error("File size must not exceed 10MB");
+                }
+            }
+            return true;
+        }, "File validation failed"),
 });
 
 export const updateTrainerProfileSchema = z.object({
@@ -49,16 +55,23 @@ export const updateTrainerProfileSchema = z.object({
 
 
 export const uploadProfilePictureSchema = z.object({
-    file: z
+    files: z
         .object({
-            mimetype: z
-                .string()
-                .refine(
-                    (val) => ["image/jpeg", "image/png", "image/webp"].includes(val),
-                    { message: "Only jpeg, png, and webp images are allowed" }
-                ),
-            size: z.number().max(5 * 1024 * 1024, "File size must not exceed 5MB"),
+            file: z.any().optional(),
         })
-        .refine((file) => file !== undefined, { message: "File is required" }),
-});
+        .refine((files) => {
+            if (files.file) {
+                const file = files.file;
+                const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+                const maxSize = 5 * 1024 * 1024;
 
+                if (!allowedTypes.includes(file.mimetype)) {
+                    throw new Error("Only jpeg, png, and webp images are allowed");
+                }
+                if (file.size > maxSize) {
+                    throw new Error("File size must not exceed 5MB");
+                }
+            }
+            return true;
+        }, "File validation failed"),
+});

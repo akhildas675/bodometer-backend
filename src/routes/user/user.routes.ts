@@ -4,8 +4,17 @@ import { USER_ROUTES } from "../../constants/routes.constant/user-routes.constan
 import { ROLE_GUARD } from "../../constants/role.guard";
 import { validate } from "../../middleware/validate";
 import {
+  bmiCalculationSchema,
+  categoryIdParamSchema,
+  changePasswordSchema,
+  checkoutSessionSchema,
+  groupIdParamSchema,
+  submitOnboardingSchema,
+  subscriptionIdParamSchema,
+  trainerIdParamSchema,
   updateUserProfileSchema,
   uploadProfilePictureSchema,
+  verifyPaymentSchema,
 } from "../../validators/user/user.validator";
 import { mediaUpload } from "../../config/multer";
 
@@ -38,13 +47,13 @@ userRoute.get(
 );
 
 userRoute.get(
-  USER_ROUTES.GET_TRAINERS_BY_ID,
+  USER_ROUTES.GET_TRAINERS_BY_ID, validate(trainerIdParamSchema),
   ROLE_GUARD.USER_GUARD,
   userController.getTrainerById,
 );
 
 userRoute.patch(
-  USER_ROUTES.CHANGE_PASSWORD,
+  USER_ROUTES.CHANGE_PASSWORD, validate(changePasswordSchema),
   ROLE_GUARD.USER_GUARD,
   userController.changePassword,
 );
@@ -56,7 +65,7 @@ userRoute.get(
 );
 
 userRoute.get(
-  USER_ROUTES.GET_CATEGORY_BY_ID,
+  USER_ROUTES.GET_CATEGORY_BY_ID, validate(categoryIdParamSchema),
   ROLE_GUARD.USER_GUARD,
   userController.getCategoryById,
 );
@@ -68,25 +77,25 @@ userRoute.get(
 );
 
 userRoute.post(
-  USER_ROUTES.CHECKOUT_SESSION,
+  USER_ROUTES.CHECKOUT_SESSION, validate(checkoutSessionSchema),
   ROLE_GUARD.USER_GUARD,
   userController.createCheckoutSession,
 );
 
 userRoute.get(
-  USER_ROUTES.VERIFY_PAYMENT,
+  USER_ROUTES.VERIFY_PAYMENT, validate(verifyPaymentSchema),
   ROLE_GUARD.USER_GUARD,
   userController.verifyPayment,
 );
 
 userRoute.get(
-  USER_ROUTES.GET_ACTIVE_SUBSCRIPTION,
+  USER_ROUTES.GET_ACTIVE_SUBSCRIPTION, validate(subscriptionIdParamSchema),
   ROLE_GUARD.USER_GUARD,
   userController.getActiveSubscription,
 );
 
 userRoute.get(
-  USER_ROUTES.GET_MY_TRANSACTIONS,
+  USER_ROUTES.GET_MY_TRANSACTIONS, validate(subscriptionIdParamSchema),
   ROLE_GUARD.USER_GUARD,
   userController.getUserTransactions,
 );
@@ -99,31 +108,31 @@ userRoute.get(
 );
 
 userRoute.get(
-  USER_ROUTES.GET_ONBOARDING_QUESTIONS,
+  USER_ROUTES.GET_ONBOARDING_QUESTIONS, validate(groupIdParamSchema),
   ROLE_GUARD.USER_GUARD,
   userController.getOnboardingQuestions,
 );
 
 userRoute.post(
-  USER_ROUTES.SUBMIT_ONBOARDING,
+  USER_ROUTES.SUBMIT_ONBOARDING, validate(submitOnboardingSchema),
   ROLE_GUARD.USER_GUARD,
   userController.submitOnboarding,
 );
 
 userRoute.get(
-  USER_ROUTES.GET_ONBOARDING_STATUS,
+  USER_ROUTES.GET_ONBOARDING_STATUS, validate(groupIdParamSchema),
   ROLE_GUARD.USER_GUARD,
   userController.getOnboardingStatus,
 );
 
 userRoute.get(
-  USER_ROUTES.GET_ONBOARDING_ANSWERS,
+  USER_ROUTES.GET_ONBOARDING_ANSWERS, validate(groupIdParamSchema),
   ROLE_GUARD.USER_GUARD,
   userController.getOnboardingAnswers,
 );
 
 userRoute.post(
-  USER_ROUTES.CALCULATE_BMI_PUBLIC,
+  USER_ROUTES.CALCULATE_BMI_PUBLIC, validate(bmiCalculationSchema),
   userController.calculateBmiPublic,
 );
 

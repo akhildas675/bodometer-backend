@@ -2,19 +2,32 @@ import { Router } from "express";
 import { ADMIN_ROUTES } from "../../constants/routes.constant/admin-routes.constant";
 import { createAdminModule } from "../../modules/admin/admin.module";
 import { ROLE_GUARD } from "../../constants/role.guard";
-import { validate } from "../../middleware/validate";
-import {
-  getTrainersSchema,
-  trainerIdParamSchema,
-  getTrainerAppointmentsSchema,
-  profileIdParamSchema,
-  rejectTrainerSchema,
-} from "../../validators/admin/admin-trainer.validator";
-import {
-  getUsersSchema,
-  userIdParamSchema,
-} from "../../validators/admin/admin-user.validator";
 import { mediaUpload } from "@/config/multer";
+import {
+  categoryIdParamSchema,
+  categoryUpdateSchema,
+  categoryValidationSchema,
+  featureIdParamSchema,
+  featureUpdateSchema,
+  featureValidationSchema,
+  getTrainerAppointmentsSchema,
+  getTrainersSchema,
+  getUsersSchema,
+  groupIdParamSchema,
+  groupUpdateSchema,
+  groupValidationSchema,
+  profileIdParamSchema,
+  questionIdParamSchema,
+  questionUpdateSchema,
+  questionValidationSchema,
+  rejectTrainerSchema,
+  subscriptionPlanIdParamSchema,
+  subscriptionPlanUpdateSchema,
+  subscriptionPlanValidationSchema,
+  trainerIdParamSchema,
+  userIdParamSchema,
+} from "@/validators/admin/admin-validator";
+import { validate } from "@/middleware/validate";
 
 const adminRoute = Router();
 const { adminController } = createAdminModule();
@@ -99,12 +112,14 @@ adminRoute.post(
   ADMIN_ROUTES.CREATE_CATEGORY,
   ROLE_GUARD.ADMIN_GUARD,
   mediaUpload.single("image"),
+  validate(categoryValidationSchema),
   adminController.createCategory,
 );
 adminRoute.put(
   ADMIN_ROUTES.UPDATE_CATEGORY,
   ROLE_GUARD.ADMIN_GUARD,
   mediaUpload.single("image"),
+  validate(categoryUpdateSchema),
   adminController.updateCategory,
 );
 adminRoute.get(
@@ -120,6 +135,7 @@ adminRoute.get(
 adminRoute.patch(
   ADMIN_ROUTES.TOGGLE_CATEGORY_STATUS,
   ROLE_GUARD.ADMIN_GUARD,
+  validate(categoryIdParamSchema),
   adminController.toggleCategoryStatus,
 );
 adminRoute.get(
@@ -129,16 +145,19 @@ adminRoute.get(
 );
 adminRoute.post(
   ADMIN_ROUTES.CREATE_FEATURE,
+  validate(featureValidationSchema),
   ROLE_GUARD.ADMIN_GUARD,
   adminController.createSubscriptionFeature,
 );
 adminRoute.put(
   ADMIN_ROUTES.UPDATE_FEATURE,
+  validate(featureUpdateSchema),
   ROLE_GUARD.ADMIN_GUARD,
   adminController.updateSubscriptionFeature,
 );
 adminRoute.patch(
   ADMIN_ROUTES.TOGGLE_FEATURE_STATUS,
+  validate(featureIdParamSchema),
   ROLE_GUARD.ADMIN_GUARD,
   adminController.toggleSubscriptionFeatureStatus,
 );
@@ -149,6 +168,7 @@ adminRoute.get(
 );
 adminRoute.post(
   ADMIN_ROUTES.CREATE_SUBSCRIPTION_PLAN,
+  validate(subscriptionPlanValidationSchema),
   ROLE_GUARD.ADMIN_GUARD,
   adminController.createSubscriptionPlan,
 );
@@ -159,16 +179,19 @@ adminRoute.get(
 );
 adminRoute.patch(
   ADMIN_ROUTES.TOGGLE_SUBSCRIPTION_PLAN_STATUS,
+  validate(subscriptionPlanIdParamSchema),
   ROLE_GUARD.ADMIN_GUARD,
   adminController.toggleSubscriptionPlanStatus,
 );
 adminRoute.get(
   ADMIN_ROUTES.GET_SUBSCRIPTION_PLAN_BY_ID,
+  validate(subscriptionPlanIdParamSchema),
   ROLE_GUARD.ADMIN_GUARD,
   adminController.getSubscriptionPlanById,
 );
 adminRoute.put(
   ADMIN_ROUTES.UPDATE_SUBSCRIPTION_PLAN,
+  validate(subscriptionPlanUpdateSchema.merge(subscriptionPlanIdParamSchema)),
   ROLE_GUARD.ADMIN_GUARD,
   adminController.updateSubscriptionPlan,
 );
@@ -177,6 +200,7 @@ adminRoute.put(
 adminRoute.post(
   ADMIN_ROUTES.CREATE_QUESTION_GROUP,
   ROLE_GUARD.ADMIN_GUARD,
+  validate(groupValidationSchema),
   adminController.createQuestionGroup,
 );
 adminRoute.get(
@@ -186,16 +210,19 @@ adminRoute.get(
 );
 adminRoute.get(
   ADMIN_ROUTES.GET_QUESTION_GROUP_BY_ID,
+  validate(groupIdParamSchema),
   ROLE_GUARD.ADMIN_GUARD,
   adminController.getQuestionGroupById,
 );
 adminRoute.put(
   ADMIN_ROUTES.UPDATE_QUESTION_GROUP,
+  validate(groupUpdateSchema.merge(groupIdParamSchema)),
   ROLE_GUARD.ADMIN_GUARD,
   adminController.updateQuestionGroup,
 );
 adminRoute.patch(
   ADMIN_ROUTES.TOGGLE_QUESTION_GROUP_STATUS,
+  validate(groupIdParamSchema),
   ROLE_GUARD.ADMIN_GUARD,
   adminController.toggleQuestionGroupStatus,
 );
@@ -203,6 +230,7 @@ adminRoute.patch(
 // Question Routes
 adminRoute.post(
   ADMIN_ROUTES.CREATE_QUESTION,
+  validate(questionValidationSchema),
   ROLE_GUARD.ADMIN_GUARD,
   adminController.createQuestion,
 );
@@ -213,16 +241,19 @@ adminRoute.get(
 );
 adminRoute.get(
   ADMIN_ROUTES.GET_QUESTION_BY_ID,
+  validate(questionIdParamSchema),
   ROLE_GUARD.ADMIN_GUARD,
   adminController.getQuestionById,
 );
 adminRoute.put(
   ADMIN_ROUTES.UPDATE_QUESTION,
+  validate(questionUpdateSchema),
   ROLE_GUARD.ADMIN_GUARD,
   adminController.updateQuestion,
 );
 adminRoute.patch(
   ADMIN_ROUTES.TOGGLE_QUESTION_STATUS,
+  validate(questionIdParamSchema),
   ROLE_GUARD.ADMIN_GUARD,
   adminController.toggleQuestionStatus,
 );
