@@ -6,7 +6,7 @@ import { IPaymentService } from "../../interfaces/service-interface/payment/stri
 import { IS3Service } from "../../interfaces/service-interface/s3/s3-service.interface";
 import { IUserService } from "../../interfaces/service-interface/user/user-service.interface";
 import { UserMapper, UserMappers } from "../../mappers/user/user.mappers";
-import { SubscriptionMapper } from "@/mappers/subscription/subscription.mapper";
+import { SubscriptionMapper, PopulatedSubscriptionTransaction } from "@/mappers/subscription/subscription.mapper";
 import { AppError } from "../../utils/appError";
 import bcrypt from "bcrypt";
 import { hashPassword } from "../../utils/password";
@@ -377,7 +377,7 @@ export class UserService implements IUserService {
 
     return {
       subscriptionId: String(sub._id),
-      planId: String(plan?._id ?? sub.subscriptionPlanId),
+      planId: String(plan?._id),
       planName: plan?.name ?? "Unknown",
       startDate: sub.startDate,
       endDate: sub.endDate,
@@ -441,19 +441,20 @@ export class UserService implements IUserService {
     limit?: number,
     status?: string,
   ): Promise<{ data: SubscriptionTransactionDto[]; pagination: PaginationMeta }> {
-    const result = await this._subscriptionTransactionRepository.findUserTransactionsPaginated(
-      userId,
-      search,
-      sortBy,
-      sortOrder,
-      page,
-      limit,
-      status,
-    );
+    const { data, pagination } =
+      await this._subscriptionTransactionRepository.findUserTransactionsPaginated(
+        userId,
+        search,
+        sortBy,
+        sortOrder,
+        page,
+        limit,
+        status,
+      );
 
     return {
-      data: SubscriptionMapper.toTransactionDtoList(result.data),
-      pagination: result.pagination,
+      data: SubscriptionMapper.toTransactionDtoList(data as PopulatedSubscriptionTransaction[]),
+      pagination,
     };
   }
 

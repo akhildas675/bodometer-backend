@@ -68,7 +68,7 @@ import {
   TrainerMapper,
 } from "../../mappers/admin/admin.mappers";
 import { CategoryMappers } from "../../mappers/category/category.mapper";
-import { SubscriptionMapper } from "@/mappers/subscription/subscription.mapper";
+import { SubscriptionMapper, PopulatedSubscriptionTransaction } from "@/mappers/subscription/subscription.mapper";
 import { AppError } from "../../utils/appError";
 import { ISubscriptionFeatureRepository } from "@/interfaces/repository-interface/subscription/feature-repository.interface";
 import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/subscription/subscription-plan.repository";
@@ -742,7 +742,7 @@ export class AdminService implements IAdminService {
       );
 
     return {
-      data: SubscriptionMapper.toTransactionDtoList(data),
+      data: SubscriptionMapper.toTransactionDtoList(data as PopulatedSubscriptionTransaction[]),
       pagination,
     };
   }
