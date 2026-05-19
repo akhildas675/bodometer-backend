@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ITrainerService } from "../../interfaces/service-interface/trainer/trainer-service.interface";
 import { AuthRequest } from "../../middleware/authGuard";
+import { parsePaginationQuery } from "../../utils/query";
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
 import {
@@ -179,19 +180,7 @@ export class TrainerController {
     next: NextFunction,
   ) => {
     try {
-      const query: {
-        page?: number;
-        limit?: number;
-        search?: string;
-        sortBy?: string;
-        sortOrder?: "asc" | "desc";
-      } = {};
-      if (req.query.page) query.page = Number(req.query.page);
-      if (req.query.limit) query.limit = Number(req.query.limit);
-      if (req.query.search) query.search = String(req.query.search);
-      if (req.query.sortBy) query.sortBy = String(req.query.sortBy);
-      if (req.query.sortOrder)
-        query.sortOrder = req.query.sortOrder as "asc" | "desc";
+      const query = parsePaginationQuery(req);
 
       const result = await this._trainerService.getCategories(query);
       res.status(STATUS.OK).json({

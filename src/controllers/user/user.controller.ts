@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthRequest } from "../../middleware/authGuard";
 import { Logger } from "../../utils/logger";
+import { parsePaginationQuery } from "../../utils/query";
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
 import { MESSAGES } from "../../constants/messages";
@@ -123,15 +124,10 @@ export class UserController {
 
   getTrainers = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const query: GetTrainersQueryDto = {};
-      if (req.query.page) query.page = Number(req.query.page);
-      if (req.query.limit) query.limit = Number(req.query.limit);
-      if (req.query.search) query.search = String(req.query.search);
-      if (req.query.sortBy) query.sortBy = String(req.query.sortBy);
-      if (req.query.sortOrder)
-        query.sortOrder = req.query.sortOrder as "asc" | "desc";
-      if (req.query.specializationId)
-        query.specializationId = String(req.query.specializationId);
+      const query: GetTrainersQueryDto = {
+        ...parsePaginationQuery(req),
+        ...(req.query.specializationId && { specializationId: String(req.query.specializationId) }),
+      };
 
       const result = await this._userService.getTrainers(query);
       res.status(STATUS.OK).json({
@@ -174,19 +170,7 @@ export class UserController {
     next: NextFunction,
   ) => {
     try {
-      const query: {
-        page?: number;
-        limit?: number;
-        search?: string;
-        sortBy?: string;
-        sortOrder?: "asc" | "desc";
-      } = {};
-      if (req.query.page) query.page = Number(req.query.page);
-      if (req.query.limit) query.limit = Number(req.query.limit);
-      if (req.query.search) query.search = String(req.query.search);
-      if (req.query.sortBy) query.sortBy = String(req.query.sortBy);
-      if (req.query.sortOrder)
-        query.sortOrder = req.query.sortOrder as "asc" | "desc";
+      const query = parsePaginationQuery(req);
 
       const result = await this._userService.getCategories(query);
       res.status(STATUS.OK).json({
@@ -424,15 +408,16 @@ export class UserController {
       if (!req.user?.id) {
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
       }
-      const { search, sortBy, sortOrder, page, limit, status } = req.query;
+      const parsed = parsePaginationQuery(req);
+      const status = req.query.status ? String(req.query.status) : undefined;
       const result = await this._userService.getUserTransactions(
         req.user.id,
-        search ? String(search) : undefined,
-        sortBy ? String(sortBy) : undefined,
-        sortOrder === "asc" || sortOrder === "desc" ? sortOrder : undefined,
-        page ? Number(page) : undefined,
-        limit ? Number(limit) : undefined,
-        status ? String(status) : undefined,
+        parsed.search,
+        parsed.sortBy,
+        parsed.sortOrder,
+        parsed.page,
+        parsed.limit,
+        status,
       );
       res.status(STATUS.OK).json({
         success: true,

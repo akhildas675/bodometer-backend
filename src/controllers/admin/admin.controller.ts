@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 import { AppError } from "../../utils/appError";
+import { parsePaginationQuery } from "../../utils/query";
 import { IAdminService } from "../../interfaces/service-interface/admin/admin-service.interface";
 import { STATUS } from "../../constants/statuscode";
 import { MESSAGES } from "../../constants/messages";
@@ -95,15 +96,10 @@ export class AdminController {
     res: Response,
     next: NextFunction,
   ) => {
-    const query: GetTrainerAppointmentsQueryDto = {};
-
-    if (req.query.search) query.search = req.query.search as string;
-    if (req.query.sortBy) query.sortBy = req.query.sortBy as string;
-    if (req.query.sortOrder)
-      query.sortOrder = req.query.sortOrder as "asc" | "desc";
-    if (req.query.page) query.page = Number(req.query.page);
-    if (req.query.limit) query.limit = Number(req.query.limit);
-    if (req.query.status) query.status = req.query.status as string;
+    const query: GetTrainerAppointmentsQueryDto = {
+      ...parsePaginationQuery(req),
+      ...(req.query.status && { status: req.query.status as string }),
+    };
 
     const result = await this._adminService.getTrainerAppointments(query);
     res.status(STATUS.OK).json({
@@ -283,11 +279,12 @@ export class AdminController {
   ) => {
     try {
       const query: CategoryQueryDto = {
-        search: req.query.search?.toString().trim() || "",
-        page: parseInt(req.query.page as string) || 1,
-        limit: parseInt(req.query.limit as string) || 10,
-        sortBy: (req.query.sortBy as string) || "createdAt",
-        sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
+        search: "",
+        page: 1,
+        limit: 10,
+        sortBy: "createdAt",
+        sortOrder: "desc",
+        ...parsePaginationQuery(req),
       };
 
       const { data, pagination } =
@@ -328,11 +325,12 @@ export class AdminController {
   ) => {
     try {
       const query: SubscriptionFeatureQueryDto = {
-        search: req.query.search?.toString().trim() || "",
-        page: parseInt(req.query.page as string) || 1,
-        limit: parseInt(req.query.limit as string) || 10,
-        sortBy: (req.query.sortBy as string) || "createdAt",
-        sortOrder: (req.query.sortOrder as "asc") || "desc" || "desc",
+        search: "",
+        page: 1,
+        limit: 10,
+        sortBy: "createdAt",
+        sortOrder: "desc",
+        ...parsePaginationQuery(req),
       };
       const { data, pagination } =
         await this._adminService.getAllSubscriptionFeatures(query);
@@ -466,11 +464,12 @@ export class AdminController {
   ) => {
     try {
       const query: SubscriptionPlanQueryDto = {
-        search: req.query.search?.toString().trim() || "",
-        page: parseInt(req.query.page as string) || 1,
-        limit: parseInt(req.query.limit as string) || 10,
-        sortBy: (req.query.sortBy as string) || "createdAt",
-        sortOrder: (req.query.sortOrder as "asc") || "desc" || "desc",
+        search: "",
+        page: 1,
+        limit: 10,
+        sortBy: "createdAt",
+        sortOrder: "desc",
+        ...parsePaginationQuery(req),
       };
       const { data, pagination } =
         await this._adminService.getAllSubscriptionPlans(query);
@@ -560,9 +559,10 @@ export class AdminController {
   ) => {
     try {
       const query = {
-        search: req.query.search?.toString().trim() || "",
-        page: parseInt(req.query.page as string) || 1,
-        limit: parseInt(req.query.limit as string) || 10,
+        search: "",
+        page: 1,
+        limit: 10,
+        ...parsePaginationQuery(req),
       };
       const { data, pagination } =
         await this._adminService.getAllQuestionGroups(query);
@@ -647,12 +647,13 @@ export class AdminController {
   getAllQuestions = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const query: QuestionQueryDto = {
-        search: req.query.search?.toString().trim() || "",
-        groupId: req.query.groupId?.toString(),
-        page: parseInt(req.query.page as string) || 1,
-        limit: parseInt(req.query.limit as string) || 10,
-        sortBy: req.query.sortBy?.toString() || "createdAt",
-        sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
+        search: "",
+        page: 1,
+        limit: 10,
+        sortBy: "createdAt",
+        sortOrder: "desc",
+        ...parsePaginationQuery(req),
+        ...(req.query.groupId && { groupId: req.query.groupId.toString() }),
       };
       const { data, pagination } =
         await this._adminService.getAllQuestions(query);
@@ -730,12 +731,14 @@ export class AdminController {
   ) => {
     try {
       const query: SubscriptionTransactionQueryDto = {
-        search: req.query.search?.toString().trim() || "",
-        status: req.query.status?.toString().trim() || "",
-        page: parseInt(req.query.page as string) || 1,
-        limit: parseInt(req.query.limit as string) || 10,
-        sortBy: (req.query.sortBy as string) || "createdAt",
-        sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
+        search: "",
+        status: "",
+        page: 1,
+        limit: 10,
+        sortBy: "createdAt",
+        sortOrder: "desc",
+        ...parsePaginationQuery(req),
+        ...(req.query.status && { status: req.query.status.toString().trim() }),
       };
 
       const { data, pagination } =
