@@ -8,6 +8,8 @@ import {
 } from "@/constants/subscription.constant";
 import { ISubscriptionTransactionRepository } from "@/interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
 import { PaginationMeta } from "../interfaces/domain.interface/common.interface";
+import { SubscriptionTransactionDto } from "@/dto/subscription/subscription.dto";
+import { FilterQuery } from "mongoose";
 import { UserModel } from "@/models/user.model";
 import { SubscriptionPlanModel } from "@/models/subscription-plan.model";
 
@@ -43,8 +45,8 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
     page?: number,
     limit?: number,
     status?: string,
-  ): Promise<{ data: any[]; pagination: PaginationMeta }> {
-    const filter: Record<string, any> = {};
+  ): Promise<{ data: SubscriptionTransactionDto[]; pagination: PaginationMeta }> {
+    const filter: FilterQuery<ISubscriptionTransaction> = {};
 
     if (status) {
       filter.paymentStatus = status;
@@ -94,7 +96,7 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
       .lean();
 
     return {
-      data: docs,
+      data: docs as unknown as SubscriptionTransactionDto[],
       pagination: {
         currentPage: pageNum,
         totalPages: Math.ceil(total / limitNum),
@@ -121,8 +123,8 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
     page?: number,
     limit?: number,
     status?: string,
-  ): Promise<{ data: any[]; pagination: PaginationMeta }> {
-    const filter: Record<string, any> = { userId };
+  ): Promise<{ data: SubscriptionTransactionDto[]; pagination: PaginationMeta }> {
+    const filter: FilterQuery<ISubscriptionTransaction> = { userId };
 
     if (status) {
       filter.paymentStatus = status;
@@ -165,7 +167,7 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
       .lean();
 
     return {
-      data: docs,
+      data: docs as unknown as SubscriptionTransactionDto[],
       pagination: {
         currentPage: pageNum,
         totalPages: Math.ceil(total / limitNum),

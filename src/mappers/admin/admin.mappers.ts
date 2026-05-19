@@ -34,15 +34,6 @@ export class AdminAccountMapper {
 
 // --- TRAINERS ---
 export class TrainerMapper {
-  static toProfileResponse(
-    updatedUser: UserInterface,
-  ):
-    | import("../../dto/trainer/trainer.dto").FindTrainerResponseDto
-    | PromiseLike<
-        import("../../dto/trainer/trainer.dto").FindTrainerResponseDto
-      > {
-    throw new Error("Method not implemented.");
-  }
   private static mapTrainerUser(
     user: IUserDocument,
     profile: ITrainerProfileDocument,

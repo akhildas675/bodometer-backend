@@ -4,6 +4,7 @@ import {
   TransactionStatus,
 } from "@/constants/subscription.constant";
 import { PaginationMeta } from "../../domain.interface/common.interface";
+import { SubscriptionTransactionDto } from "@/dto/subscription/subscription.dto";
 
 export interface ISubscriptionTransactionRepository {
   create(data: {
@@ -31,7 +32,7 @@ export interface ISubscriptionTransactionRepository {
     page?: number,
     limit?: number,
     status?: string,
-  ): Promise<{ data: any[]; pagination: PaginationMeta }>;
+  ): Promise<{ data: SubscriptionTransactionDto[]; pagination: PaginationMeta }>;
 
   findByUserId(
     userId: string,
@@ -45,5 +46,5 @@ export interface ISubscriptionTransactionRepository {
     page?: number,
     limit?: number,
     status?: string,
-  ): Promise<{ data: any[]; pagination: PaginationMeta }>;
+  ): Promise<{ data: SubscriptionTransactionDto[]; pagination: PaginationMeta }>;
 }

@@ -1,18 +1,26 @@
+import js from "@eslint/js";
 import tseslint from "typescript-eslint";
+import globals from "globals";
 
 export default tseslint.config(
+  js.configs.recommended,
   ...tseslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
+
   {
+    files: ["**/*.ts"],
+
     languageOptions: {
       parserOptions: {
-        projectService: true,
+        project: "./tsconfig.json",
         tsconfigRootDir: import.meta.dirname,
       },
+
+      globals: {
+        ...globals.node,
+      },
     },
-    env: {
-      node: true,
-    },
+
     rules: {
       "@typescript-eslint/no-unused-vars": "error",
       "@typescript-eslint/no-explicit-any": "error",
@@ -22,6 +30,7 @@ export default tseslint.config(
       "no-console": "warn",
     },
   },
+
   {
     ignores: ["dist", "node_modules"],
   }

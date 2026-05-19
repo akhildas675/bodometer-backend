@@ -67,6 +67,8 @@ import {
   AdminAccountMapper,
   TrainerMapper,
 } from "../../mappers/admin/admin.mappers";
+import { CategoryMappers } from "../../mappers/category/category.mapper";
+import { SubscriptionMapper } from "../../mappers/subscription/subscription.mapper";
 import { AppError } from "../../utils/appError";
 import { ISubscriptionFeatureRepository } from "@/interfaces/repository-interface/subscription/feature-repository.interface";
 import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/subscription/subscription-plan.repository";
@@ -298,12 +300,7 @@ export class AdminService implements IAdminService {
     if (!category) {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.ADMIN.CATEGORY_NOT_FOUND);
     }
-    return {
-      categoryId: category.categoryId!,
-      name: category.name,
-      description: category.description,
-      image: category.media.image.url,
-    };
+    return CategoryMappers.toGetCategoryByIdResponseDto(category);
   }
 
   async updateCategory(data: UpdateCategoryDto): Promise<void> {
@@ -364,13 +361,7 @@ export class AdminService implements IAdminService {
       });
 
     return {
-      data: data.map((cat) => ({
-        categoryId: cat.categoryId!,
-        name: cat.name,
-        description: cat.description,
-        image: cat.media.image.url,
-        isActive: cat.isActive,
-      })),
+      data: CategoryMappers.toCategoryResponseDtoList(data),
       pagination,
     };
   }
@@ -395,13 +386,8 @@ export class AdminService implements IAdminService {
       );
     }
     return {
-      message: "Category status toggled successfully",
-      category: {
-        categoryId: updated.categoryId!,
-        name: updated.name,
-        description: updated.description,
-        image: updated.media.image.url,
-      },
+      message: MESSAGES.ADMIN.CATEGORY_STATUS_TOGGLED,
+      category: CategoryMappers.toCategoryResponseDto(updated),
     };
   }
 
@@ -416,14 +402,7 @@ export class AdminService implements IAdminService {
       });
 
     return {
-      data: data.map((feature) => ({
-        subscriptionFeatureId: feature.subscriptionFeatureId!,
-        key: feature.key,
-        title: feature.title,
-        description: feature.description,
-        type: feature.type,
-        isActive: feature.isActive ?? false,
-      })),
+      data: SubscriptionMapper.toFeatureDtoList(data),
       pagination,
     };
   }
@@ -495,15 +474,8 @@ export class AdminService implements IAdminService {
       );
     }
     return {
-      message: "Subscription feature status toggled successfully",
-      feature: {
-        subscriptionFeatureId: updated.subscriptionFeatureId!,
-        key: updated.key,
-        title: updated.title,
-        description: updated.description,
-        type: updated.type,
-        isActive: updated.isActive ?? false,
-      },
+      message: MESSAGES.ADMIN.SUBSCRIPTION_FEATURE_STATUS_TOGGLED,
+      feature: SubscriptionMapper.toFeatureDto(updated),
     };
   }
 
@@ -521,14 +493,7 @@ export class AdminService implements IAdminService {
           "Subscription feature not found",
       );
     }
-    return {
-      subscriptionFeatureId: feature.subscriptionFeatureId!,
-      key: feature.key,
-      title: feature.title,
-      description: feature.description,
-      type: feature.type,
-      isActive: feature.isActive ?? false,
-    };
+    return SubscriptionMapper.toFeatureDto(feature);
   }
 
   async createSubscriptionPlan(data: CreateSubscriptionPlanDto): Promise<void> {
@@ -557,16 +522,7 @@ export class AdminService implements IAdminService {
       });
 
     return {
-      data: data.map((plan) => ({
-        subscriptionPlanId: plan.subscriptionPlanId!,
-        name: plan.name,
-        description: plan.description,
-        price: plan.price,
-        durationInDays: plan.durationInDays,
-        isPopular: plan.isPopular,
-        isActive: plan.isActive ?? true,
-        features: plan.features,
-      })),
+      data: SubscriptionMapper.toPlanDtoList(data),
       pagination,
     };
   }
@@ -585,16 +541,7 @@ export class AdminService implements IAdminService {
           "Subscription plan not found",
       );
     }
-    return {
-      subscriptionPlanId: plan.subscriptionPlanId!,
-      name: plan.name,
-      description: plan.description,
-      price: plan.price,
-      durationInDays: plan.durationInDays,
-      isPopular: plan.isPopular,
-      isActive: plan.isActive ?? true,
-      features: plan.features,
-    };
+    return SubscriptionMapper.toPlanByIdResponseDto(plan);
   }
 
   async updateSubscriptionPlan(data: UpdateSubscriptionPlanDto): Promise<void> {
@@ -641,17 +588,8 @@ export class AdminService implements IAdminService {
       );
     }
     return {
-      message: "Subscription plan status toggled successfully",
-      plan: {
-        subscriptionPlanId: updated.subscriptionPlanId!,
-        name: updated.name,
-        description: updated.description,
-        price: updated.price,
-        durationInDays: updated.durationInDays,
-        isPopular: updated.isPopular,
-        isActive: updated.isActive ?? true,
-        features: updated.features,
-      },
+      message: MESSAGES.ADMIN.SUBSCRIPTION_PLAN_TOGGLED,
+      plan: SubscriptionMapper.toPlanDto(updated),
     };
   }
 

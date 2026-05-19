@@ -1,4 +1,8 @@
-import { CategoryDetailDto } from "../../dto/category/category.dto";
+import {
+  CategoryDetailDto,
+  CategoryResponseDto,
+  GetCategoryByIdResponseDto,
+} from "../../dto/category/category.dto";
 import { Category } from "../../interfaces/domain.interface/category.interface";
 
 export class CategoryMappers {
@@ -14,5 +18,28 @@ export class CategoryMappers {
       },
       isActive: category.isActive ?? false,
     };
+  }
+
+  static toCategoryResponseDto(category: Category): CategoryResponseDto {
+    return {
+      categoryId: category.categoryId!,
+      name: category.name,
+      description: category.description,
+      image: category.media?.image?.url || "",
+      isActive: category.isActive ?? false,
+    };
+  }
+
+  static toGetCategoryByIdResponseDto(category: Category): GetCategoryByIdResponseDto {
+    return {
+      categoryId: category.categoryId!,
+      name: category.name,
+      description: category.description,
+      image: category.media?.image?.url || "",
+    };
+  }
+
+  static toCategoryResponseDtoList(categories: Category[]): CategoryResponseDto[] {
+    return categories.map((cat) => this.toCategoryResponseDto(cat));
   }
 }

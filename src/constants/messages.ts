@@ -179,6 +179,7 @@ export const MESSAGES = {
 
     CATEGORY_DELETED: "Category deleted successfully.",
     CATEGORY_DELETE_FAILED: "Failed to delete category.",
+    CATEGORY_STATUS_TOGGLED: "Category status toggled successfully.",
 
     CATEGORY_FETCHED: "Category fetched successfully.",
     CATEGORIES_FETCHED: "Categories fetched successfully.",
@@ -198,6 +199,7 @@ export const MESSAGES = {
 
     SUBSCRIPTION_FEATURE_DELETED: "Subscription feature deleted successfully.",
     SUBSCRIPTION_FEATURE_DELETE_FAILED: "Failed to delete subscription feature.",
+    SUBSCRIPTION_FEATURE_STATUS_TOGGLED: "Subscription feature status toggled successfully.",
 
     SUBSCRIPTION_FEATURE_FETCHED: "Subscription feature fetched successfully.",
     SUBSCRIPTION_FEATURES_FETCHED: "Subscription features fetched successfully.",

@@ -77,7 +77,7 @@ export class TrainerService implements ITrainerService {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND);
     }
 
-    const profileFields: Record<string, any> = {};
+    const profileFields: Record<string, unknown> = {};
     if (updateData.experienceInYears !== undefined) {
       profileFields.experienceInYears = updateData.experienceInYears;
     }

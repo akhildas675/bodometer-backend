@@ -1,7 +1,7 @@
 import { CategoryQuery, GetAllCategoriesResponse } from "../../../interfaces/domain.interface/category.interface";
 import { GetAllQuestionGroupsResponse, GetAllQuestionsResponse, OnboardingValue, UserAnswerSubmission } from "../../../interfaces/domain.interface/onboarding.interface";
 import { ChangePasswordDto, FindUserResponseDto, UpdateBmiDto, UpdateBmiResponseDto, UpdateUserProfileDto } from "../../../dto/user/user.dto";
-import { ActiveSubscriptionDto, UserSubscriptionPlanResponseDto } from "../../../dto/subscription/subscription.dto";
+import { ActiveSubscriptionDto, UserSubscriptionPlanResponseDto, SubscriptionTransactionDto } from "../../../dto/subscription/subscription.dto";
 import { GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto } from "../../../dto/trainer/trainer.dto";
 import { CategoryDetailDto } from "../../../dto/category/category.dto";
 import { PaginationMeta } from "@/interfaces/domain.interface/common.interface";
@@ -34,6 +34,6 @@ export interface IUserService {
     page?: number,
     limit?: number,
     status?: string,
-  ): Promise<{ data: any[]; pagination: PaginationMeta }>;
+  ): Promise<{ data: SubscriptionTransactionDto[]; pagination: PaginationMeta }>;
   calculateBmi: (data: UpdateBmiDto) => Promise<UpdateBmiResponseDto>;
 }
