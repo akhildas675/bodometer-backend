@@ -70,5 +70,11 @@ export interface UpdateBmiResponseDto {
   category: {
     label: string;
     color: string;
+    description: string;
+    tips: string[];
+  };
+  healthyWeightRange: {
+    minKg: number;
+    maxKg: number;
   };
 }

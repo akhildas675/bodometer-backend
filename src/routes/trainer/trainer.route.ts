@@ -9,13 +9,14 @@ const trainerRoute = Router();
 const { trainerController } = createTrainerModule();
 
 trainerRoute.post(
-  TRAINER_ROUTES.SUBMIT_PROFILE_DATA, validate(createTrainerProfileSchema),
+  TRAINER_ROUTES.SUBMIT_PROFILE_DATA,
   ROLE_GUARD.TRAINER_GUARD,
   mediaUpload.fields([
     { name: "profileImage", maxCount: 1 },
     { name: "certificate", maxCount: 1 },
     { name: "coverImage", maxCount: 1 },
   ]),
+  validate(createTrainerProfileSchema),
   trainerController.createProfile,
 );
 
@@ -26,14 +27,17 @@ trainerRoute.get(
 );
 
 trainerRoute.put(
-  TRAINER_ROUTES.TRAINER_PROFILE_UPDATE, validate(updateTrainerProfileSchema),
+  TRAINER_ROUTES.TRAINER_PROFILE_UPDATE,
   ROLE_GUARD.TRAINER_GUARD,
+  validate(updateTrainerProfileSchema),
   trainerController.updateProfile,
 );
 
 trainerRoute.post(
-  TRAINER_ROUTES.TRAINER_PROFILE_PICTURE_UPDATE, validate(uploadProfilePictureSchema),
+  TRAINER_ROUTES.TRAINER_PROFILE_PICTURE_UPDATE,
   ROLE_GUARD.TRAINER_GUARD,
+  mediaUpload.single("file"),
+  validate(uploadProfilePictureSchema),
   trainerController.uploadProfilePicture,
 );
 

@@ -95,9 +95,7 @@ export class UserService implements IUserService {
         throw new AppError(STATUS.CONFLICT, MESSAGES.USER.USERNAME_ALREADY_EXISTS);
       }
     }
-    if (updateData.gender && updateData.gender === "prefer_not_say") {
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.INVALID_GENDER);
-    }
+
     if (updateData.dateOfBirth) {
       const dob = new Date(updateData.dateOfBirth);
       const today = new Date();

@@ -89,13 +89,13 @@ userRoute.get(
 );
 
 userRoute.get(
-  USER_ROUTES.GET_ACTIVE_SUBSCRIPTION, validate(subscriptionIdParamSchema),
+  USER_ROUTES.GET_ACTIVE_SUBSCRIPTION,
   ROLE_GUARD.USER_GUARD,
   userController.getActiveSubscription,
 );
 
 userRoute.get(
-  USER_ROUTES.GET_MY_TRANSACTIONS, validate(subscriptionIdParamSchema),
+  USER_ROUTES.GET_MY_TRANSACTIONS,
   ROLE_GUARD.USER_GUARD,
   userController.getUserTransactions,
 );
@@ -108,7 +108,7 @@ userRoute.get(
 );
 
 userRoute.get(
-  USER_ROUTES.GET_ONBOARDING_QUESTIONS, validate(groupIdParamSchema),
+  USER_ROUTES.GET_ONBOARDING_QUESTIONS,
   ROLE_GUARD.USER_GUARD,
   userController.getOnboardingQuestions,
 );
@@ -120,13 +120,13 @@ userRoute.post(
 );
 
 userRoute.get(
-  USER_ROUTES.GET_ONBOARDING_STATUS, validate(groupIdParamSchema),
+  USER_ROUTES.GET_ONBOARDING_STATUS,
   ROLE_GUARD.USER_GUARD,
   userController.getOnboardingStatus,
 );
 
 userRoute.get(
-  USER_ROUTES.GET_ONBOARDING_ANSWERS, validate(groupIdParamSchema),
+  USER_ROUTES.GET_ONBOARDING_ANSWERS,
   ROLE_GUARD.USER_GUARD,
   userController.getOnboardingAnswers,
 );

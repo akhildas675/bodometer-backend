@@ -5,7 +5,7 @@ import { GENDER } from "../../constants/identity.constants";
 
 export const createTrainerProfileSchema = z.object({
     body: z.object({
-        experienceInYears: z.coerce
+        experience: z.coerce
             .number()
             .min(0, "Experience must be a positive number")
             .max(50, "Experience seems too high"),
@@ -16,19 +16,47 @@ export const createTrainerProfileSchema = z.object({
     }),
     files: z
         .object({
+            profileImage: z.any().optional(),
             certificate: z.any().optional(),
+            coverImage: z.any().optional(),
         })
         .refine((files) => {
-            if (files.certificate) {
-                const file = files.certificate;
-                const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
-                const maxSize = 10 * 1024 * 1024;
+            const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+            const maxSize = 10 * 1024 * 1024;
 
-                if (!allowedTypes.includes(file.mimetype)) {
-                    throw new Error("Only PDF, jpeg, and png files are allowed");
+            if (files.profileImage) {
+                const file = Array.isArray(files.profileImage) ? files.profileImage[0] : files.profileImage;
+                if (file) {
+                    if (!allowedTypes.includes(file.mimetype)) {
+                        throw new Error("Only PDF, jpeg, and png files are allowed for profile image");
+                    }
+                    if (file.size > maxSize) {
+                        throw new Error("Profile image size must not exceed 10MB");
+                    }
                 }
-                if (file.size > maxSize) {
-                    throw new Error("File size must not exceed 10MB");
+            }
+
+            if (files.certificate) {
+                const file = Array.isArray(files.certificate) ? files.certificate[0] : files.certificate;
+                if (file) {
+                    if (!allowedTypes.includes(file.mimetype)) {
+                        throw new Error("Only PDF, jpeg, and png files are allowed for certificate");
+                    }
+                    if (file.size > maxSize) {
+                        throw new Error("Certificate file size must not exceed 10MB");
+                    }
+                }
+            }
+
+            if (files.coverImage) {
+                const file = Array.isArray(files.coverImage) ? files.coverImage[0] : files.coverImage;
+                if (file) {
+                    if (!allowedTypes.includes(file.mimetype)) {
+                        throw new Error("Only PDF, jpeg, and png files are allowed for cover image");
+                    }
+                    if (file.size > maxSize) {
+                        throw new Error("Cover image size must not exceed 10MB");
+                    }
                 }
             }
             return true;
@@ -53,25 +81,16 @@ export const updateTrainerProfileSchema = z.object({
     }),
 });
 
-
 export const uploadProfilePictureSchema = z.object({
-    files: z
+    file: z
         .object({
-            file: z.any().optional(),
+            mimetype: z.string().refine(
+                (val) => ["image/jpeg", "image/png", "image/webp"].includes(val),
+                { message: "Only jpeg, png, and webp images are allowed" }
+            ),
+            size: z
+                .number()
+                .max(5 * 1024 * 1024, "File size must not exceed 5MB"),
         })
-        .refine((files) => {
-            if (files.file) {
-                const file = files.file;
-                const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-                const maxSize = 5 * 1024 * 1024;
-
-                if (!allowedTypes.includes(file.mimetype)) {
-                    throw new Error("Only jpeg, png, and webp images are allowed");
-                }
-                if (file.size > maxSize) {
-                    throw new Error("File size must not exceed 5MB");
-                }
-            }
-            return true;
-        }, "File validation failed"),
+        .optional(),
 });

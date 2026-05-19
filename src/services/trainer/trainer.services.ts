@@ -46,9 +46,7 @@ export class TrainerService implements ITrainerService {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.NO_FIELDS_TO_UPDATE);
     }
 
-    if (updateData.gender && updateData.gender === "prefer_not_say") {
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.INVALID_GENDER);
-    }
+
 
     if (!updateData.dateOfBirth) {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.COMMON.SELECT_CORRECT_DOB);

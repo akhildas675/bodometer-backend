@@ -37,7 +37,7 @@ export const uploadProfilePictureSchema = z.object({
 
 export const trainerIdParamSchema = z.object({
   params: z.object({
-    trainerId: z.string().min(1, "Trainer ID is required"),
+    id: z.string().min(1, "Trainer ID is required"),
   })
 });
 
@@ -62,13 +62,13 @@ export const subscriptionIdParamSchema = z.object({
 
 export const checkoutSessionSchema = z.object({
   body: z.object({
-    subscriptionId: z.string().min(1, "Subscription ID is required"),
+    planId: z.string().min(1, "Plan ID is required"),
   })
 });
 
 export const verifyPaymentSchema = z.object({
-  params: z.object({
-    paymentId: z.string().min(1, "Payment ID is required"),
+  query: z.object({
+    session_id: z.string().min(1, "Session ID is required"),
   })
 });
 
@@ -86,11 +86,20 @@ export const questionIdParamSchema = z.object({
 
 export const submitOnboardingSchema = z.object({
   body: z.object({
-    answers: z.array(z.object({
-      questionId: z.string().min(1, "Question ID is required"),
-      answer: z.string().min(1, "Answer is required"),
-    })),
-  })
+    answers: z.array(
+      z.object({
+        questionId: z.string().min(1, "Question ID is required"),
+        key: z.string().min(1, "Key is required"),
+        value: z.union([
+          z.string(),
+          z.number(),
+          z.boolean(),
+          z.array(z.string()),
+          z.array(z.number()),
+        ]),
+      }),
+    ),
+  }),
 });
 
 export const onboardingStatusParamSchema = z.object({
@@ -122,7 +131,10 @@ export const onboardingAnswerQuestionIdParamSchema = z.object({
 
 export const bmiCalculationSchema = z.object({
   body: z.object({
-    weightInKg: z.number().positive("Weight must be positive"),
-    heightInMeters: z.number().positive("Height must be positive"),
+    height: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().positive().optional()),
+    weight: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().positive().optional()),
+    unit: z.enum(["metric", "imperial"]),
+    heightFt: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().nonnegative().optional()),
+    heightIn: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().nonnegative().optional()),
   })
 });

@@ -2,7 +2,9 @@ import { Router } from "express";
 import { ADMIN_ROUTES } from "../../constants/routes.constant/admin-routes.constant";
 import { createAdminModule } from "../../modules/admin/admin.module";
 import { ROLE_GUARD } from "../../constants/role.guard";
+
 import { mediaUpload } from "@/config/multer";
+
 import {
   categoryIdParamSchema,
   categoryUpdateSchema,
@@ -10,22 +12,22 @@ import {
   featureIdParamSchema,
   featureUpdateSchema,
   featureValidationSchema,
-  getTrainerAppointmentsSchema,
   getTrainersSchema,
-  getUsersSchema,
   groupIdParamSchema,
   groupUpdateSchema,
   groupValidationSchema,
-  profileIdParamSchema,
   questionIdParamSchema,
   questionUpdateSchema,
   questionValidationSchema,
-  rejectTrainerSchema,
   subscriptionPlanIdParamSchema,
   subscriptionPlanUpdateSchema,
   subscriptionPlanValidationSchema,
-  trainerIdParamSchema,
+  profileIdParamSchema,
+  rejectTrainerSchema,
   userIdParamSchema,
+  getTrainerAppointmentsSchema,
+  trainerIdParamSchema,
+  getUsersSchema,
 } from "@/validators/admin/admin-validator";
 import { validate } from "@/middleware/validate";
 
