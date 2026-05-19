@@ -1,3 +1,4 @@
+import { Unit } from "@/constants/fitness.constant";
 import { Gender } from "../../constants/identity.constants";
 import { Role } from "../../constants/roles";
 import { BaseUserProfileDto, PaginationQueryDto } from "../common.dto";
@@ -6,7 +7,7 @@ export interface FindUserDto {
   userId: string;
 }
 
-export interface FindUserResponseDto extends BaseUserProfileDto {}
+export interface FindUserResponseDto extends BaseUserProfileDto { }
 
 export interface UpdateUserProfileDto {
   name?: string;
@@ -52,4 +53,22 @@ export type AdminGetUsersResponseDto = AdminBaseUserResponseDto;
 
 export interface AdminBlockUnBlockUserDto {
   userId: string;
+}
+
+export interface UpdateBmiDto {
+  height: number;
+  weight: number;
+  unit: Unit,
+  heightFt?: number;
+  heightIn?: number;
+}
+
+export interface UpdateBmiResponseDto {
+  bmi: number;
+  heightCm: number;
+  weightKg: number;
+  category: {
+    label: string;
+    color: string;
+  };
 }

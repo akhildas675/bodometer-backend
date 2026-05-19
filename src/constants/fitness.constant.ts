@@ -43,3 +43,10 @@ export const GOAL_INTENSITY = [
 ] as const;
 
 export type GoalIntensity = (typeof GOAL_INTENSITY)[number];
+
+
+export const UNITS = {
+  METRIC: "metric",
+  IMPERIAL: "imperial",
+}
+export type Unit = typeof UNITS[keyof typeof UNITS]

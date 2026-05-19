@@ -12,6 +12,8 @@ import { hashPassword } from "../../utils/password";
 import {
   ChangePasswordDto,
   FindUserResponseDto,
+  UpdateBmiDto,
+  UpdateBmiResponseDto,
   UpdateUserProfileDto,
 } from "../../dto/user/user.dto";
 import {
@@ -45,6 +47,7 @@ import { IQuestionRepository } from "@/interfaces/repository-interface/onboardin
 import { IAnswerRepository } from "@/interfaces/repository-interface/onboarding/answer-repository.interface";
 import { ROLES } from "@/constants/roles";
 import { PaginationMeta } from "@/interfaces/domain.interface/common.interface";
+import { IHealthMetrics } from "@/interfaces/service-interface/health.metrics/health.metrics-service.interface";
 
 export class UserService implements IUserService {
   constructor(
@@ -59,7 +62,8 @@ export class UserService implements IUserService {
     private _groupRepo: IGroupRepository,
     private _questionRepo: IQuestionRepository,
     private _answerRepo: IAnswerRepository,
-  ) {}
+    private _healthMetrics: IHealthMetrics,
+  ) { }
 
   async fetchUser(userId: string): Promise<FindUserResponseDto> {
     const user = await this._userRepo.findById(userId);
@@ -442,5 +446,9 @@ export class UserService implements IUserService {
       limit,
       status
     );
+  }
+
+  async calculateBmi(data: UpdateBmiDto): Promise<UpdateBmiResponseDto> {
+    return this._healthMetrics.bmiCalculator(data);
   }
 }

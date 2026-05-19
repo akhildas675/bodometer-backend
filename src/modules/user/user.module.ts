@@ -24,6 +24,8 @@ import QuestionRepository from "../../repositories/question.repository";
 import AnswerRepository from "../../repositories/answer.repository";
 import { IPaymentService } from "@/interfaces/service-interface/payment/stripe-service.interface";
 
+import { HealthMetricsService } from "../../services/health.metrics/health-metrics.service";
+
 export function createUserModule(){
 
     const userRepository:IUserRepository=new UserRepository();
@@ -36,6 +38,7 @@ export function createUserModule(){
     const groupRepository: IGroupRepository = new GroupRepository();
     const questionRepository: IQuestionRepository = new QuestionRepository();
     const answerRepository: IAnswerRepository = new AnswerRepository();
+    const healthMetricsService = new HealthMetricsService();
 
     const paymentService:IPaymentService= new PaymentService()
 
@@ -50,7 +53,8 @@ export function createUserModule(){
         userSubscriptionRepository,
         groupRepository,
         questionRepository,
-        answerRepository
+        answerRepository,
+        healthMetricsService
     );
 
     const userController = new UserController(userService);
