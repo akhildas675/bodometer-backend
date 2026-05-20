@@ -139,8 +139,8 @@ export class UserService implements IUserService {
     if (user.profilePic) {
       try {
         await this._s3Service.deleteFile(user.profilePic);
-      } catch (error) {
-        console.error("Error deleting old profile picture:", error);
+      } catch  {
+        throw new AppError(STATUS.BAD_REQUEST,MESSAGES.USER.PROFILE_PICTURE_DELETE_FAILED)
       }
     }
     const profilePicUrl = await this._s3Service.uploadFile(
