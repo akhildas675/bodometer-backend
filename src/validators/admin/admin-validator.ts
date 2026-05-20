@@ -126,7 +126,7 @@ export const questionValidationSchema = z.object({
         question: z.string().min(1, "Question text is required"),
         groupId: z.string().min(1, "Group ID is required"),
         order: z.coerce.number().min(1, "Order must be at least 1"),
-        type: z.enum(QUESTION_TYPES, { message: "Invalid question type" }),
+        type: z.enum([...QUESTION_TYPES] as [typeof QUESTION_TYPES[number], ...typeof QUESTION_TYPES[number][]], { message: "Invalid question type" }),
         dataSource: z.enum(DATA_SOURCES).optional().nullable(),
         validation: z.object({
             required: z.boolean().optional(),
@@ -157,7 +157,7 @@ export const questionUpdateSchema = z.object({
         question: z.string().min(1, "Question text is required").optional(),
         groupId: z.string().min(1, "Group ID is required").optional(),
         order: z.coerce.number().min(1, "Order must be at least 1").optional(),
-        type: z.enum(QUESTION_TYPES, { message: "Invalid question type" }).optional(),
+        type: z.enum([...QUESTION_TYPES] as [typeof QUESTION_TYPES[number], ...typeof QUESTION_TYPES[number][]], { message: "Invalid question type" }).optional(),
         dataSource: z.enum(DATA_SOURCES).optional().nullable(),
         validation: z.object({
             required: z.boolean().optional(),

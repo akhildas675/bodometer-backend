@@ -5,6 +5,7 @@ export const QUESTION_TYPES = [
     "multi_select",
     "text",
     "number",
+    "number_stepper",
     "time",
     "date"
 ] as const;
