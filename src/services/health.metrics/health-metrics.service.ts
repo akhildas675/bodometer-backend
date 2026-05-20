@@ -6,7 +6,7 @@ import { AppError } from "@/utils/appError";
 import { IHealthMetrics } from "@/interfaces/service-interface/health.metrics/health.metrics-service.interface";
 
 export class HealthMetricsService implements IHealthMetrics {
-  async bmiCalculator(data: UpdateBmiDto): Promise<UpdateBmiResponseDto> {
+  bmiCalculator(data: UpdateBmiDto): Promise<UpdateBmiResponseDto> {
     const { height, weight, unit, heightFt, heightIn } = data;
 
     if (UNITS.METRIC !== unit && UNITS.IMPERIAL !== unit) {
@@ -84,7 +84,7 @@ export class HealthMetricsService implements IHealthMetrics {
       ];
     }
 
-    return {
+    return Promise.resolve({
       bmi: finalBmi,
       heightCm: finalHeight,
       weightKg: finalWeight,
@@ -98,6 +98,6 @@ export class HealthMetricsService implements IHealthMetrics {
         minKg,
         maxKg,
       },
-    };
+    });
   }
 }

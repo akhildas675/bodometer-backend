@@ -1,9 +1,10 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response,} from "express";
 
 import { AppError } from "../../utils/appError";
 import { parsePaginationQuery } from "../../utils/query";
 import { IAdminService } from "../../interfaces/service-interface/admin/admin-service.interface";
 import { STATUS } from "../../constants/statuscode";
+import { FeatureType } from "../../constants/subscription.constant";
 import { MESSAGES } from "../../constants/messages";
 import {
   AdminBlockUnBlockUserDto,
@@ -33,8 +34,9 @@ import {
   CreateQuestionGroupDto,
   UpdateQuestionGroupDto,
   CreateQuestionDto,
-  UpdateQuestionDto,
+
   QuestionQueryDto,
+  UpdateQuestionDto,
 } from "../../dto/onboarding/onboarding.dto";
 import { AuthRequest } from "@/middleware/authGuard";
 import { SuccessResponse } from "../../utils/success.response";
@@ -159,7 +161,7 @@ export class AdminController {
   rejectTrainer = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { profileId } = req.params;
-      const { reason } = req.body as RejectTrainerBodyDto;
+      const { reason } = req.body as unknown as RejectTrainerBodyDto;
 
       if (!profileId) {
         throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.INVALID_ID);
@@ -237,9 +239,10 @@ export class AdminController {
     next: NextFunction,
   ) => {
     try {
+      const body = req.body as { name?: string; description?: string };
       const data: CreateCategoryDto = {
-        name: req.body.name?.trim(),
-        description: req.body.description?.trim(),
+        name: body.name?.trim() || "",
+        description: body.description?.trim() || "",
         image: req.file,
       };
 
@@ -260,13 +263,13 @@ export class AdminController {
     next: NextFunction,
   ) => {
     try {
+      const body = req.body as { name?: string; description?: string; categoryId?: string };
       const data: UpdateCategoryDto = {
-        categoryId: (req.params.categoryId || req.body.categoryId)?.trim(),
-        name: req.body.name?.trim(),
-        description: req.body.description?.trim(),
+        categoryId: (req.params.categoryId || body.categoryId)?.trim() || "",
+        name: body.name?.trim(),
+        description: body.description?.trim(),
         image: req.file,
       };
-      console.log("category data backend update...", data);
 
       await this._adminService.updateCategory(data);
 
@@ -373,10 +376,11 @@ export class AdminController {
     next: NextFunction,
   ) => {
     try {
+      const body = req.body as { title?: string; description?: string; type?: FeatureType };
       const data: CreateSubscriptionFeatureDto = {
-        title: req.body.title?.trim(),
-        description: req.body.description?.trim(),
-        type: req.body.type?.trim(),
+        title: body.title?.trim() || "",
+        description: body.description?.trim() || "",
+        type: body.type || "boolean",
       };
       await this._adminService.createSubscriptionFeature(data);
       new SuccessResponse(
@@ -395,11 +399,12 @@ export class AdminController {
   ) => {
     try {
       const { id: subscriptionFeatureId } = req.params;
+      const body = req.body as { title?: string; description?: string; type?: FeatureType };
       const data: UpdateSubscriptionFeatureDto = {
         subscriptionFeatureId,
-        title: req.body.title?.trim(),
-        description: req.body.description?.trim(),
-        type: req.body.type?.trim(),
+        title: body.title?.trim(),
+        description: body.description?.trim(),
+        type: body.type,
       };
 
       await this._adminService.updateSubscriptionFeature(data);
@@ -461,13 +466,21 @@ export class AdminController {
     next: NextFunction,
   ) => {
     try {
+      const body = req.body as {
+        name?: string;
+        description?: string;
+        price?: number;
+        durationInDays?: number;
+        isPopular?: boolean;
+        features?: Array<{ featureId: string; limit?: number; limitType?: string }>;
+      };
       const data: CreateSubscriptionPlanDto = {
-        name: req.body.name?.trim(),
-        description: req.body.description?.trim(),
-        price: req.body.price,
-        durationInDays: req.body.durationInDays,
-        isPopular: req.body.isPopular,
-        features: req.body.features,
+        name: body.name?.trim() || "",
+        description: body.description?.trim() || "",
+        price: body.price ?? 0,
+        durationInDays: body.durationInDays ?? 0,
+        isPopular: body.isPopular ?? false,
+        features: body.features ?? [],
       };
 
       await this._adminService.createSubscriptionPlan(data);
@@ -556,14 +569,22 @@ export class AdminController {
   ) => {
     try {
       const { id: subscriptionPlanId } = req.params;
+      const body = req.body as {
+        name?: string;
+        description?: string;
+        price?: number;
+        durationInDays?: number;
+        isPopular?: boolean;
+        features?: Array<{ featureId: string; limit?: number; limitType?: string }>;
+      };
       const data: UpdateSubscriptionPlanDto = {
         subscriptionPlanId,
-        name: req.body.name?.trim(),
-        description: req.body.description?.trim(),
-        price: req.body.price,
-        durationInDays: req.body.durationInDays,
-        isPopular: req.body.isPopular,
-        features: req.body.features,
+        name: body.name?.trim(),
+        description: body.description?.trim(),
+        price: body.price,
+        durationInDays: body.durationInDays,
+        isPopular: body.isPopular,
+        features: body.features,
       };
       await this._adminService.updateSubscriptionPlan(data);
       new SuccessResponse(
@@ -607,10 +628,11 @@ export class AdminController {
     next: NextFunction,
   ) => {
     try {
+      const body = req.body as { key?: string; title?: string; order?: number | string };
       const data: CreateQuestionGroupDto = {
-        key: req.body.key?.trim(),
-        title: req.body.title?.trim(),
-        order: Number(req.body.order),
+        key: body.key?.trim() || "",
+        title: body.title?.trim() || "",
+        order: Number(body.order),
       };
 
       await this._adminService.createQuestionGroup(data);
@@ -630,9 +652,10 @@ export class AdminController {
   ) => {
     try {
       const { id } = req.params;
+      const body = req.body as { title?: string; order?: number | string };
       const data: UpdateQuestionGroupDto = {
-        title: req.body.title?.trim(),
-        order: Number(req.body.order),
+        title: body.title?.trim() || "",
+        order: Number(body.order) || 0,
       };
       await this._adminService.updateQuestionGroup(id, data);
       new SuccessResponse(
@@ -689,7 +712,7 @@ export class AdminController {
         sortBy: "createdAt",
         sortOrder: "desc",
         ...parsePaginationQuery(req),
-        ...(req.query.groupId && { groupId: req.query.groupId.toString() }),
+        ...(typeof req.query.groupId === "string" && { groupId: req.query.groupId }),
       };
       const { data, pagination } =
         await this._adminService.getAllQuestions(query);
@@ -710,7 +733,7 @@ export class AdminController {
     next: NextFunction,
   ) => {
     try {
-      const data: CreateQuestionDto = req.body;
+      const data: CreateQuestionDto = req.body as unknown as CreateQuestionDto;
       const adminId = req.user?.id;
 
       if (!adminId)
@@ -732,7 +755,7 @@ export class AdminController {
     next: NextFunction,
   ) => {
     try {
-      await this._adminService.updateQuestion(req.params.id, req.body);
+      await this._adminService.updateQuestion(req.params.id, req.body as unknown as UpdateQuestionDto);
 
       new SuccessResponse(
         STATUS.OK,
@@ -786,7 +809,7 @@ export class AdminController {
         sortBy: "createdAt",
         sortOrder: "desc",
         ...parsePaginationQuery(req),
-        ...(req.query.status && { status: req.query.status.toString().trim() }),
+        ...(typeof req.query.status === "string" && { status: req.query.status.trim() }),
       };
 
       const { data, pagination } =
@@ -797,6 +820,23 @@ export class AdminController {
         MESSAGES.COMMON.SUCCESS,
         data,
         pagination
+      ).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getQuestionDataSources = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const dataSources = await this._adminService.getQuestionDataSources();
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.COMMON.SUCCESS,
+        dataSources,
       ).send(res);
     } catch (error) {
       next(error);

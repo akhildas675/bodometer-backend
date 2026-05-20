@@ -6,7 +6,7 @@ import { IPaymentService } from "../../interfaces/service-interface/payment/stri
 import { IS3Service } from "../../interfaces/service-interface/s3/s3-service.interface";
 import { IUserService } from "../../interfaces/service-interface/user/user-service.interface";
 import { UserMapper, UserMappers } from "../../mappers/user/user.mappers";
-import { SubscriptionMapper, PopulatedSubscriptionTransaction } from "@/mappers/subscription/subscription.mapper";
+import { SubscriptionMapper} from "@/mappers/subscription/subscription.mapper";
 import { AppError } from "../../utils/appError";
 import bcrypt from "bcrypt";
 import { hashPassword } from "../../utils/password";
@@ -451,7 +451,7 @@ export class UserService implements IUserService {
       );
 
     return {
-      data: SubscriptionMapper.toTransactionDtoList(data as PopulatedSubscriptionTransaction[]),
+      data: SubscriptionMapper.toTransactionDtoList(data),
       pagination,
     };
   }

@@ -86,6 +86,7 @@ export const MESSAGES = {
     PROFILE_INCOMPLETE: "Please complete your profile.",
     PROFILE_PICTURE_UPDATED: "Profile picture updated successfully.",
     PROFILE_PICTURE_UPLOAD_FAILED: "Failed to upload profile picture.",
+    PROFILE_PICTURE_DELETE_FAILED: "Failed to delete profile picture.",
     PROFILE_PICTURE_TOO_LARGE: "Profile picture size must be less than 5MB.",
     INVALID_FILE_FORMAT: "Invalid file format. Only JPG, PNG allowed.",
     USER_NOT_FOUND: "User not found.",

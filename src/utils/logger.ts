@@ -12,7 +12,7 @@ export class Logger {
     logger.info({ context: this.context, ...data }, message);
   }
 
-  error(message: string, error?: Error | unknown, data?: Record<string, unknown>) {
+  error(message: string, error?: unknown, data?: Record<string, unknown>) {
     if (error instanceof Error) {
       logger.error(
         {

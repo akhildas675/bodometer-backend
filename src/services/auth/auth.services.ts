@@ -6,6 +6,7 @@ import { VerificationStatus } from "../../constants/verification.constants";
 import {
   ForgotPasswordResponseDto,
   GoogleLoginDto,
+  GoogleLoginResponseDto,
   LoginDto,
   LoginResponseDto,
   RegisterDto,
@@ -191,7 +192,7 @@ export class AuthService implements IAuthService {
     };
   }
 
-  async googleLogin({ idToken }: GoogleLoginDto): Promise<LoginResponseDto> {
+  async googleLogin({ idToken }: GoogleLoginDto): Promise<{ response: GoogleLoginResponseDto; refreshToken: string }> {
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
     if (!GOOGLE_CLIENT_ID) {
       throw new AppError(
@@ -246,14 +247,17 @@ export class AuthService implements IAuthService {
       profile = await this._trainerProfileRepo.findByUserId(user.id);
     }
 
-    return AuthMapper.toLoginResponse(
-      user,
-      accessToken,
-      undefined,
-      onboardingComplete,
-      hasActiveSubscription,
-      profile,
-    );
+    return {
+      response: AuthMapper.toLoginResponse(
+        user,
+        accessToken,
+        undefined,
+        onboardingComplete,
+        hasActiveSubscription,
+        profile,
+      ),
+      refreshToken,
+    };
   }
 
   async refreshAccessToken(refreshToken: string): Promise<LoginResponseDto> {

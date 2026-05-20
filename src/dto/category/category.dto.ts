@@ -25,6 +25,7 @@ export interface CategoryResponseDto {
   name: string;
   description: string;
   image: string;
+  isActive: boolean;
 }
 
 export interface CategoryQueryDto extends PaginationQueryDto {

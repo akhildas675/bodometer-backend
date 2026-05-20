@@ -59,4 +59,7 @@ export interface IAdminService {
 
   // Subscription Transactions
   getAllSubscriptionTransactions(query: SubscriptionTransactionQueryDto): Promise<GetAllSubscriptionTransactionsResponseDto>;
+
+  // Data Sources
+  getQuestionDataSources(): Promise<{ label: string; value: string }[]>;
 }

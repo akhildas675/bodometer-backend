@@ -1,9 +1,10 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
 import { ITrainerService } from "../../interfaces/service-interface/trainer/trainer-service.interface";
 import { AuthRequest } from "../../middleware/authGuard";
 import { parsePaginationQuery } from "../../utils/query";
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
+import { Gender } from "../../constants/identity.constants";
 import {
   TrainerProfileDto,
   UpdateTrainerProfileDto,
@@ -45,7 +46,7 @@ export class TrainerController {
 
       const trainerId = req.user.id;
 
-      const updateData: UpdateTrainerProfileDto = req.body;
+      const updateData = req.body as UpdateTrainerProfileDto;
 
       const updatedTrainer = await this._trainerService.updateTrainerProfile(
         trainerId,
@@ -104,43 +105,35 @@ export class TrainerController {
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
       }
 
-      const { dateOfBirth, gender, experience, bio, specializationIds } =
-        req.body;
-      const specsArray = Array.isArray(specializationIds)
-        ? specializationIds
-        : specializationIds
-          ? [specializationIds]
-          : [];
+      const body = req.body as {
+        dateOfBirth?: string;
+        gender?: Gender;
+        experience?: number;
+        bio?: string;
+        specializationIds?: string | string[];
+      };
 
       const files = req.files as
         | Record<string, Express.Multer.File[]>
         | undefined;
 
-      const profileImageFile = files?.profileImage?.[0];
-      const certificateFile = files?.certificate?.[0];
-      const coverImageFile = files?.coverImage?.[0];
-
-      if (!profileImageFile) {
-        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.FILE.PROFILE_IMAGE_REQUIRED);
-      }
-
-      if (!certificateFile) {
-        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.CERTIFICATE_REQUIRED);
-      }
-
-      if (!coverImageFile) {
-        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.FILE.COVER_IMAGE_REQUIRED);
-      }
+      const profileImageFile = files?.profileImage?.[0] as Express.Multer.File;
+      const certificateFile = files?.certificate?.[0] as Express.Multer.File;
+      const coverImageFile = files?.coverImage?.[0] as Express.Multer.File;
 
       const data: TrainerProfileDto = {
         profileImageFile,
         certificateFile,
         coverImageFile,
-        dateOfBirth,
-        gender,
-        experienceInYears: Number(experience),
-        bio,
-        specializationIds: specsArray,
+        dateOfBirth: body.dateOfBirth || "",
+        gender: body.gender || "prefer_not_say",
+        experienceInYears: body.experience || 0,
+        bio: body.bio || "",
+        specializationIds: Array.isArray(body.specializationIds)
+          ? body.specializationIds
+          : body.specializationIds
+            ? [body.specializationIds]
+            : [],
       };
 
       await this._trainerService.createProfile(req.user.id, data);

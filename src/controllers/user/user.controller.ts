@@ -48,7 +48,7 @@ export class UserController {
       }
 
       const userId = req.user.id;
-      const updateData: UpdateUserProfileDto = req.body;
+      const updateData = req.body as UpdateUserProfileDto;
 
       const updatedUser = await this._userService.updateProfile(
         userId,
@@ -108,9 +108,10 @@ export class UserController {
     try {
       if (!req.user)
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      const body = req.body as { currentPassword?: string; newPassword?: string };
       const dto: ChangePasswordDto = {
-        currentPassword: req.body.currentPassword,
-        newPassword: req.body.newPassword,
+        currentPassword: body.currentPassword || "",
+        newPassword: body.newPassword || "",
       };
       await this._userService.changePassword(req.user.id, dto);
       new SuccessResponse(
@@ -126,7 +127,7 @@ export class UserController {
     try {
       const query: GetTrainersQueryDto = {
         ...parsePaginationQuery(req),
-        ...(req.query.specializationId && { specializationId: String(req.query.specializationId) }),
+        ...(typeof req.query.specializationId === "string" && { specializationId: req.query.specializationId }),
       };
 
       const result = await this._userService.getTrainers(query);
@@ -240,7 +241,8 @@ export class UserController {
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
       }
 
-      const { planId } = req.body;
+      const body = req.body as { planId?: string };
+      const planId = body.planId;
       if (!planId) {
         throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
       }
@@ -353,7 +355,10 @@ export class UserController {
       if (!req.user?.id) {
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
       }
-      await this._userService.submitOnboarding(req.user.id, req.body);
+      await this._userService.submitOnboarding(
+        req.user.id,
+        req.body as Parameters<IUserService["submitOnboarding"]>[1],
+      );
       new SuccessResponse(
         STATUS.OK,
         MESSAGES.USER.ONBOARDING_SAVED
@@ -413,7 +418,7 @@ export class UserController {
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
       }
       const parsed = parsePaginationQuery(req);
-      const status = req.query.status ? String(req.query.status) : undefined;
+      const status = typeof req.query.status === "string" ? req.query.status : undefined;
       const result = await this._userService.getUserTransactions(
         req.user.id,
         parsed.search,
@@ -440,8 +445,8 @@ export class UserController {
     next: NextFunction,
   ) => {
     try {
-      const data: UpdateBmiDto = req.body;
-      const result = await this._userService.calculateBmi(data)
+      const data = req.body as UpdateBmiDto;
+      const result = await this._userService.calculateBmi(data);
 
       new SuccessResponse(
         STATUS.OK,

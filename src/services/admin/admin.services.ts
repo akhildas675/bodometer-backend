@@ -68,7 +68,7 @@ import {
   TrainerMapper,
 } from "../../mappers/admin/admin.mappers";
 import { CategoryMappers } from "../../mappers/category/category.mapper";
-import { SubscriptionMapper, PopulatedSubscriptionTransaction } from "@/mappers/subscription/subscription.mapper";
+import { SubscriptionMapper } from "@/mappers/subscription/subscription.mapper";
 import { AppError } from "../../utils/appError";
 import { ISubscriptionFeatureRepository } from "@/interfaces/repository-interface/subscription/feature-repository.interface";
 import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/subscription/subscription-plan.repository";
@@ -81,6 +81,7 @@ import {
 
 import { SubscriptionTransactionRepository } from "../../repositories/subscription-transaction.repository";
 import { ISubscriptionTransactionRepository } from "../../interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
+import { DATA_SOURCES } from "../../constants/question.constant";
 
 export class AdminService implements IAdminService {
   private _subscriptionTransactionRepository: ISubscriptionTransactionRepository = new SubscriptionTransactionRepository();
@@ -652,14 +653,18 @@ export class AdminService implements IAdminService {
     data: CreateQuestionDto,
     adminId: string,
   ): Promise<void> {
+    const options = data.dataSource === "category"
+      ? []
+      : data.options?.map((o) => ({
+          label: o.label.trim(),
+          value: generateOptionValue(o.label),
+        }));
+
     await this._questionRepository.createQuestion({
       ...data,
       key: generateKeySlug(data.question),
       createdBy: adminId,
-      options: data.options?.map((o) => ({
-        label: o.label.trim(),
-        value: generateOptionValue(o.label),
-      })),
+      options,
     });
   }
 
@@ -715,12 +720,16 @@ export class AdminService implements IAdminService {
     questionId: string,
     data: UpdateQuestionDto,
   ): Promise<void> {
+    const options = data.dataSource === "category"
+      ? []
+      : data.options?.map((o) => ({
+          label: o.label.trim(),
+          value: generateOptionValue(o.label),
+        }));
+
     await this._questionRepository.updateQuestion(questionId, {
       ...data,
-      options: data.options?.map((o) => ({
-        label: o.label.trim(),
-        value: generateOptionValue(o.label),
-      })),
+      options,
     });
   }
 
@@ -742,8 +751,20 @@ export class AdminService implements IAdminService {
       );
 
     return {
-      data: SubscriptionMapper.toTransactionDtoList(data as PopulatedSubscriptionTransaction[]),
+      data: SubscriptionMapper.toTransactionDtoList(data),
       pagination,
     };
+  }
+
+  getQuestionDataSources(): Promise<{ label: string; value: string }[]> {
+    const labels: Record<string, string> = {
+      category: "Workout Categories",
+    };
+    return Promise.resolve(
+      DATA_SOURCES.map((source) => ({
+        value: source,
+        label: labels[source] || source.charAt(0).toUpperCase() + source.slice(1),
+      }))
+    );
   }
 }

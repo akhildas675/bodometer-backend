@@ -50,6 +50,7 @@ export const ADMIN_ROUTES = {
   GET_QUESTION_BY_ID: "/admin/get-question/:id",
   UPDATE_QUESTION: "/admin/update-question/:id",
   TOGGLE_QUESTION_STATUS: "/admin/toggle-question/:id",
+  GET_QUESTION_DATA_SOURCES: "/admin/questions/data-sources",
 
   // Subscription Transactions
   GET_ALL_SUBSCRIPTION_TRANSACTIONS: "/admin/get-subscription-transactions",

@@ -114,8 +114,8 @@ export class TrainerService implements ITrainerService {
     if (trainer.profilePic) {
       try {
         await this._s3Service.deleteFile(trainer.profilePic);
-      } catch (error) {
-        console.error("Error deleting old profile picture:", error);
+      } catch  {
+        throw new AppError(STATUS.BAD_REQUEST,MESSAGES.USER.PROFILE_PICTURE_DELETE_FAILED)
       }
     }
 

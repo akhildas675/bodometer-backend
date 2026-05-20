@@ -260,6 +260,12 @@ adminRoute.patch(
   adminController.toggleQuestionStatus,
 );
 
+adminRoute.get(
+  ADMIN_ROUTES.GET_QUESTION_DATA_SOURCES,
+  ROLE_GUARD.ADMIN_GUARD,
+  adminController.getQuestionDataSources,
+);
+
 // Subscription Transactions
 adminRoute.get(
   ADMIN_ROUTES.GET_ALL_SUBSCRIPTION_TRANSACTIONS,

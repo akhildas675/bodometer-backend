@@ -16,9 +16,9 @@ export const createTrainerProfileSchema = z.object({
     }),
     files: z
         .object({
-            profileImage: z.any().optional(),
-            certificate: z.any().optional(),
-            coverImage: z.any().optional(),
+            profileImage: z.unknown().optional(),
+            certificate: z.unknown().optional(),
+            coverImage: z.unknown().optional(),
         })
         .refine((files) => {
             const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];

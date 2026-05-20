@@ -14,10 +14,9 @@ import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/s
 import SubscriptionPlanRepository from "@/repositories/subscription-plan.repository";
 import GroupRepository from "@/repositories/group.repository";
 import QuestionRepository from "@/repositories/question.repository";
-import AnswerRepository from "@/repositories/answer.repository";
 import { IGroupRepository } from "@/interfaces/repository-interface/onboarding/group-repository.interface";
 import { IQuestionRepository } from "@/interfaces/repository-interface/onboarding/question-repository.interface";
-import { IAnswerRepository } from "@/interfaces/repository-interface/onboarding/answer-repository.interface";
+
 
 export function createAdminModule() {
 

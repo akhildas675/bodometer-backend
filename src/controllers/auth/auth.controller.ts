@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { Logger } from "../../utils/logger";
 import { IAuthService } from "../../interfaces/service-interface/auth/auth-service.interface";
-import { OtpVerifyDto, RegisterDto } from "../../dto/auth/auth.dto";
+import { ForgotPasswordDto, GoogleLoginDto, LoginDto, OtpVerifyDto, RegisterDto, ResetPasswordDto } from "../../dto/auth/auth.dto";
 import { STATUS } from "../../constants/statuscode";
 import { MESSAGES } from "../../constants/messages";
 import { ResendOtpDto } from "../../dto/otp/otp.dto";
@@ -41,12 +41,10 @@ export class AuthController {
     try {
       const data = req.body as OtpVerifyDto;
 
-      console.debug(
-        "controller verify otp email:",
-        data.email,
-        "purpose:",
-        data.purpose,
-      );
+      logger.debug("controller verify otp email", {
+        email: data.email,
+        purpose: data.purpose,
+      });
 
       await this._authService.verifyOtp(data);
 
@@ -63,12 +61,10 @@ export class AuthController {
     try {
       const data = req.body as ResendOtpDto;
 
-      console.debug(
-        "controller resend otp email:",
-        data.email,
-        "purpose:",
-        data.purpose,
-      );
+      logger.debug("controller resend otp email", {
+        email: data.email,
+        purpose: data.purpose,
+      });
 
       await this._authService.resendOtp(data);
 
@@ -90,26 +86,23 @@ export class AuthController {
     try {
       const body = req.body as RegisterDto;
 
-      console.debug(
-        "controller complete register email:",
-        body.email,
-        "role:",
-        body.role,
-      );
+      logger.debug("controller complete register email", {
+        email: body.email,
+        role: body.role,
+      });
 
       const purpose =
         body.role === "trainer" ? "TRAINER_REGISTER" : "USER_REGISTER";
 
       const redisKey = `otp_verified:${purpose}:${body.email}`;
 
-      console.debug("controller complete register redis key:", redisKey);
+      logger.debug("controller complete register redis key", { redisKey });
 
       const verified = await redis.get(redisKey);
 
-      console.debug(
-        "controller complete register otp verified:",
-        Boolean(verified),
-      );
+      logger.debug("controller complete register otp verified", {
+        verified: Boolean(verified),
+      });
 
       if (!verified) {
         throw new AppError(STATUS.FORBIDDEN, MESSAGES.OTP.OTP_NOT_VERIFIED);
@@ -132,8 +125,9 @@ export class AuthController {
   //Login
   login = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const body = req.body as LoginDto;
       const { response: loginResponse, refreshToken } =
-        await this._authService.login(req.body);
+        await this._authService.login(body);
 
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
@@ -154,7 +148,7 @@ export class AuthController {
 
   forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { email } = req.body;
+      const { email } = req.body as ForgotPasswordDto;
 
       const result = await this._authService.forgotPassword({ email });
 
@@ -170,7 +164,8 @@ export class AuthController {
 
   refreshToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const refreshToken = req.cookies.refreshToken;
+      const cookies = req.cookies as Record<string, string | undefined> | undefined;
+      const refreshToken = cookies?.refreshToken;
 
       if (!refreshToken) {
         throw new AppError(
@@ -193,7 +188,8 @@ export class AuthController {
 
   logout = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const refreshToken = req.cookies.refreshToken;
+      const cookies = req.cookies as Record<string, string | undefined> | undefined;
+      const refreshToken = cookies?.refreshToken;
 
       if (refreshToken) {
         await this._authService.logout(refreshToken);
@@ -216,7 +212,8 @@ export class AuthController {
 
   resetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { email, purpose } = req.body;
+      const body = req.body as ResetPasswordDto;
+      const { purpose } = body;
 
       if (purpose !== "FORGET_PASSWORD") {
         throw new AppError(
@@ -225,7 +222,7 @@ export class AuthController {
         );
       }
 
-      await this._authService.resetPassword(req.body);
+      await this._authService.resetPassword(body);
 
       new SuccessResponse(
         STATUS.OK,
@@ -238,7 +235,7 @@ export class AuthController {
 
   googleLogin = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { idToken } = req.body;
+      const { idToken } = req.body as GoogleLoginDto;
 
       if (!idToken) {
         throw new AppError(
@@ -247,12 +244,20 @@ export class AuthController {
         );
       }
 
-      const result = await this._authService.googleLogin({ idToken });
+      const { response: loginResponse, refreshToken } =
+        await this._authService.googleLogin({ idToken });
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
 
       new SuccessResponse(
         STATUS.OK,
         MESSAGES.LOGIN.GOOGLE_LOGIN_SUCCESS,
-        result
+        loginResponse
       ).send(res);
     } catch (error) {
       next(error);

@@ -9,9 +9,8 @@ import {
 import { ISubscriptionTransactionRepository } from "@/interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
 import { PaginationMeta } from "../interfaces/domain.interface/common.interface";
 import { PopulatedSubscriptionTransaction } from "@/mappers/subscription/subscription.mapper";
-import { FilterQuery } from "mongoose";
-import { UserModel } from "@/models/user.model";
 import { SubscriptionPlanModel } from "@/models/subscription-plan.model";
+import { UserModel } from "@/models/user.model";
 
 export class SubscriptionTransactionRepository implements ISubscriptionTransactionRepository {
   async create(data: {
@@ -46,7 +45,7 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
     limit?: number,
     status?: string,
   ): Promise<{ data: PopulatedSubscriptionTransaction[]; pagination: PaginationMeta }> {
-    const filter: FilterQuery<ISubscriptionTransaction> = {};
+    const filter: Record<string, unknown> = {};
 
     if (status) {
       filter.paymentStatus = status;
@@ -124,7 +123,7 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
     limit?: number,
     status?: string,
   ): Promise<{ data: PopulatedSubscriptionTransaction[]; pagination: PaginationMeta }> {
-    const filter: FilterQuery<ISubscriptionTransaction> = { userId };
+    const filter: Record<string, unknown> = { userId };
 
     if (status) {
       filter.paymentStatus = status;

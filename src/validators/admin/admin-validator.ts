@@ -134,13 +134,13 @@ export const questionValidationSchema = z.object({
         next: z.array(z.object({
             condition: z.object({
                 operator: z.enum(CONDITION_OPERATORS, { message: "Invalid condition operator" }),
-                value: z.any().optional(),
+                value: z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]).optional(),
             }),
             nextQuestionId: z.string().min(1, "Next question ID is required"),
         })).optional().nullable(),
         options: z.array(z.object({
             label: z.string().min(1, "Option label is required"),
-            value: z.any().optional(),
+            value: z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]).optional(),
         })).optional().nullable(),
         numberConfig: z.object({
             min: z.coerce.number().optional().nullable(),
@@ -165,13 +165,13 @@ export const questionUpdateSchema = z.object({
         next: z.array(z.object({
             condition: z.object({
                 operator: z.enum(CONDITION_OPERATORS, { message: "Invalid condition operator" }),
-                value: z.any().optional(),
+                value: z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]).optional(),
             }),
             nextQuestionId: z.string().min(1, "Next question ID is required"),
         })).optional().nullable(),
         options: z.array(z.object({
             label: z.string().min(1, "Option label is required"),
-            value: z.any().optional(),
+            value: z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]).optional(),
         })).optional().nullable(),
         numberConfig: z.object({
             min: z.coerce.number().optional().nullable(),
