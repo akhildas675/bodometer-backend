@@ -44,9 +44,21 @@ export const loginSchema = z.object({
   }),
 });
 
-export const otpSchema = z.object({
+export const resendOtpSchema = z.object({
   body: z.object({
     email: z.string().email("Invalid Email address").max(100, "Email too long"),
+    purpose: z.enum([
+      OTP_PURPOSE.USER_REGISTER,
+      OTP_PURPOSE.TRAINER_REGISTER,
+      OTP_PURPOSE.FORGET_PASSWORD,
+    ]),
+  }),
+});
+
+export const verifyOtpSchema = z.object({
+  body: z.object({
+    email: z.string().email("Invalid Email address").max(100, "Email too long"),
+    otp: z.string().min(1, "OTP is required"),
     purpose: z.enum([
       OTP_PURPOSE.USER_REGISTER,
       OTP_PURPOSE.TRAINER_REGISTER,

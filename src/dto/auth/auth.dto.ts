@@ -63,4 +63,4 @@ export interface GoogleLoginDto {
   idToken: string;
 }
 
-export interface GoogleLoginResponseDto extends LoginResponseDto {}
+export type GoogleLoginResponseDto = LoginResponseDto;

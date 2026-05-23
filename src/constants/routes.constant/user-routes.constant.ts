@@ -9,6 +9,7 @@ export const USER_ROUTES = {
   GET_TRAINERS: '/user/trainers',
   GET_TRAINERS_BY_ID: '/user/trainers/:id',
   GET_CATEGORIES: '/user/categories',
+  GET_EQUIPMENT: '/user/equipment',
   GET_CATEGORY_BY_ID: '/user/categories/:categoryId',
 
   //subscriptions
@@ -26,4 +27,8 @@ export const USER_ROUTES = {
   GET_ONBOARDING_STATUS: "/user/onboarding-status",
   GET_ONBOARDING_ANSWERS: "/user/onboarding-answers",
   CALCULATE_BMI_PUBLIC: "/user/bmi/calculate",
+
+  // Exercises (premium)
+  GET_EXERCISES: "/user/exercises",
+  GET_EXERCISE_BY_ID: "/user/exercises/:exerciseId",
 } as const;

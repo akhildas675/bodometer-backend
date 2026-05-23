@@ -78,13 +78,46 @@ import {
   generateKeySlug,
   generateOptionValue,
 } from "@/utils/string-formatters";
-
 import { SubscriptionTransactionRepository } from "../../repositories/subscription-transaction.repository";
 import { ISubscriptionTransactionRepository } from "../../interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
 import { DATA_SOURCES } from "../../constants/question.constant";
+import {
+  CreateTargetMuscleDto,
+  GetAllTargetMusclesResponseDto,
+  TargetMuscleDto,
+  TargetMuscleQueryDto,
+  ToggleTargetMuscleStatusResponseDto,
+  UpdateTargetMuscleDto,
+} from "@/dto/target.muscles/target-muscles.dto";
+import { TargetMuscle } from "@/interfaces/domain.interface/target.muscle";
+import { ITargetMuscleRepository } from "@/interfaces/repository-interface/target.muscle/target.muscle-repository.interface";
+import { TargetMuscleMapper } from "@/mappers/target.muscles/target-muscles.mapper";
+import {
+  CreateEquipmentDto,
+  GetAllEquipmentResponseDto,
+  EquipmentDto,
+  EquipmentQueryDto,
+  ToggleEquipmentStatusResponseDto,
+  UpdateEquipmentDto,
+} from "@/dto/equipment/equipment.dto";
+import { Equipment } from "@/interfaces/domain.interface/equipment";
+import { IEquipmentRepository } from "@/interfaces/repository-interface/equipment/equipment-repository.interface";
+import { EquipmentMapper } from "@/mappers/equipment/equipment.mapper";
+import {
+  CreateExerciseDto,
+  ExerciseDto,
+  ExerciseQueryDto,
+  GetAllExercisesResponseDto,
+  ToggleExerciseStatusResponseDto,
+  UpdateExerciseDto,
+} from "@/dto/exercise/exercise.dto";
+import { Exercise } from "@/interfaces/domain.interface/exercise.interface";
+import { IExerciseRepository } from "@/interfaces/repository-interface/exercise/exercise-repository.interface";
+import { ExerciseMapper } from "@/mappers/exercise/exercise.mapper";
 
 export class AdminService implements IAdminService {
-  private _subscriptionTransactionRepository: ISubscriptionTransactionRepository = new SubscriptionTransactionRepository();
+  private _subscriptionTransactionRepository: ISubscriptionTransactionRepository =
+    new SubscriptionTransactionRepository();
 
   constructor(
     private _userRepository: IUserRepository,
@@ -95,6 +128,9 @@ export class AdminService implements IAdminService {
     private _subscriptionPlanRepository: ISubscriptionPlanRepository,
     private _groupRepository: IGroupRepository,
     private _questionRepository: IQuestionRepository,
+    private _targetMuscleRepository: ITargetMuscleRepository,
+    private _equipmentRepository: IEquipmentRepository,
+    private _exerciseRepository: IExerciseRepository,
   ) {}
 
   //  Users
@@ -653,12 +689,13 @@ export class AdminService implements IAdminService {
     data: CreateQuestionDto,
     adminId: string,
   ): Promise<void> {
-    const options = data.dataSource === "category"
-      ? []
-      : data.options?.map((o) => ({
-          label: o.label.trim(),
-          value: generateOptionValue(o.label),
-        }));
+    const options =
+      data.dataSource === "category" || data.dataSource === "equipment"
+        ? []
+        : data.options?.map((o) => ({
+            label: o.label.trim(),
+            value: generateOptionValue(o.label),
+          }));
 
     await this._questionRepository.createQuestion({
       ...data,
@@ -720,12 +757,13 @@ export class AdminService implements IAdminService {
     questionId: string,
     data: UpdateQuestionDto,
   ): Promise<void> {
-    const options = data.dataSource === "category"
-      ? []
-      : data.options?.map((o) => ({
-          label: o.label.trim(),
-          value: generateOptionValue(o.label),
-        }));
+    const options =
+      data.dataSource === "category" || data.dataSource === "equipment"
+        ? []
+        : data.options?.map((o) => ({
+            label: o.label.trim(),
+            value: generateOptionValue(o.label),
+          }));
 
     await this._questionRepository.updateQuestion(questionId, {
       ...data,
@@ -759,12 +797,329 @@ export class AdminService implements IAdminService {
   getQuestionDataSources(): Promise<{ label: string; value: string }[]> {
     const labels: Record<string, string> = {
       category: "Workout Categories",
+      equipment: "Workout Equipment",
     };
     return Promise.resolve(
       DATA_SOURCES.map((source) => ({
         value: source,
-        label: labels[source] || source.charAt(0).toUpperCase() + source.slice(1),
-      }))
+        label:
+          labels[source] || source.charAt(0).toUpperCase() + source.slice(1),
+      })),
     );
+  }
+
+  //Target Muscles
+
+  async createTargetMuscle(data: CreateTargetMuscleDto): Promise<void> {
+    if (!data.image) {
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        MESSAGES.VALIDATION.IMAGE_REQUIRED,
+      );
+    }
+
+    const key = generateKeySlug(data.title);
+
+    const imageUrl = await this._s3Service.uploadFile(
+      data.image,
+      `target-muscles/${key}`,
+    );
+
+    const targetMuscleData: TargetMuscle = {
+      key: key,
+      title: data.title,
+      image: imageUrl,
+      description: data.description,
+      bodyRegion: data.bodyRegion,
+    };
+    await this._targetMuscleRepository.createTargetMuscle(targetMuscleData);
+  }
+
+  async getAllTargetMuscles(
+    query: TargetMuscleQueryDto,
+  ): Promise<GetAllTargetMusclesResponseDto> {
+    const { data, pagination } =
+      await this._targetMuscleRepository.getAllTargetMuscles(query);
+    return {
+      data: TargetMuscleMapper.toTargetMuscleDtoList(data),
+      pagination,
+    };
+  }
+
+  async getTargetMuscleById(targetMuscleId: string): Promise<TargetMuscleDto> {
+    const targetMuscle =
+      await this._targetMuscleRepository.getTargetMuscleById(targetMuscleId);
+    if (!targetMuscle) {
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.VALIDATION.INVALID_ID);
+    }
+    return TargetMuscleMapper.toTargetMuscleDto(targetMuscle);
+  }
+
+  async updateTargetMuscle(
+    targetMuscleId: string,
+    data: UpdateTargetMuscleDto,
+  ): Promise<void> {
+    const targetMuscle =
+      await this._targetMuscleRepository.getTargetMuscleById(targetMuscleId);
+    if (!targetMuscle) {
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.VALIDATION.INVALID_ID);
+    }
+
+    const updateData: Partial<TargetMuscle> = {
+      title: data.title,
+      description: data.description,
+      bodyRegion: data.bodyRegion,
+    };
+
+    if (data.image) {
+      const imageUrl = await this._s3Service.uploadFile(
+        data.image,
+        `target-muscles/${targetMuscle.key}`,
+      );
+      updateData.image = imageUrl;
+    }
+
+    await this._targetMuscleRepository.updateTargetMuscle(
+      targetMuscleId,
+      updateData,
+    );
+  }
+
+  async toggleTargetMuscleStatus(
+    targetMuscleId: string,
+  ): Promise<ToggleTargetMuscleStatusResponseDto> {
+    const targetMuscle =
+      await this._targetMuscleRepository.toggleTargetMuscleStatus(
+        targetMuscleId,
+      );
+    if (!targetMuscle) {
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.VALIDATION.INVALID_ID);
+    }
+    return {
+      message: targetMuscle.isActive
+        ? MESSAGES.TARGET_MUSCLE.UNBLOCKED
+        : MESSAGES.TARGET_MUSCLE.BLOCKED,
+      targetMuscleId: targetMuscle._id || "",
+      isActive: targetMuscle.isActive ?? true,
+    };
+  }
+
+  // Equipment Methods
+
+  async createEquipment(data: CreateEquipmentDto): Promise<void> {
+    const isExist = await this._equipmentRepository.findEquipmentByTitle(
+      data.title,
+    );
+    if (isExist) {
+      throw new AppError(STATUS.CONFLICT, MESSAGES.EQUIPMENT.EXISTS);
+    }
+    if (!data.image) {
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        MESSAGES.VALIDATION.REQUIRED_FIELD,
+      );
+    }
+    const key = `equipment-${Date.now()}`;
+    const imageUrl = await this._s3Service.uploadFile(
+      data.image,
+      `equipment/${key}`,
+    );
+
+    const equipmentData: Equipment = {
+      key: key,
+      title: data.title,
+      image: imageUrl,
+      description: data.description,
+    };
+    await this._equipmentRepository.createEquipment(equipmentData);
+  }
+
+  async getAllEquipment(
+    query: EquipmentQueryDto,
+  ): Promise<GetAllEquipmentResponseDto> {
+    const { data, pagination } =
+      await this._equipmentRepository.getAllEquipment(query);
+    return {
+      data: EquipmentMapper.toEquipmentDtoList(data),
+      pagination,
+    };
+  }
+
+  async getEquipmentById(equipmentId: string): Promise<EquipmentDto> {
+    const equipment =
+      await this._equipmentRepository.getEquipmentById(equipmentId);
+    if (!equipment) {
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.VALIDATION.INVALID_ID);
+    }
+    return EquipmentMapper.toEquipmentDto(equipment);
+  }
+
+  async updateEquipment(
+    equipmentId: string,
+    data: UpdateEquipmentDto,
+  ): Promise<void> {
+    const equipment =
+      await this._equipmentRepository.getEquipmentById(equipmentId);
+    if (!equipment) {
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.VALIDATION.INVALID_ID);
+    }
+
+    const updateData: Partial<Equipment> = {
+      title: data.title,
+      description: data.description,
+    };
+
+    if (data.image) {
+      const imageUrl = await this._s3Service.uploadFile(
+        data.image,
+        `equipment/${equipment.key}`,
+      );
+      updateData.image = imageUrl;
+    }
+
+    await this._equipmentRepository.updateEquipment(equipmentId, updateData);
+  }
+
+  async toggleEquipmentStatus(
+    equipmentId: string,
+  ): Promise<ToggleEquipmentStatusResponseDto> {
+    const equipment =
+      await this._equipmentRepository.toggleEquipmentStatus(equipmentId);
+    if (!equipment) {
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.VALIDATION.INVALID_ID);
+    }
+    return {
+      message: equipment.isActive
+        ? MESSAGES.EQUIPMENT.UNBLOCKED
+        : MESSAGES.EQUIPMENT.BLOCKED,
+      equipmentId: equipment._id || "",
+      isActive: equipment.isActive ?? true,
+    };
+  }
+
+  // Exercise Methods
+
+  async createExercise(data: CreateExerciseDto): Promise<void> {
+    const isExist = await this._exerciseRepository.findExerciseByTitle(
+      data.title,
+    );
+    if (isExist) {
+      throw new AppError(STATUS.CONFLICT, MESSAGES.EXERCISE.EXISTS);
+    }
+    if (!data.image) {
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.EXERCISE.IMAGE_REQUIRED);
+    }
+
+    const key = generateKeySlug(data.title);
+    const imageUrl = await this._s3Service.uploadFile(
+      data.image,
+      `exercises/${key}`,
+    );
+    let videoUrl: string | undefined;
+    if (data.video) {
+      videoUrl = await this._s3Service.uploadFile(
+        data.video,
+        `exercises/${key}_video`,
+      );
+    }
+
+    const exerciseData: Exercise = {
+      key,
+      title: data.title,
+      description: data.description,
+      instructions: data.instructions,
+      media: {
+        image: imageUrl,
+        videoUrl,
+      },
+
+      categoryIds: data.categoryIds,
+      targetMuscleIds: data.targetMuscleIds,
+      equipmentIds: data.equipmentIds ?? [],
+      workoutEnvironments: data.workoutEnvironments ?? [],
+      difficulty: data.difficulty,
+      isCompound: data.isCompound ?? false,
+    };
+
+    await this._exerciseRepository.createExercise(exerciseData);
+  }
+
+  async getAllExercises(
+    query: ExerciseQueryDto,
+  ): Promise<GetAllExercisesResponseDto> {
+    const { data, pagination } =
+      await this._exerciseRepository.getAllExercises(query);
+    return {
+      data: ExerciseMapper.toExerciseDtoList(data),
+      pagination,
+    };
+  }
+
+  async getExerciseById(exerciseId: string): Promise<ExerciseDto> {
+    const exercise = await this._exerciseRepository.getExerciseById(exerciseId);
+    if (!exercise) {
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.EXERCISE.NOT_FOUND);
+    }
+    return ExerciseMapper.toExerciseDto(exercise);
+  }
+
+  async updateExercise(
+    exerciseId: string,
+    data: UpdateExerciseDto,
+  ): Promise<void> {
+    const exercise = await this._exerciseRepository.getExerciseById(exerciseId);
+    if (!exercise) {
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.EXERCISE.NOT_FOUND);
+    }
+
+    const updateData: Partial<Exercise> = {
+      title: data.title,
+      description: data.description,
+      instructions: data.instructions,
+      categoryIds: data.categoryIds,
+      targetMuscleIds: data.targetMuscleIds,
+      equipmentIds: data.equipmentIds,
+      workoutEnvironments: data.workoutEnvironments,
+      difficulty: data.difficulty,
+      isCompound: data.isCompound,
+    };
+
+    if (data.video) {
+      const videoUrl = await this._s3Service.uploadFile(
+        data.video,
+        `exercises/${exercise.key}_video`,
+      );
+      updateData.media = { ...exercise.media, videoUrl };
+    }
+
+    if (data.image) {
+      const imageUrl = await this._s3Service.uploadFile(
+        data.image,
+        `exercises/${exercise.key}`,
+      );
+      updateData.media = {
+        ...(updateData.media ?? exercise.media),
+        image: imageUrl,
+      };
+    }
+
+    await this._exerciseRepository.updateExercise(exerciseId, updateData);
+  }
+
+  async toggleExerciseStatus(
+    exerciseId: string,
+  ): Promise<ToggleExerciseStatusResponseDto> {
+    const exercise =
+      await this._exerciseRepository.toggleExerciseStatus(exerciseId);
+    if (!exercise) {
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.EXERCISE.NOT_FOUND);
+    }
+    return {
+      message: exercise.isActive
+        ? MESSAGES.EXERCISE.UNBLOCKED
+        : MESSAGES.EXERCISE.BLOCKED,
+      exerciseId: exercise._id || "",
+      isActive: exercise.isActive ?? true,
+    };
   }
 }

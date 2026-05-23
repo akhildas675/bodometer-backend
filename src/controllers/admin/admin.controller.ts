@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response,} from "express";
+import { NextFunction, Request, Response } from "express";
 
 import { AppError } from "../../utils/appError";
 import { parsePaginationQuery } from "../../utils/query";
@@ -34,12 +34,27 @@ import {
   CreateQuestionGroupDto,
   UpdateQuestionGroupDto,
   CreateQuestionDto,
-
   QuestionQueryDto,
   UpdateQuestionDto,
 } from "../../dto/onboarding/onboarding.dto";
 import { AuthRequest } from "@/middleware/authGuard";
 import { SuccessResponse } from "../../utils/success.response";
+import {
+  CreateTargetMuscleDto,
+  TargetMuscleQueryDto,
+  UpdateTargetMuscleDto,
+} from "@/dto/target.muscles/target-muscles.dto";
+import {
+  CreateEquipmentDto,
+  EquipmentQueryDto,
+  UpdateEquipmentDto,
+} from "@/dto/equipment/equipment.dto";
+import { BodyRegion } from "@/constants/fitness.constant";
+import {
+  CreateExerciseDto,
+  ExerciseQueryDto,
+  UpdateExerciseDto,
+} from "@/dto/exercise/exercise.dto";
 
 export class AdminController {
   constructor(private _adminService: IAdminService) {}
@@ -54,7 +69,7 @@ export class AdminController {
         STATUS.OK,
         MESSAGES.TRAINER.TRAINERS_FETCHED,
         data.data,
-        data.pagination
+        data.pagination,
       ).send(res);
     } catch (error) {
       next(error);
@@ -68,10 +83,7 @@ export class AdminController {
 
       await this._adminService.blockTrainer(trainerId);
 
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.ADMIN.TRAINER_BLOCKED
-      ).send(res);
+      new SuccessResponse(STATUS.OK, MESSAGES.ADMIN.TRAINER_BLOCKED).send(res);
     } catch (error) {
       next(error);
     }
@@ -84,10 +96,9 @@ export class AdminController {
 
       await this._adminService.unblockTrainer(trainerId);
 
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.ADMIN.TRAINER_UNBLOCKED
-      ).send(res);
+      new SuccessResponse(STATUS.OK, MESSAGES.ADMIN.TRAINER_UNBLOCKED).send(
+        res,
+      );
     } catch (error) {
       next(error);
     }
@@ -111,7 +122,7 @@ export class AdminController {
         STATUS.OK,
         MESSAGES.TRAINER.PROFILE_FETCHED,
         result.data,
-        result.pagination
+        result.pagination,
       ).send(res);
     } catch (error) {
       next(error);
@@ -123,7 +134,10 @@ export class AdminController {
       const { profileId } = req.params;
 
       if (!profileId) {
-        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.ADMIN.PROFILE_ID_REQUIRED);
+        throw new AppError(
+          STATUS.BAD_REQUEST,
+          MESSAGES.ADMIN.PROFILE_ID_REQUIRED,
+        );
       }
 
       const trainer = await this._adminService.getTrainerByProfileId(profileId);
@@ -131,7 +145,7 @@ export class AdminController {
       new SuccessResponse(
         STATUS.OK,
         MESSAGES.TRAINER.PROFILE_FETCHED,
-        trainer
+        trainer,
       ).send(res);
     } catch (error) {
       next(error);
@@ -143,16 +157,15 @@ export class AdminController {
       const { profileId } = req.params;
 
       if (!profileId) {
-        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.ADMIN.PROFILE_ID_REQUIRED);
+        throw new AppError(
+          STATUS.BAD_REQUEST,
+          MESSAGES.ADMIN.PROFILE_ID_REQUIRED,
+        );
       }
 
       const result = await this._adminService.approveTrainer(profileId);
 
-      new SuccessResponse(
-        STATUS.OK,
-        result.message,
-        result.profile
-      ).send(res);
+      new SuccessResponse(STATUS.OK, result.message, result.profile).send(res);
     } catch (error) {
       next(error);
     }
@@ -176,11 +189,7 @@ export class AdminController {
 
       const result = await this._adminService.rejectTrainer(profileId, reason);
 
-      new SuccessResponse(
-        STATUS.OK,
-        result.message,
-        result.profile
-      ).send(res);
+      new SuccessResponse(STATUS.OK, result.message, result.profile).send(res);
     } catch (error) {
       next(error);
     }
@@ -196,7 +205,7 @@ export class AdminController {
         STATUS.OK,
         MESSAGES.USER.PROFILE_FETCHED,
         data.data,
-        data.pagination
+        data.pagination,
       ).send(res);
     } catch (error) {
       next(error);
@@ -209,10 +218,7 @@ export class AdminController {
 
       await this._adminService.blockUser(userId);
 
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.ADMIN.USER_BLOCKED
-      ).send(res);
+      new SuccessResponse(STATUS.OK, MESSAGES.ADMIN.USER_BLOCKED).send(res);
     } catch (error) {
       next(error);
     }
@@ -224,10 +230,7 @@ export class AdminController {
 
       await this._adminService.unblockUser(userId);
 
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.ADMIN.USER_UNBLOCKED
-      ).send(res);
+      new SuccessResponse(STATUS.OK, MESSAGES.ADMIN.USER_UNBLOCKED).send(res);
     } catch (error) {
       next(error);
     }
@@ -248,10 +251,9 @@ export class AdminController {
 
       await this._adminService.createCategory(data);
 
-      new SuccessResponse(
-        STATUS.CREATED,
-        MESSAGES.ADMIN.CATEGORY_CREATED
-      ).send(res);
+      new SuccessResponse(STATUS.CREATED, MESSAGES.ADMIN.CATEGORY_CREATED).send(
+        res,
+      );
     } catch (error) {
       next(error);
     }
@@ -263,7 +265,11 @@ export class AdminController {
     next: NextFunction,
   ) => {
     try {
-      const body = req.body as { name?: string; description?: string; categoryId?: string };
+      const body = req.body as {
+        name?: string;
+        description?: string;
+        categoryId?: string;
+      };
       const data: UpdateCategoryDto = {
         categoryId: (req.params.categoryId || body.categoryId)?.trim() || "",
         name: body.name?.trim(),
@@ -273,10 +279,9 @@ export class AdminController {
 
       await this._adminService.updateCategory(data);
 
-      new SuccessResponse(
-        STATUS.CREATED,
-        MESSAGES.ADMIN.CATEGORY_UPDATED
-      ).send(res);
+      new SuccessResponse(STATUS.CREATED, MESSAGES.ADMIN.CATEGORY_UPDATED).send(
+        res,
+      );
     } catch (error) {
       next(error);
     }
@@ -289,7 +294,7 @@ export class AdminController {
       new SuccessResponse(
         STATUS.OK,
         MESSAGES.ADMIN.CATEGORY_FETCHED,
-        category
+        category,
       ).send(res);
     } catch (error) {
       next(error);
@@ -318,7 +323,7 @@ export class AdminController {
         STATUS.OK,
         MESSAGES.ADMIN.CATEGORY_FETCHED,
         data,
-        pagination
+        pagination,
       ).send(res);
     } catch (error) {
       next(error);
@@ -333,11 +338,7 @@ export class AdminController {
     try {
       const { categoryId } = req.params;
       const result = await this._adminService.toggleCategoryStatus(categoryId);
-      new SuccessResponse(
-        STATUS.OK,
-        result.message,
-        result.category
-      ).send(res);
+      new SuccessResponse(STATUS.OK, result.message, result.category).send(res);
     } catch (error) {
       next(error);
     }
@@ -363,7 +364,7 @@ export class AdminController {
         STATUS.OK,
         MESSAGES.COMMON.SUCCESS,
         data,
-        pagination
+        pagination,
       ).send(res);
     } catch (error) {
       next(error);
@@ -376,7 +377,11 @@ export class AdminController {
     next: NextFunction,
   ) => {
     try {
-      const body = req.body as { title?: string; description?: string; type?: FeatureType };
+      const body = req.body as {
+        title?: string;
+        description?: string;
+        type?: FeatureType;
+      };
       const data: CreateSubscriptionFeatureDto = {
         title: body.title?.trim() || "",
         description: body.description?.trim() || "",
@@ -385,7 +390,7 @@ export class AdminController {
       await this._adminService.createSubscriptionFeature(data);
       new SuccessResponse(
         STATUS.CREATED,
-        MESSAGES.ADMIN.SUBSCRIPTION_FEATURE_CREATED
+        MESSAGES.ADMIN.SUBSCRIPTION_FEATURE_CREATED,
       ).send(res);
     } catch (error) {
       next(error);
@@ -399,7 +404,11 @@ export class AdminController {
   ) => {
     try {
       const { id: subscriptionFeatureId } = req.params;
-      const body = req.body as { title?: string; description?: string; type?: FeatureType };
+      const body = req.body as {
+        title?: string;
+        description?: string;
+        type?: FeatureType;
+      };
       const data: UpdateSubscriptionFeatureDto = {
         subscriptionFeatureId,
         title: body.title?.trim(),
@@ -411,7 +420,7 @@ export class AdminController {
 
       new SuccessResponse(
         STATUS.OK,
-        MESSAGES.ADMIN.SUBSCRIPTION_FEATURE_UPDATED
+        MESSAGES.ADMIN.SUBSCRIPTION_FEATURE_UPDATED,
       ).send(res);
     } catch (error) {
       next(error);
@@ -430,11 +439,7 @@ export class AdminController {
         subscriptionFeatureId,
       );
 
-      new SuccessResponse(
-        STATUS.OK,
-        result.message,
-        result.feature
-      ).send(res);
+      new SuccessResponse(STATUS.OK, result.message, result.feature).send(res);
     } catch (error) {
       next(error);
     }
@@ -453,7 +458,7 @@ export class AdminController {
       new SuccessResponse(
         STATUS.OK,
         MESSAGES.ADMIN.SUBSCRIPTION_FEATURE_FETCHED,
-        feature
+        feature,
       ).send(res);
     } catch (error) {
       next(error);
@@ -472,7 +477,11 @@ export class AdminController {
         price?: number;
         durationInDays?: number;
         isPopular?: boolean;
-        features?: Array<{ featureId: string; limit?: number; limitType?: string }>;
+        features?: Array<{
+          featureId: string;
+          limit?: number;
+          limitType?: string;
+        }>;
       };
       const data: CreateSubscriptionPlanDto = {
         name: body.name?.trim() || "",
@@ -486,7 +495,7 @@ export class AdminController {
       await this._adminService.createSubscriptionPlan(data);
       new SuccessResponse(
         STATUS.CREATED,
-        MESSAGES.ADMIN.SUBSCRIPTION_PLAN_CREATED
+        MESSAGES.ADMIN.SUBSCRIPTION_PLAN_CREATED,
       ).send(res);
     } catch (error) {
       next(error);
@@ -513,7 +522,7 @@ export class AdminController {
         STATUS.OK,
         MESSAGES.COMMON.SUCCESS,
         data,
-        pagination
+        pagination,
       ).send(res);
     } catch (error) {
       next(error);
@@ -533,11 +542,7 @@ export class AdminController {
           subscriptionPlanId,
         );
 
-      new SuccessResponse(
-        STATUS.OK,
-        result.message,
-        result.plan
-      ).send(res);
+      new SuccessResponse(STATUS.OK, result.message, result.plan).send(res);
     } catch (error) {
       next(error);
     }
@@ -555,7 +560,7 @@ export class AdminController {
       new SuccessResponse(
         STATUS.OK,
         MESSAGES.ADMIN.SUBSCRIPTION_PLAN_FETCHED,
-        plan
+        plan,
       ).send(res);
     } catch (error) {
       next(error);
@@ -575,7 +580,11 @@ export class AdminController {
         price?: number;
         durationInDays?: number;
         isPopular?: boolean;
-        features?: Array<{ featureId: string; limit?: number; limitType?: string }>;
+        features?: Array<{
+          featureId: string;
+          limit?: number;
+          limitType?: string;
+        }>;
       };
       const data: UpdateSubscriptionPlanDto = {
         subscriptionPlanId,
@@ -589,7 +598,7 @@ export class AdminController {
       await this._adminService.updateSubscriptionPlan(data);
       new SuccessResponse(
         STATUS.OK,
-        MESSAGES.ADMIN.SUBSCRIPTION_PLAN_UPDATED
+        MESSAGES.ADMIN.SUBSCRIPTION_PLAN_UPDATED,
       ).send(res);
     } catch (error) {
       next(error);
@@ -615,7 +624,7 @@ export class AdminController {
         STATUS.OK,
         MESSAGES.COMMON.SUCCESS,
         data,
-        pagination
+        pagination,
       ).send(res);
     } catch (error) {
       next(error);
@@ -628,7 +637,11 @@ export class AdminController {
     next: NextFunction,
   ) => {
     try {
-      const body = req.body as { key?: string; title?: string; order?: number | string };
+      const body = req.body as {
+        key?: string;
+        title?: string;
+        order?: number | string;
+      };
       const data: CreateQuestionGroupDto = {
         key: body.key?.trim() || "",
         title: body.title?.trim() || "",
@@ -638,7 +651,7 @@ export class AdminController {
       await this._adminService.createQuestionGroup(data);
       new SuccessResponse(
         STATUS.CREATED,
-        MESSAGES.ONBOARDING.GROUP_CREATED
+        MESSAGES.ONBOARDING.GROUP_CREATED,
       ).send(res);
     } catch (error) {
       next(error);
@@ -658,10 +671,9 @@ export class AdminController {
         order: Number(body.order) || 0,
       };
       await this._adminService.updateQuestionGroup(id, data);
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.ONBOARDING.GROUP_UPDATED
-      ).send(res);
+      new SuccessResponse(STATUS.OK, MESSAGES.ONBOARDING.GROUP_UPDATED).send(
+        res,
+      );
     } catch (error) {
       next(error);
     }
@@ -676,7 +688,7 @@ export class AdminController {
       await this._adminService.toggleQuestionGroupStatus(req.params.id);
       new SuccessResponse(
         STATUS.OK,
-        MESSAGES.ONBOARDING.GROUP_STATUS_TOGGLED
+        MESSAGES.ONBOARDING.GROUP_STATUS_TOGGLED,
       ).send(res);
     } catch (error) {
       next(error);
@@ -692,11 +704,7 @@ export class AdminController {
       const group = await this._adminService.getQuestionGroupById(
         req.params.id,
       );
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.COMMON.SUCCESS,
-        group
-      ).send(res);
+      new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, group).send(res);
     } catch (error) {
       next(error);
     }
@@ -712,7 +720,9 @@ export class AdminController {
         sortBy: "createdAt",
         sortOrder: "desc",
         ...parsePaginationQuery(req),
-        ...(typeof req.query.groupId === "string" && { groupId: req.query.groupId }),
+        ...(typeof req.query.groupId === "string" && {
+          groupId: req.query.groupId,
+        }),
       };
       const { data, pagination } =
         await this._adminService.getAllQuestions(query);
@@ -720,7 +730,7 @@ export class AdminController {
         STATUS.OK,
         MESSAGES.COMMON.SUCCESS,
         data,
-        pagination
+        pagination,
       ).send(res);
     } catch (error) {
       next(error);
@@ -737,12 +747,15 @@ export class AdminController {
       const adminId = req.user?.id;
 
       if (!adminId)
-        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.ADMIN.UNAUTHORIZED_CONTEXT);
+        throw new AppError(
+          STATUS.UNAUTHORIZED,
+          MESSAGES.ADMIN.UNAUTHORIZED_CONTEXT,
+        );
 
       await this._adminService.createQuestion(data, adminId);
       new SuccessResponse(
         STATUS.CREATED,
-        MESSAGES.ONBOARDING.QUESTION_CREATED
+        MESSAGES.ONBOARDING.QUESTION_CREATED,
       ).send(res);
     } catch (error) {
       next(error);
@@ -755,12 +768,14 @@ export class AdminController {
     next: NextFunction,
   ) => {
     try {
-      await this._adminService.updateQuestion(req.params.id, req.body as unknown as UpdateQuestionDto);
+      await this._adminService.updateQuestion(
+        req.params.id,
+        req.body as unknown as UpdateQuestionDto,
+      );
 
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.ONBOARDING.QUESTION_UPDATED
-      ).send(res);
+      new SuccessResponse(STATUS.OK, MESSAGES.ONBOARDING.QUESTION_UPDATED).send(
+        res,
+      );
     } catch (error) {
       next(error);
     }
@@ -775,7 +790,7 @@ export class AdminController {
       await this._adminService.toggleQuestionStatus(req.params.id);
       new SuccessResponse(
         STATUS.OK,
-        MESSAGES.ONBOARDING.QUESTION_STATUS_TOGGLED
+        MESSAGES.ONBOARDING.QUESTION_STATUS_TOGGLED,
       ).send(res);
     } catch (error) {
       next(error);
@@ -785,11 +800,9 @@ export class AdminController {
   getQuestionById = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const question = await this._adminService.getQuestionById(req.params.id);
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.COMMON.SUCCESS,
-        question
-      ).send(res);
+      new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, question).send(
+        res,
+      );
     } catch (error) {
       next(error);
     }
@@ -809,7 +822,9 @@ export class AdminController {
         sortBy: "createdAt",
         sortOrder: "desc",
         ...parsePaginationQuery(req),
-        ...(typeof req.query.status === "string" && { status: req.query.status.trim() }),
+        ...(typeof req.query.status === "string" && {
+          status: req.query.status.trim(),
+        }),
       };
 
       const { data, pagination } =
@@ -819,7 +834,7 @@ export class AdminController {
         STATUS.OK,
         MESSAGES.COMMON.SUCCESS,
         data,
-        pagination
+        pagination,
       ).send(res);
     } catch (error) {
       next(error);
@@ -833,11 +848,305 @@ export class AdminController {
   ) => {
     try {
       const dataSources = await this._adminService.getQuestionDataSources();
+      new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, dataSources).send(
+        res,
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  createTargetMuscle = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const body = req.body as CreateTargetMuscleDto;
+      const data: CreateTargetMuscleDto = {
+        title: body.title,
+        description: body.description,
+        bodyRegion: body.bodyRegion,
+        image: req.file,
+      };
+
+      const result = await this._adminService.createTargetMuscle(data);
+      new SuccessResponse(
+        STATUS.CREATED,
+        "Target muscle created successfully.",
+        result,
+      ).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+  getAllTargetMuscles = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const query = parsePaginationQuery(req) as TargetMuscleQueryDto;
+      const { data, pagination } =
+        await this._adminService.getAllTargetMuscles(query);
       new SuccessResponse(
         STATUS.OK,
-        MESSAGES.COMMON.SUCCESS,
-        dataSources,
+        "Target muscles fetched successfully.",
+        data,
+        pagination,
       ).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getTargetMuscleById = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const targetMuscleId = String(req.params.id);
+      const data = await this._adminService.getTargetMuscleById(targetMuscleId);
+      new SuccessResponse(
+        STATUS.OK,
+        "Target muscle fetched successfully.",
+        data,
+      ).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  toggleTargetMuscleStatus = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const targetMuscleId = String(req.params.id);
+      const data =
+        await this._adminService.toggleTargetMuscleStatus(targetMuscleId);
+      new SuccessResponse(STATUS.OK, data.message, data).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateTargetMuscle = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const targetMuscleId = String(req.params.id);
+      const body = req.body as {
+        title?: string;
+        description?: string;
+        bodyRegion?: BodyRegion;
+      } as UpdateTargetMuscleDto;
+
+      const dto = {
+        targetMuscleId,
+        title: body.title,
+        description: body.description,
+        bodyRegion: body.bodyRegion,
+        image: req.file,
+      };
+
+      const data = await this._adminService.updateTargetMuscle(
+        targetMuscleId,
+        dto,
+      );
+      new SuccessResponse(
+        STATUS.OK,
+        "Target muscle updated successfully.",
+        data,
+      ).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Equipment Methods
+
+  createEquipment = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const body = req.body as {
+        title?: string;
+        description?: string;
+      } as CreateEquipmentDto;
+
+      const dto = {
+        title: body.title,
+        description: body.description,
+        image: req.file,
+      };
+
+      const data = await this._adminService.createEquipment(dto);
+      new SuccessResponse(
+        STATUS.CREATED,
+        "Equipment created successfully.",
+        data,
+      ).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getAllEquipment = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const query = req.query as unknown as EquipmentQueryDto;
+      const { data, pagination } = await this._adminService.getAllEquipment(query);
+
+      new SuccessResponse(
+        STATUS.OK,
+        "Equipment list fetched successfully.",
+        data,
+        pagination,
+      ).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getEquipmentById = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const equipmentId = String(req.params.id);
+      const data = await this._adminService.getEquipmentById(equipmentId);
+      new SuccessResponse(
+        STATUS.OK,
+        "Equipment fetched successfully.",
+        data,
+      ).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  toggleEquipmentStatus = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const equipmentId = String(req.params.id);
+      const data = await this._adminService.toggleEquipmentStatus(equipmentId);
+      new SuccessResponse(STATUS.OK, data.message, data).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateEquipment = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const equipmentId = String(req.params.id);
+      const dto = req.body as UpdateEquipmentDto;
+      dto.equipmentId = equipmentId;
+      dto.image = req.file;
+
+
+      const data = await this._adminService.updateEquipment(equipmentId, dto);
+      new SuccessResponse(
+        STATUS.OK,
+        "Equipment updated successfully.",
+        data,
+      ).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Exercise Methods
+
+  createExercise = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const dto = req.body as CreateExerciseDto;
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+      dto.image = files?.["image"]?.[0];
+      dto.video = files?.["video"]?.[0];
+
+
+      await this._adminService.createExercise(dto);
+
+      new SuccessResponse(
+        STATUS.CREATED,
+        "Exercise created successfully.",
+      ).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getAllExercises = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const query = req.query as unknown as ExerciseQueryDto;
+      const { data, pagination } = await this._adminService.getAllExercises(query);
+
+
+      new SuccessResponse(
+        STATUS.OK,
+        "Exercises fetched successfully.",
+        data,
+        pagination,
+      ).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getExerciseById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const exerciseId = String(req.params.id);
+      const data = await this._adminService.getExerciseById(exerciseId);
+      new SuccessResponse(
+        STATUS.OK,
+        "Exercise fetched successfully.",
+        data,
+      ).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  toggleExerciseStatus = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const exerciseId = String(req.params.id);
+      const data = await this._adminService.toggleExerciseStatus(exerciseId);
+      new SuccessResponse(STATUS.OK, data.message, data).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateExercise = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const exerciseId = String(req.params.id);
+      const dto = req.body as UpdateExerciseDto;
+      dto.exerciseId = exerciseId;
+
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+      dto.image = files?.["image"]?.[0];
+      dto.video = files?.["video"]?.[0];
+
+
+      await this._adminService.updateExercise(exerciseId, dto);
+
+      new SuccessResponse(STATUS.OK, "Exercise updated successfully.").send(
+        res,
+      );
     } catch (error) {
       next(error);
     }

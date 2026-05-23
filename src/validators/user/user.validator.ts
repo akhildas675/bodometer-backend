@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { GENDER } from "../../constants/identity.constants";
+import { DIFFICULTY_LEVEL } from "../../constants/fitness.constant";
 
 
 
@@ -136,5 +137,18 @@ export const bmiCalculationSchema = z.object({
     unit: z.enum(["metric", "imperial"]),
     heightFt: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().nonnegative().optional()),
     heightIn: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().nonnegative().optional()),
+  })
+});
+
+export const exerciseQuerySchema = z.object({
+  query: z.object({
+    page: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().min(1).optional()),
+    limit: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().min(1).optional()),
+    search: z.string().optional(),
+    difficulty: z.nativeEnum(DIFFICULTY_LEVEL).optional(),
+    targetMuscleId: z.string().optional(),
+    categoryId: z.string().optional(),
+    sortBy: z.string().optional(),
+    sortOrder: z.enum(["asc", "desc"]).optional(),
   })
 });

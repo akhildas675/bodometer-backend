@@ -15,6 +15,7 @@ import {
   updateUserProfileSchema,
   uploadProfilePictureSchema,
   verifyPaymentSchema,
+  exerciseQuerySchema,
 } from "../../validators/user/user.validator";
 import { mediaUpload } from "../../config/multer";
 
@@ -62,6 +63,12 @@ userRoute.get(
   USER_ROUTES.GET_CATEGORIES,
   ROLE_GUARD.USER_GUARD,
   userController.getCategories,
+);
+
+userRoute.get(
+  USER_ROUTES.GET_EQUIPMENT,
+  ROLE_GUARD.USER_GUARD,
+  userController.getAllEquipment,
 );
 
 userRoute.get(
@@ -134,6 +141,20 @@ userRoute.get(
 userRoute.post(
   USER_ROUTES.CALCULATE_BMI_PUBLIC, validate(bmiCalculationSchema),
   userController.calculateBmiPublic,
+);
+
+// Exercise routes (premium-only on frontend; backend requires user auth)
+userRoute.get(
+  USER_ROUTES.GET_EXERCISES,
+  validate(exerciseQuerySchema),
+  ROLE_GUARD.USER_GUARD,
+  userController.getExercises,
+);
+
+userRoute.get(
+  USER_ROUTES.GET_EXERCISE_BY_ID,
+  ROLE_GUARD.USER_GUARD,
+  userController.getExerciseById,
 );
 
 export default userRoute;

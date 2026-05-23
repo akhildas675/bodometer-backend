@@ -1,4 +1,4 @@
-import { Unit } from "@/constants/fitness.constant";
+import { Unit } from "../../constants/fitness.constant";
 import { Gender } from "../../constants/identity.constants";
 import { Role } from "../../constants/roles";
 import { BaseUserProfileDto, PaginationQueryDto } from "../common.dto";
@@ -7,7 +7,7 @@ export interface FindUserDto {
   userId: string;
 }
 
-export interface FindUserResponseDto extends BaseUserProfileDto { }
+export type FindUserResponseDto = BaseUserProfileDto
 
 export interface UpdateUserProfileDto {
   name?: string;

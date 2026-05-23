@@ -16,6 +16,12 @@ import GroupRepository from "@/repositories/group.repository";
 import QuestionRepository from "@/repositories/question.repository";
 import { IGroupRepository } from "@/interfaces/repository-interface/onboarding/group-repository.interface";
 import { IQuestionRepository } from "@/interfaces/repository-interface/onboarding/question-repository.interface";
+import TargetMuscleRepository from "@/repositories/target-muscle.repository";
+import { ITargetMuscleRepository } from "@/interfaces/repository-interface/target.muscle/target.muscle-repository.interface";
+import EquipmentRepository from "@/repositories/equipment.repository";
+import { IEquipmentRepository } from "@/interfaces/repository-interface/equipment/equipment-repository.interface";
+import ExerciseRepository from "@/repositories/exercise.repository";
+import { IExerciseRepository } from "@/interfaces/repository-interface/exercise/exercise-repository.interface";
 
 
 export function createAdminModule() {
@@ -27,6 +33,9 @@ export function createAdminModule() {
   const subscriptionPlanRepository: ISubscriptionPlanRepository = new SubscriptionPlanRepository();
   const groupRepository: IGroupRepository = new GroupRepository();
   const questionRepository: IQuestionRepository = new QuestionRepository();
+  const targetMuscleRepository:ITargetMuscleRepository = new TargetMuscleRepository()
+  const equipmentRepository: IEquipmentRepository = new EquipmentRepository();
+  const exerciseRepository: IExerciseRepository = new ExerciseRepository();
 
   const s3Service: IS3Service = new S3Service();
   const adminService = new AdminService(
@@ -38,6 +47,9 @@ export function createAdminModule() {
     subscriptionPlanRepository,
     groupRepository,
     questionRepository,
+    targetMuscleRepository,
+    equipmentRepository,
+    exerciseRepository
   );
 
   const adminController = new AdminController(adminService)

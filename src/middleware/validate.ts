@@ -1,25 +1,47 @@
-import { ZodObject, ZodError } from "zod";
+import { ZodSchema, ZodError } from "zod";
 import { Request, Response, NextFunction } from "express";
 import { STATUS } from "@/constants/statuscode";
 
 export const validate =
-  (schema: ZodObject) => (req: Request, res: Response, next: NextFunction) => {
+  (schema: ZodSchema) => (req: Request, res: Response, next: NextFunction) => {
     try {
-      schema.parse({
+      const parsed = schema.parse({
         body: req.body,
         query: req.query,
         params: req.params,
         file: req.file,
         files: req.files,
-      });
+      }) as Record<string, any>;
+
+      if (parsed.body !== undefined) req.body = parsed.body;
+      if (parsed.query !== undefined) {
+        for (const key in req.query) delete req.query[key];
+        Object.assign(req.query, parsed.query);
+      }
+      if (parsed.params !== undefined) {
+        for (const key in req.params) delete req.params[key];
+        Object.assign(req.params, parsed.params);
+      }
+
 
       return next();
     } catch (error: unknown) {
       if (error instanceof ZodError) {
-        const errors = error.issues.map((e) => ({
-          path: e.path.join("."),
-          message: e.message,
-        }));
+        const errors = error.issues.map((e) => {
+          let msg = e.message;
+          if (e.code === "invalid_type" && (e as any).received === "undefined") {
+            const field = e.path[e.path.length - 1];
+            msg = `${field ? String(field).charAt(0).toUpperCase() + String(field).slice(1) : 'Field'} is required`;
+          }
+          if (msg.includes("Invalid input") || msg.includes("received undefined")) {
+            const field = e.path[e.path.length - 1];
+            msg = `${field ? String(field).charAt(0).toUpperCase() + String(field).slice(1) : 'Field'} is required`;
+          }
+          return {
+            path: e.path.join("."),
+            message: msg,
+          };
+        });
 
         const firstError = errors[0];
         const topMessage = firstError?.message ?? "Validation error";

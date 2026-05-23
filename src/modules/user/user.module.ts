@@ -23,8 +23,11 @@ import GroupRepository from "../../repositories/group.repository";
 import QuestionRepository from "../../repositories/question.repository";
 import AnswerRepository from "../../repositories/answer.repository";
 import { IPaymentService } from "@/interfaces/service-interface/payment/stripe-service.interface";
-
 import { HealthMetricsService } from "../../services/health.metrics/health-metrics.service";
+import ExerciseRepository from "../../repositories/exercise.repository";
+import { IExerciseRepository } from "../../interfaces/repository-interface/exercise/exercise-repository.interface";
+import EquipmentRepository from "../../repositories/equipment.repository";
+import { IEquipmentRepository } from "../../interfaces/repository-interface/equipment/equipment-repository.interface";
 
 export function createUserModule(){
 
@@ -39,6 +42,8 @@ export function createUserModule(){
     const questionRepository: IQuestionRepository = new QuestionRepository();
     const answerRepository: IAnswerRepository = new AnswerRepository();
     const healthMetricsService = new HealthMetricsService();
+    const exerciseRepository: IExerciseRepository = new ExerciseRepository();
+    const equipmentRepository: IEquipmentRepository = new EquipmentRepository();
 
     const paymentService:IPaymentService= new PaymentService()
 
@@ -54,7 +59,9 @@ export function createUserModule(){
         groupRepository,
         questionRepository,
         answerRepository,
-        healthMetricsService
+        healthMetricsService,
+        exerciseRepository,
+        equipmentRepository,
     );
 
     const userController = new UserController(userService);

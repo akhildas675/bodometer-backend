@@ -3,6 +3,7 @@ import { AuthRequest } from "../../middleware/authGuard";
 import { Logger } from "../../utils/logger";
 import { parsePaginationQuery } from "../../utils/query";
 import { AppError } from "../../utils/appError";
+import { ExerciseQueryDto } from "../../dto/exercise/exercise.dto";
 import { STATUS } from "../../constants/statuscode";
 import { MESSAGES } from "../../constants/messages";
 import {
@@ -11,8 +12,9 @@ import {
   UpdateUserProfileDto,
 } from "../../dto/user/user.dto";
 import { GetTrainersQueryDto } from "../../dto/trainer/trainer.dto";
-import { IUserService } from "@/interfaces/service-interface/user/user-service.interface";
+import { IUserService } from "../../interfaces/service-interface/user/user-service.interface";
 import { SuccessResponse } from "../../utils/success.response";
+import { DifficultyLevel } from "../../constants/fitness.constant";
 
 export class UserController {
   private logger = new Logger("UserController");
@@ -174,6 +176,26 @@ export class UserController {
       const query = parsePaginationQuery(req);
 
       const result = await this._userService.getCategories(query);
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.COMMON.SUCCESS,
+        result.data,
+        result.pagination
+      ).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getAllEquipment = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const query = parsePaginationQuery(req);
+
+      const result = await this._userService.getAllEquipment(query);
       new SuccessResponse(
         STATUS.OK,
         MESSAGES.COMMON.SUCCESS,
@@ -452,6 +474,52 @@ export class UserController {
         STATUS.OK,
         MESSAGES.USER.BMI_CALCULATED,
         result
+      ).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+getExercises = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { search, difficulty, targetMuscleId, categoryId, page, limit } = req.query;
+
+    const query: ExerciseQueryDto = {
+      search: search as string | undefined,
+      difficulty: difficulty as DifficultyLevel | undefined,
+      targetMuscleId: targetMuscleId as string | undefined,
+      categoryId: categoryId as string | undefined,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+    };
+
+    const result = await this._userService.getExercises(query);
+
+    new SuccessResponse(
+      STATUS.OK,
+      MESSAGES.EXERCISE.LIST_FETCHED,
+      result.data,
+      result.pagination
+    ).send(res);
+  } catch (error) {
+    next(error);
+  }
+};
+
+  getExerciseById = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const { exerciseId } = req.params;
+
+      if (!exerciseId) {
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
+      }
+
+      const exercise = await this._userService.getExerciseById(exerciseId);
+
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.EXERCISE.FETCHED,
+        exercise
       ).send(res);
     } catch (error) {
       next(error);

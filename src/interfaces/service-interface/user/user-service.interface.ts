@@ -4,7 +4,11 @@ import { ChangePasswordDto, FindUserResponseDto, UpdateBmiDto, UpdateBmiResponse
 import { ActiveSubscriptionDto, UserSubscriptionPlanResponseDto, SubscriptionTransactionDto } from "../../../dto/subscription/subscription.dto";
 import { GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto } from "../../../dto/trainer/trainer.dto";
 import { CategoryDetailDto } from "../../../dto/category/category.dto";
-import { PaginationMeta } from "@/interfaces/domain.interface/common.interface";
+import { PaginationMeta } from "../../../interfaces/domain.interface/common.interface";
+import { Exercise } from "../../../interfaces/domain.interface/exercise.interface";
+import { PaginatedResult } from "../../../interfaces/domain.interface/common.interface";
+import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto } from "../../../dto/exercise/exercise.dto";
+import { EquipmentQueryDto, GetAllEquipmentResponseDto } from "../../../dto/equipment/equipment.dto";
 
 
 
@@ -16,6 +20,7 @@ export interface IUserService {
   getTrainers(query: GetTrainersQueryDto): Promise<TrainerListResponseDto>;
   getTrainerById(id: string): Promise<TrainerDetailDto>;
   getCategories(query: CategoryQuery): Promise<GetAllCategoriesResponse>;
+  getAllEquipment(query: EquipmentQueryDto): Promise<GetAllEquipmentResponseDto>;
   getCategoryById(id: string): Promise<CategoryDetailDto>;
   getMySubscriptions(): Promise<UserSubscriptionPlanResponseDto[] | null>
   createCheckoutSession(userId: string, planId: string): Promise<{ checkoutUrl: string }>;
@@ -36,4 +41,6 @@ export interface IUserService {
     status?: string,
   ): Promise<{ data: SubscriptionTransactionDto[]; pagination: PaginationMeta }>;
   calculateBmi: (data: UpdateBmiDto) => Promise<UpdateBmiResponseDto>;
+  getExercises(query: ExerciseQueryDto): Promise<GetAllExercisesResponseDto>;
+  getExerciseById(id: string): Promise<ExerciseDto>;
 }

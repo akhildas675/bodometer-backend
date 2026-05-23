@@ -9,7 +9,7 @@ export interface CreateTrainerProfileDto {
   certificateUrl: string;
 }
 
-export interface TrainerProfileResponseDto extends BaseUserProfileDto {}
+export type TrainerProfileResponseDto = BaseUserProfileDto;
 
 export interface GetTrainerAppointmentsResponseDto {
   user: BaseUserDto & { _id: string };

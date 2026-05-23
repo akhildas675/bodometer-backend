@@ -27,7 +27,8 @@ export type ConditionOperator =
 
 
 export const DATA_SOURCES = [
-    "category"
+    "category",
+    "equipment"
 ] as const;
 
 export type DataSource =

@@ -3,7 +3,8 @@ import {
   forgotPasswordSchema,
   googleLoginSchema,
   loginSchema,
-  otpSchema,
+  resendOtpSchema,
+  verifyOtpSchema,
   registerSchema,
   resetPasswordSchema,
 } from "@/validators/auth/auth.validator";
@@ -22,13 +23,13 @@ authRoute.post(
 
 authRoute.post(
   AUTH_ROUTES.OTP_VERIFY,
-  validate(otpSchema),
+  validate(verifyOtpSchema),
   authController.verifyOtp,
 );
 
 authRoute.post(
   AUTH_ROUTES.OTP_RESEND,
-  validate(otpSchema),
+  validate(resendOtpSchema),
   authController.resendOtp,
 );
 

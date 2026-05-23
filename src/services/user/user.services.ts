@@ -50,8 +50,17 @@ import { IAnswerRepository } from "@/interfaces/repository-interface/onboarding/
 import { ROLES } from "@/constants/roles";
 import { PaginationMeta } from "@/interfaces/domain.interface/common.interface";
 import { IHealthMetrics } from "@/interfaces/service-interface/health.metrics/health.metrics-service.interface";
+import { IExerciseRepository } from "@/interfaces/repository-interface/exercise/exercise-repository.interface";
+import { IEquipmentRepository } from "@/interfaces/repository-interface/equipment/equipment-repository.interface";
+
+import { ExerciseMapper } from "../../mappers/exercise/exercise.mapper";
+import { EquipmentMapper } from "../../mappers/equipment/equipment.mapper";
+import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto } from "../../dto/exercise/exercise.dto";
+import { EquipmentQueryDto, GetAllEquipmentResponseDto } from "../../dto/equipment/equipment.dto";
+
 
 export class UserService implements IUserService {
+
   constructor(
     private _userRepo: IUserRepository,
     private _s3Service: IS3Service,
@@ -65,6 +74,8 @@ export class UserService implements IUserService {
     private _questionRepo: IQuestionRepository,
     private _answerRepo: IAnswerRepository,
     private _healthMetrics: IHealthMetrics,
+    private _exerciseRepo: IExerciseRepository,
+    private _equipmentRepo: IEquipmentRepository,
   ) { }
 
   async fetchUser(userId: string): Promise<FindUserResponseDto> {
@@ -221,6 +232,18 @@ export class UserService implements IUserService {
     const category = await this._categoryRepo.getCategoryById(id);
     if (!category) throw new AppError(STATUS.NOT_FOUND, MESSAGES.ADMIN.CATEGORY_NOT_FOUND);
     return CategoryMappers.toCategoryDetailDto(category);
+  }
+
+  async getAllEquipment(query: EquipmentQueryDto): Promise<GetAllEquipmentResponseDto> {
+    const { data, pagination } = await this._equipmentRepo.getAllEquipment({
+      ...query,
+      isActive: true,
+    } as EquipmentQueryDto);
+    
+    return {
+      data: EquipmentMapper.toEquipmentDtoList(data),
+      pagination,
+    };
   }
 
   async getMySubscriptions(): Promise<
@@ -459,4 +482,25 @@ export class UserService implements IUserService {
   async calculateBmi(data: UpdateBmiDto): Promise<UpdateBmiResponseDto> {
     return this._healthMetrics.bmiCalculator(data);
   }
+
+  async getExercises(query: ExerciseQueryDto): Promise<GetAllExercisesResponseDto> {
+    const result = await this._exerciseRepo.getAllExercises({
+      ...query,
+    });
+
+    return {
+      data: ExerciseMapper.toExerciseDtoList(result.data),
+      pagination: result.pagination,
+    };
+  }
+
+  async getExerciseById(id: string): Promise<ExerciseDto> {
+    const exercise = await this._exerciseRepo.getExerciseById(id);
+    if (!exercise) {
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.EXERCISE.NOT_FOUND);
+    }
+
+    return ExerciseMapper.toExerciseDto(exercise);
+  }
 }
+

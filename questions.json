@@ -1,0 +1,1157 @@
+[
+  {
+    "_id": "6a047e1047857b9c9164257d",
+    "key": "what_is_your_height",
+    "question": "What is your height?",
+    "groupId": "6a0479e86ab7e191fd5a5c95",
+    "order": 3,
+    "isActive": true,
+    "type": "number",
+    "options": [],
+    "next": [],
+    "numberConfig": {
+      "min": 50,
+      "max": 300,
+      "unit": "cm"
+    },
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-13T13:35:12.860Z",
+    "updatedAt": "2026-05-14T10:48:32.564Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a047e3a47857b9c91642598",
+    "key": "what_is_your_current_weight",
+    "question": "What is your current weight?",
+    "groupId": "6a0479e86ab7e191fd5a5c95",
+    "order": 4,
+    "isActive": true,
+    "type": "number",
+    "options": [],
+    "next": [],
+    "numberConfig": {
+      "min": 20,
+      "max": 500,
+      "unit": "kg"
+    },
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-13T13:35:54.259Z",
+    "updatedAt": "2026-05-14T10:48:50.330Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a04960a47857b9c91642623",
+    "key": "what_is_your_primary_fitness_goal",
+    "question": "What is your primary fitness goal?",
+    "groupId": "6a047a226ab7e191fd5a5c9e",
+    "order": 1,
+    "isActive": true,
+    "type": "single_select",
+    "options": [
+      {
+        "label": "Lose weight / burn fat",
+        "value": "lose_weight_burn_fat",
+        "_id": "6a04960a47857b9c91642624"
+      },
+      {
+        "label": "Build muscle / tone up",
+        "value": "build_muscle_tone_up",
+        "_id": "6a04960a47857b9c91642625"
+      },
+      {
+        "label": "Improve endurance / stamina",
+        "value": "improve_endurance_stamina",
+        "_id": "6a04960a47857b9c91642626"
+      },
+      {
+        "label": "Enhance flexibility",
+        "value": "enhance_flexibility",
+        "_id": "6a04960a47857b9c91642627"
+      },
+      {
+        "label": "Maintain current fitness",
+        "value": "maintain_current_fitness",
+        "_id": "6a04960a47857b9c91642628"
+      },
+      {
+        "label": "Recover from injury",
+        "value": "recover_from_injury",
+        "_id": "6a04960a47857b9c91642629"
+      },
+      {
+        "label": "General health & wellness",
+        "value": "general_health_wellness",
+        "_id": "6a04960a47857b9c9164262a"
+      }
+    ],
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-13T15:17:30.527Z",
+    "updatedAt": "2026-05-13T15:17:30.527Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a04966547857b9c91642667",
+    "key": "do_you_have_any_secondary_goals",
+    "question": "Do you have any secondary goals?",
+    "groupId": "6a047a226ab7e191fd5a5c9e",
+    "order": 2,
+    "isActive": true,
+    "type": "multi_select",
+    "options": [
+      {
+        "label": "Reduce stress / mental wellbeing",
+        "value": "reduce_stress_mental_wellbeing",
+        "_id": "6a05aa825b3bbe7950178a3e"
+      },
+      {
+        "label": "Increase energy levels",
+        "value": "increase_energy_levels",
+        "_id": "6a05aa825b3bbe7950178a3f"
+      },
+      {
+        "label": "Improve sleep quality",
+        "value": "improve_sleep_quality",
+        "_id": "6a05aa825b3bbe7950178a40"
+      },
+      {
+        "label": "Increase strength",
+        "value": "increase_strength",
+        "_id": "6a05aa825b3bbe7950178a41"
+      },
+      {
+        "label": "Improve cardiovascular health",
+        "value": "improve_cardiovascular_health",
+        "_id": "6a05aa825b3bbe7950178a42"
+      }
+    ],
+    "next": [],
+    "validation": {
+      "required": false
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-13T15:19:01.362Z",
+    "updatedAt": "2026-05-14T10:57:06.668Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a0496e947857b9c916426bd",
+    "key": "how_would_you_describe_your_fitness_experience",
+    "question": "How would you describe your fitness experience?",
+    "groupId": "6a047a226ab7e191fd5a5c9e",
+    "order": 4,
+    "isActive": true,
+    "type": "single_select",
+    "options": [
+      {
+        "label": "Complete beginner",
+        "value": "complete_beginner",
+        "_id": "6a05aafa5b3bbe7950178d27"
+      },
+      {
+        "label": "Some experience (< 1 year)",
+        "value": "some_experience_1_year",
+        "_id": "6a05aafa5b3bbe7950178d28"
+      },
+      {
+        "label": "Intermediate (1–3 years)",
+        "value": "intermediate_13_years",
+        "_id": "6a05aafa5b3bbe7950178d29"
+      },
+      {
+        "label": "Advanced (3+ years, consistent)",
+        "value": "advanced_3_years_consistent",
+        "_id": "6a05aafa5b3bbe7950178d2a"
+      },
+      {
+        "label": "Returning after a long break",
+        "value": "returning_after_a_long_break",
+        "_id": "6a05aafa5b3bbe7950178d2b"
+      }
+    ],
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-13T15:21:13.404Z",
+    "updatedAt": "2026-05-14T10:59:06.572Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a049d6747857b9c91642728",
+    "key": "which_conditions_do_you_have",
+    "question": "Which conditions do you have?",
+    "groupId": "6a047a2f6ab7e191fd5a5ca7",
+    "order": 2,
+    "isActive": true,
+    "type": "multi_select",
+    "options": [
+      {
+        "label": "Type 1 Diabetes",
+        "value": "type_1_diabetes",
+        "_id": "6a093eb28bf8470fef7efc40"
+      },
+      {
+        "label": "Type 2 Diabetes",
+        "value": "type_2_diabetes",
+        "_id": "6a093eb28bf8470fef7efc41"
+      },
+      {
+        "label": "Hypertension (High BP)",
+        "value": "hypertension_high_bp",
+        "_id": "6a093eb28bf8470fef7efc42"
+      },
+      {
+        "label": "Heart disease",
+        "value": "heart_disease",
+        "_id": "6a093eb28bf8470fef7efc43"
+      },
+      {
+        "label": "Asthma / COPD",
+        "value": "asthma_copd",
+        "_id": "6a093eb28bf8470fef7efc44"
+      },
+      {
+        "label": "Arthritis",
+        "value": "arthritis",
+        "_id": "6a093eb28bf8470fef7efc45"
+      },
+      {
+        "label": "Osteoporosis",
+        "value": "osteoporosis",
+        "_id": "6a093eb28bf8470fef7efc46"
+      },
+      {
+        "label": "Thyroid disorder",
+        "value": "thyroid_disorder",
+        "_id": "6a093eb28bf8470fef7efc47"
+      },
+      {
+        "label": "PCOS",
+        "value": "pcos",
+        "_id": "6a093eb28bf8470fef7efc48"
+      },
+      {
+        "label": "Other",
+        "value": "other",
+        "_id": "6a093eb28bf8470fef7efc49"
+      }
+    ],
+    "next": [
+      {
+        "condition": {
+          "operator": "equals",
+          "value": "other"
+        },
+        "nextQuestionId": "6a0928d26a9972f3bc9eae75",
+        "_id": "6a093eb28bf8470fef7efc4a"
+      }
+    ],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-13T15:48:55.543Z",
+    "updatedAt": "2026-05-17T04:06:10.548Z",
+    "__v": 2
+  },
+  {
+    "_id": "6a049fad47857b9c916427bf",
+    "key": "do_you_have_any_current_or_chronic_medical_conditi",
+    "question": "Do you have any current or chronic medical conditions?",
+    "groupId": "6a047a2f6ab7e191fd5a5ca7",
+    "order": 1,
+    "isActive": true,
+    "type": "boolean",
+    "options": [],
+    "next": [
+      {
+        "condition": {
+          "operator": "equals",
+          "value": "true"
+        },
+        "nextQuestionId": "6a049d6747857b9c91642728",
+        "_id": "6a049fad47857b9c916427c0"
+      }
+    ],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-13T15:58:37.518Z",
+    "updatedAt": "2026-05-13T15:58:37.518Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a04a06c47857b9c91642852",
+    "key": "please_briefly_describe_the_medications_you_are_ta",
+    "question": "Please briefly describe the medication(s) you are taking.",
+    "groupId": "6a047a2f6ab7e191fd5a5ca7",
+    "order": 4,
+    "isActive": true,
+    "type": "text",
+    "options": [],
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-13T16:01:48.850Z",
+    "updatedAt": "2026-05-14T11:28:19.255Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a04a0a947857b9c916428e3",
+    "key": "are_you_currently_taking_any_medication",
+    "question": "Are you currently taking any medication?",
+    "groupId": "6a047a2f6ab7e191fd5a5ca7",
+    "order": 3,
+    "isActive": true,
+    "type": "boolean",
+    "options": [],
+    "next": [
+      {
+        "condition": {
+          "operator": "equals",
+          "value": "true"
+        },
+        "nextQuestionId": "6a04a06c47857b9c91642852",
+        "_id": "6a05b1bb8b4c543decda4184"
+      }
+    ],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-13T16:02:49.995Z",
+    "updatedAt": "2026-05-14T11:27:55.826Z",
+    "__v": 3
+  },
+  {
+    "_id": "6a04a16d47857b9c91642988",
+    "key": "do_you_have_any_injuries_or_physical_limitations",
+    "question": "Do you have any injuries or physical limitations?",
+    "groupId": "6a047a2f6ab7e191fd5a5ca7",
+    "order": 5,
+    "isActive": true,
+    "type": "boolean",
+    "options": [],
+    "next": [
+      {
+        "condition": {
+          "operator": "equals",
+          "value": "true"
+        },
+        "nextQuestionId": "6a04a26547857b9c91642a1d",
+        "_id": "6a05b1f08b4c543decda4362"
+      }
+    ],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-13T16:06:05.745Z",
+    "updatedAt": "2026-05-14T11:28:48.927Z",
+    "__v": 1
+  },
+  {
+    "_id": "6a04a26547857b9c91642a1d",
+    "key": "which_areas_are_affected",
+    "question": "Which areas are affected?",
+    "groupId": "6a047a2f6ab7e191fd5a5ca7",
+    "order": 6,
+    "isActive": true,
+    "type": "multi_select",
+    "options": [
+      {
+        "label": "Lower back",
+        "value": "lower_back",
+        "_id": "6a05b20e8b4c543decda4468"
+      },
+      {
+        "label": "Upper back / neck",
+        "value": "upper_back_neck",
+        "_id": "6a05b20e8b4c543decda4469"
+      },
+      {
+        "label": "Shoulder",
+        "value": "shoulder",
+        "_id": "6a05b20e8b4c543decda446a"
+      },
+      {
+        "label": "Elbow / wrist",
+        "value": "elbow_wrist",
+        "_id": "6a05b20e8b4c543decda446b"
+      },
+      {
+        "label": "Hip",
+        "value": "hip",
+        "_id": "6a05b20e8b4c543decda446c"
+      },
+      {
+        "label": "Knee",
+        "value": "knee",
+        "_id": "6a05b20e8b4c543decda446d"
+      },
+      {
+        "label": "Ankle / foot",
+        "value": "ankle_foot",
+        "_id": "6a05b20e8b4c543decda446e"
+      },
+      {
+        "label": "Core / abdomen",
+        "value": "core_abdomen",
+        "_id": "6a05b20e8b4c543decda446f"
+      }
+    ],
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-13T16:10:13.019Z",
+    "updatedAt": "2026-05-14T11:29:18.102Z",
+    "__v": 1
+  },
+  {
+    "_id": "6a04ae1647857b9c91642bd3",
+    "key": "how_active_is_your_daily_life_outside_of_exercise",
+    "question": "How active is your daily life outside of exercise?",
+    "groupId": "6a047a396ab7e191fd5a5cb0",
+    "order": 1,
+    "isActive": true,
+    "type": "single_select",
+    "options": [
+      {
+        "label": "Sedentary — mostly sitting (desk job, driving)",
+        "value": "sedentary_mostly_sitting_desk_job_driving",
+        "_id": "6a04ae1647857b9c91642bd4"
+      },
+      {
+        "label": "Lightly active — occasional walking / standing",
+        "value": "lightly_active_occasional_walking_standing",
+        "_id": "6a04ae1647857b9c91642bd5"
+      },
+      {
+        "label": "Moderately active — on my feet most of the day",
+        "value": "moderately_active_on_my_feet_most_of_the_day",
+        "_id": "6a04ae1647857b9c91642bd6"
+      },
+      {
+        "label": "Very active — physical job or lots of walking",
+        "value": "very_active_physical_job_or_lots_of_walking",
+        "_id": "6a04ae1647857b9c91642bd7"
+      },
+      {
+        "label": "Extremely active — heavy manual labour",
+        "value": "extremely_active_heavy_manual_labour",
+        "_id": "6a04ae1647857b9c91642bd8"
+      }
+    ],
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-13T17:00:06.265Z",
+    "updatedAt": "2026-05-13T17:00:06.265Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a04aeaa47857b9c91642c8b",
+    "key": "how_many_hours_of_sleep_do_you_get_on_average_per_",
+    "question": "How many hours of sleep do you get on average per night?",
+    "groupId": "6a047a396ab7e191fd5a5cb0",
+    "order": 2,
+    "isActive": true,
+    "type": "number",
+    "options": [],
+    "next": [],
+    "numberConfig": {
+      "min": 1,
+      "max": 16,
+      "unit": "hrs"
+    },
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-13T17:02:34.911Z",
+    "updatedAt": "2026-05-14T11:33:06.212Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a04aef147857b9c91642d3e",
+    "key": "how_would_you_rate_your_sleep_quality",
+    "question": "How would you rate your sleep quality?",
+    "groupId": "6a047a396ab7e191fd5a5cb0",
+    "order": 3,
+    "isActive": true,
+    "type": "single_select",
+    "options": [
+      {
+        "label": "Poor — often restless or unrefreshed",
+        "value": "poor_often_restless_or_unrefreshed",
+        "_id": "6a05b3138b4c543decda467e"
+      },
+      {
+        "label": "Fair — sometimes good, sometimes bad",
+        "value": "fair_sometimes_good_sometimes_bad",
+        "_id": "6a05b3138b4c543decda467f"
+      },
+      {
+        "label": "Good — generally restful",
+        "value": "good_generally_restful",
+        "_id": "6a05b3138b4c543decda4680"
+      },
+      {
+        "label": "Excellent — wake up refreshed consistently",
+        "value": "excellent_wake_up_refreshed_consistently",
+        "_id": "6a05b3138b4c543decda4681"
+      }
+    ],
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-13T17:03:45.741Z",
+    "updatedAt": "2026-05-14T11:33:39.990Z",
+    "__v": 1
+  },
+  {
+    "_id": "6a04afba47857b9c91642dfd",
+    "key": "how_would_you_describe_your_current_diet",
+    "question": "How would you describe your current diet?",
+    "groupId": "6a047a396ab7e191fd5a5cb0",
+    "order": 4,
+    "isActive": true,
+    "type": "single_select",
+    "options": [
+      {
+        "label": "Mostly processed / fast food",
+        "value": "mostly_processed_fast_food",
+        "_id": "6a05b3398b4c543decda4773"
+      },
+      {
+        "label": "Mixed — some healthy, some not",
+        "value": "mixed_some_healthy_some_not",
+        "_id": "6a05b3398b4c543decda4774"
+      },
+      {
+        "label": "Fairly healthy — home-cooked most days",
+        "value": "fairly_healthy_homecooked_most_days",
+        "_id": "6a05b3398b4c543decda4775"
+      },
+      {
+        "label": "Very clean / strict diet",
+        "value": "very_clean_strict_diet",
+        "_id": "6a05b3398b4c543decda4776"
+      }
+    ],
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-13T17:07:06.949Z",
+    "updatedAt": "2026-05-14T11:34:17.337Z",
+    "__v": 1
+  },
+  {
+    "_id": "6a058bb80f713ed736d4a5bf",
+    "key": "what_is_your_biological_sex",
+    "question": "What is your biological sex?",
+    "groupId": "6a0479e86ab7e191fd5a5c95",
+    "order": 2,
+    "isActive": true,
+    "type": "single_select",
+    "options": [
+      {
+        "label": "Male",
+        "value": "male",
+        "_id": "6a058bb80f713ed736d4a5c0"
+      },
+      {
+        "label": "Female",
+        "value": "female",
+        "_id": "6a058bb80f713ed736d4a5c1"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "prefer_not_to_say",
+        "_id": "6a058bb80f713ed736d4a5c2"
+      }
+    ],
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-14T08:45:44.746Z",
+    "updatedAt": "2026-05-14T08:45:44.746Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a058bf10f713ed736d4a68b",
+    "key": "what_is_your_goal_weight",
+    "question": "What is your goal weight?",
+    "groupId": "6a0479e86ab7e191fd5a5c95",
+    "order": 5,
+    "isActive": true,
+    "type": "number_stepper",
+    "options": [],
+    "next": [],
+    "numberConfig": {
+      "min": 20,
+      "max": 500,
+      "unit": "kg"
+    },
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-14T08:46:41.151Z",
+    "updatedAt": "2026-05-20T08:15:35.184Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a059efb8ec35602f4436a8e",
+    "key": "do_you_know_your_current_body_fat_percentage",
+    "question": "Do you know your current body fat percentage?",
+    "groupId": "6a0479e86ab7e191fd5a5c95",
+    "order": 6,
+    "isActive": false,
+    "type": "number_stepper",
+    "options": [],
+    "next": [],
+    "numberConfig": {
+      "min": 1,
+      "max": 70,
+      "unit": "%"
+    },
+    "validation": {
+      "required": false
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-14T10:07:55.334Z",
+    "updatedAt": "2026-05-20T08:15:26.559Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a05a85f5b3bbe7950178425",
+    "key": "what_is_your_date_of_birth",
+    "question": "What is your date of birth?",
+    "groupId": "6a0479e86ab7e191fd5a5c95",
+    "order": 1,
+    "isActive": true,
+    "type": "date",
+    "options": [],
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-14T10:47:59.200Z",
+    "updatedAt": "2026-05-14T10:47:59.200Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a05aa545b3bbe7950178840",
+    "key": "what_is_your_target_timeline",
+    "question": "What is your target timeline?",
+    "groupId": "6a047a226ab7e191fd5a5c9e",
+    "order": 3,
+    "isActive": true,
+    "type": "single_select",
+    "options": [
+      {
+        "label": "1 month",
+        "value": "1_month",
+        "_id": "6a05aeda8b4c543decda3cd9"
+      },
+      {
+        "label": "3 months",
+        "value": "3_months",
+        "_id": "6a05aeda8b4c543decda3cda"
+      },
+      {
+        "label": "6 months",
+        "value": "6_months",
+        "_id": "6a05aeda8b4c543decda3cdb"
+      },
+      {
+        "label": "1 year",
+        "value": "1_year",
+        "_id": "6a05aeda8b4c543decda3cdc"
+      },
+      {
+        "label": "Long-term (no deadline)",
+        "value": "longterm_no_deadline",
+        "_id": "6a05aeda8b4c543decda3cdd"
+      }
+    ],
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-14T10:56:20.757Z",
+    "updatedAt": "2026-05-14T11:15:38.338Z",
+    "__v": 4
+  },
+  {
+    "_id": "6a05b5608b4c543decda4879",
+    "key": "do_you_follow_any_dietary_restrictions_or_preferen",
+    "question": "Do you follow any dietary restrictions or preference",
+    "groupId": "6a047a396ab7e191fd5a5cb0",
+    "order": 5,
+    "isActive": true,
+    "type": "multi_select",
+    "options": [
+      {
+        "label": "No restrictions",
+        "value": "no_restrictions",
+        "_id": "6a05b5608b4c543decda487a"
+      },
+      {
+        "label": "Vegetarian",
+        "value": "vegetarian",
+        "_id": "6a05b5608b4c543decda487b"
+      },
+      {
+        "label": "Vegan",
+        "value": "vegan",
+        "_id": "6a05b5608b4c543decda487c"
+      },
+      {
+        "label": "Gluten-free",
+        "value": "glutenfree",
+        "_id": "6a05b5608b4c543decda487d"
+      },
+      {
+        "label": "Dairy-free",
+        "value": "dairyfree",
+        "_id": "6a05b5608b4c543decda487e"
+      },
+      {
+        "label": "Keto / low-carb",
+        "value": "keto_lowcarb",
+        "_id": "6a05b5608b4c543decda487f"
+      },
+      {
+        "label": "Intermittent fasting",
+        "value": "intermittent_fasting",
+        "_id": "6a05b5608b4c543decda4880"
+      },
+      {
+        "label": "Halal",
+        "value": "halal",
+        "_id": "6a05b5608b4c543decda4881"
+      },
+      {
+        "label": "Kosher",
+        "value": "kosher",
+        "_id": "6a05b5608b4c543decda4882"
+      }
+    ],
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-14T11:43:28.126Z",
+    "updatedAt": "2026-05-14T11:43:28.126Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a05b5a18b4c543decda4967",
+    "key": "how_much_water_do_you_drink_daily_on_average",
+    "question": "How much water do you drink daily on average",
+    "groupId": "6a047a396ab7e191fd5a5cb0",
+    "order": 6,
+    "isActive": true,
+    "type": "single_select",
+    "options": [
+      {
+        "label": "Less than 1 litre",
+        "value": "less_than_1_litre",
+        "_id": "6a05b5a18b4c543decda4968"
+      },
+      {
+        "label": "1–2 litres",
+        "value": "12_litres",
+        "_id": "6a05b5a18b4c543decda4969"
+      },
+      {
+        "label": "2–3 litres",
+        "value": "23_litres",
+        "_id": "6a05b5a18b4c543decda496a"
+      },
+      {
+        "label": "More than 3 litres",
+        "value": "more_than_3_litres",
+        "_id": "6a05b5a18b4c543decda496b"
+      }
+    ],
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-14T11:44:33.506Z",
+    "updatedAt": "2026-05-14T11:44:33.506Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a05b62c8b4c543decda4a56",
+    "key": "do_you_smoke_or_use_tobacco_products",
+    "question": "Do you smoke or use tobacco products?",
+    "groupId": "6a047a396ab7e191fd5a5cb0",
+    "order": 7,
+    "isActive": true,
+    "type": "single_select",
+    "options": [
+      {
+        "label": "Never smoked",
+        "value": "never_smoked",
+        "_id": "6a05b62c8b4c543decda4a57"
+      },
+      {
+        "label": "Ex-smoker",
+        "value": "exsmoker",
+        "_id": "6a05b62c8b4c543decda4a58"
+      },
+      {
+        "label": "Occasional smoker",
+        "value": "occasional_smoker",
+        "_id": "6a05b62c8b4c543decda4a59"
+      },
+      {
+        "label": "Regular smoker",
+        "value": "regular_smoker",
+        "_id": "6a05b62c8b4c543decda4a5a"
+      }
+    ],
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-14T11:46:52.052Z",
+    "updatedAt": "2026-05-14T11:46:52.052Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a05b6fa8b4c543decda4b97",
+    "key": "how_often_do_you_consume_alcohol",
+    "question": "How often do you consume alcohol?",
+    "groupId": "6a047a396ab7e191fd5a5cb0",
+    "order": 8,
+    "isActive": true,
+    "type": "single_select",
+    "options": [
+      {
+        "label": "Never",
+        "value": "never",
+        "_id": "6a05b6fa8b4c543decda4b98"
+      },
+      {
+        "label": "Rarely",
+        "value": "rarely",
+        "_id": "6a05b6fa8b4c543decda4b99"
+      },
+      {
+        "label": "1–2 times per week",
+        "value": "12_times_per_week",
+        "_id": "6a05b6fa8b4c543decda4b9a"
+      },
+      {
+        "label": "3–5 times per week",
+        "value": "35_times_per_week",
+        "_id": "6a05b6fa8b4c543decda4b9b"
+      },
+      {
+        "label": "Daily",
+        "value": "daily",
+        "_id": "6a05b6fa8b4c543decda4b9c"
+      }
+    ],
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-14T11:50:18.837Z",
+    "updatedAt": "2026-05-14T11:50:18.837Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a05b9488b4c543decda4cc8",
+    "key": "what_types_of_workouts_do_you_enjoy_or_want_to_try",
+    "question": "What types of workouts do you enjoy or want to try",
+    "groupId": "6a047a4c6ab7e191fd5a5cb9",
+    "order": 1,
+    "isActive": true,
+    "type": "single_select",
+    "options": [
+      {
+        "label": "Cardio",
+        "value": "cardio",
+        "_id": "6a05b9488b4c543decda4cc9"
+      },
+      {
+        "label": "Strength Training",
+        "value": "strength_training",
+        "_id": "6a05b9488b4c543decda4cca"
+      },
+      {
+        "label": "HIIT",
+        "value": "hiit",
+        "_id": "6a05b9488b4c543decda4ccb"
+      },
+      {
+        "label": "Yoga",
+        "value": "yoga",
+        "_id": "6a05b9488b4c543decda4ccc"
+      },
+      {
+        "label": "Fat Loss",
+        "value": "fat_loss",
+        "_id": "6a05b9488b4c543decda4ccd"
+      },
+      {
+        "label": "Muscle Building",
+        "value": "muscle_building",
+        "_id": "6a05b9488b4c543decda4cce"
+      },
+      {
+        "label": "Flexibility",
+        "value": "flexibility",
+        "_id": "6a05b9488b4c543decda4ccf"
+      },
+      {
+        "label": "Athletic Training",
+        "value": "athletic_training",
+        "_id": "6a05b9488b4c543decda4cd0"
+      },
+      {
+        "label": "Bodyweight Training",
+        "value": "bodyweight_training",
+        "_id": "6a05b9488b4c543decda4cd1"
+      }
+    ],
+    "dataSource": "category",
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-14T12:00:08.065Z",
+    "updatedAt": "2026-05-14T12:00:08.065Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a05b9848b4c543decda4df4",
+    "key": "how_many_days_per_week_can_you_commit_to_working_o",
+    "question": "How many days per week can you commit to working out?",
+    "groupId": "6a047a4c6ab7e191fd5a5cb9",
+    "order": 2,
+    "isActive": true,
+    "type": "number",
+    "options": [],
+    "next": [],
+    "numberConfig": {
+      "min": 1,
+      "max": 7,
+      "unit": "days"
+    },
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-14T12:01:08.995Z",
+    "updatedAt": "2026-05-14T12:01:08.995Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a05b9db8b4c543decda4f32",
+    "key": "how_long_can_you_work_out_per_session",
+    "question": "How long can you work out per session?",
+    "groupId": "6a047a4c6ab7e191fd5a5cb9",
+    "order": 3,
+    "isActive": true,
+    "type": "single_select",
+    "options": [
+      {
+        "label": "Under 20 minutes",
+        "value": "under_20_minutes",
+        "_id": "6a05b9db8b4c543decda4f33"
+      },
+      {
+        "label": "20–30 minutes",
+        "value": "2030_minutes",
+        "_id": "6a05b9db8b4c543decda4f34"
+      },
+      {
+        "label": "30–45 minutes",
+        "value": "3045_minutes",
+        "_id": "6a05b9db8b4c543decda4f35"
+      },
+      {
+        "label": "45–60 minutes",
+        "value": "4560_minutes",
+        "_id": "6a05b9db8b4c543decda4f36"
+      },
+      {
+        "label": "60–90 minutes",
+        "value": "6090_minutes",
+        "_id": "6a05b9db8b4c543decda4f37"
+      },
+      {
+        "label": "Over 90 minutes",
+        "value": "over_90_minutes",
+        "_id": "6a05b9db8b4c543decda4f38"
+      }
+    ],
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-14T12:02:35.701Z",
+    "updatedAt": "2026-05-14T12:02:35.701Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a05ba2b8b4c543decda506d",
+    "key": "when_do_you_prefer_to_work_out",
+    "question": "When do you prefer to work out?",
+    "groupId": "6a047a4c6ab7e191fd5a5cb9",
+    "order": 4,
+    "isActive": true,
+    "type": "single_select",
+    "options": [
+      {
+        "label": "Early morning (5–8 AM)",
+        "value": "early_morning_58_am",
+        "_id": "6a05ba2b8b4c543decda506e"
+      },
+      {
+        "label": "Morning (8–11 AM)",
+        "value": "morning_811_am",
+        "_id": "6a05ba2b8b4c543decda506f"
+      },
+      {
+        "label": "Midday (11 AM–2 PM)",
+        "value": "midday_11_am2_pm",
+        "_id": "6a05ba2b8b4c543decda5070"
+      },
+      {
+        "label": "Evening (5–8 PM)",
+        "value": "evening_58_pm",
+        "_id": "6a05ba2b8b4c543decda5071"
+      },
+      {
+        "label": "Night (8 PM+)",
+        "value": "night_8_pm",
+        "_id": "6a05ba2b8b4c543decda5072"
+      },
+      {
+        "label": "No preference",
+        "value": "no_preference",
+        "_id": "6a05ba2b8b4c543decda5073"
+      }
+    ],
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-14T12:03:55.744Z",
+    "updatedAt": "2026-05-14T12:03:55.744Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a05baca8b4c543decda51c0",
+    "key": "where_will_you_primarily_work_out",
+    "question": "Where will you primarily work out?",
+    "groupId": "6a047a4c6ab7e191fd5a5cb9",
+    "order": 5,
+    "isActive": true,
+    "type": "single_select",
+    "options": [
+      {
+        "label": "Commercial gym",
+        "value": "commercial_gym",
+        "_id": "6a11207d949b316ad500f9bc"
+      },
+      {
+        "label": "Home - with equipment",
+        "value": "home_with_equipment",
+        "_id": "6a11207d949b316ad500f9bd"
+      },
+      {
+        "label": "Home - no equipment",
+        "value": "home_no_equipment",
+        "_id": "6a11207d949b316ad500f9be"
+      },
+      {
+        "label": "Outdoors",
+        "value": "outdoors",
+        "_id": "6a11207d949b316ad500f9bf"
+      },
+      {
+        "label": "Mix of locations",
+        "value": "mix_of_locations",
+        "_id": "6a11207d949b316ad500f9c0"
+      }
+    ],
+    "next": [
+      {
+        "condition": {
+          "operator": "equals",
+          "value": "Home-with equipment"
+        },
+        "nextQuestionId": "6a11202b949b316ad500f836",
+        "_id": "6a11207d949b316ad500f9c1"
+      }
+    ],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "696738517eaf119450fd8c8f",
+    "createdAt": "2026-05-14T12:06:34.446Z",
+    "updatedAt": "2026-05-23T03:35:25.485Z",
+    "__v": 1
+  },
+  {
+    "_id": "6a11202b949b316ad500f836",
+    "key": "what_equipment_do_you_currently_have_access_to",
+    "question": "What equipment do you currently have access to?",
+    "groupId": "6a047a4c6ab7e191fd5a5cb9",
+    "order": 6,
+    "isActive": true,
+    "type": "multi_select",
+    "options": [],
+    "dataSource": "equipment",
+    "next": [],
+    "validation": {
+      "required": true
+    },
+    "createdBy": "6a0931566a9972f3bc9eb2aa",
+    "createdAt": "2026-05-23T03:34:03.112Z",
+    "updatedAt": "2026-05-23T03:34:03.112Z",
+    "__v": 0
+  }
+]

@@ -3,7 +3,7 @@ import {
   PutObjectCommand,
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
-import { v4 as uuidv4 } from "uuid";
+import * as crypto from "crypto";
 
 export interface UploadedFile {
   fieldname: string;
@@ -31,7 +31,7 @@ export class S3Service {
 
   async uploadFile(file: Express.Multer.File, folder: string): Promise<string> {
     const fileExtension = file.originalname.split(".").pop();
-    const fileName = `${folder}/${uuidv4()}.${fileExtension}`;
+    const fileName = `${folder}/${crypto.randomUUID()}.${fileExtension}`;
 
     const command = new PutObjectCommand({
       Bucket: this.bucketName,

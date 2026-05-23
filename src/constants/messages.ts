@@ -261,6 +261,7 @@ export const MESSAGES = {
     SESSION_ID_REQUIRED: "Session ID is required.",
     SESSION_USER_MISMATCH: "Session does not belong to this user.",
     PLAN_ID_REQUIRED: "Missing planId in session metadata.",
+    IMAGE_REQUIRED: "Image is required.",
   },
 
   COMMON: {
@@ -378,5 +379,31 @@ export const MESSAGES = {
     PLAN_TYPE_INVALID: "Invalid plan type. Must be basic, pro, or elite.",
     LIVE_SESSION_INVALID: "Live session count must be a valid number.",
     ID_REQUIRED: "Subscription plan ID is required.",
+
+  },
+
+  TARGET_MUSCLE: {
+    BLOCKED: "Target muscle blocked successfully.",
+    UNBLOCKED: "Target muscle unblocked successfully.",
+  },
+
+  EQUIPMENT: {
+    FETCHED: "Equipment fetched successfully.",
+    BLOCKED: "Equipment blocked successfully.",
+    UNBLOCKED: "Equipment unblocked successfully.",
+    EXISTS: "Equipment already exists.",
+  },
+
+  EXERCISE: {
+    CREATED: "Exercise created successfully.",
+    UPDATED: "Exercise updated successfully.",
+    DELETED: "Exercise deleted successfully.",
+    FETCHED: "Exercise fetched successfully.",
+    LIST_FETCHED: "Exercises fetched successfully.",
+    NOT_FOUND: "Exercise not found.",
+    BLOCKED: "Exercise blocked successfully.",
+    UNBLOCKED: "Exercise unblocked successfully.",
+    EXISTS: "Exercise with this title already exists.",
+    IMAGE_REQUIRED: "Exercise image is required.",
   },
 } as const;
