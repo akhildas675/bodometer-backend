@@ -30,8 +30,9 @@ export const createTrainerProfileSchema = z.object({
             const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
             const maxSize = 10 * 1024 * 1024;
 
-            if (files.profileImage) {
-                const file = Array.isArray(files.profileImage) ? files.profileImage[0] : files.profileImage;
+            const profileImage = files.profileImage as Express.Multer.File | Express.Multer.File[] | undefined;
+            if (profileImage) {
+                const file = Array.isArray(profileImage) ? profileImage[0] : profileImage;
                 if (file) {
                     if (!allowedTypes.includes(file.mimetype)) {
                         throw new Error("Only PDF, jpeg, and png files are allowed for profile image");
@@ -42,8 +43,9 @@ export const createTrainerProfileSchema = z.object({
                 }
             }
 
-            if (files.certificate) {
-                const file = Array.isArray(files.certificate) ? files.certificate[0] : files.certificate;
+            const certificate = files.certificate as Express.Multer.File | Express.Multer.File[] | undefined;
+            if (certificate) {
+                const file = Array.isArray(certificate) ? certificate[0] : certificate;
                 if (file) {
                     if (!allowedTypes.includes(file.mimetype)) {
                         throw new Error("Only PDF, jpeg, and png files are allowed for certificate");
@@ -54,8 +56,9 @@ export const createTrainerProfileSchema = z.object({
                 }
             }
 
-            if (files.coverImage) {
-                const file = Array.isArray(files.coverImage) ? files.coverImage[0] : files.coverImage;
+            const coverImage = files.coverImage as Express.Multer.File | Express.Multer.File[] | undefined;
+            if (coverImage) {
+                const file = Array.isArray(coverImage) ? coverImage[0] : coverImage;
                 if (file) {
                     if (!allowedTypes.includes(file.mimetype)) {
                         throw new Error("Only PDF, jpeg, and png files are allowed for cover image");
