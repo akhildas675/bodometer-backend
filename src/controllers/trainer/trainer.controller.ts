@@ -105,6 +105,37 @@ export class TrainerController {
     }
   };
 
+  uploadDocument = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      if (!req.user) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
+      }
+
+      if (!req.file) {
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.FILE.FILE_REQUIRED);
+      }
+
+      const file = req.file;
+      const documentUrl = await this._trainerService.uploadTrainerDocument(file);
+
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.FILE.UPLOAD_SUCCESS,
+        { url: documentUrl }
+      ).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
+
   //Trainer profile
 
   createProfile = async (

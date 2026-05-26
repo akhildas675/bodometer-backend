@@ -1,0 +1,36 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const user_module_1 = require("../../modules/user/user.module");
+const user_routes_constant_1 = require("../../constants/routes.constant/user-routes.constant");
+const role_guard_1 = require("../../constants/role.guard");
+const validate_1 = require("../../middleware/validate");
+const user_validator_1 = require("../../validators/user/user.validator");
+const multer_1 = require("../../config/multer");
+const userRoute = (0, express_1.Router)();
+const { userController } = (0, user_module_1.createUserModule)();
+userRoute.get(user_routes_constant_1.USER_ROUTES.USER_PROFILE, role_guard_1.ROLE_GUARD.USER_GUARD, userController.getUser);
+userRoute.put(user_routes_constant_1.USER_ROUTES.PROFILE, role_guard_1.ROLE_GUARD.USER_GUARD, (0, validate_1.validate)(user_validator_1.updateUserProfileSchema), userController.updateProfile);
+userRoute.post(user_routes_constant_1.USER_ROUTES.PROFILE_PICTURE, multer_1.mediaUpload.single("file"), role_guard_1.ROLE_GUARD.USER_GUARD, (0, validate_1.validate)(user_validator_1.uploadProfilePictureSchema), userController.uploadProfilePicture);
+userRoute.get(user_routes_constant_1.USER_ROUTES.GET_TRAINERS, role_guard_1.ROLE_GUARD.USER_GUARD, userController.getTrainers);
+userRoute.get(user_routes_constant_1.USER_ROUTES.GET_TRAINERS_BY_ID, (0, validate_1.validate)(user_validator_1.trainerIdParamSchema), role_guard_1.ROLE_GUARD.USER_GUARD, userController.getTrainerById);
+userRoute.patch(user_routes_constant_1.USER_ROUTES.CHANGE_PASSWORD, (0, validate_1.validate)(user_validator_1.changePasswordSchema), role_guard_1.ROLE_GUARD.USER_GUARD, userController.changePassword);
+userRoute.get(user_routes_constant_1.USER_ROUTES.GET_CATEGORIES, role_guard_1.ROLE_GUARD.USER_GUARD, userController.getCategories);
+userRoute.get(user_routes_constant_1.USER_ROUTES.GET_EQUIPMENT, role_guard_1.ROLE_GUARD.USER_GUARD, userController.getAllEquipment);
+userRoute.get(user_routes_constant_1.USER_ROUTES.GET_CATEGORY_BY_ID, (0, validate_1.validate)(user_validator_1.categoryIdParamSchema), role_guard_1.ROLE_GUARD.USER_GUARD, userController.getCategoryById);
+userRoute.get(user_routes_constant_1.USER_ROUTES.GET_MY_SUBSCRIPTIONS, role_guard_1.ROLE_GUARD.USER_GUARD, userController.getMySubscriptions);
+userRoute.post(user_routes_constant_1.USER_ROUTES.CHECKOUT_SESSION, (0, validate_1.validate)(user_validator_1.checkoutSessionSchema), role_guard_1.ROLE_GUARD.USER_GUARD, userController.createCheckoutSession);
+userRoute.get(user_routes_constant_1.USER_ROUTES.VERIFY_PAYMENT, (0, validate_1.validate)(user_validator_1.verifyPaymentSchema), role_guard_1.ROLE_GUARD.USER_GUARD, userController.verifyPayment);
+userRoute.get(user_routes_constant_1.USER_ROUTES.GET_ACTIVE_SUBSCRIPTION, role_guard_1.ROLE_GUARD.USER_GUARD, userController.getActiveSubscription);
+userRoute.get(user_routes_constant_1.USER_ROUTES.GET_MY_TRANSACTIONS, role_guard_1.ROLE_GUARD.USER_GUARD, userController.getUserTransactions);
+// onboarding routes
+userRoute.get(user_routes_constant_1.USER_ROUTES.GET_ONBOARDING_GROUPS, role_guard_1.ROLE_GUARD.USER_GUARD, userController.getOnboardingGroups);
+userRoute.get(user_routes_constant_1.USER_ROUTES.GET_ONBOARDING_QUESTIONS, role_guard_1.ROLE_GUARD.USER_GUARD, userController.getOnboardingQuestions);
+userRoute.post(user_routes_constant_1.USER_ROUTES.SUBMIT_ONBOARDING, (0, validate_1.validate)(user_validator_1.submitOnboardingSchema), role_guard_1.ROLE_GUARD.USER_GUARD, userController.submitOnboarding);
+userRoute.get(user_routes_constant_1.USER_ROUTES.GET_ONBOARDING_STATUS, role_guard_1.ROLE_GUARD.USER_GUARD, userController.getOnboardingStatus);
+userRoute.get(user_routes_constant_1.USER_ROUTES.GET_ONBOARDING_ANSWERS, role_guard_1.ROLE_GUARD.USER_GUARD, userController.getOnboardingAnswers);
+userRoute.post(user_routes_constant_1.USER_ROUTES.CALCULATE_BMI_PUBLIC, (0, validate_1.validate)(user_validator_1.bmiCalculationSchema), userController.calculateBmiPublic);
+// Exercise routes (premium-only on frontend; backend requires user auth)
+userRoute.get(user_routes_constant_1.USER_ROUTES.GET_EXERCISES, (0, validate_1.validate)(user_validator_1.exerciseQuerySchema), role_guard_1.ROLE_GUARD.USER_GUARD, userController.getExercises);
+userRoute.get(user_routes_constant_1.USER_ROUTES.GET_EXERCISE_BY_ID, role_guard_1.ROLE_GUARD.USER_GUARD, userController.getExerciseById);
+exports.default = userRoute;

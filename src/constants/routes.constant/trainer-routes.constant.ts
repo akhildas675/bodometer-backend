@@ -6,5 +6,6 @@ export const TRAINER_ROUTES = {
   GET_TRAINER_PROFILE: '/trainer/trainer-profile',
   TRAINER_PROFILE_UPDATE: '/trainer/trainer-profile-update',
   TRAINER_PROFILE_PICTURE_UPDATE: '/trainer/trainer-profile-picture',
+  UPLOAD_DOCUMENT: '/trainer/upload-document',
   GET_CATEGORIES: '/trainer/categories',
 } as const;

@@ -243,15 +243,23 @@ export class AuthService implements IAuthService {
     );
 
     let profile = null;
+    let trainerStatus = undefined;
     if (user.role === ROLES.TRAINER) {
       profile = await this._trainerProfileRepo.findByUserId(user.id);
+      trainerStatus = !profile
+        ? { profileExists: false }
+        : {
+            profileExists: true,
+            verificationStatus: profile.verificationStatus,
+            rejectionReason: profile.rejectionReason ?? null,
+          };
     }
 
     return {
       response: AuthMapper.toLoginResponse(
         user,
         accessToken,
-        undefined,
+        trainerStatus,
         onboardingComplete,
         hasActiveSubscription,
         profile,
@@ -308,15 +316,23 @@ export class AuthService implements IAuthService {
     }
 
     let profile = null;
+    let trainerStatus = undefined;
     if (user.role === ROLES.TRAINER) {
       profile = await this._trainerProfileRepo.findByUserId(user.id);
+      trainerStatus = !profile
+        ? { profileExists: false }
+        : {
+            profileExists: true,
+            verificationStatus: profile.verificationStatus,
+            rejectionReason: profile.rejectionReason ?? null,
+          };
     }
 
     const accessToken = Jwt.signAccess({ sub: user.id, role: user.role });
     return AuthMapper.toLoginResponse(
       user,
       accessToken,
-      undefined,
+      trainerStatus,
       onboardingComplete,
       hasActiveSubscription,
       profile,

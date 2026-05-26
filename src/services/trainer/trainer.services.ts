@@ -131,6 +131,14 @@ export class TrainerService implements ITrainerService {
     return profilePicUrl;
   }
 
+  async uploadTrainerDocument(file: Express.Multer.File): Promise<string> {
+    const documentUrl = await this._s3Service.uploadFile(
+      file,
+      "trainer-certificates",
+    );
+    return documentUrl;
+  }
+
   // Trainer Application
   async createProfile(userId: string, data: TrainerProfileDto): Promise<void> {
     const existing = await this._trainerProfileRepo.findByUserId(userId);
@@ -157,34 +165,59 @@ export class TrainerService implements ITrainerService {
       );
     }
 
-    const certificateUrl = await this._s3Service.uploadFile(
-      data.certificateFile,
-      "trainer-certificates",
-    );
-    const profileImageUrl = await this._s3Service.uploadFile(
-      data.profileImageFile,
-      "trainer-profile-images",
-    );
-    const coverPhotoUrl = await this._s3Service.uploadFile(
-      data.coverImageFile,
-      "trainer-cover-photos",
-    );
+    let certificateUrl = "";
+    if (data.certificateFile) {
+      certificateUrl = await this._s3Service.uploadFile(
+        data.certificateFile,
+        "trainer-certificates",
+      );
+    }
 
-    await this._userRepo.updateProfile(userId, {
-      profilePic: profileImageUrl,
+    let profileImageUrl = "";
+    if (data.profileImageFile) {
+      profileImageUrl = await this._s3Service.uploadFile(
+        data.profileImageFile,
+        "trainer-profile-images",
+      );
+    }
+
+    let coverPhotoUrl = "";
+    if (data.coverImageFile) {
+      coverPhotoUrl = await this._s3Service.uploadFile(
+        data.coverImageFile,
+        "trainer-cover-photos",
+      );
+    }
+
+    const userUpdateFields: Record<string, unknown> = {
       gender: data.gender,
-      dateOfBirth: new Date(data.dateOfBirth),
-    });
+    };
+    if (data.dateOfBirth) {
+      userUpdateFields.dateOfBirth = new Date(data.dateOfBirth);
+    }
+    if (profileImageUrl) {
+      userUpdateFields.profilePic = profileImageUrl;
+    }
+
+    await this._userRepo.updateProfile(userId, userUpdateFields);
+
+    const certifications = certificateUrl 
+      ? [certificateUrl] 
+      : (existing?.certifications || []);
+    
+    const coverPhoto = coverPhotoUrl 
+      ? coverPhotoUrl 
+      : (existing?.coverPhoto || "");
 
     if (existing?.verificationStatus === VERIFICATION_STATUS.REJECTED) {
       await this._trainerProfileRepo.updateToReapply(userId, {
         experienceInYears: data.experienceInYears,
-        certifications: [certificateUrl],
+        certifications,
         bio: data.bio,
-        coverPhoto: coverPhotoUrl,
+        coverPhoto,
         specializations: data.specializationIds,
         gender: data.gender,
-        dateOfBirth: new Date(data.dateOfBirth),
+        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
       });
       return;
     }
@@ -192,11 +225,11 @@ export class TrainerService implements ITrainerService {
     await this._trainerProfileRepo.createProfile({
       userId: new mongoose.Types.ObjectId(userId),
       experienceInYears: data.experienceInYears,
-      coverPhoto: coverPhotoUrl,
-      certifications: [certificateUrl],
+      coverPhoto,
+      certifications,
       bio: data.bio,
       gender: data.gender,
-      dateOfBirth: new Date(data.dateOfBirth),
+      dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
       specializations: data.specializationIds.map(
         (id) => new mongoose.Types.ObjectId(id),
       ),

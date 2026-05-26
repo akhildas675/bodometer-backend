@@ -4,7 +4,7 @@ import { ROLE_GUARD } from "../../constants/role.guard";
 import { createTrainerModule } from "../../modules/trainer/trainer.module";
 import { mediaUpload } from "../../config/multer";
 import { validate } from "@/middleware/validate";
-import { createTrainerProfileSchema, updateTrainerProfileSchema, uploadProfilePictureSchema } from "@/validators/trainer/trainer.validator";
+import { createTrainerProfileSchema, updateTrainerProfileSchema, uploadProfilePictureSchema, uploadTrainerDocumentSchema } from "@/validators/trainer/trainer.validator";
 const trainerRoute = Router();
 const { trainerController } = createTrainerModule();
 
@@ -39,6 +39,14 @@ trainerRoute.post(
   mediaUpload.single("file"),
   validate(uploadProfilePictureSchema),
   trainerController.uploadProfilePicture,
+);
+
+trainerRoute.post(
+  TRAINER_ROUTES.UPLOAD_DOCUMENT,
+  ROLE_GUARD.TRAINER_GUARD,
+  mediaUpload.single("file"),
+  validate(uploadTrainerDocumentSchema),
+  trainerController.uploadDocument,
 );
 
 trainerRoute.get(

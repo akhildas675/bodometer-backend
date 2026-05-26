@@ -1,0 +1,41 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createUserModule = createUserModule;
+const user_controller_1 = require("../../controllers/user/user.controller");
+const trainer_profile_repository_1 = __importDefault(require("../../repositories/trainer-profile.repository"));
+const user_repository_1 = __importDefault(require("../../repositories/user.repository"));
+const category_repository_1 = __importDefault(require("../../repositories/category.repository"));
+const stripe_service_1 = require("../../services/payments/stripe.service");
+const s3_service_1 = require("../../services/s3/s3.service");
+const user_services_1 = require("../../services/user/user.services");
+const subscription_plan_repository_1 = __importDefault(require("../../repositories/subscription-plan.repository"));
+const subscription_transaction_repository_1 = require("../../repositories/subscription-transaction.repository");
+const user_subscription_repository_1 = require("../../repositories/user-subscription.repository");
+const group_repository_1 = __importDefault(require("../../repositories/group.repository"));
+const question_repository_1 = __importDefault(require("../../repositories/question.repository"));
+const answer_repository_1 = __importDefault(require("../../repositories/answer.repository"));
+const health_metrics_service_1 = require("../../services/health.metrics/health-metrics.service");
+const exercise_repository_1 = __importDefault(require("../../repositories/exercise.repository"));
+const equipment_repository_1 = __importDefault(require("../../repositories/equipment.repository"));
+function createUserModule() {
+    const userRepository = new user_repository_1.default();
+    const s3Service = new s3_service_1.S3Service();
+    const trainerProfileRepository = new trainer_profile_repository_1.default();
+    const categoryRepository = new category_repository_1.default();
+    const subscriptionPlanRepository = new subscription_plan_repository_1.default();
+    const subscriptionTransactionRepository = new subscription_transaction_repository_1.SubscriptionTransactionRepository();
+    const userSubscriptionRepository = new user_subscription_repository_1.UserSubscriptionRepository();
+    const groupRepository = new group_repository_1.default();
+    const questionRepository = new question_repository_1.default();
+    const answerRepository = new answer_repository_1.default();
+    const healthMetricsService = new health_metrics_service_1.HealthMetricsService();
+    const exerciseRepository = new exercise_repository_1.default();
+    const equipmentRepository = new equipment_repository_1.default();
+    const paymentService = new stripe_service_1.PaymentService();
+    const userService = new user_services_1.UserService(userRepository, s3Service, trainerProfileRepository, paymentService, categoryRepository, subscriptionPlanRepository, subscriptionTransactionRepository, userSubscriptionRepository, groupRepository, questionRepository, answerRepository, healthMetricsService, exerciseRepository, equipmentRepository);
+    const userController = new user_controller_1.UserController(userService);
+    return { userController };
+}

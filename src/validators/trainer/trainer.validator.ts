@@ -13,6 +13,12 @@ export const createTrainerProfileSchema = z.object({
             .string()
             .min(10, "Bio must be at least 10 characters")
             .max(500, "Bio must not exceed 500 characters"),
+        gender: z.nativeEnum(GENDER, { message: "Invalid gender" }).optional(),
+        dateOfBirth: z.preprocess((val) => {
+            if (val === "" || val === undefined || val === null) return null;
+            return val;
+        }, z.coerce.date().nullable()).optional(),
+        specializationIds: z.union([z.string(), z.array(z.string())]).optional(),
     }),
     files: z
         .object({
@@ -77,7 +83,24 @@ export const updateTrainerProfileSchema = z.object({
             .nullable()
             .optional(),
         gender: z.nativeEnum(GENDER, { message: "Invalid gender" }).optional(),
-        dateOfBirth: z.coerce.date().nullable().optional(),
+        dateOfBirth: z.preprocess((val) => {
+            if (val === "" || val === undefined || val === null) return null;
+            return val;
+        }, z.coerce.date().nullable()).optional(),
+        experienceInYears: z.coerce
+            .number()
+            .min(0, "Experience must be a positive number")
+            .max(50, "Experience seems too high")
+            .optional(),
+        bio: z
+            .string()
+            .min(10, "Bio must be at least 10 characters")
+            .max(500, "Bio must not exceed 500 characters")
+            .optional(),
+        specializations: z.array(z.string()).optional(),
+        profilePic: z.string().optional(),
+        coverPhoto: z.string().optional(),
+        certifications: z.array(z.string()).optional(),
     }),
 });
 
@@ -91,6 +114,27 @@ export const uploadProfilePictureSchema = z.object({
             size: z
                 .number()
                 .max(5 * 1024 * 1024, "File size must not exceed 5MB"),
+        })
+        .optional(),
+});
+
+export const uploadTrainerDocumentSchema = z.object({
+    file: z
+        .object({
+            mimetype: z.string().refine(
+                (val) => [
+                    "application/pdf",
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp",
+                    "application/msword",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                ].includes(val),
+                { message: "Only PDF, Word documents, and JPEG/PNG/WebP images are allowed" }
+            ),
+            size: z
+                .number()
+                .max(10 * 1024 * 1024, "File size must not exceed 10MB"),
         })
         .optional(),
 });
