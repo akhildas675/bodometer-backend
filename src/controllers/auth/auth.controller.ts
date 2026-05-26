@@ -31,8 +31,12 @@ export class AuthController {
         MESSAGES.OTP.SENT_SUCCESS,
         { email: body.email }
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -52,8 +56,12 @@ export class AuthController {
         STATUS.OK,
         MESSAGES.OTP.VERIFIED_SUCCESS
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -72,8 +80,12 @@ export class AuthController {
         STATUS.OK,
         MESSAGES.OTP.RESENT_SUCCESS
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -117,8 +129,12 @@ export class AuthController {
         MESSAGES.REGISTER.SUCCESS,
         user
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -141,8 +157,12 @@ export class AuthController {
         MESSAGES.LOGIN.SUCCESS,
         loginResponse
       ).send(res);
-    } catch (err) {
-      next(err);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -157,8 +177,12 @@ export class AuthController {
         MESSAGES.PASSWORD.RESET_EMAIL_SENT,
         { role: result.role }
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -181,8 +205,12 @@ export class AuthController {
         MESSAGES.TOKEN.REFRESH_SUCCESS,
         result
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -205,8 +233,12 @@ export class AuthController {
         STATUS.OK,
         MESSAGES.LOGIN.LOGOUT_SUCCESS
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -228,8 +260,12 @@ export class AuthController {
         STATUS.OK,
         MESSAGES.PASSWORD.RESET_SUCCESS
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -259,8 +295,12 @@ export class AuthController {
         MESSAGES.LOGIN.GOOGLE_LOGIN_SUCCESS,
         loginResponse
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 }

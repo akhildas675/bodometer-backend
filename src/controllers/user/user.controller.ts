@@ -34,8 +34,12 @@ export class UserController {
         MESSAGES.USER.PROFILE_FETCHED,
         user
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -62,8 +66,12 @@ export class UserController {
         MESSAGES.USER.PROFILE_UPDATED,
         updatedUser
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -97,8 +105,12 @@ export class UserController {
         MESSAGES.USER.PROFILE_PICTURE_UPDATED,
         { url: profilePicUrl }
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -120,8 +132,12 @@ export class UserController {
         STATUS.OK,
         MESSAGES.PASSWORD.CHANGED_SUCCESS
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -139,8 +155,12 @@ export class UserController {
         result.data,
         result.pagination
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
   getTrainerById = async (
@@ -162,8 +182,12 @@ export class UserController {
         MESSAGES.COMMON.SUCCESS,
         result
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -182,8 +206,12 @@ export class UserController {
         result.data,
         result.pagination
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -202,8 +230,12 @@ export class UserController {
         result.data,
         result.pagination
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -226,8 +258,12 @@ export class UserController {
         MESSAGES.COMMON.SUCCESS,
         result
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -248,8 +284,12 @@ export class UserController {
         MESSAGES.COMMON.SUCCESS,
         result
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -279,8 +319,12 @@ export class UserController {
         MESSAGES.COMMON.SUCCESS,
         result
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -305,8 +349,12 @@ export class UserController {
         MESSAGES.USER.PAYMENT_VERIFIED,
         result
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -327,8 +375,12 @@ export class UserController {
         MESSAGES.COMMON.SUCCESS,
         result
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -345,8 +397,12 @@ export class UserController {
         result.data,
         result.pagination
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -363,8 +419,12 @@ export class UserController {
         result.data,
         result.pagination
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -385,8 +445,12 @@ export class UserController {
         STATUS.OK,
         MESSAGES.USER.ONBOARDING_SAVED
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -405,8 +469,12 @@ export class UserController {
         MESSAGES.COMMON.SUCCESS,
         result
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -425,8 +493,12 @@ export class UserController {
         MESSAGES.COMMON.SUCCESS,
         result
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -456,8 +528,12 @@ export class UserController {
         result.data,
         result.pagination
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -475,8 +551,12 @@ export class UserController {
         MESSAGES.USER.BMI_CALCULATED,
         result
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -501,8 +581,12 @@ getExercises = async (req: AuthRequest, res: Response, next: NextFunction) => {
       result.data,
       result.pagination
     ).send(res);
-  } catch (error) {
-    next(error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      next(error);
+    } else {
+      next(new Error("Unknown error occurred"));
+    }
   }
 };
 
@@ -521,8 +605,12 @@ getExercises = async (req: AuthRequest, res: Response, next: NextFunction) => {
         MESSAGES.EXERCISE.FETCHED,
         exercise
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 }

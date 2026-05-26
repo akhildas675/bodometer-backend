@@ -29,8 +29,12 @@ export class TrainerController {
         MESSAGES.TRAINER.PROFILE_FETCHED,
         trainer
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -58,8 +62,12 @@ export class TrainerController {
         MESSAGES.TRAINER.PROFILE_UPDATED,
         updatedTrainer
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -88,8 +96,12 @@ export class TrainerController {
         MESSAGES.USER.PROFILE_IMAGE_UPLOADED,
         { url: profilePicUrl }
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -142,8 +154,12 @@ export class TrainerController {
         STATUS.CREATED,
         MESSAGES.TRAINER.PROFILE_CREATED
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -164,8 +180,12 @@ export class TrainerController {
         MESSAGES.TRAINER.STATUS_FETCHED,
         profileStatus
       ).send(res);
-    } catch (err) {
-      next(err);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -184,8 +204,12 @@ export class TrainerController {
         result.data,
         result.pagination
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 }

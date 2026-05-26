@@ -1,7 +1,6 @@
 import mongoose, { PipelineStage } from "mongoose";
 import {
   VERIFICATION_STATUS,
-  VerificationStatus,
 } from "../constants/verification.constants";
 import { PaginationMeta } from "../interfaces/domain.interface/common.interface";
 import {
@@ -88,7 +87,7 @@ export default class TrainerProfileRepository
 
     return {
       name: profile.userId.name,
-      verificationStatus: profile.verificationStatus as VerificationStatus,
+      verificationStatus: profile.verificationStatus,
       rejectionReason: profile.rejectionReason ?? null,
     };
   }

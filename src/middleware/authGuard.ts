@@ -4,10 +4,6 @@ import { UserModel } from "../models/user.model";
 import { AppError } from "../utils/appError";
 import { STATUS } from "../constants/statuscode";
 import { MESSAGES } from "../constants/messages";
-import {
-  AccessTokenPayload,
-  RefreshTokenPayload,
-} from "../interfaces/service-interface/auth/auth.interface";
 import { redis } from "../config/redis";
 import { Jwt } from "../utils/jwt.utils";
 
@@ -29,7 +25,7 @@ export const authGuard = (allowedRoles: Role[] = []) => {
 
       if (accessToken) {
         try {
-          const payload = Jwt.verifyAccess(accessToken) as AccessTokenPayload;
+          const payload = Jwt.verifyAccess(accessToken);
 
           const user = await UserModel.findById(payload.sub).select(
             "isBlocked role",
@@ -55,12 +51,18 @@ export const authGuard = (allowedRoles: Role[] = []) => {
 
           req.user = { id: payload.sub, role: payload.role };
           return next();
-        } catch {}
+        } catch {
+          // Access token invalid/expired, fall through to refresh token validation
+        }
       }
 
       return await handleRefresh(req, res, next, allowedRoles);
-    } catch (error) {
-      return next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return next(error);
+      } else {
+        return next(new Error("Unknown error occurred"));
+      }
     }
   };
 };
@@ -71,14 +73,15 @@ async function handleRefresh(
   next: NextFunction,
   allowedRoles: Role[],
 ) {
-  const refreshToken = req.cookies.refreshToken;
+  const cookies = req.cookies as Record<string, string | undefined> | undefined;
+  const refreshToken = cookies?.refreshToken;
 
   if (!refreshToken) {
     return next(new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED));
   }
 
   try {
-    const payload = Jwt.verifyRefresh(refreshToken) as RefreshTokenPayload;
+    const payload = Jwt.verifyRefresh(refreshToken);
 
     const storedToken = await redis.get(`refresh:${payload.sub}`);
     if (!storedToken || storedToken !== refreshToken) {

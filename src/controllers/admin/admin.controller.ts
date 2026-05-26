@@ -71,8 +71,12 @@ export class AdminController {
         data.data,
         data.pagination,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -84,8 +88,12 @@ export class AdminController {
       await this._adminService.blockTrainer(trainerId);
 
       new SuccessResponse(STATUS.OK, MESSAGES.ADMIN.TRAINER_BLOCKED).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -99,8 +107,12 @@ export class AdminController {
       new SuccessResponse(STATUS.OK, MESSAGES.ADMIN.TRAINER_UNBLOCKED).send(
         res,
       );
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -124,8 +136,12 @@ export class AdminController {
         result.data,
         result.pagination,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -147,8 +163,12 @@ export class AdminController {
         MESSAGES.TRAINER.PROFILE_FETCHED,
         trainer,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -166,8 +186,12 @@ export class AdminController {
       const result = await this._adminService.approveTrainer(profileId);
 
       new SuccessResponse(STATUS.OK, result.message, result.profile).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -190,8 +214,12 @@ export class AdminController {
       const result = await this._adminService.rejectTrainer(profileId, reason);
 
       new SuccessResponse(STATUS.OK, result.message, result.profile).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -207,8 +235,12 @@ export class AdminController {
         data.data,
         data.pagination,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -219,8 +251,12 @@ export class AdminController {
       await this._adminService.blockUser(userId);
 
       new SuccessResponse(STATUS.OK, MESSAGES.ADMIN.USER_BLOCKED).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -231,8 +267,12 @@ export class AdminController {
       await this._adminService.unblockUser(userId);
 
       new SuccessResponse(STATUS.OK, MESSAGES.ADMIN.USER_UNBLOCKED).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -254,8 +294,12 @@ export class AdminController {
       new SuccessResponse(STATUS.CREATED, MESSAGES.ADMIN.CATEGORY_CREATED).send(
         res,
       );
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -282,8 +326,12 @@ export class AdminController {
       new SuccessResponse(STATUS.CREATED, MESSAGES.ADMIN.CATEGORY_UPDATED).send(
         res,
       );
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -296,8 +344,12 @@ export class AdminController {
         MESSAGES.ADMIN.CATEGORY_FETCHED,
         category,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -325,8 +377,12 @@ export class AdminController {
         data,
         pagination,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -339,8 +395,12 @@ export class AdminController {
       const { categoryId } = req.params;
       const result = await this._adminService.toggleCategoryStatus(categoryId);
       new SuccessResponse(STATUS.OK, result.message, result.category).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -366,8 +426,12 @@ export class AdminController {
         data,
         pagination,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -392,8 +456,12 @@ export class AdminController {
         STATUS.CREATED,
         MESSAGES.ADMIN.SUBSCRIPTION_FEATURE_CREATED,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -422,8 +490,12 @@ export class AdminController {
         STATUS.OK,
         MESSAGES.ADMIN.SUBSCRIPTION_FEATURE_UPDATED,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -440,8 +512,12 @@ export class AdminController {
       );
 
       new SuccessResponse(STATUS.OK, result.message, result.feature).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -460,8 +536,12 @@ export class AdminController {
         MESSAGES.ADMIN.SUBSCRIPTION_FEATURE_FETCHED,
         feature,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -497,8 +577,12 @@ export class AdminController {
         STATUS.CREATED,
         MESSAGES.ADMIN.SUBSCRIPTION_PLAN_CREATED,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -524,8 +608,12 @@ export class AdminController {
         data,
         pagination,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -543,8 +631,12 @@ export class AdminController {
         );
 
       new SuccessResponse(STATUS.OK, result.message, result.plan).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -562,8 +654,12 @@ export class AdminController {
         MESSAGES.ADMIN.SUBSCRIPTION_PLAN_FETCHED,
         plan,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -600,8 +696,12 @@ export class AdminController {
         STATUS.OK,
         MESSAGES.ADMIN.SUBSCRIPTION_PLAN_UPDATED,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -626,8 +726,12 @@ export class AdminController {
         data,
         pagination,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -653,8 +757,12 @@ export class AdminController {
         STATUS.CREATED,
         MESSAGES.ONBOARDING.GROUP_CREATED,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -674,8 +782,12 @@ export class AdminController {
       new SuccessResponse(STATUS.OK, MESSAGES.ONBOARDING.GROUP_UPDATED).send(
         res,
       );
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -690,8 +802,12 @@ export class AdminController {
         STATUS.OK,
         MESSAGES.ONBOARDING.GROUP_STATUS_TOGGLED,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -705,8 +821,12 @@ export class AdminController {
         req.params.id,
       );
       new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, group).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -732,8 +852,12 @@ export class AdminController {
         data,
         pagination,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -757,8 +881,12 @@ export class AdminController {
         STATUS.CREATED,
         MESSAGES.ONBOARDING.QUESTION_CREATED,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -776,8 +904,12 @@ export class AdminController {
       new SuccessResponse(STATUS.OK, MESSAGES.ONBOARDING.QUESTION_UPDATED).send(
         res,
       );
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -792,8 +924,12 @@ export class AdminController {
         STATUS.OK,
         MESSAGES.ONBOARDING.QUESTION_STATUS_TOGGLED,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -803,8 +939,12 @@ export class AdminController {
       new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, question).send(
         res,
       );
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -836,8 +976,12 @@ export class AdminController {
         data,
         pagination,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -851,8 +995,12 @@ export class AdminController {
       new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, dataSources).send(
         res,
       );
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -876,8 +1024,12 @@ export class AdminController {
         "Target muscle created successfully.",
         result,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
   getAllTargetMuscles = async (
@@ -895,8 +1047,12 @@ export class AdminController {
         data,
         pagination,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -913,8 +1069,12 @@ export class AdminController {
         "Target muscle fetched successfully.",
         data,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -928,8 +1088,12 @@ export class AdminController {
       const data =
         await this._adminService.toggleTargetMuscleStatus(targetMuscleId);
       new SuccessResponse(STATUS.OK, data.message, data).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -963,8 +1127,12 @@ export class AdminController {
         "Target muscle updated successfully.",
         data,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -989,8 +1157,12 @@ export class AdminController {
         "Equipment created successfully.",
         data,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -1005,8 +1177,12 @@ export class AdminController {
         data,
         pagination,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -1023,8 +1199,12 @@ export class AdminController {
         "Equipment fetched successfully.",
         data,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -1037,8 +1217,12 @@ export class AdminController {
       const equipmentId = String(req.params.id);
       const data = await this._adminService.toggleEquipmentStatus(equipmentId);
       new SuccessResponse(STATUS.OK, data.message, data).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -1056,8 +1240,12 @@ export class AdminController {
         "Equipment updated successfully.",
         data,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -1081,8 +1269,12 @@ export class AdminController {
         STATUS.CREATED,
         "Exercise created successfully.",
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -1098,8 +1290,12 @@ export class AdminController {
         data,
         pagination,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -1112,8 +1308,12 @@ export class AdminController {
         "Exercise fetched successfully.",
         data,
       ).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -1126,8 +1326,12 @@ export class AdminController {
       const exerciseId = String(req.params.id);
       const data = await this._adminService.toggleExerciseStatus(exerciseId);
       new SuccessResponse(STATUS.OK, data.message, data).send(res);
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 
@@ -1147,8 +1351,12 @@ export class AdminController {
       new SuccessResponse(STATUS.OK, "Exercise updated successfully.").send(
         res,
       );
-    } catch (error) {
-      next(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
   };
 }

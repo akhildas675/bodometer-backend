@@ -6,12 +6,12 @@ export const validate =
   (schema: ZodSchema) => (req: Request, res: Response, next: NextFunction) => {
     try {
       const parsed = schema.parse({
-        body: req.body,
+        body: req.body as unknown,
         query: req.query,
         params: req.params,
         file: req.file,
         files: req.files,
-      }) as Record<string, any>;
+      }) as Record<string, unknown>;
 
       if (parsed.body !== undefined) req.body = parsed.body;
       if (parsed.query !== undefined) {
@@ -29,7 +29,7 @@ export const validate =
       if (error instanceof ZodError) {
         const errors = error.issues.map((e) => {
           let msg = e.message;
-          if (e.code === "invalid_type" && (e as any).received === "undefined") {
+          if (e.code === "invalid_type" && ((e as unknown) as Record<string, unknown>)["received"] === "undefined") {
             const field = e.path[e.path.length - 1];
             msg = `${field ? String(field).charAt(0).toUpperCase() + String(field).slice(1) : 'Field'} is required`;
           }
@@ -53,6 +53,10 @@ export const validate =
         });
       }
 
-      return next(error);
+      if (error instanceof Error) {
+        return next(error);
+      } else {
+        return next(new Error("Unknown error occurred"));
+      }
     }
   };

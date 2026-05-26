@@ -34,7 +34,7 @@ export class UserMappers {
   static toListItemDto(trainer: ITrainerWithProfile): TrainerListItemDto {
     return {
       _id: trainer.user._id?.toString() || "",
-      profileId: (trainer.profile._id as mongoose.Types.ObjectId).toString(),
+      profileId: trainer.profile._id.toString(),
       name: trainer.user.name,
       profilePic: trainer.user.profilePic || null,
       experienceInYears: trainer.profile.experienceInYears,
@@ -60,7 +60,7 @@ export class UserMappers {
 
   static toTrainerDetailDto(data: ITrainerWithProfile): TrainerDetailDto {
     return {
-      _id: (data.profile._id as mongoose.Types.ObjectId).toString(),
+      _id: data.profile._id.toString(),
       name: data.user.name,
       profilePic: data.user.profilePic ?? null,
       coverPhoto: data.profile.coverPhoto ?? "",
