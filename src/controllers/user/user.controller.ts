@@ -123,6 +123,7 @@ export class UserController {
       if (!req.user)
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
       const body = req.body as { currentPassword?: string; newPassword?: string };
+      console.log("old password...",body)
       const dto: ChangePasswordDto = {
         currentPassword: body.currentPassword || "",
         newPassword: body.newPassword || "",

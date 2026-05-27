@@ -349,7 +349,9 @@ export class AuthService implements IAuthService {
     const email = data.email.toLowerCase().trim();
     const user = await this._userRepo.findByEmail(email);
 
-    if (!user) return { role: null };
+    if (!user) {
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.USER.USER_NOT_FOUND);
+    }
 
     await this._otpService.generateAndSendOtp({
       email,

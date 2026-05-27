@@ -77,7 +77,6 @@ export const forgotPasswordSchema = z.object({
 export const resetPasswordSchema = z.object({
   body: z.object({
     email: z.string().email("Invalid email address"),
-    role: z.nativeEnum(ROLES, { message: "Invalid role" }),
     purpose: z.nativeEnum(OTP_PURPOSE, { message: "Invalid OTP purpose" }),
     password: z
       .string()

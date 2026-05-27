@@ -44,7 +44,7 @@ export const trainerIdParamSchema = z.object({
 
 export const changePasswordSchema = z.object({
   body: z.object({
-    oldPassword: z.string().min(1, "Old password is required"),
+    currentPassword: z.string().min(1, "Old password is required"),
     newPassword: z.string().min(1, "New password is required"),
   })
 });
