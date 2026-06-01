@@ -406,4 +406,14 @@ export const MESSAGES = {
     EXISTS: "Exercise with this title already exists.",
     IMAGE_REQUIRED: "Exercise image is required.",
   },
+
+
+  WORKOUT_PLAN: {
+    GENERATED: "Workout plan generated successfully.",
+    FETCHED: "Workout plan fetched successfully.",
+    NOT_FOUND: "No active workout plan found.",
+    DAY_MARKED: "Workout day marked successfully.",
+    PLAN_LIST_FETCHED: "Workout plans fetched successfully.",
+    GENERATE_LOCKED: "You can only generate a new plan after the current week ends.",
+  },
 } as const;

@@ -79,4 +79,42 @@ export const WORKOUT_ENVIRONMENT = {
 } as const;
 
 export type WorkoutEnvironment =
-  (typeof WORKOUT_ENVIRONMENT)[keyof typeof WORKOUT_ENVIRONMENT];
+  (typeof WORKOUT_ENVIRONMENT)[keyof typeof WORKOUT_ENVIRONMENT];
+
+export const WORKOUT_DAY_TYPE = {
+  WORKOUT: "WORKOUT",
+  REST: "REST",
+} as const;
+
+export type WorkoutDayType =
+  (typeof WORKOUT_DAY_TYPE)[keyof typeof WORKOUT_DAY_TYPE];
+
+export const WORKOUT_DAY_STATUS = {
+  TODO: "TODO",
+  COMPLETED: "COMPLETED",
+  LOCKED: "LOCKED",
+  SKIPPED: "SKIPPED",
+  PENDING: "PENDING",
+} as const;
+
+export type WorkoutDayStatus =
+  (typeof WORKOUT_DAY_STATUS)[keyof typeof WORKOUT_DAY_STATUS];
+
+export const WORKOUT_PLAN_STATUS = {
+  ACTIVE: "ACTIVE",
+  EXPIRED: "EXPIRED",
+  COMPLETED: "COMPLETED",
+} as const;
+
+export type WorkoutPlanStatus =
+  (typeof WORKOUT_PLAN_STATUS)[keyof typeof WORKOUT_PLAN_STATUS];
+
+export const WORKOUT_EXERCISE_STATUS = {
+  PENDING: "PENDING",
+  ACTIVE: "ACTIVE",
+  COMPLETED: "COMPLETED",
+  SKIPPED: "SKIPPED",
+} as const;
+
+export type WorkoutExerciseStatus =
+  (typeof WORKOUT_EXERCISE_STATUS)[keyof typeof WORKOUT_EXERCISE_STATUS];

@@ -4,67 +4,70 @@ import { IUserRepository } from "../../interfaces/repository-interface/user/user
 import { IS3Service } from "../../interfaces/service-interface/s3/s3-service.interface";
 import { IUserService } from "../../interfaces/service-interface/user/user-service.interface";
 import { ICategoryRepository } from "../../interfaces/repository-interface/category/category-repository.interface";
-import TrainerProfileRepository from "../../repositories/trainer-profile.repository";
-import UserRepository from "../../repositories/user.repository";
-import CategoryRepository from "../../repositories/category.repository";
+import TrainerProfileRepository from "@/repositories/trainer/trainer-profile.repository";
+import UserRepository from "@/repositories/user/user.repository";
+import CategoryRepository from "@/repositories/category/category.repository";
 import { PaymentService } from "../../services/payments/stripe.service";
 import { S3Service } from "../../services/s3/s3.service";
 import { UserService } from "../../services/user/user.services";
-import SubscriptionPlanRepository from "../../repositories/subscription-plan.repository";
+import SubscriptionPlanRepository from "@/repositories/subscription/subscription-plan.repository";
 import { ISubscriptionPlanRepository } from "../../interfaces/repository-interface/subscription/subscription-plan.repository";
-import { SubscriptionTransactionRepository } from "../../repositories/subscription-transaction.repository";
-import { UserSubscriptionRepository } from "../../repositories/user-subscription.repository";
+import { SubscriptionTransactionRepository } from "@/repositories/subscription/subscription-transaction.repository";
+import { UserSubscriptionRepository } from "@/repositories/subscription/user-subscription.repository";
 import { ISubscriptionTransactionRepository } from "../../interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
 import { IUserSubscriptionRepository } from "../../interfaces/repository-interface/subscription/user.subscription.repository.interface";
 import { IGroupRepository } from "../../interfaces/repository-interface/onboarding/group-repository.interface";
 import { IQuestionRepository } from "../../interfaces/repository-interface/onboarding/question-repository.interface";
 import { IAnswerRepository } from "../../interfaces/repository-interface/onboarding/answer-repository.interface";
-import GroupRepository from "../../repositories/group.repository";
-import QuestionRepository from "../../repositories/question.repository";
-import AnswerRepository from "../../repositories/answer.repository";
+import GroupRepository from "@/repositories/onboarding/group.repository";
+import QuestionRepository from "@/repositories/onboarding/question.repository";
+import AnswerRepository from "@/repositories/onboarding/answer.repository";
 import { IPaymentService } from "@/interfaces/service-interface/payment/stripe-service.interface";
 import { HealthMetricsService } from "../../services/health.metrics/health-metrics.service";
-import ExerciseRepository from "../../repositories/exercise.repository";
+import ExerciseRepository from "@/repositories/exercise/exercise.repository";
 import { IExerciseRepository } from "../../interfaces/repository-interface/exercise/exercise-repository.interface";
-import EquipmentRepository from "../../repositories/equipment.repository";
+import EquipmentRepository from "@/repositories/equipment/equipment.repository";
 import { IEquipmentRepository } from "../../interfaces/repository-interface/equipment/equipment-repository.interface";
+import { IUserWorkoutPlanRepository } from "@/interfaces/repository-interface/workout/user-workout-plan.repository.interface";
+import { UserWorkoutPlanRepository } from "@/repositories/workout/user-workout-plan.repository";
 
-export function createUserModule(){
+export function createUserModule() {
+  const userRepository: IUserRepository = new UserRepository();
+  const s3Service: IS3Service = new S3Service();
+  const trainerProfileRepository: ITrainerProfileRepository = new TrainerProfileRepository();
+  const categoryRepository: ICategoryRepository = new CategoryRepository();
+  const subscriptionPlanRepository: ISubscriptionPlanRepository = new SubscriptionPlanRepository();
+  const subscriptionTransactionRepository: ISubscriptionTransactionRepository = new SubscriptionTransactionRepository();
+  const userSubscriptionRepository: IUserSubscriptionRepository = new UserSubscriptionRepository();
+  const groupRepository: IGroupRepository = new GroupRepository();
+  const questionRepository: IQuestionRepository = new QuestionRepository();
+  const answerRepository: IAnswerRepository = new AnswerRepository();
+  const healthMetricsService = new HealthMetricsService();
+  const exerciseRepository: IExerciseRepository = new ExerciseRepository();
+  const equipmentRepository: IEquipmentRepository = new EquipmentRepository();
+  const userWorkoutPlanRepository: IUserWorkoutPlanRepository = new UserWorkoutPlanRepository();
 
-    const userRepository:IUserRepository=new UserRepository();
-    const s3Service:IS3Service=new S3Service();
-    const trainerProfileRepository:ITrainerProfileRepository=new TrainerProfileRepository();
-    const categoryRepository:ICategoryRepository=new CategoryRepository();
-    const subscriptionPlanRepository:ISubscriptionPlanRepository = new SubscriptionPlanRepository();
-    const subscriptionTransactionRepository:ISubscriptionTransactionRepository = new SubscriptionTransactionRepository();
-    const userSubscriptionRepository:IUserSubscriptionRepository = new UserSubscriptionRepository();
-    const groupRepository: IGroupRepository = new GroupRepository();
-    const questionRepository: IQuestionRepository = new QuestionRepository();
-    const answerRepository: IAnswerRepository = new AnswerRepository();
-    const healthMetricsService = new HealthMetricsService();
-    const exerciseRepository: IExerciseRepository = new ExerciseRepository();
-    const equipmentRepository: IEquipmentRepository = new EquipmentRepository();
+  const paymentService: IPaymentService = new PaymentService();
 
-    const paymentService:IPaymentService= new PaymentService()
+  const userService: IUserService = new UserService(
+    userRepository,
+    s3Service,
+    trainerProfileRepository,
+    paymentService,
+    categoryRepository,
+    subscriptionPlanRepository,
+    subscriptionTransactionRepository,
+    userSubscriptionRepository,
+    groupRepository,
+    questionRepository,
+    answerRepository,
+    healthMetricsService,
+    exerciseRepository,
+    equipmentRepository,
+    userWorkoutPlanRepository,
+  );
 
-    const userService:IUserService = new UserService(
-        userRepository,
-        s3Service,
-        trainerProfileRepository,
-        paymentService,
-        categoryRepository,
-        subscriptionPlanRepository,
-        subscriptionTransactionRepository,
-        userSubscriptionRepository,
-        groupRepository,
-        questionRepository,
-        answerRepository,
-        healthMetricsService,
-        exerciseRepository,
-        equipmentRepository,
-    );
+  const userController = new UserController(userService);
 
-    const userController = new UserController(userService);
-
-    return {userController}
+  return { userController };
 }

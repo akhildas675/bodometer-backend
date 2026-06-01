@@ -155,4 +155,35 @@ userRoute.get(
   userController.getExerciseById,
 );
 
+userRoute.post(
+  USER_ROUTES.GENERATE_WORKOUT,
+  ROLE_GUARD.USER_GUARD,
+  userController.generateWorkout,
+);
+
+userRoute.get(
+  USER_ROUTES.GET_WORKOUT_PLAN,
+  ROLE_GUARD.USER_GUARD,
+  userController.getWorkoutPlan,
+);
+
+userRoute.get(
+  USER_ROUTES.GET_WORKOUT_PLANS,
+  ROLE_GUARD.USER_GUARD,
+  userController.getWorkoutPlans,
+);
+
+userRoute.patch(
+  USER_ROUTES.MARK_WORKOUT_DAY,
+  ROLE_GUARD.USER_GUARD,
+  userController.markDayCompleted,
+);
+
+userRoute.patch(
+  USER_ROUTES.MARK_WORKOUT_EXERCISE,
+  ROLE_GUARD.USER_GUARD,
+  userController.markExerciseStatus,
+);
+
 export default userRoute;
+

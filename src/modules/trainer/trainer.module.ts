@@ -2,11 +2,11 @@ import { TrainerController } from "../../controllers/trainer/trainer.controller"
 import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
 import { IS3Service } from "../../interfaces/service-interface/s3/s3-service.interface";
 import { ITrainerService } from "../../interfaces/service-interface/trainer/trainer-service.interface";
-import TrainerProfileRepository from "../../repositories/trainer-profile.repository";
-import UserRepository from "../../repositories/user.repository";
+import TrainerProfileRepository from "@/repositories/trainer/trainer-profile.repository";
+import UserRepository from "@/repositories/user/user.repository";
 import { S3Service } from "../../services/s3/s3.service";
 import { TrainerService } from "../../services/trainer/trainer.services";
-import CategoryRepository from "../../repositories/category.repository";
+import CategoryRepository from "@/repositories/category/category.repository";
 import { ICategoryRepository } from "../../interfaces/repository-interface/category/category-repository.interface";
 
 

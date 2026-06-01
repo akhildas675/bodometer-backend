@@ -9,4 +9,6 @@ export interface IExerciseRepository {
   updateExercise(exerciseId: string, data: Partial<Exercise>): Promise<Exercise | null>;
   toggleExerciseStatus(exerciseId: string): Promise<Exercise | null>;
   findExerciseByTitle(title: string): Promise<Exercise | null>;
+  getExerciseByTitle(): Promise<{ title: string }[]>;
+  findAll(filter?: Record<string, unknown>): Promise<Exercise[]>;
 }

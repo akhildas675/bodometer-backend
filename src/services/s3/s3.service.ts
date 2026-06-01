@@ -29,7 +29,7 @@ export class S3Service {
     this.bucketName = process.env.AWS_S3_BUCKET_NAME!;
   }
 
-  async uploadFile(file: Express.Multer.File, folder: string): Promise<string> {
+  async uploadFile(file: UploadedFile, folder: string): Promise<string> {
     const fileExtension = file.originalname.split(".").pop();
     const fileName = `${folder}/${crypto.randomUUID()}.${fileExtension}`;
 

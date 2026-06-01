@@ -78,7 +78,7 @@ import {
   generateKeySlug,
   generateOptionValue,
 } from "@/utils/string-formatters";
-import { SubscriptionTransactionRepository } from "../../repositories/subscription-transaction.repository";
+import { SubscriptionTransactionRepository } from "@/repositories/subscription/subscription-transaction.repository";
 import { ISubscriptionTransactionRepository } from "../../interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
 import { DATA_SOURCES } from "../../constants/question.constant";
 import {

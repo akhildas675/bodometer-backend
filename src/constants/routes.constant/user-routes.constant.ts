@@ -31,4 +31,11 @@ export const USER_ROUTES = {
   // Exercises (premium)
   GET_EXERCISES: "/user/exercises",
   GET_EXERCISE_BY_ID: "/user/exercises/:exerciseId",
+
+  //Workout plan
+  GENERATE_WORKOUT: "/user/generate-workout",
+  GET_WORKOUT_PLAN: "/user/workout-plan",
+  GET_WORKOUT_PLANS: "/user/workout-plans",
+  MARK_WORKOUT_DAY: "/user/workout-plan/:planId/day/:dayNumber/complete",
+  MARK_WORKOUT_EXERCISE: "/user/workout-plan/:planId/day/:dayNumber/exercise/:exerciseId/complete",
 } as const;

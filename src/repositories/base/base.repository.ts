@@ -1,5 +1,5 @@
 import { Document, Model, UpdateQuery } from "mongoose";
-import { IBaseRepository } from "../../interfaces/base/base-repository.interface";
+import { IBaseRepository } from "@/interfaces/base/base-repository.interface";
 
 
 export abstract class BaseRepository<T, D extends Document>

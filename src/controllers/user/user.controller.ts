@@ -12,9 +12,10 @@ import {
   UpdateUserProfileDto,
 } from "../../dto/user/user.dto";
 import { GetTrainersQueryDto } from "../../dto/trainer/trainer.dto";
+import { SubscriptionTransactionQueryDto } from "../../dto/subscription/subscription.dto";
 import { IUserService } from "../../interfaces/service-interface/user/user-service.interface";
 import { SuccessResponse } from "../../utils/success.response";
-import { DifficultyLevel } from "../../constants/fitness.constant";
+import { DifficultyLevel, WORKOUT_EXERCISE_STATUS, WorkoutExerciseStatus } from "../../constants/fitness.constant";
 
 export class UserController {
   private logger = new Logger("UserController");
@@ -123,7 +124,6 @@ export class UserController {
       if (!req.user)
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
       const body = req.body as { currentPassword?: string; newPassword?: string };
-      console.log("old password...",body)
       const dto: ChangePasswordDto = {
         currentPassword: body.currentPassword || "",
         newPassword: body.newPassword || "",
@@ -514,14 +514,17 @@ export class UserController {
       }
       const parsed = parsePaginationQuery(req);
       const status = typeof req.query.status === "string" ? req.query.status : undefined;
+      const query: SubscriptionTransactionQueryDto = {
+        page: parsed.page,
+        limit: parsed.limit,
+        search: parsed.search,
+        sortBy: parsed.sortBy,
+        sortOrder: parsed.sortOrder,
+        status,
+      };
       const result = await this._userService.getUserTransactions(
         req.user.id,
-        parsed.search,
-        parsed.sortBy,
-        parsed.sortOrder,
-        parsed.page,
-        parsed.limit,
-        status,
+        query,
       );
       new SuccessResponse(
         STATUS.OK,
@@ -561,35 +564,35 @@ export class UserController {
     }
   };
 
-getExercises = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const { search, difficulty, targetMuscleId, categoryId, page, limit } = req.query;
+  getExercises = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const { search, difficulty, targetMuscleId, categoryId, page, limit } = req.query;
 
-    const query: ExerciseQueryDto = {
-      search: search as string | undefined,
-      difficulty: difficulty as DifficultyLevel | undefined,
-      targetMuscleId: targetMuscleId as string | undefined,
-      categoryId: categoryId as string | undefined,
-      page: page ? Number(page) : undefined,
-      limit: limit ? Number(limit) : undefined,
-    };
+      const query: ExerciseQueryDto = {
+        search: search as string | undefined,
+        difficulty: difficulty as DifficultyLevel | undefined,
+        targetMuscleId: targetMuscleId as string | undefined,
+        categoryId: categoryId as string | undefined,
+        page: page ? Number(page) : undefined,
+        limit: limit ? Number(limit) : undefined,
+      };
 
-    const result = await this._userService.getExercises(query);
+      const result = await this._userService.getExercises(query);
 
-    new SuccessResponse(
-      STATUS.OK,
-      MESSAGES.EXERCISE.LIST_FETCHED,
-      result.data,
-      result.pagination
-    ).send(res);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      next(error);
-    } else {
-      next(new Error("Unknown error occurred"));
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.EXERCISE.LIST_FETCHED,
+        result.data,
+        result.pagination
+      ).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
     }
-  }
-};
+  };
 
   getExerciseById = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
@@ -605,6 +608,130 @@ getExercises = async (req: AuthRequest, res: Response, next: NextFunction) => {
         STATUS.OK,
         MESSAGES.EXERCISE.FETCHED,
         exercise
+      ).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
+
+  generateWorkout = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user?.id) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      }
+      const result = await this._userService.generateWorkout(req.user.id);
+
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.WORKOUT_PLAN.GENERATED,
+        result
+      ).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
+
+  getWorkoutPlan = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user?.id) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      }
+      const plan = await this._userService.getWorkoutPlan(req.user.id);
+
+      new SuccessResponse(
+        STATUS.OK,
+        plan ? MESSAGES.WORKOUT_PLAN.FETCHED : MESSAGES.WORKOUT_PLAN.NOT_FOUND,
+        plan
+      ).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
+
+  getWorkoutPlans = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user?.id) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      }
+      const plans = await this._userService.getWorkoutPlans(req.user.id);
+
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.WORKOUT_PLAN.PLAN_LIST_FETCHED,
+        plans
+      ).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
+
+  markDayCompleted = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user?.id) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      }
+      const { planId, dayNumber } = req.params;
+      const { completed } = req.body as { completed: boolean };
+
+      if (typeof completed !== "boolean") {
+        throw new AppError(STATUS.BAD_REQUEST, "completed field is required and must be a boolean");
+      }
+
+      const updatedPlan = await this._userService.markDayCompleted(req.user.id, planId, Number(dayNumber), completed);
+
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.WORKOUT_PLAN.DAY_MARKED,
+        updatedPlan
+      ).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
+
+  markExerciseStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user?.id) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      }
+      const { planId, dayNumber, exerciseId } = req.params;
+      const { status } = req.body as { status: WorkoutExerciseStatus };
+
+      if (
+        status !== WORKOUT_EXERCISE_STATUS.PENDING &&
+        status !== WORKOUT_EXERCISE_STATUS.ACTIVE &&
+        status !== WORKOUT_EXERCISE_STATUS.COMPLETED &&
+        status !== WORKOUT_EXERCISE_STATUS.SKIPPED
+      ) {
+        throw new AppError(STATUS.BAD_REQUEST, "status field is required and must be PENDING, ACTIVE, COMPLETED, or SKIPPED");
+      }
+
+      const updatedPlan = await this._userService.markExerciseStatus(req.user.id, planId, Number(dayNumber), exerciseId, status);
+
+      new SuccessResponse(
+        STATUS.OK,
+        "Exercise status updated successfully",
+        updatedPlan
       ).send(res);
     } catch (error: unknown) {
       if (error instanceof Error) {

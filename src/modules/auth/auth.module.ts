@@ -6,10 +6,10 @@ import { IMailService } from "../../interfaces/service-interface/otp/mail-servic
 import { IOtpService } from "../../interfaces/service-interface/otp/otp-service.interface";
 import { IUserSubscriptionRepository } from "../../interfaces/repository-interface/subscription/user.subscription.repository.interface";
 import { IAnswerRepository } from "../../interfaces/repository-interface/onboarding/answer-repository.interface";
-import TrainerProfileRepository from "../../repositories/trainer-profile.repository";
-import UserRepository from "../../repositories/user.repository";
-import { UserSubscriptionRepository } from "../../repositories/user-subscription.repository";
-import AnswerRepository from "../../repositories/answer.repository";
+import TrainerProfileRepository from "@/repositories/trainer/trainer-profile.repository";
+import UserRepository from "@/repositories/user/user.repository";
+import { UserSubscriptionRepository } from "@/repositories/subscription/user-subscription.repository";
+import AnswerRepository from "@/repositories/onboarding/answer.repository";
 import { AuthService } from "../../services/auth/auth.services";
 import { MailService } from "../../services/auth/otp/mail.services";
 import { OtpService } from "../../services/auth/otp/otp.services";

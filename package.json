@@ -12,6 +12,7 @@
     "dev:stripe": "stripe listen --forward-to localhost:5000/api/user/stripe/webhook",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:stripe\"",
     "build": "tsc && tsc-alias",
+    "typecheck": "tsc --noEmit",
     "start": "node dist/server.js"
   },
   "repository": {
@@ -27,6 +28,7 @@
   "homepage": "https://github.com/akhildas675/bodometer-backend#readme",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.975.0",
+    "axios": "^1.16.1",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
