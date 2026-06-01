@@ -80,6 +80,7 @@ export interface AiWorkoutExerciseDto {
   order: number;
   exerciseId: string;
   exerciseTitle?: string;
+  exerciseImage?: string;
   sets: number;
   reps?: number;
   durationSeconds?: number;
@@ -93,10 +94,12 @@ export interface AiWorkoutExerciseDto {
 export interface GenerateWorkoutDto {
   dayNumber: number;
   day: string;
+  scheduledDate: Date;
   type: "workout" | "rest";
   focus: string;
   estimatedDurationMinutes: number;
   status: string;
+  startedAt?: Date;
   completedAt?: Date;
   exercises: AiWorkoutExerciseDto[];
 }

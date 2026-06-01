@@ -5,76 +5,54 @@ import {
 import {
   UserWorkoutPlanModel,
   IUserWorkoutPlanModel,
-  IWeekPlan,
 } from "@/models/user.workout-plan.model";
 import mongoose from "mongoose";
 import { WORKOUT_PLAN_STATUS } from "@/constants/fitness.constant";
 
 export class UserWorkoutPlanRepository implements IUserWorkoutPlanRepository {
 
-  /**
-   * Push a new week into the user's single document.
-   * Creates the document if it doesn't exist (upsert: true).
-   */
-  async upsertNewWeek(userId: string, week: CreateWeekInput): Promise<IUserWorkoutPlanModel> {
-    const uid = new mongoose.Types.ObjectId(userId);
 
-    const doc = await UserWorkoutPlanModel.findOneAndUpdate(
-      { userId: uid },
-      {
-        $push: { weeks: week },
-        $set: { currentWeek: week.weekNumber },
-      },
-      { upsert: true, new: true },
-    );
-
-    return doc!;
+  async createWeek(userId: string, week: CreateWeekInput): Promise<IUserWorkoutPlanModel> {
+    const doc = new UserWorkoutPlanModel({
+      userId: new mongoose.Types.ObjectId(userId),
+      weekNumber: week.weekNumber,
+      startDate: week.startDate,
+      endDate: week.endDate,
+      status: week.status,
+      workoutDays: week.workoutDays,
+    });
+    return doc.save();
   }
 
-  /**
-   * Return the full user document (all weeks).
-   */
-  async findByUserId(userId: string): Promise<IUserWorkoutPlanModel | null> {
+
+  async findAllByUserId(userId: string): Promise<IUserWorkoutPlanModel[]> {
+    return UserWorkoutPlanModel.find({
+      userId: new mongoose.Types.ObjectId(userId),
+    }).sort({ weekNumber: 1 });
+  }
+
+
+  async findActiveWeekByUserId(userId: string): Promise<IUserWorkoutPlanModel | null> {
     return UserWorkoutPlanModel.findOne({
       userId: new mongoose.Types.ObjectId(userId),
+      status: WORKOUT_PLAN_STATUS.ACTIVE
     });
   }
 
-  /**
-   * Find the ACTIVE week embedded inside the user's document.
-   */
-  async findActiveWeekByUserId(userId: string): Promise<IWeekPlan | null> {
-    const doc = await UserWorkoutPlanModel.findOne({
-      userId: new mongoose.Types.ObjectId(userId),
-    });
 
-    if (!doc) return null;
-
-    const activeWeek = doc.weeks.find(
-      (w) => w.status === WORKOUT_PLAN_STATUS.ACTIVE,
-    );
-
-    return activeWeek ?? null;
-  }
-
-  /**
-   * Set every ACTIVE week's status to EXPIRED for this user.
-   */
   async expireActiveWeeks(userId: string): Promise<void> {
-    await UserWorkoutPlanModel.updateOne(
-      { userId: new mongoose.Types.ObjectId(userId) },
-      {
-        $set: { "weeks.$[w].status": WORKOUT_PLAN_STATUS.EXPIRED },
+    await UserWorkoutPlanModel.updateMany(
+      { 
+        userId: new mongoose.Types.ObjectId(userId),
+        status: WORKOUT_PLAN_STATUS.ACTIVE
       },
       {
-        arrayFilters: [{ "w.status": WORKOUT_PLAN_STATUS.ACTIVE }],
-      },
+        $set: { status: WORKOUT_PLAN_STATUS.EXPIRED },
+      }
     );
   }
 
-  /**
-   * Mark a specific day inside a specific week as COMPLETED or PENDING.
-   */
+
   async markDayCompleted(
     userId: string,
     weekNumber: number,
@@ -82,16 +60,18 @@ export class UserWorkoutPlanRepository implements IUserWorkoutPlanRepository {
     completed: boolean,
   ): Promise<IUserWorkoutPlanModel | null> {
     return UserWorkoutPlanModel.findOneAndUpdate(
-      { userId: new mongoose.Types.ObjectId(userId) },
+      { 
+        userId: new mongoose.Types.ObjectId(userId),
+        weekNumber: weekNumber
+      },
       {
         $set: {
-          "weeks.$[w].workoutDays.$[d].status": completed ? "COMPLETED" : "PENDING",
-          "weeks.$[w].workoutDays.$[d].completedAt": completed ? new Date() : null,
+          "workoutDays.$[d].status": completed ? "COMPLETED" : "PENDING",
+          "workoutDays.$[d].completedAt": completed ? new Date() : null,
         },
       },
       {
         arrayFilters: [
-          { "w.weekNumber": weekNumber },
           { "d.dayNumber": dayNumber },
         ],
         new: true,
@@ -112,22 +92,24 @@ export class UserWorkoutPlanRepository implements IUserWorkoutPlanRepository {
     timeTakenSeconds?: number,
   ): Promise<IUserWorkoutPlanModel | null> {
     const setFields: Record<string, unknown> = {
-      "weeks.$[w].workoutDays.$[d].exercises.$[e].status": status,
+      "workoutDays.$[d].exercises.$[e].status": status,
     };
 
     if (startedAt !== undefined) {
-      setFields["weeks.$[w].workoutDays.$[d].exercises.$[e].startedAt"] = startedAt;
+      setFields["workoutDays.$[d].exercises.$[e].startedAt"] = startedAt;
     }
     if (timeTakenSeconds !== undefined) {
-      setFields["weeks.$[w].workoutDays.$[d].exercises.$[e].timeTakenSeconds"] = timeTakenSeconds;
+      setFields["workoutDays.$[d].exercises.$[e].timeTakenSeconds"] = timeTakenSeconds;
     }
 
     return UserWorkoutPlanModel.findOneAndUpdate(
-      { userId: new mongoose.Types.ObjectId(userId) },
+      { 
+        userId: new mongoose.Types.ObjectId(userId),
+        weekNumber: weekNumber
+      },
       { $set: setFields },
       {
         arrayFilters: [
-          { "w.weekNumber": weekNumber },
           { "d.dayNumber": dayNumber },
           { "e.exerciseId": new mongoose.Types.ObjectId(exerciseId) },
         ],

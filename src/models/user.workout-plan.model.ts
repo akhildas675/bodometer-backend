@@ -14,8 +14,6 @@ import {
 
 export interface IEmbeddedWorkoutExercise {
   exerciseId: mongoose.Types.ObjectId;
-  exerciseTitle?: string;
-  exerciseImage?: string;
   order: number;
   sets: number;
   reps?: number;
@@ -34,8 +32,6 @@ const WorkoutExerciseSchema = new Schema<IEmbeddedWorkoutExercise>(
       ref: "Exercise",
       required: true,
     },
-    exerciseTitle: { type: String },
-    exerciseImage: { type: String },
     order: { type: Number, required: true },
     sets: { type: Number, required: true },
     reps: { type: Number },
@@ -58,10 +54,12 @@ const WorkoutExerciseSchema = new Schema<IEmbeddedWorkoutExercise>(
 export interface IEmbeddedWorkoutDay {
   dayNumber: number;
   dayName: string;
+  scheduledDate: Date;
   type: WorkoutDayType;
   focus?: string;
   estimatedDurationMinutes?: number;
   status: WorkoutDayStatus;
+  startedAt?: Date;
   completedAt?: Date;
   exercises: IEmbeddedWorkoutExercise[];
 }
@@ -70,6 +68,7 @@ const WorkoutDaySchema = new Schema<IEmbeddedWorkoutDay>(
   {
     dayNumber: { type: Number, required: true },
     dayName: { type: String, required: true },
+    scheduledDate: { type: Date, required: true },
     type: {
       type: String,
       enum: Object.values(WORKOUT_DAY_TYPE),
@@ -83,25 +82,30 @@ const WorkoutDaySchema = new Schema<IEmbeddedWorkoutDay>(
       required: true,
       default: WORKOUT_DAY_STATUS.PENDING,
     },
+    startedAt: { type: Date },
     completedAt: { type: Date },
     exercises: { type: [WorkoutExerciseSchema], default: [] },
   },
   { _id: false },
 );
 
-// WeekPlan embedded inside the user document
-
-export interface IWeekPlan {
+//  One week of workout plans
+export interface IUserWorkoutPlanModel extends Document {
+  userId: mongoose.Types.ObjectId;
   weekNumber: number;
   startDate: Date;
   endDate: Date;
   status: WorkoutPlanStatus;
   workoutDays: IEmbeddedWorkoutDay[];
-  createdAt?: Date;
 }
 
-const WeekPlanSchema = new Schema<IWeekPlan>(
+const UserWorkoutPlanSchema = new Schema<IUserWorkoutPlanModel>(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     weekNumber: { type: Number, required: true },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
@@ -111,28 +115,6 @@ const WeekPlanSchema = new Schema<IWeekPlan>(
       required: true,
     },
     workoutDays: { type: [WorkoutDaySchema], default: [] },
-    createdAt: { type: Date, default: () => new Date() },
-  },
-  { _id: false },
-);
-
-// UserWorkoutPlan 
-export interface IUserWorkoutPlanModel extends Document {
-  userId: mongoose.Types.ObjectId;
-  currentWeek: number;          
-  weeks: IWeekPlan[];           
-}
-
-const UserWorkoutPlanSchema = new Schema<IUserWorkoutPlanModel>(
-  {
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-      unique: true,  
-    },
-    currentWeek: { type: Number, required: true, default: 0 },
-    weeks: { type: [WeekPlanSchema], default: [] },
   },
   { timestamps: true },
 );
