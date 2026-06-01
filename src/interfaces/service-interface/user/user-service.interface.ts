@@ -7,7 +7,7 @@ import { CategoryDetailDto } from "../../../dto/category/category.dto";
 import { PaginationMeta } from "../../../interfaces/domain.interface/common.interface";
 import { Exercise } from "../../../interfaces/domain.interface/exercise.interface";
 import { PaginatedResult } from "../../../interfaces/domain.interface/common.interface";
-import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto, WorkoutPlanDetailDto, WorkoutPlanResponseDto } from "../../../dto/exercise/exercise.dto";
+import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto, WorkoutPlanDetailDto, WorkoutPlanResponseDto, GetWorkoutPlansResponseDto } from "../../../dto/exercise/exercise.dto";
 import { EquipmentQueryDto, GetAllEquipmentResponseDto } from "../../../dto/equipment/equipment.dto";
 
 import { WorkoutExerciseStatus } from "../../../constants/fitness.constant";
@@ -39,7 +39,7 @@ export interface IUserService {
   getExerciseById(id: string): Promise<ExerciseDto>;
   generateWorkout(userId: string): Promise<WorkoutPlanDetailDto>;
   getWorkoutPlan(userId: string): Promise<WorkoutPlanResponseDto | null>;
-  getWorkoutPlans(userId: string): Promise<WorkoutPlanResponseDto[]>;
+  getWorkoutPlans(userId: string): Promise<GetWorkoutPlansResponseDto>;
   markDayCompleted(userId: string, planId: string, dayNumber: number, completed: boolean): Promise<WorkoutPlanResponseDto>;
   markExerciseStatus(userId: string, planId: string, dayNumber: number, exerciseId: string, status: WorkoutExerciseStatus): Promise<WorkoutPlanResponseDto>;
 }

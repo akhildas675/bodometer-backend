@@ -60,7 +60,7 @@ import { IExerciseRepository } from "@/interfaces/repository-interface/exercise/
 import { IEquipmentRepository } from "@/interfaces/repository-interface/equipment/equipment-repository.interface";
 import { ExerciseMapper } from "../../mappers/exercise/exercise.mapper";
 import { EquipmentMapper } from "../../mappers/equipment/equipment.mapper";
-import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto, WorkoutPlanDetailDto, WorkoutPlanResponseDto } from "../../dto/exercise/exercise.dto";
+import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto, WorkoutPlanDetailDto, WorkoutPlanResponseDto, GetWorkoutPlansResponseDto } from "../../dto/exercise/exercise.dto";
 import { EquipmentQueryDto, GetAllEquipmentResponseDto } from "../../dto/equipment/equipment.dto";
 
 
@@ -510,17 +510,17 @@ export class UserService implements IUserService {
       throw new AppError(STATUS.BAD_REQUEST, "Please complete onboarding before generating a workout plan.");
     }
 
-    // Check if there is already an unexpired active week
-    const activeWeek = await this._userWorkoutPlanRepo.findActiveWeekByUserId(userId);
-    const now = new Date();
-    if (activeWeek && activeWeek.endDate > now) {
+    const { generationStatus } = await this.getWorkoutPlans(userId);
+    
+    // We only allow generation if the user has no plans, or if all days are finished, or if they are inactive
+    if (!generationStatus.canGenerate) {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.WORKOUT_PLAN.GENERATE_LOCKED);
     }
 
-    const answersMap: Record<string, unknown> = {};
+    const answersMap: Record<string, string | string[]> = {};
     for (const ans of onboardingAnswers.answers) {
       if (ans.questionKey) {
-        answersMap[ans.questionKey] = ans.answer;
+        answersMap[ans.questionKey] = ans.answer as string | string[];
       }
     }
 
@@ -708,14 +708,25 @@ export class UserService implements IUserService {
     };
   }
 
-  async getWorkoutPlans(userId: string): Promise<WorkoutPlanResponseDto[]> {
+  async getWorkoutPlans(userId: string): Promise<GetWorkoutPlansResponseDto> {
     const userDoc = await this._userWorkoutPlanRepo.findByUserId(userId);
-    if (!userDoc || userDoc.weeks.length === 0) return [];
+    if (!userDoc || userDoc.weeks.length === 0) {
+      return {
+        plans: [],
+        generationStatus: { 
+          canGenerate: true, 
+          isInactive: false, 
+          pendingDaysCount: 0,
+          hasCompletedWorkoutToday: false,
+          firstPendingDayNumber: -1
+        }
+      };
+    }
 
-    // Return all weeks sorted newest first
+  
     const sortedWeeks = [...userDoc.weeks].sort((a, b) => b.weekNumber - a.weekNumber);
 
-    return sortedWeeks.map((week) => ({
+    const plans = sortedWeeks.map((week) => ({
       workoutPlanId: userDoc._id.toString(),
       days: week.workoutDays.map((wd) => ({
         dayNumber: wd.dayNumber,
@@ -739,12 +750,77 @@ export class UserService implements IUserService {
           timeTakenSeconds: ex.timeTakenSeconds,
         })),
       })),
-      planType: "custom",
+      planType: "custom" as const,
       weekNumber: week.weekNumber,
       startDate: week.startDate,
+      formattedStartDate: new Date(week.startDate).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }),
       endDate: week.endDate,
+      formattedEndDate: week.endDate ? new Date(week.endDate).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }) : undefined,
       status: week.status,
     }));
+
+    const latestPlan = plans[0];
+    const INACTIVITY_DAYS = 4;
+    const MS_PER_DAY = 1000 * 60 * 60 * 24;
+    let isInactive = false;
+
+   
+    let mostRecentCompleted: Date | null = null;
+    for (const plan of plans) {
+      for (const day of plan.days) {
+        if (day.status === "COMPLETED" && day.completedAt) {
+          const d = new Date(day.completedAt);
+          if (!mostRecentCompleted || d.getTime() > mostRecentCompleted.getTime()) {
+            mostRecentCompleted = d;
+          }
+        }
+      }
+    }
+
+    let hasCompletedWorkoutToday = false;
+    const todayStr = new Date().toDateString();
+
+    if (mostRecentCompleted) {
+      hasCompletedWorkoutToday = mostRecentCompleted.toDateString() === todayStr;
+      const daysSinceLastWorkout = (Date.now() - mostRecentCompleted.getTime()) / MS_PER_DAY;
+      if (daysSinceLastWorkout >= INACTIVITY_DAYS) {
+        isInactive = true;
+      }
+    } else if (latestPlan?.startDate) {
+      const daysSinceStart = (Date.now() - new Date(latestPlan.startDate).getTime()) / MS_PER_DAY;
+      if (daysSinceStart >= INACTIVITY_DAYS) {
+        isInactive = true;
+      }
+    }
+
+    const allDaysFinished = latestPlan ? latestPlan.days.every(d => d.status === "COMPLETED" || d.status === "SKIPPED") : true;
+    const pendingDaysCount = latestPlan ? latestPlan.days.filter(d => d.status === "PENDING").length : 0;
+    const canGenerate = allDaysFinished || isInactive;
+    
+    let firstPendingDayNumber = -1;
+    if (latestPlan) {
+      const pendingDay = latestPlan.days.find(d => d.status === "PENDING");
+      firstPendingDayNumber = pendingDay ? pendingDay.dayNumber : -1;
+    }
+
+    return {
+      plans,
+      generationStatus: {
+        canGenerate,
+        isInactive,
+        pendingDaysCount,
+        hasCompletedWorkoutToday,
+        firstPendingDayNumber
+      }
+    };
   }
 
   async markDayCompleted(userId: string, _planId: string, dayNumber: number, completed: boolean): Promise<WorkoutPlanResponseDto> {
