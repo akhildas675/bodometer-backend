@@ -422,29 +422,42 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     })).reverse().slice(-6);
 
     // timeframe
-    let filteredPlans = plans;
     const now = new Date();
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
 
-    if (timeframe === TIMEFRAME.DAILY) {
-      filteredPlans = activePlan ? [activePlan] : [];
-    } else if (timeframe === TIMEFRAME.WEEKLY) {
-      const fiveWeeksAgo = new Date();
-      fiveWeeksAgo.setDate(now.getDate() - 35);
-      filteredPlans = plans.filter(p => new Date(p.startDate) >= fiveWeeksAgo);
-    } else if (timeframe === TIMEFRAME.MONTHLY) {
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(now.getMonth() - 6);
-      filteredPlans = plans.filter(p => new Date(p.startDate) >= sixMonthsAgo);
-    }
+    const startOfToday = today.getTime();
+    
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(startOfWeek.getDate() - 7);
+    
+    const startOfMonth = new Date(today);
+    startOfMonth.setDate(startOfMonth.getDate() - 30);
 
-    //  filtered plans
     let totalPlannedExercises = 0;
     let totalCompletedExercises = 0;
     let totalSkippedExercises = 0;
 
-    for (const plan of filteredPlans) {
+    for (const plan of plans) {
       for (const day of plan.days) {
-        if (day.type === 'workout') {
+        if (day.type !== 'workout') continue;
+
+        let includeDay = true;
+        if (day.scheduledDate) {
+          const dDate = new Date(day.scheduledDate);
+          dDate.setHours(0, 0, 0, 0);
+          const time = dDate.getTime();
+
+          if (timeframe === TIMEFRAME.DAILY) {
+            includeDay = time === startOfToday;
+          } else if (timeframe === TIMEFRAME.WEEKLY) {
+            includeDay = time >= startOfWeek.getTime() && time <= startOfToday;
+          } else if (timeframe === TIMEFRAME.MONTHLY) {
+            includeDay = time >= startOfMonth.getTime() && time <= startOfToday;
+          }
+        }
+
+        if (includeDay) {
           totalPlanned++;
           if (day.status === WORKOUT_DAY_STATUS.COMPLETED) {
             totalCompleted++;
