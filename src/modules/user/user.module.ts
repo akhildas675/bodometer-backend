@@ -30,6 +30,8 @@ import EquipmentRepository from "@/repositories/equipment/equipment.repository";
 import { IEquipmentRepository } from "../../interfaces/repository-interface/equipment/equipment-repository.interface";
 import { IUserWorkoutPlanRepository } from "@/interfaces/repository-interface/workout/user-workout-plan.repository.interface";
 import { UserWorkoutPlanRepository } from "@/repositories/workout/user-workout-plan.repository";
+import { WorkoutPlanService } from "../../services/workout/workout-plan.service";
+
 
 export function createUserModule() {
   const userRepository: IUserRepository = new UserRepository();
@@ -48,6 +50,7 @@ export function createUserModule() {
   const userWorkoutPlanRepository: IUserWorkoutPlanRepository = new UserWorkoutPlanRepository();
 
   const paymentService: IPaymentService = new PaymentService();
+  const workoutPlanService = new WorkoutPlanService(userWorkoutPlanRepository, exerciseRepository, answerRepository);
 
   const userService: IUserService = new UserService(
     userRepository,
@@ -64,8 +67,9 @@ export function createUserModule() {
     healthMetricsService,
     exerciseRepository,
     equipmentRepository,
-    userWorkoutPlanRepository,
+    workoutPlanService,
   );
+
 
   const userController = new UserController(userService);
 

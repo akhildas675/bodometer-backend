@@ -1,7 +1,5 @@
-import {
-  IUserWorkoutPlanRepository,
-  CreateWeekInput,
-} from "@/interfaces/repository-interface/workout/user-workout-plan.repository.interface";
+import { IUserWorkoutPlanRepository } from "@/interfaces/repository-interface/workout/user-workout-plan.repository.interface";
+import { CreateWeekInput } from "@/interfaces/domain.interface/workout.interface";
 import {
   UserWorkoutPlanModel,
   IUserWorkoutPlanModel,
@@ -12,11 +10,11 @@ import { WORKOUT_PLAN_STATUS } from "@/constants/fitness.constant";
 export class UserWorkoutPlanRepository implements IUserWorkoutPlanRepository {
 
   async createWeek(userId: string, week: CreateWeekInput): Promise<IUserWorkoutPlanModel> {
-    const doc = await UserWorkoutPlanModel.create({
+    const doc = new UserWorkoutPlanModel({
       userId: new mongoose.Types.ObjectId(userId),
       ...week
     });
-    return doc;
+    return doc.save();
   }
 
   async findAllByUserId(userId: string): Promise<IUserWorkoutPlanModel[]> {
