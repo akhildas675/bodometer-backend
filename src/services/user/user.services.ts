@@ -233,7 +233,7 @@ export class UserService implements IUserService {
     }
 
     const specializationIds = Array.isArray(data.profile.specializations)
-      ? data.profile.specializations.map((spec: any) => String(spec._id || spec))
+      ? data.profile.specializations.map((spec: unknown) => String((spec as { _id?: mongoose.Types.ObjectId })._id || spec))
       : [];
 
     const relatedTrainers = await this._trainerProfileRepo.findRelatedTrainers(
