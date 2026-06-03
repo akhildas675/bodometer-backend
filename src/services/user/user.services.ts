@@ -85,6 +85,7 @@ export class UserService implements IUserService {
     private _userWorkoutPlanRepo: IUserWorkoutPlanRepository,
   ) { }
 
+  // Fetch user details
   async fetchUser(userId: string): Promise<FindUserResponseDto> {
     const user = await this._userRepo.findById(userId);
     if (!user)
@@ -98,6 +99,7 @@ export class UserService implements IUserService {
     return UserMapper.toFindUserResponse(user, profileData);
   }
 
+  // Update user profile
   async updateProfile(
     userId: string,
     updateData: UpdateUserProfileDto,
@@ -147,6 +149,7 @@ export class UserService implements IUserService {
     return this.fetchUser(userId);
   }
 
+  // Upload profile picture
   async uploadProfilePicture(
     userId: string,
     file: Express.Multer.File,
@@ -169,6 +172,7 @@ export class UserService implements IUserService {
     return profilePicUrl;
   }
 
+  // Change user password
   async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
     const user = await this._userRepo.findById(userId);
     if (!user)
@@ -192,6 +196,7 @@ export class UserService implements IUserService {
     await this._userRepo.updatePassword(userId, hashedPassword);
   }
 
+  // Fetch all trainers
   async getTrainers(
     query: GetTrainersQueryDto,
   ): Promise<TrainerListResponseDto> {
@@ -219,6 +224,7 @@ export class UserService implements IUserService {
     };
   }
 
+  // Fetch trainer details
   async getTrainerById(trainerId: string): Promise<TrainerDetailDto> {
     const data =
       await this._trainerProfileRepo.getTrainerByIdWithUser(trainerId);
@@ -228,6 +234,7 @@ export class UserService implements IUserService {
     return UserMappers.toTrainerDetailDto(data);
   }
 
+  // Fetch all categories
   async getCategories(query: CategoryQuery): Promise<GetAllCategoriesResponse> {
     return this._categoryRepo.getAllCategories({
       ...query,
@@ -235,12 +242,14 @@ export class UserService implements IUserService {
     } as CategoryQuery);
   }
 
+  // Fetch category details
   async getCategoryById(id: string): Promise<CategoryDetailDto> {
     const category = await this._categoryRepo.getCategoryById(id);
     if (!category) throw new AppError(STATUS.NOT_FOUND, MESSAGES.ADMIN.CATEGORY_NOT_FOUND);
     return CategoryMappers.toCategoryDetailDto(category);
   }
 
+  // Fetch all equipment
   async getAllEquipment(query: EquipmentQueryDto): Promise<GetAllEquipmentResponseDto> {
     const { data, pagination } = await this._equipmentRepo.getAllEquipment({
       ...query,
@@ -253,6 +262,7 @@ export class UserService implements IUserService {
     };
   }
 
+  // Fetch user subscriptions
   async getMySubscriptions(): Promise<
     UserSubscriptionPlanResponseDto[] | null
   > {
@@ -261,6 +271,7 @@ export class UserService implements IUserService {
     return SubscriptionMapper.toUserPlanResponseDtoList(plans);
   }
 
+  // Create checkout session
   async createCheckoutSession(
     userId: string,
     planId: string,
@@ -298,6 +309,7 @@ export class UserService implements IUserService {
 
   //verifyPaymentAndSave
 
+  // Verify payment intent
   async verifyPaymentAndSave(
     userId: string,
     sessionId: string,
@@ -384,6 +396,7 @@ export class UserService implements IUserService {
     };
   }
 
+  // Fetch active subscription
   async getActiveSubscription(
     userId: string,
   ): Promise<ActiveSubscriptionDto | null> {
@@ -414,6 +427,7 @@ export class UserService implements IUserService {
     };
   }
 
+  // Build subscription DTO
   private async _buildActiveSubscriptionDto(
     userId: string,
   ): Promise<ActiveSubscriptionDto> {
@@ -423,14 +437,17 @@ export class UserService implements IUserService {
     return sub;
   }
 
+  // Fetch question groups
   async getOnboardingGroups(): Promise<GetAllQuestionGroupsResponse> {
     return this._groupRepo.getAllGroups({ limit: 100, isActive: true });
   }
 
+  // Fetch onboarding questions
   async getOnboardingQuestions(): Promise<GetAllQuestionsResponse> {
     return this._questionRepo.getAllQuestions({ limit: 500, isActive: true });
   }
 
+  // Submit onboarding answers
   async submitOnboarding(
     userId: string,
     data: {
@@ -449,17 +466,20 @@ export class UserService implements IUserService {
     await this._answerRepo.saveUserAnswers(submission);
   }
 
+  // Fetch onboarding status
   async getOnboardingStatus(userId: string): Promise<{ completed: boolean }> {
     const userAnswers = await this._answerRepo.getUserAnswers(userId);
     return { completed: userAnswers?.completed ?? false };
   }
 
+  // Fetch onboarding answers
   async getOnboardingAnswers(
     userId: string,
   ): Promise<UserAnswerSubmission | null> {
     return this._answerRepo.getUserAnswers(userId);
   }
 
+  // Fetch user transactions
   async getUserTransactions(
     userId: string,
     query: SubscriptionTransactionQueryDto,
@@ -481,10 +501,12 @@ export class UserService implements IUserService {
     };
   }
 
+  // Calculate user BMI
   async calculateBmi(data: UpdateBmiDto): Promise<UpdateBmiResponseDto> {
     return this._healthMetrics.bmiCalculator(data);
   }
 
+  // Fetch all exercises
   async getExercises(query: ExerciseQueryDto): Promise<GetAllExercisesResponseDto> {
     const result = await this._exerciseRepo.getAllExercises({
       ...query,
@@ -496,6 +518,7 @@ export class UserService implements IUserService {
     };
   }
 
+  // Fetch exercise details
   async getExerciseById(id: string): Promise<ExerciseDto> {
     const exercise = await this._exerciseRepo.getExerciseById(id);
     if (!exercise) {
@@ -505,6 +528,7 @@ export class UserService implements IUserService {
     return ExerciseMapper.toExerciseDto(exercise);
   }
 
+  // Generate workout plan
   async generateWorkout(userId: string): Promise<WorkoutPlanDetailDto> {
     const onboardingAnswers = await this._answerRepo.getUserAnswers(userId);
     if (!onboardingAnswers || !onboardingAnswers.completed) {
@@ -513,7 +537,7 @@ export class UserService implements IUserService {
 
     const { generationStatus } = await this.getWorkoutPlans(userId);
 
-    // only allow generation if the user has no plans, or if all days are finished, or if they are inactive
+    // only allow generation if the user has no plans or plans are finished or inactive
     if (!generationStatus.canGenerate) {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.WORKOUT_PLAN.GENERATE_LOCKED);
     }
@@ -534,7 +558,7 @@ export class UserService implements IUserService {
       ]),
     );
 
-    // Derive history counts from the array of weekly documents
+    // history counts from weekly documents
     const userDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
     const previousPlansCount = userDocs.length;
 
@@ -627,7 +651,7 @@ export class UserService implements IUserService {
     const endDate = new Date();
     endDate.setDate(startDate.getDate() + 7);
 
-    // Push the new week into the user document
+    // create new week
     const updatedDoc = await this._userWorkoutPlanRepo.createWeek(userId, {
       weekNumber,
       startDate,
@@ -655,6 +679,7 @@ export class UserService implements IUserService {
     };
   }
 
+  // Fetch workout plans
   async getWorkoutPlans(userId: string): Promise<GetWorkoutPlansResponseDto> {
     let userDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
 
@@ -690,7 +715,7 @@ export class UserService implements IUserService {
       });
     });
 
-    //finding exersice by id
+    //finding exercise by id
     const exercises = await this._exerciseRepo.findByIds(Array.from(exerciseIds));
 
     const exerciseDataMap = new Map(
@@ -804,6 +829,7 @@ export class UserService implements IUserService {
     };
   }
 
+  // Mark day completed
   async markDayCompleted({ userId, dayNumber, completed }: MarkDayCompletedDto): Promise<WorkoutPlanResponseDto> {
     const activeWeek = await this._userWorkoutPlanRepo.findActiveWeekByUserId(userId);
     if (!activeWeek) {
@@ -830,10 +856,11 @@ export class UserService implements IUserService {
 
     const plansResponse = await this.getWorkoutPlans(userId);
     const updatedPlan = plansResponse.plans.find((p) => p.workoutPlanId === activeWeek._id.toString());
-    if (!updatedPlan) throw new AppError(STATUS.INTERNAL_ERROR, "Failed to retrieve updated plan");
+    if (!updatedPlan) throw new AppError(STATUS.INTERNAL_ERROR, "Failed to fetch updated plan");
     return updatedPlan;
   }
 
+  // Mark exercise status
   async markExerciseStatus({ userId, dayNumber, instanceId, status }: MarkExerciseStatusDto): Promise<WorkoutPlanResponseDto> {
     const activeWeek = await this._userWorkoutPlanRepo.findActiveWeekByUserId(userId);
     if (!activeWeek) {
@@ -889,6 +916,7 @@ export class UserService implements IUserService {
     return updatedPlan;
   }
 
+  // Fetch workout progress
   async getWorkoutProgress(userId: string, timeframe?: Timeframe): Promise<WorkoutProgressResponseDto> {
     const plansResponse = await this.getWorkoutPlans(userId);
 
