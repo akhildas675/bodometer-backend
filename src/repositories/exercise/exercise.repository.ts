@@ -120,4 +120,11 @@ export default class ExerciseRepository extends BaseRepository<Exercise, IExerci
     const docs = await this.model.find().select("title").exec();
     return docs ? docs.map((d) => ({ title: d.title })) : [];
   }
+
+  async findByIds(exerciseIds: string[]): Promise<Exercise[]> {
+    const docs = await this.model.find({ _id: { $in: exerciseIds } })
+      .populate("targetMuscleIds", "title")
+      .exec();
+    return docs.map((doc) => this.toInterface(doc));
+  }
 }

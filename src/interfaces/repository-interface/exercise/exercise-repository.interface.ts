@@ -11,4 +11,5 @@ export interface IExerciseRepository {
   findExerciseByTitle(title: string): Promise<Exercise | null>;
   getExerciseByTitle(): Promise<{ title: string }[]>;
   findAll(filter?: Record<string, unknown>): Promise<Exercise[]>;
+  findByIds(exerciseIds: string[]): Promise<Exercise[]>;
 }

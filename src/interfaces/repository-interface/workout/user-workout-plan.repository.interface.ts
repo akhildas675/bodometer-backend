@@ -1,7 +1,7 @@
-import { IUserWorkoutPlanModel, IEmbeddedWorkoutDay, IWeekPlan } from "@/models/user.workout-plan.model";
+import { IUserWorkoutPlanModel, IEmbeddedWorkoutDay } from "@/models/user.workout-plan.model";
 import { WorkoutPlanStatus } from "@/constants/fitness.constant";
 
-// Input for pushing a new week into the user's document
+// Input for creating a new week document
 export interface CreateWeekInput {
   weekNumber: number;
   startDate: Date;
@@ -12,46 +12,27 @@ export interface CreateWeekInput {
 
 export interface IUserWorkoutPlanRepository {
   /**
-   * Push a new week into the user's single document.
-   * Creates the document if it doesn't exist yet (upsert).
+   * Create a new week document for the user.
    */
-  upsertNewWeek(userId: string, week: CreateWeekInput): Promise<IUserWorkoutPlanModel>;
+  createWeek(userId: string, week: CreateWeekInput): Promise<IUserWorkoutPlanModel>;
 
   /**
-   * Return the single document for this user (contains all weeks).
+   * Return all week documents for this user, sorted by weekNumber ascending.
    */
-  findByUserId(userId: string): Promise<IUserWorkoutPlanModel | null>;
+  findAllByUserId(userId: string): Promise<IUserWorkoutPlanModel[]>;
 
   /**
-   * Return only the currently ACTIVE week embedded in the document, or null.
+   * Return only the currently ACTIVE week document, or null.
    */
-  findActiveWeekByUserId(userId: string): Promise<IWeekPlan | null>;
+  findActiveWeekByUserId(userId: string): Promise<IUserWorkoutPlanModel | null>;
 
   /**
-   * Mark all ACTIVE weeks as EXPIRED for this user.
+   * Set all ACTIVE week documents for a given user to EXPIRED.
    */
   expireActiveWeeks(userId: string): Promise<void>;
 
   /**
-   * Mark a day inside a specific week as completed/pending.
+   * Persist changes made to an existing week document.
    */
-  markDayCompleted(
-    userId: string,
-    weekNumber: number,
-    dayNumber: number,
-    completed: boolean,
-  ): Promise<IUserWorkoutPlanModel | null>;
-
-  /**
-   * Update the status of a single exercise inside a week's day.
-   */
-  markExerciseStatus(
-    userId: string,
-    weekNumber: number,
-    dayNumber: number,
-    exerciseId: string,
-    status: string,
-    startedAt?: Date,
-    timeTakenSeconds?: number,
-  ): Promise<IUserWorkoutPlanModel | null>;
+  saveWeek(weekDoc: IUserWorkoutPlanModel): Promise<IUserWorkoutPlanModel>;
 }

@@ -7,10 +7,11 @@ import { CategoryDetailDto } from "../../../dto/category/category.dto";
 import { PaginationMeta } from "../../../interfaces/domain.interface/common.interface";
 import { Exercise } from "../../../interfaces/domain.interface/exercise.interface";
 import { PaginatedResult } from "../../../interfaces/domain.interface/common.interface";
-import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto, WorkoutPlanDetailDto, WorkoutPlanResponseDto, GetWorkoutPlansResponseDto } from "../../../dto/exercise/exercise.dto";
+import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto } from "../../../dto/exercise/exercise.dto";
+import { WorkoutPlanDetailDto, WorkoutPlanResponseDto, GetWorkoutPlansResponseDto, WorkoutProgressResponseDto, MarkDayCompletedDto, MarkExerciseStatusDto } from "../../../dto/workout/workout-plan.dto";
 import { EquipmentQueryDto, GetAllEquipmentResponseDto } from "../../../dto/equipment/equipment.dto";
 
-import { WorkoutExerciseStatus } from "../../../constants/fitness.constant";
+import { WorkoutExerciseStatus, Timeframe } from "../../../constants/fitness.constant";
 export interface IUserService {
   fetchUser(userId: string): Promise<FindUserResponseDto>;
   updateProfile(userId: string, updateData: UpdateUserProfileDto): Promise<FindUserResponseDto>;
@@ -38,8 +39,8 @@ export interface IUserService {
   getExercises(query: ExerciseQueryDto): Promise<GetAllExercisesResponseDto>;
   getExerciseById(id: string): Promise<ExerciseDto>;
   generateWorkout(userId: string): Promise<WorkoutPlanDetailDto>;
-  getWorkoutPlan(userId: string): Promise<WorkoutPlanResponseDto | null>;
   getWorkoutPlans(userId: string): Promise<GetWorkoutPlansResponseDto>;
-  markDayCompleted(userId: string, planId: string, dayNumber: number, completed: boolean): Promise<WorkoutPlanResponseDto>;
-  markExerciseStatus(userId: string, planId: string, dayNumber: number, exerciseId: string, status: WorkoutExerciseStatus): Promise<WorkoutPlanResponseDto>;
+  markDayCompleted(data: MarkDayCompletedDto): Promise<WorkoutPlanResponseDto>;
+  markExerciseStatus(data: MarkExerciseStatusDto): Promise<WorkoutPlanResponseDto>;
+  getWorkoutProgress(userId: string, timeframe?: Timeframe): Promise<WorkoutProgressResponseDto>;
 }

@@ -13,7 +13,7 @@ import mongoose from "mongoose";
 import { hashPassword } from "../../utils/password";
 import { AiWorkoutService } from "../ai-services/ai-workout.service";
 import { IUserWorkoutPlanRepository } from "@/interfaces/repository-interface/workout/user-workout-plan.repository.interface";
-import { WORKOUT_DAY_TYPE, WORKOUT_DAY_STATUS, WORKOUT_PLAN_STATUS, WorkoutExerciseStatus } from "@/constants/fitness.constant";
+import { WORKOUT_DAY_TYPE, WORKOUT_DAY_STATUS, WORKOUT_PLAN_STATUS, WORKOUT_EXERCISE_STATUS, TIMEFRAME, Timeframe, } from "@/constants/fitness.constant";
 import { IEmbeddedWorkoutDay, IEmbeddedWorkoutExercise } from "@/models/user.workout-plan.model";
 import {
   ChangePasswordDto,
@@ -60,7 +60,8 @@ import { IExerciseRepository } from "@/interfaces/repository-interface/exercise/
 import { IEquipmentRepository } from "@/interfaces/repository-interface/equipment/equipment-repository.interface";
 import { ExerciseMapper } from "../../mappers/exercise/exercise.mapper";
 import { EquipmentMapper } from "../../mappers/equipment/equipment.mapper";
-import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto, WorkoutPlanDetailDto, WorkoutPlanResponseDto, GetWorkoutPlansResponseDto } from "../../dto/exercise/exercise.dto";
+import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto } from "../../dto/exercise/exercise.dto";
+import { WorkoutPlanDetailDto, WorkoutPlanResponseDto, GetWorkoutPlansResponseDto, WorkoutProgressResponseDto, AiWorkoutExerciseDto, RecentActivityDto, MarkDayCompletedDto, MarkExerciseStatusDto } from "../../dto/workout/workout-plan.dto";
 import { EquipmentQueryDto, GetAllEquipmentResponseDto } from "../../dto/equipment/equipment.dto";
 
 
@@ -511,8 +512,8 @@ export class UserService implements IUserService {
     }
 
     const { generationStatus } = await this.getWorkoutPlans(userId);
-    
-    // We only allow generation if the user has no plans, or if all days are finished, or if they are inactive
+
+    // only allow generation if the user has no plans, or if all days are finished, or if they are inactive
     if (!generationStatus.canGenerate) {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.WORKOUT_PLAN.GENERATE_LOCKED);
     }
@@ -533,14 +534,14 @@ export class UserService implements IUserService {
       ]),
     );
 
-    // Derive history counts from the single user document
-    const userDoc = await this._userWorkoutPlanRepo.findByUserId(userId);
-    const previousPlansCount = userDoc?.weeks.length ?? 0;
+    // Derive history counts from the array of weekly documents
+    const userDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
+    const previousPlansCount = userDocs.length;
 
     let completedWorkoutDaysTotal = 0;
-    for (const week of (userDoc?.weeks ?? [])) {
+    for (const week of userDocs) {
       for (const day of week.workoutDays) {
-        if (day.status === "COMPLETED") {
+        if (day.status === WORKOUT_DAY_STATUS.COMPLETED) {
           completedWorkoutDaysTotal++;
         }
       }
@@ -555,21 +556,24 @@ export class UserService implements IUserService {
       workoutEnvironments: ex.workoutEnvironments,
     }));
 
-    const past4Weeks = (userDoc?.weeks ?? []).slice(-4).map(week => ({
+    const past4Weeks = userDocs.slice(-4).map(week => ({
       weekNumber: week.weekNumber,
       status: week.status,
       workoutDays: week.workoutDays.map(day => ({
         dayNumber: day.dayNumber,
         type: day.type,
         status: day.status,
-        exercises: day.exercises.map(ex => ({
-          exerciseTitle: ex.exerciseTitle,
-          sets: ex.sets,
-          reps: ex.reps,
-          durationSeconds: ex.durationSeconds,
-          status: ex.status,
-          timeTakenSeconds: ex.timeTakenSeconds
-        }))
+        exercises: day.exercises.map(ex => {
+          const exData = exerciseDataMap.get(ex.exerciseId.toString());
+          return {
+            exerciseTitle: exData?.title ?? "Unknown Exercise",
+            sets: ex.sets,
+            reps: ex.reps,
+            durationSeconds: ex.durationSeconds,
+            status: ex.status,
+            timeTakenSeconds: ex.timeTakenSeconds
+          };
+        })
       }))
     }));
 
@@ -582,27 +586,32 @@ export class UserService implements IUserService {
       past4WeeksData: past4Weeks,
     });
 
-    // Expire any currently active week before adding the new one
+
     await this._userWorkoutPlanRepo.expireActiveWeeks(userId);
 
     const embeddedDays: IEmbeddedWorkoutDay[] = aiResponse.weekPlan.map((dayData, i) => {
-      const embeddedExercises: IEmbeddedWorkoutExercise[] = dayData.exercises.map((ex) => {
-        const exData = exerciseDataMap.get(ex.exerciseId);
+      const embeddedExercises: IEmbeddedWorkoutExercise[] = dayData.exercises.map((ex: AiWorkoutExerciseDto) => {
         return {
+          instanceId: ex.instanceId!,
           exerciseId: new mongoose.Types.ObjectId(ex.exerciseId),
-          exerciseTitle: exData?.title ?? "Exercise",
-          exerciseImage: exData?.image ?? "",
           order: ex.order,
+          targetMuscles: ex.targetMuscles || [],
           sets: ex.sets,
           reps: ex.reps,
+          durationSeconds: ex.durationSeconds,
           restSeconds: ex.restSeconds,
           notes: ex.notes,
         };
       });
 
+      // calculate scheduledDate for this day
+      const dayScheduledDate = new Date();
+      dayScheduledDate.setDate(dayScheduledDate.getDate() + i);
+
       return {
         dayNumber: i + 1,
         dayName: dayData.day,
+        scheduledDate: dayScheduledDate,
         type: dayData.type.toUpperCase() === WORKOUT_DAY_TYPE.WORKOUT
           ? WORKOUT_DAY_TYPE.WORKOUT
           : WORKOUT_DAY_TYPE.REST,
@@ -618,8 +627,8 @@ export class UserService implements IUserService {
     const endDate = new Date();
     endDate.setDate(startDate.getDate() + 7);
 
-    // Push the new week into the user's single document (upsert on first time)
-    const updatedDoc = await this._userWorkoutPlanRepo.upsertNewWeek(userId, {
+    // Push the new week into the user document
+    const updatedDoc = await this._userWorkoutPlanRepo.createWeek(userId, {
       weekNumber,
       startDate,
       endDate,
@@ -646,76 +655,24 @@ export class UserService implements IUserService {
     };
   }
 
-  async getWorkoutPlan(userId: string): Promise<WorkoutPlanResponseDto | null> {
-    const userDoc = await this._userWorkoutPlanRepo.findByUserId(userId);
-    if (!userDoc || userDoc.weeks.length === 0) return null;
-
-    // Get the active week from the embedded weeks array
-    const activeWeek = userDoc.weeks.find((w) => w.status === "ACTIVE");
-
-    // If the active week's time has passed, auto-generate a new one
-    const now = new Date();
-    if (activeWeek && activeWeek.endDate < now) {
-      const newPlan = await this.generateWorkout(userId);
-      const freshDoc = await this._userWorkoutPlanRepo.findByUserId(userId);
-      const freshWeek = freshDoc?.weeks.find((w) => w.status === "ACTIVE");
-      return {
-        workoutPlanId: freshDoc?._id.toString() ?? "",
-        days: newPlan.days,
-        planType: newPlan.planType,
-        weekNumber: freshWeek?.weekNumber ?? 1,
-        startDate: freshWeek?.startDate ?? new Date(),
-        endDate: freshWeek?.endDate ?? new Date(),
-        status: "ACTIVE",
-        autoGenerated: true,
-      };
-    }
-
-    if (!activeWeek) return null;
-
-    const days = activeWeek.workoutDays.map((wd) => ({
-      dayNumber: wd.dayNumber,
-      day: wd.dayName,
-      type: wd.type.toLowerCase() as "workout" | "rest",
-      focus: wd.focus ?? "",
-      estimatedDurationMinutes: wd.estimatedDurationMinutes ?? 0,
-      status: wd.status,
-      completedAt: wd.completedAt,
-      exercises: wd.exercises.map((ex) => ({
-        order: ex.order,
-        exerciseId: ex.exerciseId.toString(),
-        exerciseTitle: ex.exerciseTitle,
-        exerciseImage: ex.exerciseImage,
-        sets: ex.sets,
-        reps: ex.reps ?? 0,
-        restSeconds: ex.restSeconds,
-        notes: ex.notes ?? "",
-        status: ex.status ?? "PENDING",
-        startedAt: ex.startedAt,
-        timeTakenSeconds: ex.timeTakenSeconds,
-      })),
-    }));
-
-    return {
-      workoutPlanId: userDoc._id.toString(),
-      days,
-      planType: "custom",
-      weekNumber: activeWeek.weekNumber,
-      startDate: activeWeek.startDate,
-      endDate: activeWeek.endDate,
-      status: activeWeek.status,
-      autoGenerated: false,
-    };
-  }
-
   async getWorkoutPlans(userId: string): Promise<GetWorkoutPlansResponseDto> {
-    const userDoc = await this._userWorkoutPlanRepo.findByUserId(userId);
-    if (!userDoc || userDoc.weeks.length === 0) {
+    let userDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
+
+    //  auto-generate a new one
+    if (userDocs && userDocs.length > 0) {
+      const activeDoc = userDocs.find(doc => doc.status === WORKOUT_PLAN_STATUS.ACTIVE);
+      const now = new Date();
+      if (activeDoc && new Date(activeDoc.endDate) < now) {
+        await this.generateWorkout(userId);
+        userDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
+      }
+    }
+    if (!userDocs || userDocs.length === 0) {
       return {
         plans: [],
-        generationStatus: { 
-          canGenerate: true, 
-          isInactive: false, 
+        generationStatus: {
+          canGenerate: true,
+          isInactive: false,
           pendingDaysCount: 0,
           hasCompletedWorkoutToday: false,
           firstPendingDayNumber: -1
@@ -723,32 +680,57 @@ export class UserService implements IUserService {
       };
     }
 
-  
-    const sortedWeeks = [...userDoc.weeks].sort((a, b) => b.weekNumber - a.weekNumber);
+    const sortedWeeks = [...userDocs].sort((a, b) => b.weekNumber - a.weekNumber);
+
+    //finding exercises id
+    const exerciseIds = new Set<string>();
+    sortedWeeks.forEach(week => {
+      week.workoutDays.forEach(day => {
+        day.exercises.forEach(ex => exerciseIds.add(ex.exerciseId.toString()));
+      });
+    });
+
+    //finding exersice by id
+    const exercises = await this._exerciseRepo.findByIds(Array.from(exerciseIds));
+
+    const exerciseDataMap = new Map(
+      exercises.map((ex) => {
+        return [ex._id, { title: ex.title, image: ex.media?.image ?? "", muscles: ex.targetMuscles }];
+      })
+    );
 
     const plans = sortedWeeks.map((week) => ({
-      workoutPlanId: userDoc._id.toString(),
+      workoutPlanId: week._id.toString(),
       days: week.workoutDays.map((wd) => ({
         dayNumber: wd.dayNumber,
         day: wd.dayName,
+        scheduledDate: wd.scheduledDate,
         type: wd.type.toLowerCase() as "workout" | "rest",
         focus: wd.focus ?? "",
         estimatedDurationMinutes: wd.estimatedDurationMinutes ?? 0,
         status: wd.status,
+        startedAt: wd.startedAt,
         completedAt: wd.completedAt,
-        exercises: wd.exercises.map((ex) => ({
-          order: ex.order,
-          exerciseId: ex.exerciseId.toString(),
-          exerciseTitle: ex.exerciseTitle,
-          exerciseImage: ex.exerciseImage,
-          sets: ex.sets,
-          reps: ex.reps ?? 0,
-          restSeconds: ex.restSeconds,
-          notes: ex.notes ?? "",
-          status: ex.status ?? "PENDING",
-          startedAt: ex.startedAt,
-          timeTakenSeconds: ex.timeTakenSeconds,
-        })),
+        exercises: wd.exercises.map((ex) => {
+          const exData = exerciseDataMap.get(ex.exerciseId.toString());
+          return {
+            instanceId: ex.instanceId,
+            order: ex.order,
+            exerciseId: ex.exerciseId.toString(),
+            exerciseTitle: exData?.title ?? "Unknown Exercise",
+            exerciseImage: exData?.image ?? "",
+            targetMuscles: exData?.muscles || [],
+            sets: ex.sets,
+            reps: ex.reps ?? 0,
+            durationSeconds: ex.durationSeconds,
+            estimatedDurationSeconds: ex.estimatedDurationSeconds,
+            restSeconds: ex.restSeconds,
+            notes: ex.notes ?? "",
+            status: ex.status ?? WORKOUT_EXERCISE_STATUS.PENDING,
+            startedAt: ex.startedAt,
+            timeTakenSeconds: ex.timeTakenSeconds,
+          };
+        }),
       })),
       planType: "custom" as const,
       weekNumber: week.weekNumber,
@@ -772,11 +754,10 @@ export class UserService implements IUserService {
     const MS_PER_DAY = 1000 * 60 * 60 * 24;
     let isInactive = false;
 
-   
     let mostRecentCompleted: Date | null = null;
     for (const plan of plans) {
       for (const day of plan.days) {
-        if (day.status === "COMPLETED" && day.completedAt) {
+        if (day.status === WORKOUT_DAY_STATUS.COMPLETED && day.completedAt) {
           const d = new Date(day.completedAt);
           if (!mostRecentCompleted || d.getTime() > mostRecentCompleted.getTime()) {
             mostRecentCompleted = d;
@@ -801,13 +782,13 @@ export class UserService implements IUserService {
       }
     }
 
-    const allDaysFinished = latestPlan ? latestPlan.days.every(d => d.status === "COMPLETED" || d.status === "SKIPPED") : true;
-    const pendingDaysCount = latestPlan ? latestPlan.days.filter(d => d.status === "PENDING").length : 0;
+    const allDaysFinished = latestPlan ? latestPlan.days.every(d => d.status === WORKOUT_DAY_STATUS.COMPLETED || d.status === WORKOUT_DAY_STATUS.SKIPPED) : true;
+    const pendingDaysCount = latestPlan ? latestPlan.days.filter(d => d.status === WORKOUT_DAY_STATUS.PENDING).length : 0;
     const canGenerate = allDaysFinished || isInactive;
-    
+
     let firstPendingDayNumber = -1;
     if (latestPlan) {
-      const pendingDay = latestPlan.days.find(d => d.status === "PENDING");
+      const pendingDay = latestPlan.days.find(d => d.status === WORKOUT_DAY_STATUS.PENDING);
       firstPendingDayNumber = pendingDay ? pendingDay.dayNumber : -1;
     }
 
@@ -823,14 +804,8 @@ export class UserService implements IUserService {
     };
   }
 
-  async markDayCompleted(userId: string, _planId: string, dayNumber: number, completed: boolean): Promise<WorkoutPlanResponseDto> {
-    // Find the user's single document and locate the active week
-    const userDoc = await this._userWorkoutPlanRepo.findByUserId(userId);
-    if (!userDoc) {
-      throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT_PLAN.NOT_FOUND);
-    }
-
-    const activeWeek = userDoc.weeks.find((w) => w.status === "ACTIVE");
+  async markDayCompleted({ userId, dayNumber, completed }: MarkDayCompletedDto): Promise<WorkoutPlanResponseDto> {
+    const activeWeek = await this._userWorkoutPlanRepo.findActiveWeekByUserId(userId);
     if (!activeWeek) {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT_PLAN.NOT_FOUND);
     }
@@ -840,60 +815,27 @@ export class UserService implements IUserService {
       throw new AppError(STATUS.NOT_FOUND, "Workout day not found");
     }
 
-    // Update exercise statuses inline, then persist via repository
-    day.status = completed ? "COMPLETED" : "PENDING";
+    day.status = completed ? WORKOUT_DAY_STATUS.COMPLETED : WORKOUT_DAY_STATUS.PENDING;
     day.completedAt = completed ? new Date() : undefined;
     if (day.exercises && day.exercises.length > 0) {
       day.exercises.forEach((ex) => {
-        ex.status = completed ? "COMPLETED" : "PENDING";
+        ex.status = completed ? WORKOUT_EXERCISE_STATUS.COMPLETED : WORKOUT_EXERCISE_STATUS.PENDING;
         if (completed && !ex.timeTakenSeconds) {
           ex.timeTakenSeconds = ex.durationSeconds ?? 60;
         }
       });
     }
-    userDoc.markModified("weeks");
-    await userDoc.save();
 
-    return {
-      workoutPlanId: userDoc._id.toString(),
-      days: activeWeek.workoutDays.map((wd) => ({
-        dayNumber: wd.dayNumber,
-        day: wd.dayName,
-        type: wd.type.toLowerCase() as "workout" | "rest",
-        focus: wd.focus ?? "",
-        estimatedDurationMinutes: wd.estimatedDurationMinutes ?? 0,
-        status: wd.status,
-        completedAt: wd.completedAt,
-        exercises: wd.exercises.map((ex) => ({
-          order: ex.order,
-          exerciseId: ex.exerciseId.toString(),
-          exerciseTitle: ex.exerciseTitle,
-          exerciseImage: ex.exerciseImage,
-          sets: ex.sets,
-          reps: ex.reps ?? 0,
-          durationSeconds: ex.durationSeconds,
-          restSeconds: ex.restSeconds,
-          notes: ex.notes ?? "",
-          status: ex.status ?? "PENDING",
-          startedAt: ex.startedAt,
-          timeTakenSeconds: ex.timeTakenSeconds,
-        })),
-      })),
-      planType: "custom",
-      weekNumber: activeWeek.weekNumber,
-      startDate: activeWeek.startDate,
-      endDate: activeWeek.endDate,
-      status: activeWeek.status,
-    };
+    await this._userWorkoutPlanRepo.saveWeek(activeWeek);
+
+    const plansResponse = await this.getWorkoutPlans(userId);
+    const updatedPlan = plansResponse.plans.find((p) => p.workoutPlanId === activeWeek._id.toString());
+    if (!updatedPlan) throw new AppError(STATUS.INTERNAL_ERROR, "Failed to retrieve updated plan");
+    return updatedPlan;
   }
 
-  async markExerciseStatus(userId: string, _planId: string, dayNumber: number, exerciseId: string, status: WorkoutExerciseStatus): Promise<WorkoutPlanResponseDto> {
-    const userDoc = await this._userWorkoutPlanRepo.findByUserId(userId);
-    if (!userDoc) {
-      throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT_PLAN.NOT_FOUND);
-    }
-
-    const activeWeek = userDoc.weeks.find((w) => w.status === "ACTIVE");
+  async markExerciseStatus({ userId, dayNumber, instanceId, status }: MarkExerciseStatusDto): Promise<WorkoutPlanResponseDto> {
+    const activeWeek = await this._userWorkoutPlanRepo.findActiveWeekByUserId(userId);
     if (!activeWeek) {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT_PLAN.NOT_FOUND);
     }
@@ -903,19 +845,26 @@ export class UserService implements IUserService {
       throw new AppError(STATUS.NOT_FOUND, "Workout day not found");
     }
 
-    const exercise = day.exercises.find((e) => e.exerciseId.toString() === exerciseId);
+    const exercise = day.exercises.find((e) => e.instanceId === instanceId);
     if (!exercise) {
       throw new AppError(STATUS.NOT_FOUND, "Exercise not found");
     }
 
     // Timer logic
-    if (status === "ACTIVE") {
+    if (status === WORKOUT_EXERCISE_STATUS.ACTIVE) {
+
+      const isAnyActive = activeWeek.workoutDays.some((d) =>
+        d.exercises.some((e) => e.status === WORKOUT_EXERCISE_STATUS.ACTIVE && e.instanceId !== instanceId)
+      );
+
+      if (isAnyActive) {
+        throw new AppError(STATUS.BAD_REQUEST, "Another exercise is currently in progress. Please complete or pause it first.");
+      }
+
       exercise.startedAt = new Date();
-    } else if (status === "COMPLETED") {
+    } else if (status === WORKOUT_EXERCISE_STATUS.COMPLETED) {
       if (exercise.startedAt) {
         const diffSeconds = Math.floor((Date.now() - exercise.startedAt.getTime()) / 1000);
-        // Cap the maximum recorded time to 15 minutes (900 seconds) to prevent 
-        // statistically impossible records if the user forgets to click "Done".
         const maxDuration = 900;
         exercise.timeTakenSeconds = Math.min(diffSeconds, maxDuration);
       } else {
@@ -923,49 +872,252 @@ export class UserService implements IUserService {
       }
     }
 
-    // Toggle completion on exercise
+
     exercise.status = status;
 
-    // Check all COMPLETED or SKIPPED
-    const allExercisesFinished = day.exercises.length > 0 && day.exercises.every(e => e.status === "COMPLETED" || e.status === "SKIPPED");
 
-    day.status = allExercisesFinished ? "COMPLETED" : "PENDING";
+    const allExercisesFinished = day.exercises.length > 0 && day.exercises.every(e => e.status === WORKOUT_EXERCISE_STATUS.COMPLETED || e.status === WORKOUT_EXERCISE_STATUS.SKIPPED);
+
+    day.status = allExercisesFinished ? WORKOUT_DAY_STATUS.COMPLETED : WORKOUT_DAY_STATUS.PENDING;
     day.completedAt = allExercisesFinished ? new Date() : undefined;
 
-    userDoc.markModified("weeks");
-    await userDoc.save();
+    await this._userWorkoutPlanRepo.saveWeek(activeWeek);
+
+    const plansResponse = await this.getWorkoutPlans(userId);
+    const updatedPlan = plansResponse.plans.find((p) => p.workoutPlanId === activeWeek._id.toString());
+    if (!updatedPlan) throw new AppError(STATUS.INTERNAL_ERROR, "Failed to retrieve updated plan");
+    return updatedPlan;
+  }
+
+  async getWorkoutProgress(userId: string, timeframe?: Timeframe): Promise<WorkoutProgressResponseDto> {
+    const plansResponse = await this.getWorkoutPlans(userId);
+
+
+    if (!plansResponse.plans || plansResponse.plans.length === 0) {
+      return {
+        currentStreak: 0,
+        completionRate: 0,
+        workoutsCompleted: 0,
+        totalTrainingMinutes: 0,
+        currentWeekProgress: 0,
+        todayWorkoutProgress: 0,
+        plannedWorkouts: 0,
+        completedWorkouts: 0,
+        skippedWorkouts: 0,
+        weeklyCompletionTrend: [],
+        dailyCompletionTrend: [],
+        monthlyCompletionTrend: [],
+        muscleDistribution: [],
+        recentActivities: [],
+      };
+    }
+
+    const plans = plansResponse.plans;
+    const activePlan = plans.find(p => p.status === WORKOUT_EXERCISE_STATUS.ACTIVE);
+
+    let totalPlanned = 0;
+    let totalCompleted = 0;
+    let totalTrainingSeconds = 0;
+
+    const recentActivities: RecentActivityDto[] = [];
+    const muscleMap = new Map<string, number>();
+
+    // Weekly trend
+    const weeklyCompletionTrend = plans.map(p => {
+      const wDays = p.days.filter(d => d.type === 'workout');
+      const wCompleted = wDays.filter(d => d.status === WORKOUT_DAY_STATUS.COMPLETED).length;
+      return {
+        weekNumber: p.weekNumber,
+        completionRate: wDays.length > 0 ? (wCompleted / wDays.length) * 100 : 0
+      };
+    }).reverse().slice(-5);
+
+    //daily trend
+    const dailyCompletionTrend = [];
+    if (activePlan) {
+      for (const day of activePlan.days) {
+        if (day.type === 'workout') {
+          const rate = day.status === WORKOUT_DAY_STATUS.COMPLETED ? 100 : 0;
+          dailyCompletionTrend.push({
+            dayName: day.day,
+            completionRate: rate
+          });
+        }
+      }
+    }
+
+    // Monthly trend
+    const monthlyMap = new Map<string, { planned: number, completed: number }>();
+    for (const plan of plans) {
+      if (plan.startDate) {
+        const monthName = new Date(plan.startDate).toLocaleString('default', { month: 'short' });
+        const entry = monthlyMap.get(monthName) || { planned: 0, completed: 0 };
+        const wDays = plan.days.filter(d => d.type === 'workout');
+        const wCompleted = wDays.filter(d => d.status === WORKOUT_DAY_STATUS.COMPLETED).length;
+        entry.planned += wDays.length;
+        entry.completed += wCompleted;
+        monthlyMap.set(monthName, entry);
+      }
+    }
+
+    const monthlyCompletionTrend = Array.from(monthlyMap.entries()).map(([monthName, data]) => ({
+      monthName,
+      completionRate: data.planned > 0 ? Math.round((data.completed / data.planned) * 100) : 0
+    })).reverse().slice(-6);
+
+    // timeframe
+    let filteredPlans = plans;
+    const now = new Date();
+
+    if (timeframe === TIMEFRAME.DAILY) {
+
+      filteredPlans = activePlan ? [activePlan] : [];
+    } else if (timeframe === TIMEFRAME.WEEKLY) {
+
+      const fiveWeeksAgo = new Date();
+      fiveWeeksAgo.setDate(now.getDate() - 35);
+      filteredPlans = plans.filter(p => new Date(p.startDate) >= fiveWeeksAgo);
+    } else if (timeframe === TIMEFRAME.MONTHLY) {
+
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(now.getMonth() - 6);
+      filteredPlans = plans.filter(p => new Date(p.startDate) >= sixMonthsAgo);
+    }
+
+    //  filtered plans
+    let totalPlannedExercises = 0;
+    let totalCompletedExercises = 0;
+    let totalSkippedExercises = 0;
+
+    for (const plan of filteredPlans) {
+      for (const day of plan.days) {
+        if (day.type === 'workout') {
+          totalPlanned++;
+
+          if (day.status === WORKOUT_DAY_STATUS.COMPLETED) {
+            totalCompleted++;
+            const activityDate = day.scheduledDate || day.completedAt;
+            if (activityDate) {
+              recentActivities.push({
+                scheduledDate: activityDate,
+                dayName: day.day,
+                status: day.status
+              });
+            }
+          }
+
+          for (const ex of day.exercises) {
+            totalPlannedExercises++;
+            if (ex.status === WORKOUT_EXERCISE_STATUS.COMPLETED) {
+              totalCompletedExercises++;
+              if (ex.timeTakenSeconds) {
+                totalTrainingSeconds += ex.timeTakenSeconds;
+              }
+
+              if (ex.targetMuscles && ex.targetMuscles.length > 0) {
+                for (const muscle of ex.targetMuscles) {
+                  muscleMap.set(muscle, (muscleMap.get(muscle) || 0) + 1);
+                }
+              } else {
+                muscleMap.set('General', (muscleMap.get('General') || 0) + 1);
+              }
+            } else if (ex.status === WORKOUT_EXERCISE_STATUS.SKIPPED) {
+              totalSkippedExercises++;
+            }
+          }
+        }
+      }
+    }
+
+    // Active Week Progress
+    let currentWeekProgress = 0;
+    let todayWorkoutProgress = 0;
+    if (activePlan) {
+      const wDays = activePlan.days.filter(d => d.type === 'workout');
+      const wCompleted = wDays.filter(d => d.status === WORKOUT_DAY_STATUS.COMPLETED).length;
+      currentWeekProgress = wDays.length > 0 ? Math.round((wCompleted / wDays.length) * 100) : 0;
+
+      // workout
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let targetDay = activePlan.days.find(d => {
+        if (!d.scheduledDate) return false;
+        const dDate = new Date(d.scheduledDate);
+        dDate.setHours(0, 0, 0, 0);
+        return dDate.getTime() === today.getTime();
+      });
+
+      if (!targetDay || targetDay.type !== 'workout') {
+
+        targetDay = activePlan.days.find(d => d.type === 'workout' && d.status === WORKOUT_DAY_STATUS.PENDING);
+      }
+
+      if (targetDay && targetDay.exercises && targetDay.exercises.length > 0) {
+        const completedEx = targetDay.exercises.filter(ex => ex.status === WORKOUT_EXERCISE_STATUS.COMPLETED).length;
+        todayWorkoutProgress = Math.round((completedEx / targetDay.exercises.length) * 100);
+      } else if (targetDay && targetDay.status === WORKOUT_DAY_STATUS.COMPLETED) {
+        todayWorkoutProgress = 100;
+      }
+    }
+
+    // Current Streak Calculation
+    let currentStreak = 0;
+    const allDays = plans.flatMap(p => p.days).filter(d => d.scheduledDate).sort((a, b) => new Date(b.scheduledDate!).getTime() - new Date(a.scheduledDate!).getTime());
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+
+    const currentDate = new Date(todayDate);
+    let foundBreak = false;
+
+    while (!foundBreak) {
+      const targetTime = currentDate.getTime();
+      const dayForDate = allDays.find(d => {
+        const dTime = new Date(d.scheduledDate!).setHours(0, 0, 0, 0);
+        return dTime === targetTime;
+      });
+
+      if (!dayForDate) {
+
+        break;
+      }
+
+      if (dayForDate.type === 'workout') {
+        if (dayForDate.status === WORKOUT_DAY_STATUS.COMPLETED) {
+          currentStreak++;
+        } else if (dayForDate.status === WORKOUT_DAY_STATUS.PENDING) {
+          if (targetTime !== todayDate.getTime()) {
+            foundBreak = true;
+          }
+        } else if (dayForDate.status === WORKOUT_DAY_STATUS.SKIPPED) {
+          foundBreak = true;
+        }
+      } else if (dayForDate.type === 'rest') {
+
+        currentStreak++;
+      }
+
+      currentDate.setDate(currentDate.getDate() - 1);
+    }
+
+    const muscleDistribution = Array.from(muscleMap.entries()).map(([muscleName, count]) => ({
+      muscleName, count
+    }));
 
     return {
-      workoutPlanId: userDoc._id.toString(),
-      days: activeWeek.workoutDays.map((wd) => ({
-        dayNumber: wd.dayNumber,
-        day: wd.dayName,
-        type: wd.type.toLowerCase() as "workout" | "rest",
-        focus: wd.focus ?? "",
-        estimatedDurationMinutes: wd.estimatedDurationMinutes ?? 0,
-        status: wd.status,
-        completedAt: wd.completedAt,
-        exercises: wd.exercises.map((ex) => ({
-          order: ex.order,
-          exerciseId: ex.exerciseId.toString(),
-          exerciseTitle: ex.exerciseTitle,
-          exerciseImage: ex.exerciseImage,
-          sets: ex.sets,
-          reps: ex.reps ?? 0,
-          restSeconds: ex.restSeconds,
-          notes: ex.notes ?? "",
-          status: ex.status ?? "PENDING",
-          startedAt: ex.startedAt,
-          timeTakenSeconds: ex.timeTakenSeconds,
-        })),
-      })),
-      planType: "custom",
-      weekNumber: activeWeek.weekNumber,
-      startDate: activeWeek.startDate,
-      endDate: activeWeek.endDate,
-      status: activeWeek.status,
+      currentStreak,
+      completionRate: totalPlanned > 0 ? Math.round((totalCompleted / totalPlanned) * 100) : 0,
+      workoutsCompleted: totalCompleted,
+      totalTrainingMinutes: Math.round(totalTrainingSeconds / 60),
+      currentWeekProgress,
+      todayWorkoutProgress,
+      plannedWorkouts: totalPlannedExercises,
+      completedWorkouts: totalCompletedExercises,
+      skippedWorkouts: totalSkippedExercises,
+      weeklyCompletionTrend,
+      dailyCompletionTrend,
+      monthlyCompletionTrend,
+      muscleDistribution,
+      recentActivities: recentActivities.sort((a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime()).slice(0, 5)
     };
   }
 }
-
-

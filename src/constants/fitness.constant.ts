@@ -89,6 +89,14 @@ export const WORKOUT_DAY_TYPE = {
 export type WorkoutDayType =
   (typeof WORKOUT_DAY_TYPE)[keyof typeof WORKOUT_DAY_TYPE];
 
+export const WORKOUT_DAY_TYPE_LOWER = {
+  WORKOUT: "workout",
+  REST: "rest",
+} as const;
+
+export type WorkoutDayTypeLower =
+  (typeof WORKOUT_DAY_TYPE_LOWER)[keyof typeof WORKOUT_DAY_TYPE_LOWER];
+
 export const WORKOUT_DAY_STATUS = {
   TODO: "TODO",
   COMPLETED: "COMPLETED",
@@ -117,4 +125,12 @@ export const WORKOUT_EXERCISE_STATUS = {
 } as const;
 
 export type WorkoutExerciseStatus =
-  (typeof WORKOUT_EXERCISE_STATUS)[keyof typeof WORKOUT_EXERCISE_STATUS];
+  (typeof WORKOUT_EXERCISE_STATUS)[keyof typeof WORKOUT_EXERCISE_STATUS];
+
+export const TIMEFRAME = {
+  DAILY: "daily",
+  WEEKLY: "weekly",
+  MONTHLY: "monthly",
+} as const;
+
+export type Timeframe = (typeof TIMEFRAME)[keyof typeof TIMEFRAME];
