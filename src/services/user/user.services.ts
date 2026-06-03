@@ -231,7 +231,18 @@ export class UserService implements IUserService {
     if (!data) {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND);
     }
-    return UserMappers.toTrainerDetailDto(data);
+
+    const specializationIds = Array.isArray(data.profile.specializations)
+      ? data.profile.specializations.map((spec: any) => String(spec._id || spec))
+      : [];
+
+    const relatedTrainers = await this._trainerProfileRepo.findRelatedTrainers(
+      specializationIds,
+      data.profile._id.toString(),
+      4 
+    );
+
+    return UserMappers.toTrainerDetailDto(data, relatedTrainers);
   }
 
   // Fetch all categories

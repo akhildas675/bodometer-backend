@@ -3,6 +3,7 @@ import { FindUserResponseDto } from "../../dto/user/user.dto";
 import {
   TrainerDetailDto,
   TrainerListItemDto,
+  RelatedTrainerDto,
 } from "../../dto/trainer/trainer.dto";
 import { ITrainerWithProfile } from "../../interfaces/domain.interface/trainer.interface";
 import { UserInterface } from "../../interfaces/domain.interface/user.interface";
@@ -58,7 +59,20 @@ export class UserMappers {
     return trainers.map((t) => this.toListItemDto(t));
   }
 
-  static toTrainerDetailDto(data: ITrainerWithProfile): TrainerDetailDto {
+  static toRelatedTrainerDto(data: ITrainerWithProfile): RelatedTrainerDto {
+    return {
+      _id: data.profile._id.toString(),
+      name: data.user.name,
+      profilePic: data.user.profilePic ?? null,
+      experienceInYears: data.profile.experienceInYears,
+      bio: data.profile.bio,
+    };
+  }
+
+  static toTrainerDetailDto(
+    data: ITrainerWithProfile,
+    relatedTrainers: ITrainerWithProfile[] = []
+  ): TrainerDetailDto {
     return {
       _id: data.profile._id.toString(),
       name: data.user.name,
@@ -75,6 +89,7 @@ export class UserMappers {
         _id: String(spec._id),
         name: spec.name || "",
       })),
+      relatedTrainers: relatedTrainers.map((t) => this.toRelatedTrainerDto(t)),
     };
   }
 }

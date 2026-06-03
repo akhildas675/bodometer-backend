@@ -337,4 +337,35 @@ export default class TrainerProfileRepository
       } as ITrainerProfileDocument,
     };
   }
+
+  async findRelatedTrainers(
+    specializationIds: string[],
+    excludeProfileId: string,
+    limit: number,
+  ): Promise<ITrainerWithProfile[]> {
+    const objectIds = specializationIds.map(id => new mongoose.Types.ObjectId(id));
+    
+    const profiles = await TrainerProfileModel.find({
+      _id: { $ne: new mongoose.Types.ObjectId(excludeProfileId) },
+      verificationStatus: VERIFICATION_STATUS.APPROVED,
+      specializations: { $in: objectIds }
+    })
+      .populate<{ userId: IUserDocument }>({
+        path: "userId",
+        select: "_id name profilePic",
+      })
+      .limit(limit)
+      .lean<PopulatedTrainerProfile[]>();
+
+    return profiles.map((profile) => {
+      const { userId, ...profileData } = profile;
+      return {
+        user: userId,
+        profile: {
+          ...profileData,
+          userId: userId._id,
+        } as ITrainerProfileDocument,
+      };
+    });
+  }
 }

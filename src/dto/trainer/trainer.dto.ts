@@ -146,6 +146,7 @@ export interface TrainerDetailDto {
   bio: string;
   experienceInYears: number;
   specializations: { _id: string; name: string }[];
+  relatedTrainers?: RelatedTrainerDto[];
 }
 
 export interface AdminGetTrainersDto extends PaginationQueryDto {

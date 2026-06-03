@@ -48,4 +48,10 @@ export interface ITrainerProfileRepository extends IBaseRepository<
   getTrainerByIdWithUser(
     trainerId: string,
   ): Promise<ITrainerWithProfile | null>;
+
+  findRelatedTrainers(
+    specializationIds: string[],
+    excludeProfileId: string,
+    limit: number,
+  ): Promise<ITrainerWithProfile[]>;
 }
