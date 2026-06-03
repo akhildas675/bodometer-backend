@@ -11,19 +11,13 @@ import { WORKOUT_PLAN_STATUS } from "@/constants/fitness.constant";
 
 export class UserWorkoutPlanRepository implements IUserWorkoutPlanRepository {
 
-
   async createWeek(userId: string, week: CreateWeekInput): Promise<IUserWorkoutPlanModel> {
-    const doc = new UserWorkoutPlanModel({
+    const doc = await UserWorkoutPlanModel.create({
       userId: new mongoose.Types.ObjectId(userId),
-      weekNumber: week.weekNumber,
-      startDate: week.startDate,
-      endDate: week.endDate,
-      status: week.status,
-      workoutDays: week.workoutDays,
+      ...week
     });
-    return doc.save();
+    return doc;
   }
-
 
   async findAllByUserId(userId: string): Promise<IUserWorkoutPlanModel[]> {
     return UserWorkoutPlanModel.find({
@@ -31,20 +25,18 @@ export class UserWorkoutPlanRepository implements IUserWorkoutPlanRepository {
     }).sort({ weekNumber: 1 });
   }
 
-
   async findActiveWeekByUserId(userId: string): Promise<IUserWorkoutPlanModel | null> {
     return UserWorkoutPlanModel.findOne({
       userId: new mongoose.Types.ObjectId(userId),
-      status: WORKOUT_PLAN_STATUS.ACTIVE
+      status: WORKOUT_PLAN_STATUS.ACTIVE,
     });
   }
-
 
   async expireActiveWeeks(userId: string): Promise<void> {
     await UserWorkoutPlanModel.updateMany(
       { 
         userId: new mongoose.Types.ObjectId(userId),
-        status: WORKOUT_PLAN_STATUS.ACTIVE
+        status: WORKOUT_PLAN_STATUS.ACTIVE 
       },
       {
         $set: { status: WORKOUT_PLAN_STATUS.EXPIRED },
@@ -52,69 +44,8 @@ export class UserWorkoutPlanRepository implements IUserWorkoutPlanRepository {
     );
   }
 
-
-  async markDayCompleted(
-    userId: string,
-    weekNumber: number,
-    dayNumber: number,
-    completed: boolean,
-  ): Promise<IUserWorkoutPlanModel | null> {
-    return UserWorkoutPlanModel.findOneAndUpdate(
-      { 
-        userId: new mongoose.Types.ObjectId(userId),
-        weekNumber: weekNumber
-      },
-      {
-        $set: {
-          "workoutDays.$[d].status": completed ? "COMPLETED" : "PENDING",
-          "workoutDays.$[d].completedAt": completed ? new Date() : null,
-        },
-      },
-      {
-        arrayFilters: [
-          { "d.dayNumber": dayNumber },
-        ],
-        new: true,
-      },
-    );
-  }
-
-  /**
-   * Update a single exercise's status/timing inside a specific week's day.
-   */
-  async markExerciseStatus(
-    userId: string,
-    weekNumber: number,
-    dayNumber: number,
-    exerciseId: string,
-    status: string,
-    startedAt?: Date,
-    timeTakenSeconds?: number,
-  ): Promise<IUserWorkoutPlanModel | null> {
-    const setFields: Record<string, unknown> = {
-      "workoutDays.$[d].exercises.$[e].status": status,
-    };
-
-    if (startedAt !== undefined) {
-      setFields["workoutDays.$[d].exercises.$[e].startedAt"] = startedAt;
-    }
-    if (timeTakenSeconds !== undefined) {
-      setFields["workoutDays.$[d].exercises.$[e].timeTakenSeconds"] = timeTakenSeconds;
-    }
-
-    return UserWorkoutPlanModel.findOneAndUpdate(
-      { 
-        userId: new mongoose.Types.ObjectId(userId),
-        weekNumber: weekNumber
-      },
-      { $set: setFields },
-      {
-        arrayFilters: [
-          { "d.dayNumber": dayNumber },
-          { "e.exerciseId": new mongoose.Types.ObjectId(exerciseId) },
-        ],
-        new: true,
-      },
-    );
+  async saveWeek(weekDoc: IUserWorkoutPlanModel): Promise<IUserWorkoutPlanModel> {
+    weekDoc.markModified("workoutDays");
+    return await weekDoc.save();
   }
 }

@@ -15,7 +15,7 @@ import { GetTrainersQueryDto } from "../../dto/trainer/trainer.dto";
 import { SubscriptionTransactionQueryDto } from "../../dto/subscription/subscription.dto";
 import { IUserService } from "../../interfaces/service-interface/user/user-service.interface";
 import { SuccessResponse } from "../../utils/success.response";
-import { DifficultyLevel, WORKOUT_EXERCISE_STATUS, WorkoutExerciseStatus } from "../../constants/fitness.constant";
+import { DifficultyLevel, WORKOUT_EXERCISE_STATUS, WorkoutExerciseStatus, Timeframe } from "../../constants/fitness.constant";
 
 export class UserController {
   private logger = new Logger("UserController");
@@ -639,27 +639,6 @@ export class UserController {
     }
   };
 
-  getWorkoutPlan = async (req: AuthRequest, res: Response, next: NextFunction) => {
-    try {
-      if (!req.user?.id) {
-        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
-      }
-      const plan = await this._userService.getWorkoutPlan(req.user.id);
-
-      new SuccessResponse(
-        STATUS.OK,
-        plan ? MESSAGES.WORKOUT_PLAN.FETCHED : MESSAGES.WORKOUT_PLAN.NOT_FOUND,
-        plan
-      ).send(res);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        next(error);
-      } else {
-        next(new Error("Unknown error occurred"));
-      }
-    }
-  };
-
   getWorkoutPlans = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       if (!req.user?.id) {
@@ -693,7 +672,7 @@ export class UserController {
         throw new AppError(STATUS.BAD_REQUEST, "completed field is required and must be a boolean");
       }
 
-      const updatedPlan = await this._userService.markDayCompleted(req.user.id, planId, Number(dayNumber), completed);
+      const updatedPlan = await this._userService.markDayCompleted({ userId: req.user.id, planId, dayNumber: Number(dayNumber), completed });
 
       new SuccessResponse(
         STATUS.OK,
@@ -726,12 +705,35 @@ export class UserController {
         throw new AppError(STATUS.BAD_REQUEST, "status field is required and must be PENDING, ACTIVE, COMPLETED, or SKIPPED");
       }
 
-      const updatedPlan = await this._userService.markExerciseStatus(req.user.id, planId, Number(dayNumber), exerciseId, status);
+      const updatedPlan = await this._userService.markExerciseStatus({ userId: req.user.id, planId, dayNumber: Number(dayNumber), instanceId: exerciseId, status });
 
       new SuccessResponse(
         STATUS.OK,
         "Exercise status updated successfully",
         updatedPlan
+      ).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
+
+  getWorkoutProgress = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      }
+      const timeframe = req.query.timeframe as Timeframe | undefined;
+      const progress = await this._userService.getWorkoutProgress(userId, timeframe);
+
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.WORKOUT_PLAN.PROGRESS_FETCHED,
+        progress
       ).send(res);
     } catch (error: unknown) {
       if (error instanceof Error) {

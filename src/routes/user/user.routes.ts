@@ -162,12 +162,6 @@ userRoute.post(
 );
 
 userRoute.get(
-  USER_ROUTES.GET_WORKOUT_PLAN,
-  ROLE_GUARD.USER_GUARD,
-  userController.getWorkoutPlan,
-);
-
-userRoute.get(
   USER_ROUTES.GET_WORKOUT_PLANS,
   ROLE_GUARD.USER_GUARD,
   userController.getWorkoutPlans,
@@ -183,6 +177,12 @@ userRoute.patch(
   USER_ROUTES.MARK_WORKOUT_EXERCISE,
   ROLE_GUARD.USER_GUARD,
   userController.markExerciseStatus,
+);
+
+userRoute.get(
+  USER_ROUTES.GET_WORKOUT_PROGRESS,
+  ROLE_GUARD.USER_GUARD,
+  userController.getWorkoutProgress,
 );
 
 export default userRoute;

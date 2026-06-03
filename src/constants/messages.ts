@@ -415,5 +415,10 @@ export const MESSAGES = {
     DAY_MARKED: "Workout day marked successfully.",
     PLAN_LIST_FETCHED: "Workout plans fetched successfully.",
     GENERATE_LOCKED: "You can only generate a new plan after the current week ends.",
+    PROGRESS_FETCHED: "Workout progress fetched successfully.",
+    DAY_NOT_FOUND: "Workout day not found.",
+    UPDATE_FAILED: "Failed to retrieve updated plan.",
+    EXERCISE_NOT_FOUND: "Exercise not found.",
+    EXERCISE_IN_PROGRESS: "Another exercise is currently in progress. Please complete or pause it first.",
   },
 } as const;

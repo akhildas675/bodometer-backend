@@ -1,6 +1,6 @@
 import axios from "axios";
 import { WorkoutGenerationPayload } from "@/interfaces/domain.interface/ai.interface";
-import { GenerateWorkoutDto } from "@/dto/exercise/exercise.dto";
+import { GenerateWorkoutDto } from "@/dto/workout/workout-plan.dto";
 
 import { IAiWorkoutService } from "@/interfaces/service-interface/ai/ai.workout-service.interface";
 
@@ -47,7 +47,22 @@ export class AiWorkoutService implements IAiWorkoutService {
 
     try {
       const cleanJson = cleanJsonString(textResponse);
-      return JSON.parse(cleanJson) as WeekPlanResponse;
+      const parsedData = JSON.parse(cleanJson) as WeekPlanResponse;
+      
+      const { randomUUID } = await import("crypto");
+      
+      if (parsedData.weekPlan) {
+        for (const day of parsedData.weekPlan) {
+          if (day.exercises) {
+            for (const ex of day.exercises) {
+              // Inject a unique instance ID for circuit-repetition tracking
+              ex.instanceId = randomUUID();
+            }
+          }
+        }
+      }
+      
+      return parsedData;
     } catch (error) {
       throw new Error(`Failed to parse AI workout plan response: ${(error as Error).message}. Raw response: ${textResponse}`);
     }
@@ -124,19 +139,25 @@ CRITICAL RULES — MUST FOLLOW EXACTLY
 
 1. STRICT ADHERENCE TO ONBOARDING ANSWERS: You MUST deeply analyze the "USER ONBOARDING ANSWERS" section. Every single decision (exercise selection, focus, intensity, goal, workout days, duration) MUST strictly align with the user's specific answers and past workout history. DO NOT provide generic workouts; everything must be strictly tailored to their onboarding profile.
 
-2. EXERCISE SOURCE: Use ONLY exercises from AVAILABLE_EXERCISES. NEVER invent or hallucinate new exercises.
-   Every exerciseId in the response MUST be an id from AVAILABLE_EXERCISES.
+2. EXERCISE SOURCE AND SELECTION: 
+   - Use ONLY exercises from AVAILABLE_EXERCISES. NEVER invent or hallucinate new exercises.
+   - Do NOT just randomly add every available exercise into the plan. Select ONLY the exercises that are strictly necessary and highly relevant to the user's goals and current data.
 
 3. EXERCISE COUNT PER WORKOUT DAY:
-   - Every "workout" type day MUST have a minimum of 10 exercises and a maximum of 15 exercises.
+   - Every "workout" type day MUST have a minimum of 10 exercises and a STRICT maximum of 19 exercises (less than 20).
    - "rest" type days MUST have 0 exercises.
-   - Do NOT output fewer than 10 or more than 15 exercises on any workout day. This is a hard constraint.
+   - You MUST deeply analyze the user's data (experience tier, session duration, goals) to determine the exact number of exercises needed within this 10-19 range. Do not arbitrarily maximize the count; provide only what is highly effective and necessary based on a full data analysis.
 
-4. DIFFICULTY CALIBRATION:
+4. VOLUME AND REPETITION STRATEGY (CIRCUIT STYLE):
+   - ESPECIALLY FOR BEGINNERS: Do NOT group exercises into high-set blocks (e.g., 3 sets of 10 reps). High sets in one go can be too difficult.
+   - Instead, reduce the sets and increase the reps per block (e.g., 1 set of 15 reps). 
+   - To achieve the necessary volume, list the SAME exercise multiple times throughout the same workout day, acting like a circuit. For example: list "Incline Push Up" for 1 set of 15 early in the workout, and then add "Incline Push Up" AGAIN later in the exact same day's list for another 1 set of 15.
+
+5. DIFFICULTY CALIBRATION:
    - Match exercise difficulty strictly to the USER EXPERIENCE PROFILE above and their onboarding fitness level.
    - A beginner user must NEVER receive advanced or intermediate exercises.
 
-5. WORKOUT DAYS: The number of workout days MUST exactly match the user's selected "workoutDaysPerWeek" from their answers.
+6. WORKOUT DAYS: The number of workout days MUST exactly match the user's selected "workoutDaysPerWeek" from their answers, WITH ONE EXCEPTION: If the user selected 7 days, you MUST limit it to 6 workout days and force at least 1 "rest" day to prevent overtraining.
    The remaining days in the 7-day week must be rest days.
 
 6. MUSCLE GROUP BALANCE: Do NOT train the same primary muscle group on consecutive days.
@@ -151,13 +172,18 @@ CRITICAL RULES — MUST FOLLOW EXACTLY
 
 11. TIME-BASED EXERCISES: If an exercise requires holding a position or doing it for time instead of reps (like a Plank or Wall Sit), you MUST omit the "reps" field and instead provide "durationSeconds" with the target time in seconds (e.g., 60). YOU MUST ALSO explicitly mention the time requirement in the "notes" field so the user clearly understands it is time-based (e.g., "Hold this position for 60 seconds").
 
-12. DAY NAMES: The 7-day plan MUST start on TODAY's day of the week, which is ${currentDayOfWeek}. The first day of the plan (dayNumber 1) MUST be ${currentDayOfWeek}, dayNumber 2 MUST be the next day, and so on.
+12. ESTIMATED DURATION (CRITICAL NEW FEATURE): For EVERY exercise, you MUST provide an "estimatedDurationSeconds" field representing the total time in seconds it will take the user to complete the specified sets and reps/duration. 
+    - Pacing rules: Slow/Beginner = ~4-5 seconds per rep. Fast/Advanced = ~2-3 seconds per rep.
+    - Example: 1 set of 15 reps for a beginner = 15 * 4 = 60 seconds + 10s transition = 70. Output "estimatedDurationSeconds": 70.
+    - For time-based exercises (e.g. 60s plank), "estimatedDurationSeconds" should equal the "durationSeconds".
 
-13. FIRST DAY MUST BE A WORKOUT: The very first day of the generated plan (dayNumber 1, ${currentDayOfWeek}) MUST ALWAYS be a "workout" day, NEVER a "rest" day. This ensures the user can start training immediately upon generating their plan.
+13. DAY NAMES: The 7-day plan MUST start on TODAY's day of the week, which is ${currentDayOfWeek}. The first day of the plan (dayNumber 1) MUST be ${currentDayOfWeek}, dayNumber 2 MUST be the next day, and so on.
 
-14. SAFETY AND INJURY PREVENTION (AI RESPONSIBILITY): As an AI prescribing physical activity to a human, you MUST prioritize safety above all else. Do not prescribe dangerously high volume, excessive intensity, or extreme advanced movements (e.g., 1-rep maxes). Ensure adequate rest and recovery are baked into the plan so it is not over-harmful or exhausting.
+14. FIRST DAY MUST BE A WORKOUT: The very first day of the generated plan (dayNumber 1, ${currentDayOfWeek}) MUST ALWAYS be a "workout" day, NEVER a "rest" day. This ensures the user can start training immediately upon generating their plan.
 
-15. PROGRESSIVE OVERLOAD & HISTORICAL ANALYSIS: You MUST deeply analyze the "PAST 4 WEEKS WORKOUT HISTORY" provided below (if any). Construct the next week's plan by applying progressive overload (e.g., slightly increasing sets, reps, or substituting for harder variations) and addressing any missed workouts. Build directly upon their recent past to ensure continuous improvement.
+15. SAFETY AND INJURY PREVENTION (AI RESPONSIBILITY): As an AI prescribing physical activity to a human, you MUST prioritize safety above all else. Do not prescribe dangerously high volume, excessive intensity, or extreme advanced movements (e.g., 1-rep maxes). Ensure adequate rest and recovery are baked into the plan so it is not over-harmful or exhausting.
+
+16. PROGRESSIVE OVERLOAD & HISTORICAL ANALYSIS: You MUST deeply analyze the "PAST 4 WEEKS WORKOUT HISTORY" provided below (if any). Construct the next week's plan by applying progressive overload (e.g., slightly increasing sets, reps, or substituting for harder variations) and addressing any missed workouts. Build directly upon their recent past to ensure continuous improvement.
 
 ══════════════════════════════════════
 USER ONBOARDING ANSWERS
@@ -206,6 +232,7 @@ EXPECTED RESPONSE FORMAT
           "exerciseId": "exercise_id",
           "sets": 3,
           "reps": 12,
+          "estimatedDurationSeconds": 160,
           "restSeconds": 60,
           "notes": "Keep core tight throughout"
         },
@@ -214,6 +241,7 @@ EXPECTED RESPONSE FORMAT
           "exerciseId": "exercise_id_plank",
           "sets": 3,
           "durationSeconds": 60,
+          "estimatedDurationSeconds": 60,
           "restSeconds": 45,
           "notes": "Hold steady"
         }

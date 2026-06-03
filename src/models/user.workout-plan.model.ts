@@ -13,11 +13,13 @@ import {
 //  WorkoutExercise
 
 export interface IEmbeddedWorkoutExercise {
+  instanceId: string;
   exerciseId: mongoose.Types.ObjectId;
   order: number;
   sets: number;
   reps?: number;
   durationSeconds?: number;
+  estimatedDurationSeconds?: number;
   restSeconds: number;
   notes?: string;
   status?: WorkoutExerciseStatus;
@@ -27,6 +29,7 @@ export interface IEmbeddedWorkoutExercise {
 
 const WorkoutExerciseSchema = new Schema<IEmbeddedWorkoutExercise>(
   {
+    instanceId: { type: String, required: true },
     exerciseId: {
       type: Schema.Types.ObjectId,
       ref: "Exercise",
@@ -36,6 +39,7 @@ const WorkoutExerciseSchema = new Schema<IEmbeddedWorkoutExercise>(
     sets: { type: Number, required: true },
     reps: { type: Number },
     durationSeconds: { type: Number },
+    estimatedDurationSeconds: { type: Number },
     restSeconds: { type: Number, required: true },
     notes: { type: String },
     status: {
@@ -49,7 +53,7 @@ const WorkoutExerciseSchema = new Schema<IEmbeddedWorkoutExercise>(
   { _id: false },
 );
 
-// WorkoutDay 
+// WorkoutDay
 
 export interface IEmbeddedWorkoutDay {
   dayNumber: number;
@@ -59,8 +63,8 @@ export interface IEmbeddedWorkoutDay {
   focus?: string;
   estimatedDurationMinutes?: number;
   status: WorkoutDayStatus;
-  startedAt?: Date;
   completedAt?: Date;
+  startedAt?: Date;
   exercises: IEmbeddedWorkoutExercise[];
 }
 
@@ -82,14 +86,14 @@ const WorkoutDaySchema = new Schema<IEmbeddedWorkoutDay>(
       required: true,
       default: WORKOUT_DAY_STATUS.PENDING,
     },
-    startedAt: { type: Date },
     completedAt: { type: Date },
+    startedAt: { type: Date },
     exercises: { type: [WorkoutExerciseSchema], default: [] },
   },
   { _id: false },
 );
 
-//  One week of workout plans
+// UserWorkoutPlan
 export interface IUserWorkoutPlanModel extends Document {
   userId: mongoose.Types.ObjectId;
   weekNumber: number;
@@ -105,6 +109,7 @@ const UserWorkoutPlanSchema = new Schema<IUserWorkoutPlanModel>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
     weekNumber: { type: Number, required: true },
     startDate: { type: Date, required: true },
