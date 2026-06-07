@@ -38,6 +38,10 @@ import {
   exerciseIdParamSchema,
   updateExerciseSchema,
   getAllExercisesSchema,
+  mealCategoryValidationSchema,
+  mealCategoryIdParamSchema,
+  updateMealCategorySchema,
+  getAllMealCategoriesSchema,
 } from "@/validators/admin/admin-validator";
 import { validate } from "@/middleware/validate";
 
@@ -357,7 +361,7 @@ adminRoute.post(
   ADMIN_ROUTES.CREATE_EXERCISE,
   mediaUpload.fields([
     { name: "image", maxCount: 1 },
-    { name: "video", maxCount: 1 }
+    { name: "video", maxCount: 1 },
   ]),
 
   validate(createExerciseSchema),
@@ -380,7 +384,7 @@ adminRoute.put(
   ADMIN_ROUTES.UPDATE_EXERCISE,
   mediaUpload.fields([
     { name: "image", maxCount: 1 },
-    { name: "video", maxCount: 1 }
+    { name: "video", maxCount: 1 },
   ]),
 
   validate(updateExerciseSchema),
@@ -392,6 +396,41 @@ adminRoute.patch(
   validate(exerciseIdParamSchema),
   ROLE_GUARD.ADMIN_GUARD,
   adminController.toggleExerciseStatus,
+);
+
+adminRoute.post(
+  ADMIN_ROUTES.MEAL_CATEGORY_CREATE,
+  validate(mealCategoryValidationSchema),
+  ROLE_GUARD.ADMIN_GUARD,
+  adminController.createMealCategory,
+);
+
+adminRoute.get(
+  "/admin/meal-category",
+  validate(getAllMealCategoriesSchema),
+  ROLE_GUARD.ADMIN_GUARD,
+  adminController.getAllMealCategories,
+);
+
+adminRoute.get(
+  "/admin/meal-category/:id",
+  validate(mealCategoryIdParamSchema),
+  ROLE_GUARD.ADMIN_GUARD,
+  adminController.getMealCategoryById,
+);
+
+adminRoute.put(
+  "/admin/meal-category/:id",
+  validate(updateMealCategorySchema),
+  ROLE_GUARD.ADMIN_GUARD,
+  adminController.updateMealCategory,
+);
+
+adminRoute.patch(
+  "/admin/meal-category/:id/toggle-status",
+  validate(mealCategoryIdParamSchema),
+  ROLE_GUARD.ADMIN_GUARD,
+  adminController.toggleMealCategoryStatus,
 );
 
 export default adminRoute;

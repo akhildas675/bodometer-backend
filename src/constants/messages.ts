@@ -421,4 +421,8 @@ export const MESSAGES = {
     EXERCISE_NOT_FOUND: "Exercise not found.",
     EXERCISE_IN_PROGRESS: "Another exercise is currently in progress. Please complete or pause it first.",
   },
+
+  MEAL_CATEGORY:{
+    CREATED:"Meal Category created",
+  }
 } as const;

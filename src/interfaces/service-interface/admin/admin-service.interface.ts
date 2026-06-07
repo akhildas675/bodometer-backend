@@ -9,6 +9,13 @@ import { QuestionGroupQuery } from "../../domain.interface/onboarding.interface"
 import { CreateTargetMuscleDto, GetAllTargetMusclesResponseDto, TargetMuscleDto, TargetMuscleQueryDto, ToggleTargetMuscleStatusResponseDto, UpdateTargetMuscleDto } from "../../../dto/target.muscles/target-muscles.dto";
 import { CreateEquipmentDto, GetAllEquipmentResponseDto, EquipmentDto, EquipmentQueryDto, ToggleEquipmentStatusResponseDto, UpdateEquipmentDto } from "../../../dto/equipment/equipment.dto";
 import { CreateExerciseDto, ExerciseDto, ExerciseQueryDto, GetAllExercisesResponseDto, ToggleExerciseStatusResponseDto, UpdateExerciseDto } from "../../../dto/exercise/exercise.dto";
+import { 
+  MealCategoryDto, 
+  UpdateMealCategoryDto, 
+  MealCategoryQueryDto, 
+  GetAllMealCategoriesResponseDto, 
+  ToggleMealCategoryStatusResponseDto 
+} from "@/dto/meal.category/meal-category.dto";
 
 
 
@@ -93,4 +100,9 @@ export interface IAdminService {
 
   toggleExerciseStatus(exerciseId: string): Promise<ToggleExerciseStatusResponseDto>;
 
+  createMealCategory(data: MealCategoryDto): Promise<void>;
+  getAllMealCategories(query: MealCategoryQueryDto): Promise<GetAllMealCategoriesResponseDto>;
+  getMealCategoryById(mealCategoryId: string): Promise<MealCategoryDto>;
+  updateMealCategory(mealCategoryId: string, data: UpdateMealCategoryDto): Promise<void>;
+  toggleMealCategoryStatus(mealCategoryId: string): Promise<ToggleMealCategoryStatusResponseDto>;
 }

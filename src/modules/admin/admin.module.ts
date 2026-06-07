@@ -22,6 +22,8 @@ import EquipmentRepository from "@/repositories/equipment/equipment.repository";
 import { IEquipmentRepository } from "@/interfaces/repository-interface/equipment/equipment-repository.interface";
 import ExerciseRepository from "@/repositories/exercise/exercise.repository";
 import { IExerciseRepository } from "@/interfaces/repository-interface/exercise/exercise-repository.interface";
+import MealCategoryRepository from "@/repositories/meal-category/meal-cateogry.repository";
+import { IMealCategoryRepository } from "@/interfaces/repository-interface/meal.category/meal-category.repository";
 
 
 export function createAdminModule() {
@@ -36,6 +38,7 @@ export function createAdminModule() {
   const targetMuscleRepository:ITargetMuscleRepository = new TargetMuscleRepository()
   const equipmentRepository: IEquipmentRepository = new EquipmentRepository();
   const exerciseRepository: IExerciseRepository = new ExerciseRepository();
+  const mealCategoryRepository: IMealCategoryRepository = new MealCategoryRepository();
 
   const s3Service: IS3Service = new S3Service();
   const adminService = new AdminService(
@@ -49,7 +52,8 @@ export function createAdminModule() {
     questionRepository,
     targetMuscleRepository,
     equipmentRepository,
-    exerciseRepository
+    exerciseRepository,
+    mealCategoryRepository
   );
 
   const adminController = new AdminController(adminService)

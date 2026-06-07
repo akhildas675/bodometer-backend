@@ -77,4 +77,5 @@ export const ADMIN_ROUTES = {
   UPDATE_EXERCISE: "/admin/update-exercise/:id",
   TOGGLE_EXERCISE_STATUS: "/admin/toggle-exercise/:id",
 
+  MEAL_CATEGORY_CREATE:"/admin/create-meal-category"
 } as const;
