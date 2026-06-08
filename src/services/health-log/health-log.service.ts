@@ -1,5 +1,6 @@
 import { IHealthLogService } from "../../interfaces/service-interface/health-log/health-log-service.interface";
 import { IHealthLogRepository } from "../../interfaces/repository-interface/health-log/health-log-repository.interface";
+import { IUserSubscriptionRepository } from "../../interfaces/repository-interface/subscription/user.subscription.repository.interface";
 import { AiHealthService, MealMacroEstimate } from "../ai-services/ai-health.service";
 import {
   HealthLogDto,
@@ -12,7 +13,6 @@ import {
 import { TIMEFRAME, Timeframe } from "../../constants/fitness.constant";
 import { IHealthLogModel, IEmbeddedMeal } from "../../models/health-log.model";
 import mongoose from "mongoose";
-import { IUserWorkoutPlanRepository } from "../../interfaces/repository-interface/workout/user-workout-plan.repository.interface";
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
 
@@ -20,42 +20,10 @@ export class HealthLogService implements IHealthLogService {
   constructor(
     private _healthLogRepo: IHealthLogRepository,
     private _aiHealthService: AiHealthService,
-    private _userWorkoutPlanRepo: IUserWorkoutPlanRepository
+    private _userSubscriptionRepo: IUserSubscriptionRepository
   ) { }
 
-  private async validateDate(userId: string, targetDateStr: string): Promise<void> {
-    const targetDate = new Date(targetDateStr);
-    targetDate.setUTCHours(0, 0, 0, 0);
-
-    const now = new Date();
-    now.setUTCHours(0, 0, 0, 0);
-
-    if (targetDate.getTime() > now.getTime()) {
-      throw new AppError(STATUS.BAD_REQUEST, "Cannot log health data for future dates.");
-    }
-
-    const plans = await this._userWorkoutPlanRepo.findAllByUserId(userId);
-    if (!plans || plans.length === 0) {
-      throw new AppError(STATUS.BAD_REQUEST, "Cannot log health data before generating a workout plan.");
-    }
-
-    let oldestDate = new Date();
-    for (let i = 0; i < plans.length; i++) {
-      const d = new Date(plans[i].startDate);
-      d.setUTCHours(0, 0, 0, 0);
-      if (d.getTime() < oldestDate.getTime()) {
-        oldestDate = d;
-      }
-    }
-
-    if (targetDate.getTime() < oldestDate.getTime()) {
-      throw new AppError(STATUS.BAD_REQUEST, "Cannot log health data before your first plan started.");
-    }
-  }
-
   async getHealthLog(userId: string, dateStr: string): Promise<HealthLogDto> {
-    await this.validateDate(userId, dateStr);
-
     const date = new Date(dateStr);
     const log = await this._healthLogRepo.findByUserAndDate(userId, date);
 
@@ -75,9 +43,27 @@ export class HealthLogService implements IHealthLogService {
   }
 
   async upsertHealthLog(userId: string, data: UpsertHealthLogDto): Promise<HealthLogDto> {
-    await this.validateDate(userId, data.date);
-
     const date = new Date(data.date);
+    
+    // Validate target date is not in the future
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    if (date > today) {
+      throw new AppError(STATUS.BAD_REQUEST, "Cannot log meals for future dates.");
+    }
+
+    // Validate target date is not before subscription started
+    const activeSub = await this._userSubscriptionRepo.findActiveByUserId(userId);
+    if (!activeSub) {
+      throw new AppError(STATUS.BAD_REQUEST, "No active subscription found.");
+    }
+
+    const subStart = new Date(activeSub.startDate);
+    subStart.setHours(0, 0, 0, 0);
+    if (date < subStart) {
+      throw new AppError(STATUS.BAD_REQUEST, "Cannot log meals before your subscription start date.");
+    }
+
     const existingLog = await this._healthLogRepo.findByUserAndDate(userId, date);
 
     const processedMeals: IEmbeddedMeal[] = [];

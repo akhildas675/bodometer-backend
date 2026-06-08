@@ -61,7 +61,11 @@ export function createUserModule() {
   const paymentService: IPaymentService = new PaymentService();
   const workoutPlanService = new WorkoutPlanService(userWorkoutPlanRepository, exerciseRepository, answerRepository);
   const aiHealthService = new AiHealthService();
-  const healthLogService: IHealthLogService = new HealthLogService(healthLogRepository, aiHealthService, userWorkoutPlanRepository);
+  const healthLogService: IHealthLogService = new HealthLogService(
+    healthLogRepository,
+    aiHealthService,
+    userSubscriptionRepository
+  );
 
   const userService: IUserService = new UserService(
     userRepository,
