@@ -356,11 +356,8 @@ export class WorkoutPlanService implements IWorkoutPlanService {
         completionRate: 0,
         workoutsCompleted: 0,
         totalTrainingMinutes: 0,
-        currentWeekProgress: 0,
-        todayWorkoutProgress: 0,
-        plannedWorkouts: 0,
-        completedWorkouts: 0,
-        skippedWorkouts: 0,
+        progressBar: { title: "", goalLabel: "", value: 0, valueLabel: "0%" },
+        pieChart: { labels: ['No Data', ''], values: [1, 0] },
         trendData: [],
         muscleDistribution: [],
         recentActivities: [],
@@ -563,6 +560,38 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     }
 
     const totalMuscleHits = Array.from(muscleMap.values()).reduce((sum, count) => sum + count, 0);
+    // ── Progress Bar Calculation based on timeframe ────────────────────────
+    let title = "Monthly Workout Progress";
+    let goalLabel = "Monthly Goal";
+    let value = totalPlanned > 0 ? Math.round((totalCompleted / totalPlanned) * 100) : 0;
+    let valueLabel = `${value}%`;
+
+    if (timeframe === TIMEFRAME.DAILY) {
+      title = "Today's Workout Progress";
+      goalLabel = "Daily Goal";
+      value = todayWorkoutProgress;
+      valueLabel = `${value}% Completed`;
+    } else if (timeframe === TIMEFRAME.WEEKLY) {
+      title = "Current Week Progress";
+      goalLabel = "Weekly Goal";
+      value = currentWeekProgress;
+      valueLabel = `${value}%`;
+    }
+
+    const progressBar = {
+      title,
+      goalLabel,
+      value,
+      valueLabel
+    };
+
+    // ── Pie Chart Calculation ──────────────────────────────────────────────
+    const totalPie = totalCompletedExercises + totalSkippedExercises;
+    const pieChart = {
+      labels: totalPie > 0 ? ['Completed', 'Skipped'] : ['No Data', ''],
+      values: totalPie > 0 ? [totalCompletedExercises, totalSkippedExercises] : [1, 0]
+    };
+
     const muscleDistribution = Array.from(muscleMap.entries()).map(([muscleName, count]) => ({
       muscleName, 
       count,
@@ -574,11 +603,8 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       completionRate: totalPlanned > 0 ? Math.round((totalCompleted / totalPlanned) * 100) : 0,
       workoutsCompleted: totalCompleted,
       totalTrainingMinutes: Math.round(totalTrainingSeconds / 60),
-      currentWeekProgress,
-      todayWorkoutProgress,
-      plannedWorkouts: totalPlannedExercises,
-      completedWorkouts: totalCompletedExercises,
-      skippedWorkouts: totalSkippedExercises,
+      progressBar,
+      pieChart,
       trendData,
       muscleDistribution,
       recentActivities: recentActivities.sort((a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime()).slice(0, 5)

@@ -88,20 +88,29 @@ export interface RecentActivityDto {
   status: string;
 }
 
+export interface ProgressBarDto {
+  title: string;
+  goalLabel: string;
+  value: number;
+  valueLabel: string;
+}
+
+export interface PieChartDto {
+  labels: string[];
+  values: number[];
+}
+
 export interface WorkoutProgressResponseDto {
   currentStreak: number;
   completionRate: number;
   workoutsCompleted: number;
   totalTrainingMinutes: number;
 
-  currentWeekProgress: number;
-  todayWorkoutProgress: number;
-
-  plannedWorkouts: number;
-  completedWorkouts: number;
-  skippedWorkouts: number;
+  progressBar: ProgressBarDto;
+  pieChart: PieChartDto;
 
   trendData: WorkoutTrendDataDto[];
   muscleDistribution: MuscleDistributionDto[];
   recentActivities: RecentActivityDto[];
 }
+
