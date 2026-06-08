@@ -1147,7 +1147,7 @@ export class AdminService implements IAdminService {
       sortOrder: query.sortOrder,
     });
     return {
-      data: data as MealCategoryDto[], // Map to DTO in a real app or rely on the repository's toInterface
+      data: data as MealCategoryDto[], 
       pagination,
     };
   }

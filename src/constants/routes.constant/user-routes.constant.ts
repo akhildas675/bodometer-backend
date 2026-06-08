@@ -11,6 +11,11 @@ export const USER_ROUTES = {
   GET_CATEGORIES: '/user/categories',
   GET_EQUIPMENT: '/user/equipment',
   GET_CATEGORY_BY_ID: '/user/categories/:categoryId',
+  GET_MEAL_CATEGORIES: '/user/meal-categories',
+
+  GET_HEALTH_LOG: '/user/health-log',
+  UPSERT_HEALTH_LOG: '/user/health-log',
+  GET_HEALTH_LOG_PROGRESS: '/user/health-log/progress',
 
   //subscriptions
 

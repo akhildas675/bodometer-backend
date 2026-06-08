@@ -10,6 +10,7 @@ import { PaginatedResult } from "../../../interfaces/domain.interface/common.int
 import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto } from "../../../dto/exercise/exercise.dto";
 import { WorkoutPlanDetailDto, WorkoutPlanResponseDto, GetWorkoutPlansResponseDto, WorkoutProgressResponseDto, MarkDayCompletedDto, MarkExerciseStatusDto } from "../../../dto/workout/workout-plan.dto";
 import { EquipmentQueryDto, GetAllEquipmentResponseDto } from "../../../dto/equipment/equipment.dto";
+import { MealCategoryQueryDto, GetAllMealCategoriesResponseDto } from "../../../dto/meal.category/meal-category.dto";
 
 import { WorkoutExerciseStatus, Timeframe } from "../../../constants/fitness.constant";
 export interface IUserService {
@@ -21,6 +22,7 @@ export interface IUserService {
   getTrainerById(id: string): Promise<TrainerDetailDto>;
   getCategories(query: CategoryQuery): Promise<GetAllCategoriesResponse>;
   getAllEquipment(query: EquipmentQueryDto): Promise<GetAllEquipmentResponseDto>;
+  getMealCategories(query: MealCategoryQueryDto): Promise<GetAllMealCategoriesResponseDto>;
   getCategoryById(id: string): Promise<CategoryDetailDto>;
   getMySubscriptions(): Promise<UserSubscriptionPlanResponseDto[] | null>
   createCheckoutSession(userId: string, planId: string): Promise<{ checkoutUrl: string }>;

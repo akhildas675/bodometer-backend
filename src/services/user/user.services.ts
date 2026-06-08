@@ -11,7 +11,7 @@ import { AppError } from "../../utils/appError";
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 import { hashPassword } from "../../utils/password";
-import {  Timeframe } from "@/constants/fitness.constant";
+import { Timeframe } from "@/constants/fitness.constant";
 
 import {
   ChangePasswordDto,
@@ -61,7 +61,9 @@ import { EquipmentMapper } from "../../mappers/equipment/equipment.mapper";
 import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto } from "../../dto/exercise/exercise.dto";
 import { WorkoutPlanDetailDto, WorkoutPlanResponseDto, GetWorkoutPlansResponseDto, WorkoutProgressResponseDto, MarkDayCompletedDto, MarkExerciseStatusDto } from "../../dto/workout/workout-plan.dto";
 import { EquipmentQueryDto, GetAllEquipmentResponseDto } from "../../dto/equipment/equipment.dto";
+import { MealCategoryQueryDto, GetAllMealCategoriesResponseDto } from "../../dto/meal.category/meal-category.dto";
 import { IWorkoutPlanService } from "../../interfaces/service-interface/workout/workout-plan.service.interface";
+import { IMealCategoryRepository } from "@/interfaces/repository-interface/meal.category/meal-category.repository";
 
 
 export class UserService implements IUserService {
@@ -81,6 +83,7 @@ export class UserService implements IUserService {
     private _healthMetrics: IHealthMetrics,
     private _exerciseRepo: IExerciseRepository,
     private _equipmentRepo: IEquipmentRepository,
+    private _mealCategoryRepo: IMealCategoryRepository,
     private _workoutPlanService: IWorkoutPlanService,
   ) { }
 
@@ -238,7 +241,7 @@ export class UserService implements IUserService {
     const relatedTrainers = await this._trainerProfileRepo.findRelatedTrainers(
       specializationIds,
       data.profile._id.toString(),
-      4 
+      4
     );
 
     return UserMappers.toTrainerDetailDto(data, relatedTrainers);
@@ -268,6 +271,24 @@ export class UserService implements IUserService {
 
     return {
       data: EquipmentMapper.toEquipmentDtoList(data),
+      pagination,
+    };
+  }
+
+  // Fetch all meal categories
+  async getMealCategories(query: MealCategoryQueryDto): Promise<GetAllMealCategoriesResponseDto> {
+    const { data, pagination } = await this._mealCategoryRepo.getAllMealCategories({
+      ...query,
+      isActive: true,
+    } as MealCategoryQueryDto);
+
+    return {
+      data: data.map(item => ({
+        mealCategoryId: item.mealCategoryId || "",
+        title: item.title,
+        description: item.description,
+        isActive: item.isActive
+      })),
       pagination,
     };
   }

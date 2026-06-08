@@ -18,7 +18,8 @@ export interface MealCategoryQueryDto extends PaginationQueryDto {
   status?: string;
 }
 
-export interface GetAllMealCategoriesResponseDto extends PaginatedResponseDto<MealCategoryDto> {}
+export type GetAllMealCategoriesResponseDto = PaginatedResponseDto<MealCategoryDto>;
+
 
 export interface ToggleMealCategoryStatusResponseDto {
   message: string;

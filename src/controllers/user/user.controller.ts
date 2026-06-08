@@ -14,12 +14,17 @@ import {
 import { GetTrainersQueryDto } from "../../dto/trainer/trainer.dto";
 import { SubscriptionTransactionQueryDto } from "../../dto/subscription/subscription.dto";
 import { IUserService } from "../../interfaces/service-interface/user/user-service.interface";
+import { IHealthLogService } from "../../interfaces/service-interface/health-log/health-log-service.interface";
+import { UpsertHealthLogDto } from "../../dto/health-log/health-log.dto";
 import { SuccessResponse } from "../../utils/success.response";
 import { DifficultyLevel, WORKOUT_EXERCISE_STATUS, WorkoutExerciseStatus, Timeframe } from "../../constants/fitness.constant";
 
 export class UserController {
   private logger = new Logger("UserController");
-  constructor(private _userService: IUserService) { }
+  constructor(
+    private _userService: IUserService,
+    private _healthLogService: IHealthLogService
+  ) { }
 
   getUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
@@ -207,6 +212,88 @@ export class UserController {
         result.data,
         result.pagination
       ).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
+
+  getMealCategories = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const query = parsePaginationQuery(req);
+
+      const result = await this._userService.getMealCategories(query);
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.COMMON.SUCCESS,
+        result.data,
+        result.pagination
+      ).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
+
+  getHealthLog = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      const date = (req.query.date as string) || new Date().toISOString();
+      const result = await this._healthLogService.getHealthLog(req.user.id, date);
+      new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, result).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
+
+  upsertHealthLog = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      const data: UpsertHealthLogDto = req.body;
+      if (!data.date) throw new AppError(STATUS.BAD_REQUEST, "Date is required");
+      const result = await this._healthLogService.upsertHealthLog(req.user.id, data);
+      new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, result).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
+
+  getHealthLogProgress = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      const timeframe = req.query.timeframe as Timeframe | undefined;
+      const result = await this._healthLogService.getHealthLogProgress(req.user.id, timeframe);
+      new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, result).send(res);
     } catch (error: unknown) {
       if (error instanceof Error) {
         next(error);
