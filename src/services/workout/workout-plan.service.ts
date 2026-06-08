@@ -209,16 +209,6 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     const plans = sortedWeeks.map((week) => WorkoutMapper.toWorkoutPlanResponseDto(week, exerciseDataMap));
 
     const latestPlan = plans[0];
-    const allDaysFinished = latestPlan ? latestPlan.days.every(d => d.status === WORKOUT_DAY_STATUS.COMPLETED || d.status === WORKOUT_DAY_STATUS.SKIPPED) : true;
-    const pendingDaysCount = latestPlan ? latestPlan.days.filter(d => d.status === WORKOUT_DAY_STATUS.PENDING).length : 0;
-    const canGenerate = allDaysFinished;
-
-    let firstPendingDayNumber = -1;
-    if (latestPlan) {
-      const pendingDay = latestPlan.days.find(d => d.status === WORKOUT_DAY_STATUS.PENDING);
-      firstPendingDayNumber = pendingDay ? pendingDay.dayNumber : -1;
-    }
-
     let mostRecentCompleted: Date | null = null;
     for (const plan of plans) {
       for (const day of plan.days) {
@@ -233,8 +223,19 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
     let hasCompletedWorkoutToday = false;
     const todayStr = new Date().toDateString();
+
     if (mostRecentCompleted) {
       hasCompletedWorkoutToday = mostRecentCompleted.toDateString() === todayStr;
+    }
+
+    const allDaysFinished = latestPlan ? latestPlan.days.every(d => d.status === WORKOUT_DAY_STATUS.COMPLETED || d.status === WORKOUT_DAY_STATUS.SKIPPED) : true;
+    const pendingDaysCount = latestPlan ? latestPlan.days.filter(d => d.status === WORKOUT_DAY_STATUS.PENDING).length : 0;
+    const canGenerate = allDaysFinished;
+
+    let firstPendingDayNumber = -1;
+    if (latestPlan) {
+      const pendingDay = latestPlan.days.find(d => d.status === WORKOUT_DAY_STATUS.PENDING);
+      firstPendingDayNumber = pendingDay ? pendingDay.dayNumber : -1;
     }
 
     return {
