@@ -209,9 +209,15 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     const plans = sortedWeeks.map((week) => WorkoutMapper.toWorkoutPlanResponseDto(week, exerciseDataMap));
 
     const latestPlan = plans[0];
-    const INACTIVITY_DAYS = 4;
-    const MS_PER_DAY = 1000 * 60 * 60 * 24;
-    let isInactive = false;
+    const allDaysFinished = latestPlan ? latestPlan.days.every(d => d.status === WORKOUT_DAY_STATUS.COMPLETED || d.status === WORKOUT_DAY_STATUS.SKIPPED) : true;
+    const pendingDaysCount = latestPlan ? latestPlan.days.filter(d => d.status === WORKOUT_DAY_STATUS.PENDING).length : 0;
+    const canGenerate = allDaysFinished;
+
+    let firstPendingDayNumber = -1;
+    if (latestPlan) {
+      const pendingDay = latestPlan.days.find(d => d.status === WORKOUT_DAY_STATUS.PENDING);
+      firstPendingDayNumber = pendingDay ? pendingDay.dayNumber : -1;
+    }
 
     let mostRecentCompleted: Date | null = null;
     for (const plan of plans) {
@@ -227,35 +233,15 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
     let hasCompletedWorkoutToday = false;
     const todayStr = new Date().toDateString();
-
     if (mostRecentCompleted) {
       hasCompletedWorkoutToday = mostRecentCompleted.toDateString() === todayStr;
-      const daysSinceLastWorkout = (Date.now() - mostRecentCompleted.getTime()) / MS_PER_DAY;
-      if (daysSinceLastWorkout >= INACTIVITY_DAYS) {
-        isInactive = true;
-      }
-    } else if (latestPlan?.startDate) {
-      const daysSinceStart = (Date.now() - new Date(latestPlan.startDate).getTime()) / MS_PER_DAY;
-      if (daysSinceStart >= INACTIVITY_DAYS) {
-        isInactive = true;
-      }
-    }
-
-    const allDaysFinished = latestPlan ? latestPlan.days.every(d => d.status === WORKOUT_DAY_STATUS.COMPLETED || d.status === WORKOUT_DAY_STATUS.SKIPPED) : true;
-    const pendingDaysCount = latestPlan ? latestPlan.days.filter(d => d.status === WORKOUT_DAY_STATUS.PENDING).length : 0;
-    const canGenerate = allDaysFinished || isInactive;
-
-    let firstPendingDayNumber = -1;
-    if (latestPlan) {
-      const pendingDay = latestPlan.days.find(d => d.status === WORKOUT_DAY_STATUS.PENDING);
-      firstPendingDayNumber = pendingDay ? pendingDay.dayNumber : -1;
     }
 
     return {
       plans,
       generationStatus: {
         canGenerate,
-        isInactive,
+        isInactive: false,
         pendingDaysCount,
         hasCompletedWorkoutToday,
         firstPendingDayNumber
