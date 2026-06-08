@@ -71,30 +71,21 @@ export interface GetWorkoutPlansResponseDto {
   };
 }
 
-export interface WeeklyCompletionDto {
-  weekNumber: number;
+export interface WorkoutTrendDataDto {
+  label: string;
   completionRate: number;
 }
 
-export interface DailyCompletionDto {
-  dayName: string;
-  completionRate: number;
-}
-
-export interface MonthlyCompletionDto {
-  monthName: string;
-  completionRate: number;
+export interface MuscleDistributionDto {
+  muscleName: string;
+  count: number;
+  percentage: number;
 }
 
 export interface RecentActivityDto {
   scheduledDate: Date;
   dayName: string;
   status: string;
-}
-
-export interface MuscleDistributionDto {
-  muscleName: string;
-  count: number;
 }
 
 export interface WorkoutProgressResponseDto {
@@ -110,9 +101,7 @@ export interface WorkoutProgressResponseDto {
   completedWorkouts: number;
   skippedWorkouts: number;
 
-  weeklyCompletionTrend: WeeklyCompletionDto[];
-  dailyCompletionTrend: DailyCompletionDto[];
-  monthlyCompletionTrend: MonthlyCompletionDto[];
+  trendData: WorkoutTrendDataDto[];
   muscleDistribution: MuscleDistributionDto[];
   recentActivities: RecentActivityDto[];
 }

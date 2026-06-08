@@ -349,7 +349,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     return this.calculateWorkoutProgress(plansResponse.plans, timeframe);
   }
 
-  private calculateWorkoutProgress(plans: WorkoutPlanResponseDto[], timeframe?: Timeframe): WorkoutProgressResponseDto {
+  private calculateWorkoutProgress(plans: WorkoutPlanResponseDto[], timeframe: Timeframe = TIMEFRAME.WEEKLY): WorkoutProgressResponseDto {
     if (!plans || plans.length === 0) {
       return {
         currentStreak: 0,
@@ -361,9 +361,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
         plannedWorkouts: 0,
         completedWorkouts: 0,
         skippedWorkouts: 0,
-        weeklyCompletionTrend: [],
-        dailyCompletionTrend: [],
-        monthlyCompletionTrend: [],
+        trendData: [],
         muscleDistribution: [],
         recentActivities: [],
       };
@@ -378,48 +376,51 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     const recentActivities: RecentActivityDto[] = [];
     const muscleMap = new Map<string, number>();
 
-    // Weekly trend
-    const weeklyCompletionTrend = plans.map(p => {
-      const wDays = p.days.filter(d => d.type === 'workout');
-      const wCompleted = wDays.filter(d => d.status === WORKOUT_DAY_STATUS.COMPLETED).length;
-      return {
-        weekNumber: p.weekNumber,
-        completionRate: wDays.length > 0 ? (wCompleted / wDays.length) * 100 : 0
-      };
-    }).reverse().slice(-5);
+    // ── Trend Data generation based on timeframe ───────────────────────────
+    const trendData: { label: string; completionRate: number }[] = [];
 
-    //daily trend
-    const dailyCompletionTrend = [];
-    if (activePlan) {
+    if (timeframe === TIMEFRAME.DAILY && activePlan) {
+      // Last 7 days / Current active plan days
       for (const day of activePlan.days) {
         if (day.type === 'workout') {
           const rate = day.status === WORKOUT_DAY_STATUS.COMPLETED ? 100 : 0;
-          dailyCompletionTrend.push({
-            dayName: day.day,
+          trendData.push({
+            label: day.day, // "Mon", "Tue"
             completionRate: rate
           });
         }
       }
-    }
-
-    // Monthly trend
-    const monthlyMap = new Map<string, { planned: number, completed: number }>();
-    for (const plan of plans) {
-      if (plan.startDate) {
-        const monthName = new Date(plan.startDate).toLocaleString('default', { month: 'short' });
-        const entry = monthlyMap.get(monthName) || { planned: 0, completed: 0 };
-        const wDays = plan.days.filter(d => d.type === 'workout');
+    } else if (timeframe === TIMEFRAME.WEEKLY) {
+      // Weekly trend
+      const weeklyTrends = plans.map(p => {
+        const wDays = p.days.filter(d => d.type === 'workout');
         const wCompleted = wDays.filter(d => d.status === WORKOUT_DAY_STATUS.COMPLETED).length;
-        entry.planned += wDays.length;
-        entry.completed += wCompleted;
-        monthlyMap.set(monthName, entry);
+        return {
+          label: `Week ${p.weekNumber}`,
+          completionRate: wDays.length > 0 ? Math.round((wCompleted / wDays.length) * 100) : 0
+        };
+      }).reverse().slice(-5);
+      trendData.push(...weeklyTrends);
+    } else if (timeframe === TIMEFRAME.MONTHLY) {
+      // Monthly trend
+      const monthlyMap = new Map<string, { planned: number, completed: number }>();
+      for (const plan of plans) {
+        if (plan.startDate) {
+          const monthName = new Date(plan.startDate).toLocaleString('default', { month: 'short' });
+          const entry = monthlyMap.get(monthName) || { planned: 0, completed: 0 };
+          const wDays = plan.days.filter(d => d.type === 'workout');
+          const wCompleted = wDays.filter(d => d.status === WORKOUT_DAY_STATUS.COMPLETED).length;
+          entry.planned += wDays.length;
+          entry.completed += wCompleted;
+          monthlyMap.set(monthName, entry);
+        }
       }
+      const monthlyTrends = Array.from(monthlyMap.entries()).map(([monthName, data]) => ({
+        label: monthName,
+        completionRate: data.planned > 0 ? Math.round((data.completed / data.planned) * 100) : 0
+      })).reverse().slice(-6);
+      trendData.push(...monthlyTrends);
     }
-
-    const monthlyCompletionTrend = Array.from(monthlyMap.entries()).map(([monthName, data]) => ({
-      monthName,
-      completionRate: data.planned > 0 ? Math.round((data.completed / data.planned) * 100) : 0
-    })).reverse().slice(-6);
 
     // timeframe
     const now = new Date();
@@ -503,13 +504,13 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       currentWeekProgress = wDays.length > 0 ? Math.round((wCompleted / wDays.length) * 100) : 0;
 
       // workout
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const todayDate = new Date();
+      todayDate.setHours(0, 0, 0, 0);
       let targetDay = activePlan.days.find(d => {
         if (!d.scheduledDate) return false;
         const dDate = new Date(d.scheduledDate);
         dDate.setHours(0, 0, 0, 0);
-        return dDate.getTime() === today.getTime();
+        return dDate.getTime() === todayDate.getTime();
       });
 
       if (!targetDay || targetDay.type !== 'workout') {
@@ -561,8 +562,11 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       currentDate.setDate(currentDate.getDate() - 1);
     }
 
+    const totalMuscleHits = Array.from(muscleMap.values()).reduce((sum, count) => sum + count, 0);
     const muscleDistribution = Array.from(muscleMap.entries()).map(([muscleName, count]) => ({
-      muscleName, count
+      muscleName, 
+      count,
+      percentage: totalMuscleHits > 0 ? Math.round((count / totalMuscleHits) * 100) : 0
     }));
 
     return {
@@ -575,9 +579,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       plannedWorkouts: totalPlannedExercises,
       completedWorkouts: totalCompletedExercises,
       skippedWorkouts: totalSkippedExercises,
-      weeklyCompletionTrend,
-      dailyCompletionTrend,
-      monthlyCompletionTrend,
+      trendData,
       muscleDistribution,
       recentActivities: recentActivities.sort((a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime()).slice(0, 5)
     };
