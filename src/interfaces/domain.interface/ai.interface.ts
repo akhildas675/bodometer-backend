@@ -1,3 +1,5 @@
+import { PlanType } from "../../constants/fitness.constant";
+
 export interface AvailableExercise {
   id: string;
   key: string;
@@ -8,6 +10,7 @@ export interface AvailableExercise {
 }
 
 export interface WorkoutGenerationPayload {
+  planType: PlanType;
   answers: Record<string, unknown>;
   availableExercises: AvailableExercise[];
   previousPlansCount: number;

@@ -1,44 +1,134 @@
 import axios from "axios";
 import { WorkoutGenerationPayload } from "@/interfaces/domain.interface/ai.interface";
 import { GenerateWorkoutDto } from "@/dto/workout/workout-plan.dto";
-
 import { IAiWorkoutService } from "@/interfaces/service-interface/ai/ai.workout-service.interface";
 
 export interface WeekPlanResponse {
   weekPlan: GenerateWorkoutDto[];
 }
 
+interface GeminiResponse {
+  candidates?: Array<{
+    content?: {
+      parts?: Array<{
+        text?: string;
+      }>;
+    };
+  }>;
+}
+
+interface GeminiErrorDetail {
+  "@type": string;
+  retryDelay?: string;
+}
+
+interface GeminiErrorResponse {
+  error?: {
+    code: number;
+    message: string;
+    status: string;
+    details?: GeminiErrorDetail[];
+  };
+}
+
+const FALLBACK_MODELS = [
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
+  "gemini-3.5-flash",
+  "gemini-2.0-flash",
+  "gemini-flash-latest",
+  "gemini-flash-lite-latest",
+  "gemini-2.5-pro",
+];
+
+async function makeAiRequestWithFallback(payload: unknown): Promise<{ data: GeminiResponse }> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY is not defined in environment variables");
+  }
+
+  let lastError: Error | null = null;
+
+  for (const model of FALLBACK_MODELS) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const retries = 2;
+    let attempt = 1;
+
+    while (attempt <= retries) {
+      try {
+        console.log(`[AI] Requesting model: ${model} (Attempt ${attempt}/${retries})...`);
+        return await axios.post<GeminiResponse>(url, payload);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          lastError = error;
+        }
+
+        if (axios.isAxiosError<GeminiErrorResponse>(error)) {
+          const status = error.response?.status;
+          const errMsg = error.response?.data?.error?.message || error.message;
+
+          console.warn(`[AI] Model ${model} failed (status=${status}): ${errMsg}`);
+
+          if (status && status !== 429 && status < 500) {
+            throw error;
+          }
+
+          if (status === 429 || status === 503) {
+            const details = error.response?.data?.error?.details || [];
+            const retryInfo = details.find(
+              (d) => d["@type"] === "type.googleapis.com/google.rpc.RetryInfo"
+            );
+
+            const isQuotaExceeded =
+              errMsg.toLowerCase().includes("quota") ||
+              errMsg.toLowerCase().includes("exhaust");
+
+            if (isQuotaExceeded) {
+              console.warn(`[AI] Quota exceeded for model ${model}. Fallback immediately.`);
+              break;
+            }
+
+            if (retryInfo && retryInfo.retryDelay) {
+              const seconds = parseFloat(retryInfo.retryDelay);
+              if (!isNaN(seconds)) {
+                const waitMs = seconds * 1000 + 1000;
+                console.log(
+                  `[AI] Model requested delay of ${retryInfo.retryDelay}. Waiting ${waitMs}ms...`
+                );
+                await new Promise((resolve) => setTimeout(resolve, waitMs));
+                attempt++;
+                continue;
+              }
+            }
+          }
+        }
+
+        const delay = 1500 * attempt;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        attempt++;
+      }
+    }
+  }
+
+  throw lastError || new Error("AI request failed after exhausting all fallback models");
+}
+
 export class AiWorkoutService implements IAiWorkoutService {
   async generateWorkoutPlan(payload: WorkoutGenerationPayload): Promise<WeekPlanResponse> {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("GEMINI_API_KEY is not defined in environment variables");
-    }
-
     const prompt = buildWorkoutPrompt(payload);
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-    interface GeminiResponse {
-      candidates?: Array<{
-        content?: {
-          parts?: Array<{
-            text?: string;
-          }>;
-        };
-      }>;
-    }
-
-    const response = await axios.post<GeminiResponse>(url, {
+    const apiPayload = {
       contents: [
         {
-          parts: [
-            {
-              text: prompt,
-            },
-          ],
+          parts: [{ text: prompt }],
         },
       ],
-    });
+      generationConfig: {
+        responseMimeType: "application/json",
+      },
+    };
+
+    const response = await makeAiRequestWithFallback(apiPayload);
 
     const textResponse = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!textResponse) {
@@ -48,209 +138,452 @@ export class AiWorkoutService implements IAiWorkoutService {
     try {
       const cleanJson = cleanJsonString(textResponse);
       const parsedData = JSON.parse(cleanJson) as WeekPlanResponse;
-      
+
       const { randomUUID } = await import("crypto");
-      
+
       if (parsedData.weekPlan) {
         for (const day of parsedData.weekPlan) {
           if (day.exercises) {
             for (const ex of day.exercises) {
-              // Inject a unique instance ID for circuit-repetition tracking
               ex.instanceId = randomUUID();
             }
           }
         }
       }
-      
+
       return parsedData;
     } catch (error) {
-      throw new Error(`Failed to parse AI workout plan response: ${(error as Error).message}. Raw response: ${textResponse}`);
+      throw new Error(
+        `Failed to parse AI workout plan response: ${(error as Error).message}. Raw response: ${textResponse}`
+      );
     }
   }
 }
 
 function cleanJsonString(input: string): string {
-  let cleaned = input.trim();
-  if (cleaned.startsWith("```")) {
-    cleaned = cleaned.replace(/^```[a-zA-Z]*\s*/, "");
+  const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)\s*```/i;
+  const match = input.match(codeBlockRegex);
+  if (match && match[1]) {
+    return match[1].trim();
   }
-  if (cleaned.endsWith("```")) {
-    cleaned = cleaned.replace(/\s*```$/, "");
+
+  const firstBrace = input.indexOf("{");
+  const firstBracket = input.indexOf("[");
+
+  if (firstBracket !== -1 && (firstBrace === -1 || firstBracket < firstBrace)) {
+    const lastBracket = input.lastIndexOf("]");
+    if (lastBracket !== -1 && lastBracket > firstBracket) {
+      return input.substring(firstBracket, lastBracket + 1).trim();
+    }
   }
-  return cleaned.trim();
+
+  if (firstBrace !== -1) {
+    const lastBrace = input.lastIndexOf("}");
+    if (lastBrace !== -1 && lastBrace > firstBrace) {
+      return input.substring(firstBrace, lastBrace + 1).trim();
+    }
+  }
+
+  return input.trim();
 }
 
-export const buildWorkoutPrompt = (payload: WorkoutGenerationPayload) => {
-  const { previousPlansCount, completedWorkoutDaysTotal } = payload;
+// ─────────────────────────────────────────────────────────────────────────────
+// NOTE: No answer keys or answer values are manually parsed here in TypeScript.
+// The entire answers array is passed raw to the AI.
+// The AI is responsible for reading and interpreting every answer by its
+// questionKey label and answer value. This makes the prompt resilient to any
+// admin-side changes to question keys or answer value strings.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const buildWorkoutPrompt = (payload: WorkoutGenerationPayload): string => {
+  const { previousPlansCount, completedWorkoutDaysTotal, planType } = payload;
+
   const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const currentDayOfWeek = daysOfWeek[new Date().getDay()];
 
-  // Infer experience tier from how many workout days the user has actually completed
-  let experienceTier: string;
-  let experienceGuidance: string;
+  // ─── FREE PLAN ─────────────────────────────────────────────────────────────
+  if (planType === "FREE") {
+    return `You are an expert AI fitness coach.
+Your task is to generate a basic, beginner-friendly 7-day workout plan.
 
-    if (completedWorkoutDaysTotal === 0) {
-    experienceTier = "ABSOLUTE_BEGINNER";
-    experienceGuidance = `
-- This user has NEVER completed a workout day with this app before. Treat them as an absolute beginner.
-- Use ONLY beginner-difficulty exercises (difficulty: "beginner").
-- Do NOT include any intermediate or advanced exercises regardless of what the user says their fitness level is.
-- Keep sets low (2–3 sets), reps moderate (10–15), rest periods exactly 30s.
-- Focus on foundational compound movements and bodyweight exercises.
-- Do not overwhelm — safety and correct form take priority over intensity.`;
-  } else if (completedWorkoutDaysTotal <= 10) {
-    experienceTier = "EARLY_STAGE";
-    experienceGuidance = `
-- This user has completed ${completedWorkoutDaysTotal} workout day(s). They are still in the early stages.
-- Primarily use beginner exercises, with at most 1–2 intermediate exercises per workout day.
-- Keep sets at 3, reps at 10–12, rest strictly at 30s.
-- Begin introducing slightly more variety but prioritise form and consistency.`;
-  } else if (completedWorkoutDaysTotal <= 30) {
-    experienceTier = "INTERMEDIATE";
-    experienceGuidance = `
-- This user has completed ${completedWorkoutDaysTotal} workout days. They are an intermediate-level athlete.
-- Use a mix of beginner and intermediate exercises. Advanced exercises can appear sparingly (1 per day max).
-- Sets: 3–4, Reps: 8–12, Rest: 30s.
-- Begin periodisation — vary volume and intensity across the week.`;
-  } else {
-    experienceTier = "EXPERIENCED";
-    experienceGuidance = `
-- This user has completed ${completedWorkoutDaysTotal} workout days. They are experienced.
-- Use intermediate and advanced exercises freely. Prioritise progression and intensity.
-- Sets: 4–5, Reps: 6–12, Rest: 30s.
-- Apply advanced principles: supersets, drop sets, progressive overload notes.`;
-  }
+════════════════════════════════════════════════════════════════════
+STEP 1 — READ THE ONBOARDING ANSWERS FIRST (MANDATORY)
+════════════════════════════════════════════════════════════════════
 
-  return `You are an expert AI fitness coach with deep knowledge of exercise science and periodisation.
+The USER ONBOARDING ANSWERS section at the bottom of this prompt contains a JSON array.
+Each item has a "questionKey" and an "answer". You must read this array before doing anything else.
 
-Your task is to generate a safe, personalized, and progressive 7-day workout plan.
+From those answers, identify and use the following:
 
-══════════════════════════════════════
-USER EXPERIENCE PROFILE
-══════════════════════════════════════
-Experience Tier: ${experienceTier}
-Completed Workout Days: ${completedWorkoutDaysTotal}
-Total Weeks Generated: ${previousPlansCount}
-${experienceGuidance}
+  A) WEEKLY WORKOUT FREQUENCY
+     Look through the answers for the one whose answer is a whole number between 1 and 7.
+     The question context will be about how many days per week the user can commit to working out.
+     Use that number as WORKOUT_DAYS.
+     REST_DAYS = 7 − WORKOUT_DAYS.
+     ▸ If WORKOUT_DAYS = 7 → ALL 7 days are workout days. There are ZERO rest days.
+     ▸ If WORKOUT_DAYS = 5 → 5 workout days, 2 rest days.
+     ▸ NEVER use a hardcoded default. Use only the value from the answers.
 
-══════════════════════════════════════
-CRITICAL RULES — MUST FOLLOW EXACTLY
-══════════════════════════════════════
+  B) WORKOUT ENVIRONMENT
+     Find the answer about where the user will work out (home, gym, outdoors, etc.).
+     Assign ONLY exercises compatible with that environment.
+     If it says "home" with "no equipment", use ONLY bodyweight exercises.
 
-1. STRICT ADHERENCE TO ONBOARDING ANSWERS: You MUST deeply analyze the "USER ONBOARDING ANSWERS" section. Every single decision (exercise selection, focus, intensity, goal, workout days, duration) MUST strictly align with the user's specific answers and past workout history. DO NOT provide generic workouts; everything must be strictly tailored to their onboarding profile.
+════════════════════════════════════════════════════════════════════
+ABSOLUTE RULES — EVERY RULE MUST BE FOLLOWED EXACTLY
+════════════════════════════════════════════════════════════════════
 
-2. EXERCISE SOURCE AND SELECTION: 
-   - Use ONLY exercises from AVAILABLE_EXERCISES. NEVER invent or hallucinate new exercises.
-   - Do NOT just randomly add every available exercise into the plan. Select ONLY the exercises that are strictly necessary and highly relevant to the user's goals and current data.
+RULE 1 — WORKOUT DAY COUNT (CRITICAL):
+  • Generate exactly WORKOUT_DAYS "workout" type days (derived from Step 1A above).
+  • Generate exactly REST_DAYS "rest" type days.
+  • Total days in weekPlan MUST equal exactly 7. Never 6. Never 8.
+  • If the user chose 7 workout days → 7 workout days, 0 rest days. No exceptions.
 
-3. EXERCISE COUNT PER WORKOUT DAY:
-   - Every "workout" type day MUST have a minimum of 10 exercises and a STRICT maximum of 19 exercises (less than 20).
-   - "rest" type days MUST have 0 exercises.
-   - You MUST deeply analyze the user's data (experience tier, session duration, goals) to determine the exact number of exercises needed within this 10-19 range. Do not arbitrarily maximize the count; provide only what is highly effective and necessary based on a full data analysis.
+RULE 2 — DAY ORDERING:
+  • dayNumber 1 = ${currentDayOfWeek} (today). dayNumber 2 = tomorrow. And so on.
+  • dayNumber 1 MUST always be a "workout" day.
 
-4. VOLUME AND REPETITION STRATEGY (CIRCUIT STYLE):
-   - ESPECIALLY FOR BEGINNERS: Do NOT group exercises into high-set blocks (e.g., 3 sets of 10 reps). High sets in one go can be too difficult.
-   - Instead, reduce the sets and increase the reps per block (e.g., 1 set of 15 reps). 
-   - To achieve the necessary volume, list the SAME exercise multiple times throughout the same workout day, acting like a circuit. For example: list "Incline Push Up" for 1 set of 15 early in the workout, and then add "Incline Push Up" AGAIN later in the exact same day's list for another 1 set of 15.
+RULE 3 — EXERCISE SOURCE:
+  • Use ONLY exercises from AVAILABLE EXERCISES below.
+  • Never invent or hallucinate exercises not in that list.
+  • Only use exercises whose "workoutEnvironments" array includes the user's environment (Step 1B).
 
-5. DIFFICULTY CALIBRATION:
-   - Match exercise difficulty strictly to the USER EXPERIENCE PROFILE above and their onboarding fitness level.
-   - A beginner user must NEVER receive advanced or intermediate exercises.
+RULE 4 — EXERCISE COUNT PER WORKOUT DAY:
+  • Every "workout" day MUST have a minimum of 12 exercises and a maximum of 20 exercises.
+  • Never go below 12. Never go above 20.
+  • Every "rest" day MUST have an empty exercises array [].
 
-6. WORKOUT DAYS: The number of workout days MUST exactly match the user's selected "workoutDaysPerWeek" from their answers, WITH ONE EXCEPTION: If the user selected 7 days, you MUST limit it to 6 workout days and force at least 1 "rest" day to prevent overtraining.
-   The remaining days in the 7-day week must be rest days.
+RULE 5 — VOLUME:
+  • Sets: 2–3. Reps: 10–15. Rest: 60 seconds. Beginner-safe intensity.
 
-6. MUSCLE GROUP BALANCE: Do NOT train the same primary muscle group on consecutive days.
+RULE 6 — FOCUS FIELD:
+  • Every workout day: non-empty "focus" (e.g., "Full Body Basics", "Core & Cardio").
+  • Every rest day: non-empty "focus" with recovery guidance (e.g., "Recovery: Light Walk & Stretching").
 
-7. DURATION: Match the estimated session duration strictly to the user's preferred session length from their answers.
+RULE 7 — ESTIMATED DURATION (EVERY EXERCISE):
+  • Every exercise MUST include "estimatedDurationSeconds".
+  • Rep-based:  (reps × 4) × sets  +  restSeconds × (sets − 1)  +  10
+  • Time-based: durationSeconds × sets  +  restSeconds × (sets − 1)
 
-8. ENVIRONMENT & EQUIPMENT: Only assign exercises appropriate for the user's workout environment and available equipment as stated in their answers.
+RULE 8 — TIME-BASED EXERCISES:
+  • If the exercise is done for time (e.g., Plank): omit "reps", add "durationSeconds".
+  • The "notes" field MUST state the duration (e.g., "Hold for 30 seconds").
 
-9. FORMAT: Return STRICT JSON only. No markdown, no explanations, no text outside the JSON.
+RULE 9 — NO DUPLICATE EXERCISES IN A DAY:
+  • Each exercise may appear at most once per workout day.
 
-10. BMI CALCULATION & TAILORING: The USER ONBOARDING ANSWERS below include the user's gender, weight, and height. Calculate the user's BMI (Body Mass Index) internally based on these values. Use this calculated BMI and their gender to further tailor the difficulty, volume, and exercise selection of the workout plan (e.g. recommend lower-impact exercises if BMI is high).
+RULE 10 — MUSCLE GROUP BALANCE (for plans with < 7 workout days):
+  • Do not train the same primary muscle group on consecutive workout days.
 
-11. TIME-BASED EXERCISES: If an exercise requires holding a position or doing it for time instead of reps (like a Plank or Wall Sit), you MUST omit the "reps" field and instead provide "durationSeconds" with the target time in seconds (e.g., 60). YOU MUST ALSO explicitly mention the time requirement in the "notes" field so the user clearly understands it is time-based (e.g., "Hold this position for 60 seconds").
+RULE 11 — MUSCLE GROUP ROTATION (for 7-day plans):
+  • When all 7 days are workout days, vary the focus each day so no single muscle group
+    is trained on consecutive days (e.g., Upper / Lower / Core / Full Body / Cardio rotation).
 
-12. ESTIMATED DURATION (CRITICAL NEW FEATURE): For EVERY exercise, you MUST provide an "estimatedDurationSeconds" field representing the total time in seconds it will take the user to complete the specified sets and reps/duration. 
-    - Pacing rules: Slow/Beginner = ~4-5 seconds per rep. Fast/Advanced = ~2-3 seconds per rep.
-    - Example: 1 set of 15 reps for a beginner = 15 * 4 = 60 seconds + 10s transition = 70. Output "estimatedDurationSeconds": 70.
-    - For time-based exercises (e.g. 60s plank), "estimatedDurationSeconds" should equal the "durationSeconds".
+RULE 12 — OUTPUT FORMAT:
+  • Return STRICT valid JSON only. No markdown, no explanations, nothing outside the JSON.
 
-13. DAY NAMES: The 7-day plan MUST start on TODAY's day of the week, which is ${currentDayOfWeek}. The first day of the plan (dayNumber 1) MUST be ${currentDayOfWeek}, dayNumber 2 MUST be the next day, and so on.
-
-14. FIRST DAY MUST BE A WORKOUT: The very first day of the generated plan (dayNumber 1, ${currentDayOfWeek}) MUST ALWAYS be a "workout" day, NEVER a "rest" day. This ensures the user can start training immediately upon generating their plan.
-
-15. SAFETY AND INJURY PREVENTION (AI RESPONSIBILITY): As an AI prescribing physical activity to a human, you MUST prioritize safety above all else. Do not prescribe dangerously high volume, excessive intensity, or extreme advanced movements (e.g., 1-rep maxes). Ensure adequate rest and recovery are baked into the plan so it is not over-harmful or exhausting.
-
-16. PROGRESSIVE OVERLOAD & HISTORICAL ANALYSIS: You MUST deeply analyze the "PAST 4 WEEKS WORKOUT HISTORY" provided below (if any). Construct the next week's plan by applying progressive overload (e.g., slightly increasing sets, reps, or substituting for harder variations) and addressing any missed workouts. Build directly upon their recent past to ensure continuous improvement.
-
-══════════════════════════════════════
-USER ONBOARDING ANSWERS
-══════════════════════════════════════
-
+════════════════════════════════════════════════════════════════════
+USER ONBOARDING ANSWERS  ← READ THIS FIRST BEFORE GENERATING
+════════════════════════════════════════════════════════════════════
 ${JSON.stringify(payload.answers, null, 2)}
 
-══════════════════════════════════════
-PAST 4 WEEKS WORKOUT HISTORY
-══════════════════════════════════════
-
-${payload.past4WeeksData ? JSON.stringify(payload.past4WeeksData, null, 2) : "No previous workout history available."}
-
-══════════════════════════════════════
-AVAILABLE EXERCISES
-══════════════════════════════════════
-
+════════════════════════════════════════════════════════════════════
+AVAILABLE EXERCISES  ← ONLY THESE MAY BE USED
+════════════════════════════════════════════════════════════════════
 ${JSON.stringify(payload.availableExercises, null, 2)}
 
-AVAILABLE EXERCISE FORMAT:
-[
-  {
-    "id": "exercise_id",
-    "key": "push_up",
-    "title": "Push Up",
-    "difficulty": "beginner",
-    "isCompound": true,
-    "workoutEnvironments": ["home", "gym"]
-  }
-]
-
-══════════════════════════════════════
+════════════════════════════════════════════════════════════════════
 EXPECTED RESPONSE FORMAT
-══════════════════════════════════════
-
+════════════════════════════════════════════════════════════════════
 {
   "weekPlan": [
     {
-      "day": "Monday",
+      "day": "${currentDayOfWeek}",
+      "dayNumber": 1,
       "type": "workout",
-      "focus": "Upper Body",
-      "estimatedDurationMinutes": 50,
+      "focus": "Full Body Basics",
+      "estimatedDurationMinutes": 18,
       "exercises": [
         {
           "order": 1,
           "exerciseId": "exercise_id",
-          "sets": 3,
+          "sets": 2,
           "reps": 12,
-          "estimatedDurationSeconds": 160,
+          "estimatedDurationSeconds": 106,
+          "restSeconds": 60,
+          "notes": "Steady controlled pace"
+        },
+        {
+          "order": 2,
+          "exerciseId": "exercise_id_plank",
+          "sets": 2,
+          "durationSeconds": 30,
+          "estimatedDurationSeconds": 90,
+          "restSeconds": 45,
+          "notes": "Hold for 30 seconds. Keep hips level."
+        }
+      ]
+    },
+    {
+      "day": "Tuesday",
+      "dayNumber": 2,
+      "type": "rest",
+      "focus": "Recovery: Light Walk & Stretching",
+      "estimatedDurationMinutes": 0,
+      "exercises": []
+    }
+  ]
+}`;
+  }
+
+  // ─── PREMIUM PLAN — EXPERIENCE TIER ───────────────────────────────────────
+  let experienceTier: string;
+  let experienceGuidance: string;
+
+  if (completedWorkoutDaysTotal === 0) {
+    experienceTier = "ABSOLUTE_BEGINNER";
+    experienceGuidance = `
+EXPERIENCE GUIDANCE (Absolute Beginner — 0 completed workouts):
+• Select ONLY exercises with difficulty: "beginner". Never assign intermediate or advanced exercises.
+• Sets: 1–2 per exercise. Reps: 8–12. Rest: 60–90 seconds.
+• Experience level affects ONLY sets, reps, rest, and exercise difficulty — NOT exercise count.
+• Exercise count per day is governed by the user's preferred session duration (see Rule 3 below).`;
+  } else if (completedWorkoutDaysTotal <= 10) {
+    experienceTier = "EARLY_STAGE";
+    experienceGuidance = `
+EXPERIENCE GUIDANCE (Early Stage — ${completedWorkoutDaysTotal} completed workouts):
+• Mostly beginner exercises. At most 1–2 intermediate exercises per workout day.
+• Sets: 2–3. Reps: 10–12. Rest: 45–60 seconds.
+• Experience level affects ONLY sets, reps, rest, and exercise difficulty — NOT exercise count.`;
+  } else if (completedWorkoutDaysTotal <= 30) {
+    experienceTier = "INTERMEDIATE";
+    experienceGuidance = `
+EXPERIENCE GUIDANCE (Intermediate — ${completedWorkoutDaysTotal} completed workouts):
+• Mix of beginner and intermediate exercises. Up to 1 advanced exercise per day.
+• Sets: 3–4. Reps: 8–12. Rest: 30–45 seconds.
+• Apply progressive overload. Exercise count is governed by the user's preferred session duration.`;
+  } else {
+    experienceTier = "EXPERIENCED";
+    experienceGuidance = `
+EXPERIENCE GUIDANCE (Experienced — ${completedWorkoutDaysTotal} completed workouts):
+• Intermediate and advanced exercises freely. Prioritize challenge and progressive overload.
+• Sets: 3–5. Reps: 6–12. Rest: 30 seconds.
+• Exercise count is governed by the user's preferred session duration.`;
+  }
+
+  // ─── PREMIUM PLAN PROMPT ──────────────────────────────────────────────────
+  return `You are an expert AI fitness coach specializing in exercise science, biomechanics, and individualized programming.
+
+Your ONLY task is to generate a strictly personalized 7-day workout plan.
+Every decision MUST come exclusively from the USER ONBOARDING ANSWERS provided below.
+Do NOT generate any generic, templated, or assumed content.
+
+════════════════════════════════════════════════════════════════════
+USER EXPERIENCE PROFILE  (pre-computed by the system)
+════════════════════════════════════════════════════════════════════
+Experience Tier              : ${experienceTier}
+Completed Workout Days Total : ${completedWorkoutDaysTotal}
+Total Plans Previously Made  : ${previousPlansCount}
+${experienceGuidance}
+
+════════════════════════════════════════════════════════════════════
+STEP 1 — READ AND EXTRACT FROM ONBOARDING ANSWERS (DO THIS FIRST)
+════════════════════════════════════════════════════════════════════
+
+The USER ONBOARDING ANSWERS section at the bottom contains a JSON array.
+Each item has a "questionKey" and an "answer".
+
+Before writing a single exercise, extract ALL of the following from those answers:
+
+  A) WEEKLY WORKOUT FREQUENCY
+     Find the answer whose value is a whole number 1–7 representing days per week.
+     The question context will be about weekly workout commitment or frequency.
+     Call this value WORKOUT_DAYS.  REST_DAYS = 7 − WORKOUT_DAYS.
+     ▸ WORKOUT_DAYS = 7 → 7 workout days, 0 rest days. Zero exceptions.
+     ▸ WORKOUT_DAYS = 5 → 5 workout days, 2 rest days.
+     ▸ Do NOT use any default. Read the value from the answers only.
+
+  B) SESSION DURATION
+     Find the answer about how long the user can work out per session.
+     The answer will be a string describing a time range (e.g., something like
+     "under_20_minutes", "20_30_minutes", "30_45_minutes", "45_60_minutes",
+     "60_plus_minutes" — the exact format may vary; admin can change these strings).
+     Parse the numeric range from the string regardless of separator style or word order.
+     Use the midpoint or upper bound of that range as the target session length in minutes.
+     Call this SESSION_MINUTES. Use it to determine exercise count per Rule 3 below.
+
+  C) FITNESS GOALS
+     Read the primary goal answer and all secondary goal answers.
+     Use these to drive ALL exercise selection and day focus labels.
+     Examples:
+       lose_weight / burn_fat     → cardio-heavy, higher reps, short rest, aerobic movements
+       muscle_gain / build_muscle → compound lifts, hypertrophy rep ranges (8–12)
+       reduce_stress              → controlled-pace movements, breathing-friendly exercises
+       cardiovascular_health      → sustained aerobic or interval-style exercises
+       increase_energy            → dynamic, full-body compound movements
+
+  D) WORKOUT ENVIRONMENT & EQUIPMENT
+     Read the environment answer (home, gym, outdoors, etc.) and any equipment answers.
+     Assign ONLY exercises compatible with that environment and those exact equipment items.
+     If the answer indicates home with no equipment → bodyweight-only exercises.
+     Never assign an exercise requiring equipment the user does not have.
+
+  E) INJURIES & PHYSICAL LIMITATIONS
+     Read any injury/limitation answers.
+     If limitations exist, never assign exercises stressing the affected area.
+     Add an explicit safety note in the "notes" field for nearby exercises.
+     If the answer indicates no injuries, no special restriction applies.
+
+  F) BIOLOGICAL SEX, WEIGHT, HEIGHT, DATE OF BIRTH
+     Extract these values to calculate BMI: weight_kg / (height_m)^2.
+     Use BMI, sex, and age to calibrate intensity and exercise selection internally.
+     High BMI → prefer lower-impact, joint-friendly options.
+     Do not output the BMI value in the response.
+
+  G) PREFERRED WORKOUT TYPE
+     Read what types of workouts the user enjoys (cardio, strength, yoga, HIIT, etc.).
+     Prioritize exercises that align with those preferences when available.
+
+════════════════════════════════════════════════════════════════════
+ABSOLUTE RULES — EVERY RULE MUST BE FOLLOWED EXACTLY
+════════════════════════════════════════════════════════════════════
+
+RULE 1 — WORKOUT DAY COUNT (MOST CRITICAL):
+  • Generate exactly WORKOUT_DAYS "workout" type days (from Step 1A).
+  • Generate exactly REST_DAYS "rest" type days.
+  • Total days in weekPlan = exactly 7. Never 6. Never 8.
+  • WORKOUT_DAYS = 7 means 7 workout days and 0 rest days. No exceptions.
+  • NEVER override this with a different value. The user's stated frequency is final.
+
+RULE 2 — DAY ORDERING:
+  • dayNumber 1 = ${currentDayOfWeek} (today). dayNumber 2 = tomorrow. Continuing in calendar order.
+  • dayNumber 1 MUST always be a "workout" day, never a rest day.
+
+RULE 3 — EXERCISE COUNT PER WORKOUT DAY:
+  • Every "workout" day MUST contain a minimum of 12 exercises and a maximum of 20 exercises.
+  • Never go below 12. Never go above 20.
+  • Target the upper end of the range (closer to 20) for longer session durations and
+    the lower end (closer to 12) for shorter session durations — but never drop below 12.
+  • DO NOT reduce exercise count because the user is a beginner. Experience tier
+    affects only sets, reps, rest, and difficulty — never the exercise count.
+  • Every "rest" day MUST have an empty exercises array [].
+
+RULE 4 — EXERCISE SOURCE:
+  • Use ONLY exercises from AVAILABLE EXERCISES below.
+  • Never invent, hallucinate, or reference any exercise not in that list.
+  • Each selected exercise's "workoutEnvironments" MUST include the user's environment (Step 1D).
+
+RULE 5 — EXPERIENCE TIER APPLICATION:
+  Apply the sets/reps/rest/difficulty guidance from the USER EXPERIENCE PROFILE above.
+  This affects difficulty, volume per exercise, and rest — not the number of exercises.
+
+RULE 6 — MUSCLE GROUP BALANCE:
+  • Never train the same primary muscle group on two consecutive workout days.
+  • For 7-day plans, rotate focus each day (e.g., Upper / Lower / Core / Full Body / Cardio)
+    so no single muscle group is overloaded on back-to-back days.
+
+RULE 7 — PROGRESSIVE OVERLOAD:
+  • If PAST 4 WEEKS WORKOUT HISTORY is provided, analyse it carefully.
+  • Increase ONE variable only: either reps OR sets OR exercise difficulty — never all at once.
+  • If no history exists, set a safe baseline appropriate to the experience tier.
+
+RULE 8 — FOCUS FIELD:
+  • Every workout day MUST have a non-empty "focus" derived from the user's goals and
+    that day's muscle group target (e.g., "Cardio & Fat Burn", "Upper Body Strength", "Core & Mobility").
+  • Every rest day MUST have a non-empty "focus" with recovery guidance
+    (e.g., "Recovery: Stretching & Hydration", "Active Recovery: Light Walk").
+
+RULE 9 — TIME-BASED EXERCISES:
+  • For exercises done for time rather than reps (e.g., Plank, Wall Sit):
+    - Omit the "reps" field entirely.
+    - Provide "durationSeconds" with the target time in seconds.
+    - "notes" MUST explicitly state the duration (e.g., "Hold for 45 seconds").
+
+RULE 10 — ESTIMATED DURATION (EVERY EXERCISE):
+  • Every exercise MUST include "estimatedDurationSeconds".
+  • Rep-based:   (reps × pace_s) × sets  +  restSeconds × (sets − 1)  +  10
+    Pace: Beginner = 4–5 s/rep | Intermediate = 3–4 s/rep | Advanced = 2–3 s/rep
+  • Time-based:  durationSeconds × sets  +  restSeconds × (sets − 1)
+
+RULE 11 — NO DUPLICATE EXERCISES WITHIN A DAY:
+  • Each exercise appears at most once per workout day.
+  • Exception: intentional circuit — if used, state "Circuit round X" in the "notes" field.
+
+RULE 12 — SAFETY:
+  • Do not prescribe dangerous volume, 1-rep max attempts, or advanced movements
+    for users whose experience tier does not support them.
+  • Recovery days must be genuinely restful or lightly active — never a disguised workout.
+
+RULE 13 — SESSION DURATION MATCH:
+  • The "estimatedDurationMinutes" for each workout day MUST closely match SESSION_MINUTES.
+  • Do not significantly exceed or fall short of the user's stated session length.
+
+RULE 14 — OUTPUT FORMAT:
+  • Return STRICT valid JSON only.
+  • No markdown fences, no prose, no comments — nothing outside the JSON object.
+
+════════════════════════════════════════════════════════════════════
+USER ONBOARDING ANSWERS  ← PRIMARY SOURCE OF TRUTH — READ FIRST
+════════════════════════════════════════════════════════════════════
+${JSON.stringify(payload.answers, null, 2)}
+
+════════════════════════════════════════════════════════════════════
+PAST 4 WEEKS WORKOUT HISTORY  ← USE FOR PROGRESSIVE OVERLOAD
+════════════════════════════════════════════════════════════════════
+${payload.past4WeeksData ? JSON.stringify(payload.past4WeeksData, null, 2) : "No previous workout history available."}
+
+════════════════════════════════════════════════════════════════════
+AVAILABLE EXERCISES  ← ONLY THESE MAY BE USED
+════════════════════════════════════════════════════════════════════
+${JSON.stringify(payload.availableExercises, null, 2)}
+
+AVAILABLE EXERCISE SCHEMA:
+{
+  "id": "exercise_id",
+  "key": "push_up",
+  "title": "Push Up",
+  "difficulty": "beginner" | "intermediate" | "advanced",
+  "isCompound": true | false,
+  "workoutEnvironments": ["home", "gym"]
+}
+
+════════════════════════════════════════════════════════════════════
+EXPECTED RESPONSE FORMAT
+════════════════════════════════════════════════════════════════════
+{
+  "weekPlan": [
+    {
+      "day": "${currentDayOfWeek}",
+      "dayNumber": 1,
+      "type": "workout",
+      "focus": "<goal-aligned focus from onboarding>",
+      "estimatedDurationMinutes": 18,
+      "exercises": [
+        {
+          "order": 1,
+          "exerciseId": "exercise_id",
+          "sets": 2,
+          "reps": 12,
+          "estimatedDurationSeconds": 106,
           "restSeconds": 60,
           "notes": "Keep core tight throughout"
         },
         {
           "order": 2,
           "exerciseId": "exercise_id_plank",
-          "sets": 3,
-          "durationSeconds": 60,
-          "estimatedDurationSeconds": 60,
+          "sets": 2,
+          "durationSeconds": 30,
+          "estimatedDurationSeconds": 90,
           "restSeconds": 45,
-          "notes": "Hold steady"
+          "notes": "Hold for 30 seconds. Keep hips level and breathe steadily."
         }
       ]
     },
     {
       "day": "Tuesday",
+      "dayNumber": 2,
       "type": "rest",
-      "focus": "Recovery",
+      "focus": "Recovery: Stretching & Hydration",
       "estimatedDurationMinutes": 0,
       "exercises": []
     }

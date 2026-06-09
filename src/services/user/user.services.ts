@@ -11,7 +11,7 @@ import { AppError } from "../../utils/appError";
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 import { hashPassword } from "../../utils/password";
-import { Timeframe } from "@/constants/fitness.constant";
+import { Timeframe, PLAN_TYPE } from "@/constants/fitness.constant";
 
 import {
   ChangePasswordDto,
@@ -416,6 +416,13 @@ export class UserService implements IUserService {
       },
     });
 
+    const onboardingStatus = await this.getOnboardingStatus(userId);
+    if (onboardingStatus.completed) {
+      await this._workoutPlanService.generateWorkout(userId, PLAN_TYPE.PREMIUM).catch(err => {
+        console.error("Failed to generate premium workout after payment:", err);
+      });
+    }
+
     return {
       subscriptionId: String(userSubscription._id),
       planId,
@@ -495,6 +502,13 @@ export class UserService implements IUserService {
       completed: true,
     };
     await this._answerRepo.saveUserAnswers(submission);
+
+    const activeSub = await this.getActiveSubscription(userId);
+    if (activeSub) {
+      await this._workoutPlanService.generateWorkout(userId, PLAN_TYPE.PREMIUM).catch(err => {
+         console.error("Failed to generate premium workout after onboarding:", err);
+      });
+    }
   }
 
   // Fetch onboarding status
@@ -561,12 +575,15 @@ export class UserService implements IUserService {
 
   // Generate workout plan
   async generateWorkout(userId: string): Promise<WorkoutPlanDetailDto> {
-    return this._workoutPlanService.generateWorkout(userId);
+    const activeSub = await this.getActiveSubscription(userId);
+    const planType = activeSub ? PLAN_TYPE.PREMIUM : PLAN_TYPE.FREE;
+    return this._workoutPlanService.generateWorkout(userId, planType);
   }
 
   // Fetch workout plans
   async getWorkoutPlans(userId: string): Promise<GetWorkoutPlansResponseDto> {
-    return this._workoutPlanService.getWorkoutPlans(userId);
+    const activeSub = await this.getActiveSubscription(userId);
+    return this._workoutPlanService.getWorkoutPlans(userId, !!activeSub);
   }
 
   // Mark day completed
@@ -581,6 +598,7 @@ export class UserService implements IUserService {
 
   // Fetch workout progress
   async getWorkoutProgress(userId: string, timeframe?: Timeframe): Promise<WorkoutProgressResponseDto> {
-    return this._workoutPlanService.getWorkoutProgress(userId, timeframe);
+    const activeSub = await this.getActiveSubscription(userId);
+    return this._workoutPlanService.getWorkoutProgress(userId, timeframe, !!activeSub);
   }
 }

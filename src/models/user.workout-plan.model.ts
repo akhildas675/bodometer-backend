@@ -8,6 +8,8 @@ import {
   WorkoutPlanStatus,
   WORKOUT_EXERCISE_STATUS,
   WorkoutExerciseStatus,
+  PLAN_TYPE,
+  PlanType,
 } from "@/constants/fitness.constant";
 
 //  WorkoutExercise
@@ -96,6 +98,7 @@ const WorkoutDaySchema = new Schema<IEmbeddedWorkoutDay>(
 // UserWorkoutPlan
 export interface IUserWorkoutPlanModel extends Document {
   userId: mongoose.Types.ObjectId;
+  planType: PlanType;
   weekNumber: number;
   startDate: Date;
   endDate: Date;
@@ -110,6 +113,12 @@ const UserWorkoutPlanSchema = new Schema<IUserWorkoutPlanModel>(
       ref: "User",
       required: true,
       index: true,
+    },
+    planType: {
+      type: String,
+      enum: Object.values(PLAN_TYPE),
+      default: PLAN_TYPE.PREMIUM,
+      required: true,
     },
     weekNumber: { type: Number, required: true },
     startDate: { type: Date, required: true },

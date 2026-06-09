@@ -1,4 +1,4 @@
-import { WorkoutExerciseStatus } from "../../constants/fitness.constant";
+import { WorkoutExerciseStatus, PlanType } from "../../constants/fitness.constant";
 
 export interface MarkDayCompletedDto {
   userId: string;
@@ -47,7 +47,7 @@ export interface GenerateWorkoutDto {
 export interface WorkoutPlanDetailDto {
   workoutPlanId: string;
   days: GenerateWorkoutDto[];
-  planType: 'general' | 'custom';
+  planType: PlanType;
 }
 
 export interface WorkoutPlanResponseDto extends WorkoutPlanDetailDto {
@@ -69,6 +69,7 @@ export interface GetWorkoutPlansResponseDto {
     hasCompletedWorkoutToday: boolean;
     firstPendingDayNumber: number;
   };
+  isPremium?: boolean;
 }
 
 export interface WorkoutTrendDataDto {

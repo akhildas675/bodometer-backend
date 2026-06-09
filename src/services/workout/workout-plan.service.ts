@@ -7,13 +7,15 @@ import { AiWorkoutService } from "../ai-services/ai-workout.service";
 import { IUserWorkoutPlanRepository } from "@/interfaces/repository-interface/workout/user-workout-plan.repository.interface";
 import { IAnswerRepository } from "../../interfaces/repository-interface/onboarding/answer-repository.interface";
 import { IExerciseRepository } from "../../interfaces/repository-interface/exercise/exercise-repository.interface";
-import { 
+import {
   WORKOUT_DAY_TYPE, 
   WORKOUT_DAY_STATUS, 
   WORKOUT_PLAN_STATUS, 
   WORKOUT_EXERCISE_STATUS, 
   TIMEFRAME, 
   Timeframe, 
+  PLAN_TYPE,
+  PlanType,
 } from "@/constants/fitness.constant";
 import { IEmbeddedWorkoutDay, IEmbeddedWorkoutExercise } from "@/models/user.workout-plan.model";
 import { 
@@ -35,22 +37,28 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     private _answerRepo: IAnswerRepository
   ) {}
 
-  async generateWorkout(userId: string): Promise<WorkoutPlanDetailDto> {
+  async generateWorkout(userId: string, planType: PlanType): Promise<WorkoutPlanDetailDto> {
     const onboardingAnswers = await this._answerRepo.getUserAnswers(userId);
-    if (!onboardingAnswers || !onboardingAnswers.completed) {
-      throw new AppError(STATUS.BAD_REQUEST, "Please complete onboarding before generating a workout plan.");
+    
+    if (planType === PLAN_TYPE.PREMIUM) {
+      if (!onboardingAnswers || !onboardingAnswers.completed) {
+        throw new AppError(STATUS.BAD_REQUEST, "Please complete onboarding before generating a workout plan.");
+      }
     }
 
-    const { generationStatus } = await this.getWorkoutPlans(userId);
+    const isPremium = planType === PLAN_TYPE.PREMIUM;
+    const { generationStatus } = await this.getWorkoutPlans(userId, isPremium, true);
 
     if (!generationStatus.canGenerate) {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.WORKOUT_PLAN.GENERATE_LOCKED);
     }
 
     const answersMap: Record<string, string | string[]> = {};
-    for (const ans of onboardingAnswers.answers) {
-      if (ans.questionKey) {
-        answersMap[ans.questionKey] = ans.answer as string | string[];
+    if (onboardingAnswers) {
+      for (const ans of onboardingAnswers.answers) {
+        if (ans.questionKey) {
+          answersMap[ans.questionKey] = ans.answer as string | string[];
+        }
       }
     }
 
@@ -64,10 +72,13 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     );
 
     const userDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
-    const previousPlansCount = userDocs.length;
+    
+    // Fix 2: Count week number only within the same planType so Free week 1 and Premium week 1 are independent
+    const samePlanTypeDocs = userDocs.filter(doc => doc.planType === planType);
+    const previousPlansCount = samePlanTypeDocs.length;
 
     let completedWorkoutDaysTotal = 0;
-    for (const week of userDocs) {
+    for (const week of samePlanTypeDocs) {
       for (const day of week.workoutDays) {
         if (day.status === WORKOUT_DAY_STATUS.COMPLETED) {
           completedWorkoutDaysTotal++;
@@ -84,7 +95,8 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       workoutEnvironments: ex.workoutEnvironments,
     }));
 
-    const past4Weeks = userDocs.slice(-4).map(week => ({
+    // Only look at past 4 weeks of the same plan type for history
+    const past4Weeks = samePlanTypeDocs.slice(-4).map(week => ({
       weekNumber: week.weekNumber,
       status: week.status,
       workoutDays: week.workoutDays.map(day => ({
@@ -107,6 +119,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
     const aiWorkoutService = new AiWorkoutService();
     const aiResponse = await aiWorkoutService.generateWorkoutPlan({
+      planType,
       answers: answersMap,
       availableExercises,
       previousPlansCount,
@@ -127,6 +140,8 @@ export class WorkoutPlanService implements IWorkoutPlanService {
           sets: ex.sets,
           reps: ex.reps,
           durationSeconds: ex.durationSeconds,
+          // Fix 3: Save estimatedDurationSeconds from the AI response to the DB
+          estimatedDurationSeconds: ex.estimatedDurationSeconds,
           restSeconds: ex.restSeconds,
           notes: ex.notes,
         };
@@ -155,6 +170,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     endDate.setDate(startDate.getDate() + 7);
 
     const updatedDoc = await this._userWorkoutPlanRepo.createWeek(userId, {
+      planType,
       weekNumber,
       startDate,
       endDate,
@@ -165,15 +181,27 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     return WorkoutMapper.toWorkoutPlanDetailDto(updatedDoc, exerciseDataMap);
   }
 
-  async getWorkoutPlans(userId: string): Promise<GetWorkoutPlansResponseDto> {
+  async getWorkoutPlans(userId: string, isPremium?: boolean, preventAutoGenerate: boolean = false): Promise<GetWorkoutPlansResponseDto> {
     let userDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
+    
+    // Always filter by planType strictly:
+    // - Premium users only see PREMIUM plans
+    // - Free users only see FREE plans
+    // This ensures the two tiers are completely separate on the plans page
+    if (userDocs) {
+      const targetPlanType = isPremium ? PLAN_TYPE.PREMIUM : PLAN_TYPE.FREE;
+      userDocs = userDocs.filter(doc => doc.planType === targetPlanType);
+    }
 
     if (userDocs && userDocs.length > 0) {
       const activeDoc = userDocs.find(doc => doc.status === WORKOUT_PLAN_STATUS.ACTIVE);
       const now = new Date();
-      if (activeDoc && new Date(activeDoc.endDate) < now) {
-        await this.generateWorkout(userId);
-        userDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
+      if (activeDoc && new Date(activeDoc.endDate) < now && !preventAutoGenerate) {
+   
+        await this.generateWorkout(userId, activeDoc.planType || PLAN_TYPE.PREMIUM);
+        const allDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
+        const targetPlanType = isPremium ? PLAN_TYPE.PREMIUM : PLAN_TYPE.FREE;
+        userDocs = allDocs.filter(doc => doc.planType === targetPlanType);
       }
     }
     if (!userDocs || userDocs.length === 0) {
@@ -185,7 +213,8 @@ export class WorkoutPlanService implements IWorkoutPlanService {
           pendingDaysCount: 0,
           hasCompletedWorkoutToday: false,
           firstPendingDayNumber: -1
-        }
+        },
+        isPremium: isPremium || false
       };
     }
 
@@ -230,7 +259,12 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
     const allDaysFinished = latestPlan ? latestPlan.days.every(d => d.status === WORKOUT_DAY_STATUS.COMPLETED || d.status === WORKOUT_DAY_STATUS.SKIPPED) : true;
     const pendingDaysCount = latestPlan ? latestPlan.days.filter(d => d.status === WORKOUT_DAY_STATUS.PENDING).length : 0;
-    const canGenerate = allDaysFinished;
+    
+    const nowTime = new Date().getTime();
+    const isExpired = latestPlan && new Date(latestPlan.endDate).getTime() < nowTime;
+    const isLatestActive = latestPlan && latestPlan.status === WORKOUT_PLAN_STATUS.ACTIVE && !isExpired;
+    
+    const canGenerate = isLatestActive ? allDaysFinished : true;
 
     let firstPendingDayNumber = -1;
     if (latestPlan) {
@@ -246,7 +280,8 @@ export class WorkoutPlanService implements IWorkoutPlanService {
         pendingDaysCount,
         hasCompletedWorkoutToday,
         firstPendingDayNumber
-      }
+      },
+      isPremium: isPremium || false
     };
   }
 
@@ -254,6 +289,10 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     const activeWeek = await this._userWorkoutPlanRepo.findActiveWeekByUserId(userId);
     if (!activeWeek) {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT_PLAN.NOT_FOUND);
+    }
+    
+    if (activeWeek.planType === PLAN_TYPE.FREE) {
+      throw new AppError(STATUS.FORBIDDEN, "Workout tracking is only available for Premium plans.");
     }
 
     const day = activeWeek.workoutDays.find((d) => d.dayNumber === dayNumber);
@@ -274,7 +313,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
     await this._userWorkoutPlanRepo.saveWeek(activeWeek);
 
-    const plansResponse = await this.getWorkoutPlans(userId);
+    const plansResponse = await this.getWorkoutPlans(userId, true);
     const updatedPlan = plansResponse.plans.find((p) => p.workoutPlanId === activeWeek._id.toString());
     if (!updatedPlan) throw new AppError(STATUS.INTERNAL_ERROR, "Failed to fetch updated plan");
     return updatedPlan;
@@ -284,6 +323,10 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     const activeWeek = await this._userWorkoutPlanRepo.findActiveWeekByUserId(userId);
     if (!activeWeek) {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT_PLAN.NOT_FOUND);
+    }
+
+    if (activeWeek.planType === PLAN_TYPE.FREE) {
+      throw new AppError(STATUS.FORBIDDEN, "Workout tracking is only available for Premium plans.");
     }
 
     const day = activeWeek.workoutDays.find((d) => d.dayNumber === dayNumber);
@@ -325,14 +368,14 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
     await this._userWorkoutPlanRepo.saveWeek(activeWeek);
 
-    const plansResponse = await this.getWorkoutPlans(userId);
+    const plansResponse = await this.getWorkoutPlans(userId, true);
     const updatedPlan = plansResponse.plans.find((p) => p.workoutPlanId === activeWeek._id.toString());
     if (!updatedPlan) throw new AppError(STATUS.INTERNAL_ERROR, "Failed to retrieve updated plan");
     return updatedPlan;
   }
 
-  async getWorkoutProgress(userId: string, timeframe?: Timeframe): Promise<WorkoutProgressResponseDto> {
-    const plansResponse = await this.getWorkoutPlans(userId);
+  async getWorkoutProgress(userId: string, timeframe?: Timeframe, isPremium?: boolean): Promise<WorkoutProgressResponseDto> {
+    const plansResponse = await this.getWorkoutPlans(userId, isPremium);
     return this.calculateWorkoutProgress(plansResponse.plans, timeframe);
   }
 
@@ -418,8 +461,6 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     
     const startOfMonth = new Date(today);
     startOfMonth.setDate(startOfMonth.getDate() - 30);
-
-    let totalPlannedExercises = 0;
     let totalCompletedExercises = 0;
     let totalSkippedExercises = 0;
 
@@ -457,7 +498,6 @@ export class WorkoutPlanService implements IWorkoutPlanService {
           }
 
           for (const ex of day.exercises) {
-            totalPlannedExercises++;
             if (ex.status === WORKOUT_EXERCISE_STATUS.COMPLETED) {
               totalCompletedExercises++;
               if (ex.timeTakenSeconds) {
@@ -572,7 +612,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       valueLabel
     };
 
-    // ── Pie Chart Calculation ──────────────────────────────────────────────
+    // ── Pie Chart Calculation 
     const totalPie = totalCompletedExercises + totalSkippedExercises;
     const pieChart = {
       labels: totalPie > 0 ? ['Completed', 'Skipped'] : ['No Data', ''],

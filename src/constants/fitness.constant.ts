@@ -133,4 +133,11 @@ export const TIMEFRAME = {
   MONTHLY: "monthly",
 } as const;
 
-export type Timeframe = (typeof TIMEFRAME)[keyof typeof TIMEFRAME];
+export type Timeframe = (typeof TIMEFRAME)[keyof typeof TIMEFRAME];
+
+export const PLAN_TYPE = {
+  FREE: "FREE",
+  PREMIUM: "PREMIUM",
+} as const;
+
+export type PlanType = (typeof PLAN_TYPE)[keyof typeof PLAN_TYPE];

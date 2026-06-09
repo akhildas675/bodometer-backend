@@ -41,7 +41,7 @@ export class WorkoutMapper {
           };
         }),
       })),
-      planType: "custom" as const,
+      planType: week.planType,
       weekNumber: week.weekNumber,
       startDate: week.startDate,
       formattedStartDate: new Date(week.startDate).toLocaleDateString("en-GB", {
