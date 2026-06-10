@@ -56,7 +56,6 @@ async function makeAiRequestWithFallback(payload: unknown): Promise<{ data: Gemi
 
     while (attempt <= retries) {
       try {
-        console.log(`[AI] Requesting model: ${model} (Attempt ${attempt}/${retries})...`);
         return await axios.post<GeminiResponse>(url, payload);
       } catch (error: unknown) {
         if (error instanceof Error) {
@@ -218,10 +217,14 @@ From those answers, identify and use the following:
   A) WEEKLY WORKOUT FREQUENCY
      Look through the answers for the one whose answer is a whole number between 1 and 7.
      The question context will be about how many days per week the user can commit to working out.
-     Use that number as WORKOUT_DAYS.
-     REST_DAYS = 7 − WORKOUT_DAYS.
-     ▸ If WORKOUT_DAYS = 7 → ALL 7 days are workout days. There are ZERO rest days.
-     ▸ If WORKOUT_DAYS = 5 → 5 workout days, 2 rest days.
+     The user's selected workout frequency determines how many active workout days are included within the 7-day plan. Follow this EXACT pattern:
+     - 1 workout day -> 1 workout day + 6 recovery days
+     - 2 workout days -> 2 workout days + 5 recovery days
+     - 3 workout days -> 3 workout days + 4 recovery days
+     - 4 workout days -> 4 workout days + 3 recovery days
+     - 5 workout days -> 5 workout days + 2 recovery days
+     - 6 workout days -> 6 workout days + 1 recovery day
+     - 7 workout days -> 6 workout days + 1 recovery day (Cap at 6 active days max, 1 day MUST be rest)
      ▸ NEVER use a hardcoded default. Use only the value from the answers.
 
   B) WORKOUT ENVIRONMENT
@@ -237,7 +240,7 @@ RULE 1 — WORKOUT DAY COUNT (CRITICAL):
   • Generate exactly WORKOUT_DAYS "workout" type days (derived from Step 1A above).
   • Generate exactly REST_DAYS "rest" type days.
   • Total days in weekPlan MUST equal exactly 7. Never 6. Never 8.
-  • If the user chose 7 workout days → 7 workout days, 0 rest days. No exceptions.
+  • If the user chose 7 workout days → Generate exactly 6 workout days and 1 rest day. No exceptions.
 
 RULE 2 — DAY ORDERING:
   • dayNumber 1 = ${currentDayOfWeek} (today). dayNumber 2 = tomorrow. And so on.
@@ -275,8 +278,8 @@ RULE 9 — NO DUPLICATE EXERCISES IN A DAY:
 RULE 10 — MUSCLE GROUP BALANCE (for plans with < 7 workout days):
   • Do not train the same primary muscle group on consecutive workout days.
 
-RULE 11 — MUSCLE GROUP ROTATION (for 7-day plans):
-  • When all 7 days are workout days, vary the focus each day so no single muscle group
+RULE 11 — MUSCLE GROUP ROTATION (for 6-day plans):
+  • When 6 days are workout days, vary the focus each day so no single muscle group
     is trained on consecutive days (e.g., Upper / Lower / Core / Full Body / Cardio rotation).
 
 RULE 12 — OUTPUT FORMAT:
@@ -398,9 +401,14 @@ Before writing a single exercise, extract ALL of the following from those answer
   A) WEEKLY WORKOUT FREQUENCY
      Find the answer whose value is a whole number 1–7 representing days per week.
      The question context will be about weekly workout commitment or frequency.
-     Call this value WORKOUT_DAYS.  REST_DAYS = 7 − WORKOUT_DAYS.
-     ▸ WORKOUT_DAYS = 7 → 7 workout days, 0 rest days. Zero exceptions.
-     ▸ WORKOUT_DAYS = 5 → 5 workout days, 2 rest days.
+     The user's selected workout frequency determines how many active workout days are included within the 7-day plan. Follow this EXACT pattern:
+     - 1 workout day -> 1 workout day + 6 recovery days
+     - 2 workout days -> 2 workout days + 5 recovery days
+     - 3 workout days -> 3 workout days + 4 recovery days
+     - 4 workout days -> 4 workout days + 3 recovery days
+     - 5 workout days -> 5 workout days + 2 recovery days
+     - 6 workout days -> 6 workout days + 1 recovery day
+     - 7 workout days -> 6 workout days + 1 recovery day (Cap at 6 active days max, 1 day MUST be rest)
      ▸ Do NOT use any default. Read the value from the answers only.
 
   B) SESSION DURATION
@@ -452,8 +460,8 @@ RULE 1 — WORKOUT DAY COUNT (MOST CRITICAL):
   • Generate exactly WORKOUT_DAYS "workout" type days (from Step 1A).
   • Generate exactly REST_DAYS "rest" type days.
   • Total days in weekPlan = exactly 7. Never 6. Never 8.
-  • WORKOUT_DAYS = 7 means 7 workout days and 0 rest days. No exceptions.
-  • NEVER override this with a different value. The user's stated frequency is final.
+  • If the user chose 7 workout days → Generate exactly 6 workout days and 1 rest day. No exceptions.
+  • NEVER override this with a different value. The user's stated frequency is final (capped at 6 workouts).
 
 RULE 2 — DAY ORDERING:
   • dayNumber 1 = ${currentDayOfWeek} (today). dayNumber 2 = tomorrow. Continuing in calendar order.
@@ -479,7 +487,7 @@ RULE 5 — EXPERIENCE TIER APPLICATION:
 
 RULE 6 — MUSCLE GROUP BALANCE:
   • Never train the same primary muscle group on two consecutive workout days.
-  • For 7-day plans, rotate focus each day (e.g., Upper / Lower / Core / Full Body / Cardio)
+  • For high-frequency plans (5-6 days), rotate focus each day (e.g., Upper / Lower / Core / Full Body / Cardio)
     so no single muscle group is overloaded on back-to-back days.
 
 RULE 7 — PROGRESSIVE OVERLOAD:

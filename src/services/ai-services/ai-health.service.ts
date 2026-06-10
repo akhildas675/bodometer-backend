@@ -57,7 +57,6 @@ async function makeAiRequestWithFallback(payload: unknown): Promise<{ data: Gemi
 
     while (attempt <= retries) {
       try {
-        console.log(`[AI] Requesting model: ${model} (Attempt ${attempt}/${retries})...`);
         return await axios.post<GeminiResponse>(url, payload);
       } catch (error: unknown) {
         if (error instanceof Error) {

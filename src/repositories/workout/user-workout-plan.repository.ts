@@ -5,7 +5,7 @@ import {
   IUserWorkoutPlanModel,
 } from "@/models/user.workout-plan.model";
 import mongoose from "mongoose";
-import { WORKOUT_PLAN_STATUS } from "@/constants/fitness.constant";
+import { WORKOUT_PLAN_STATUS, WORKOUT_DAY_STATUS } from "@/constants/fitness.constant";
 
 export class UserWorkoutPlanRepository implements IUserWorkoutPlanRepository {
 
@@ -31,15 +31,27 @@ export class UserWorkoutPlanRepository implements IUserWorkoutPlanRepository {
   }
 
   async expireActiveWeeks(userId: string): Promise<void> {
-    await UserWorkoutPlanModel.updateMany(
-      { 
-        userId: new mongoose.Types.ObjectId(userId),
-        status: WORKOUT_PLAN_STATUS.ACTIVE 
-      },
-      {
-        $set: { status: WORKOUT_PLAN_STATUS.EXPIRED },
+    const activePlans = await UserWorkoutPlanModel.find({
+      userId: new mongoose.Types.ObjectId(userId),
+      status: WORKOUT_PLAN_STATUS.ACTIVE
+    });
+
+    for (const plan of activePlans) {
+      let hasCompletedDay = false;
+      for (const day of plan.workoutDays) {
+        if (day.status === WORKOUT_DAY_STATUS.COMPLETED) {
+          hasCompletedDay = true;
+          break;
+        }
       }
-    );
+
+      if (!hasCompletedDay) {
+        await UserWorkoutPlanModel.deleteOne({ _id: plan._id });
+      } else {
+        plan.status = WORKOUT_PLAN_STATUS.EXPIRED;
+        await plan.save();
+      }
+    }
   }
 
   async saveWeek(weekDoc: IUserWorkoutPlanModel): Promise<IUserWorkoutPlanModel> {

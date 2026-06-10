@@ -425,9 +425,13 @@ export class UserService implements IUserService {
 
     const onboardingStatus = await this.getOnboardingStatus(userId);
     if (onboardingStatus.completed) {
-      await this._workoutPlanService.generateWorkout(userId, PLAN_TYPE.PREMIUM).catch(err => {
-        console.error("Failed to generate premium workout after payment:", err);
-      });
+      const existingPlans = await this._workoutPlanService.getWorkoutPlans(userId, true, true);
+      const hasActivePremium = existingPlans.plans.some(p => p.status === "active" && p.planType === PLAN_TYPE.PREMIUM);
+      if (!hasActivePremium) {
+        await this._workoutPlanService.generateWorkout(userId, PLAN_TYPE.PREMIUM).catch(err => {
+          console.error("Failed to generate premium workout after payment:", err);
+        });
+      }
     }
 
     return {
@@ -512,9 +516,13 @@ export class UserService implements IUserService {
 
     const activeSub = await this.getActiveSubscription(userId);
     if (activeSub) {
-      await this._workoutPlanService.generateWorkout(userId, PLAN_TYPE.PREMIUM).catch(err => {
-         console.error("Failed to generate premium workout after onboarding:", err);
-      });
+      const existingPlans = await this._workoutPlanService.getWorkoutPlans(userId, true, true);
+      const hasActivePremium = existingPlans.plans.some(p => p.status === "active" && p.planType === PLAN_TYPE.PREMIUM);
+      if (!hasActivePremium) {
+        await this._workoutPlanService.generateWorkout(userId, PLAN_TYPE.PREMIUM).catch(err => {
+           console.error("Failed to generate premium workout after onboarding:", err);
+        });
+      }
     }
   }
 

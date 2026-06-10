@@ -31,6 +31,8 @@ import {
 } from "../../dto/workout/workout-plan.dto";
 import { IWorkoutPlanService } from "../../interfaces/service-interface/workout/workout-plan.service.interface";
 
+const generationLocks = new Set<string>();
+
 export class WorkoutPlanService implements IWorkoutPlanService {
   constructor(
     private _userWorkoutPlanRepo: IUserWorkoutPlanRepository,
@@ -39,9 +41,15 @@ export class WorkoutPlanService implements IWorkoutPlanService {
   ) {}
 
   async generateWorkout(userId: string, planType: PlanType): Promise<WorkoutPlanDetailDto> {
-    const onboardingAnswers = await this._answerRepo.getUserAnswers(userId);
-    
-    if (planType === PLAN_TYPE.PREMIUM) {
+    if (generationLocks.has(userId)) {
+      throw new AppError(STATUS.CONFLICT, "A workout plan is already being generated for you. Please wait.");
+    }
+    generationLocks.add(userId);
+
+    try {
+      const onboardingAnswers = await this._answerRepo.getUserAnswers(userId);
+      
+      if (planType === PLAN_TYPE.PREMIUM) {
       if (!onboardingAnswers || !onboardingAnswers.completed) {
         throw new AppError(STATUS.BAD_REQUEST, "Please complete onboarding before generating a workout plan.");
       }
@@ -178,7 +186,10 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       workoutDays: embeddedDays,
     });
 
-    return WorkoutMapper.toWorkoutPlanDetailDto(updatedDoc, exerciseDataMap);
+      return WorkoutMapper.toWorkoutPlanDetailDto(updatedDoc, exerciseDataMap);
+    } finally {
+      generationLocks.delete(userId);
+    }
   }
 
   async getWorkoutPlans(userId: string, isPremium?: boolean, preventAutoGenerate: boolean = false): Promise<GetWorkoutPlansResponseDto> {
