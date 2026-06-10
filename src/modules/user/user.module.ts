@@ -38,7 +38,10 @@ import { HealthLogRepository } from "../../repositories/health-log/health-log.re
 import { AiHealthService } from "../../services/ai-services/ai-health.service";
 import { HealthLogService } from "../../services/health-log/health-log.service";
 import { IHealthLogService } from "../../interfaces/service-interface/health-log/health-log-service.interface";
-
+import { ITrainerBookingRepository } from "../../interfaces/repository-interface/trainer/trainer-booking.repository.interface";
+import { TrainerBookingRepository } from "../../repositories/trainer/trainer-booking.repository";
+import { ITrainerAvailabilityRepository } from "../../interfaces/repository-interface/trainer/trainer-availability.repository.interface";
+import { TrainerAvailabilityRepository } from "../../repositories/trainer/trainer-availability.repository";
 
 export function createUserModule() {
   const userRepository: IUserRepository = new UserRepository();
@@ -57,7 +60,8 @@ export function createUserModule() {
   const mealCategoryRepository: IMealCategoryRepository = new MealCategoryRepository();
   const userWorkoutPlanRepository: IUserWorkoutPlanRepository = new UserWorkoutPlanRepository();
   const healthLogRepository: IHealthLogRepository = new HealthLogRepository();
-
+  const trainerBookingRepository: ITrainerBookingRepository = new TrainerBookingRepository();
+  const trainerAvailabilityRepository: ITrainerAvailabilityRepository = new TrainerAvailabilityRepository();
   const paymentService: IPaymentService = new PaymentService();
   const workoutPlanService = new WorkoutPlanService(userWorkoutPlanRepository, exerciseRepository, answerRepository);
   const aiHealthService = new AiHealthService();
@@ -82,6 +86,8 @@ export function createUserModule() {
     healthMetricsService,
     exerciseRepository,
     equipmentRepository,
+    trainerBookingRepository,
+    trainerAvailabilityRepository,
     mealCategoryRepository,
     workoutPlanService,
   );

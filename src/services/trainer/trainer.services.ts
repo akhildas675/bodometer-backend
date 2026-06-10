@@ -3,12 +3,25 @@ import { ITrainerService } from "../../interfaces/service-interface/trainer/trai
 import { IUserRepository } from "../../interfaces/repository-interface/user/user-repository.interface";
 import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
 import { IS3Service } from "../../interfaces/service-interface/s3/s3-service.interface";
+import { ITrainerBookingRepository } from "../../interfaces/repository-interface/trainer/trainer-booking.repository.interface";
+import { ITrainerAvailabilityRepository } from "../../interfaces/repository-interface/trainer/trainer-availability.repository.interface";
+import { IUserSubscriptionRepository } from "../../interfaces/repository-interface/subscription/user.subscription.repository.interface";
 import {
   FindTrainerResponseDto,
   TrainerProfileDto,
   TrainerStatusResponseDto,
   UpdateTrainerProfileDto,
 } from "../../dto/trainer/trainer.dto";
+import {
+  CreateAvailabilityDto,
+  UpdateAvailabilityDto,
+  GetBookingsQueryDto,
+  GetAvailabilitiesQueryDto
+} from "../../dto/trainer/trainer-booking.dto";
+import { PopulatedTrainerBooking, TrainerAvailability } from "../../interfaces/domain.interface/trainer-booking.interface";
+import { PaginationMeta } from "../../interfaces/domain.interface/common.interface";
+import { BOOKING_STATUS } from "../../models/trainer-booking.model";
+import { parseTime, formatTime, generateReference } from "../../utils/booking.utils";
 import { ICategoryRepository } from "../../interfaces/repository-interface/category/category-repository.interface";
 import {
   CategoryQuery,
@@ -26,6 +39,9 @@ export class TrainerService implements ITrainerService {
     private _trainerProfileRepo: ITrainerProfileRepository,
     private _s3Service: IS3Service,
     private _categoryRepo: ICategoryRepository,
+    private _trainerBookingRepo: ITrainerBookingRepository,
+    private _trainerAvailabilityRepo: ITrainerAvailabilityRepository,
+    private _subscriptionRepo: IUserSubscriptionRepository,
   ) {}
 
   //Profile
@@ -260,5 +276,190 @@ export class TrainerService implements ITrainerService {
       ...query,
       isActive: true,
     } as CategoryQuery);
+  }
+
+  // --- TRAINER AVAILABILITY & BOOKINGS ---
+
+  async createAvailability(trainerId: string, data: CreateAvailabilityDto): Promise<{ message: string; availability: TrainerAvailability }> {
+    const startDate = new Date(data.startDate);
+    const endDate = new Date(data.endDate);
+    startDate.setUTCHours(0, 0, 0, 0);
+    endDate.setUTCHours(0, 0, 0, 0);
+
+    if (startDate > endDate) {
+      throw new AppError(STATUS.BAD_REQUEST, "Start date cannot be after end date.");
+    }
+
+    const diffDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays >= 7) {
+      throw new AppError(STATUS.BAD_REQUEST, "Availability can be created for a maximum of 7 days.");
+    }
+
+    if (!data.timeWindows || data.timeWindows.length === 0) {
+      throw new AppError(STATUS.BAD_REQUEST, "At least one time window is required.");
+    }
+    if (data.timeWindows.length > 4) {
+      throw new AppError(STATUS.BAD_REQUEST, "Maximum of 4 time windows allowed.");
+    }
+
+    for (const tw of data.timeWindows) {
+      const startMinutes = parseTime(tw.startTime);
+      const endMinutes = parseTime(tw.endTime);
+      if (startMinutes >= endMinutes) {
+        throw new AppError(STATUS.BAD_REQUEST, "Start time must be before end time in a time window.");
+      }
+      if ((endMinutes - startMinutes) < data.sessionDuration) {
+        throw new AppError(STATUS.BAD_REQUEST, `Time window ${tw.startTime}-${tw.endTime} is shorter than the session duration.`);
+      }
+    }
+
+    const existingAvailabilities = await this._trainerAvailabilityRepo.findByTrainerId(trainerId);
+    const hasOverlap = existingAvailabilities.some(a => {
+      if (!a.isActive) return false;
+      const aStart = new Date(a.startDate).getTime();
+      const aEnd = new Date(a.endDate).getTime();
+      const bStart = startDate.getTime();
+      const bEnd = endDate.getTime();
+      return bStart <= aEnd && bEnd >= aStart;
+    });
+
+    if (hasOverlap) {
+      throw new AppError(STATUS.CONFLICT, "You already have an active availability rule that overlaps with this date range.");
+    }
+
+    const availabilityData = {
+      trainerId,
+      startDate,
+      endDate,
+      timeWindows: data.timeWindows,
+      sessionDuration: data.sessionDuration,
+      isActive: true,
+    };
+    const availability = await this._trainerAvailabilityRepo.create(availabilityData);
+
+    return {
+      message: `Availability configured successfully.`,
+      availability,
+    };
+  }
+
+  async getAvailabilities(trainerId: string, query: GetAvailabilitiesQueryDto): Promise<{ data: TrainerAvailability[]; pagination: PaginationMeta }> {
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const sortBy = query.sortBy || 'createdAt';
+    const sortOrder = query.sortOrder || 'desc';
+    const status = query.status;
+
+    return this._trainerAvailabilityRepo.findByTrainerIdPaginated(trainerId, page, limit, sortBy, sortOrder, status);
+  }
+
+  async updateAvailabilityStatus(trainerId: string, availabilityId: string, data: UpdateAvailabilityDto): Promise<TrainerAvailability> {
+    const availability = await this._trainerAvailabilityRepo.findById(availabilityId);
+    if (!availability) {
+      throw new AppError(STATUS.NOT_FOUND, "Availability configuration not found.");
+    }
+    if (availability.trainerId.toString() !== trainerId) {
+      throw new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED);
+    }
+
+    if (!data.isActive) {
+      const hasActive = await this._trainerBookingRepo.hasActiveBookingsBetweenDates(
+        trainerId,
+        availability.startDate,
+        availability.endDate
+      );
+      if (hasActive) {
+        throw new AppError(STATUS.BAD_REQUEST, "Cannot deactivate availability because there are active bookings in this period. Please cancel or reject them first.");
+      }
+    }
+
+    const updated = await this._trainerAvailabilityRepo.updateAvailabilityStatus(availabilityId, data.isActive);
+    return updated!;
+  }
+
+  async getTrainerBookings(trainerId: string, query: GetBookingsQueryDto): Promise<{ data: PopulatedTrainerBooking[]; pagination: PaginationMeta }> {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const date = query.date ? new Date(query.date) : undefined;
+
+    const search = query.search;
+    const sortBy = query.sortBy;
+    const sortOrder = query.sortOrder;
+
+    return this._trainerBookingRepo.findByTrainerIdPaginated(trainerId, page, limit, query.status, date, search, sortBy, sortOrder);
+  }
+
+  async confirmBooking(trainerId: string, bookingId: string): Promise<PopulatedTrainerBooking> {
+    const booking = await this._trainerBookingRepo.findById(bookingId);
+    if (!booking) throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.BOOKING_NOT_FOUND);
+    if (booking.trainerId.toString() !== trainerId) throw new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED);
+
+    if (booking.status !== BOOKING_STATUS.PENDING) {
+      throw new AppError(STATUS.BAD_REQUEST, "Invalid state transition. Only PENDING bookings can be APPROVED.");
+    }
+
+    const updated = await this._trainerBookingRepo.updateStatus(bookingId, {
+      status: BOOKING_STATUS.APPROVED,
+      approvedAt: new Date(),
+      statusUpdatedAt: new Date()
+    });
+    return updated!;
+  }
+
+  async rejectBooking(trainerId: string, bookingId: string, reason: string): Promise<PopulatedTrainerBooking> {
+    if (!reason || reason.trim() === "") throw new AppError(STATUS.BAD_REQUEST, "Rejection reason is required.");
+
+    const booking = await this._trainerBookingRepo.findById(bookingId);
+    if (!booking) throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.BOOKING_NOT_FOUND);
+    if (booking.trainerId.toString() !== trainerId) throw new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED);
+
+    if (booking.status !== BOOKING_STATUS.PENDING) {
+      throw new AppError(STATUS.BAD_REQUEST, "Invalid state transition. Only PENDING bookings can be REJECTED.");
+    }
+
+    const updated = await this._trainerBookingRepo.updateStatus(bookingId, {
+      status: BOOKING_STATUS.REJECTED,
+      rejectionReason: reason,
+      rejectedAt: new Date(),
+      statusUpdatedAt: new Date()
+    });
+    return updated!;
+  }
+
+  async completeBooking(trainerId: string, bookingId: string): Promise<PopulatedTrainerBooking> {
+    const booking = await this._trainerBookingRepo.findById(bookingId);
+    if (!booking) throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.BOOKING_NOT_FOUND);
+    if (booking.trainerId.toString() !== trainerId) throw new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED);
+
+    if (booking.status !== BOOKING_STATUS.APPROVED) {
+      throw new AppError(STATUS.BAD_REQUEST, "Invalid state transition. Only APPROVED bookings can be COMPLETED.");
+    }
+
+    const updated = await this._trainerBookingRepo.updateStatus(bookingId, {
+      status: BOOKING_STATUS.COMPLETED,
+      completedAt: new Date(),
+      statusUpdatedAt: new Date()
+    });
+    return updated!;
+  }
+
+  async cancelBookingByTrainer(trainerId: string, bookingId: string, reason?: string): Promise<PopulatedTrainerBooking> {
+    if (!reason || reason.trim() === "") throw new AppError(STATUS.BAD_REQUEST, "Cancellation reason is required.");
+
+    const booking = await this._trainerBookingRepo.findById(bookingId);
+    if (!booking) throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.BOOKING_NOT_FOUND);
+    if (booking.trainerId.toString() !== trainerId) throw new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED);
+
+    if (booking.status !== BOOKING_STATUS.PENDING && booking.status !== BOOKING_STATUS.APPROVED) {
+      throw new AppError(STATUS.BAD_REQUEST, "Invalid state transition. Only PENDING or APPROVED bookings can be CANCELLED.");
+    }
+
+    const updated = await this._trainerBookingRepo.updateStatus(bookingId, {
+      status: BOOKING_STATUS.CANCELLED,
+      cancellationReason: reason,
+      cancelledAt: new Date(),
+      statusUpdatedAt: new Date()
+    });
+    return updated!;
   }
 }

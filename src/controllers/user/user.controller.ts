@@ -18,7 +18,7 @@ import { IHealthLogService } from "../../interfaces/service-interface/health-log
 import { UpsertHealthLogDto } from "../../dto/health-log/health-log.dto";
 import { SuccessResponse } from "../../utils/success.response";
 import { DifficultyLevel, WORKOUT_EXERCISE_STATUS, WorkoutExerciseStatus, Timeframe } from "../../constants/fitness.constant";
-
+import { GetSlotsQueryDto, CreateBookingDto, GetBookingsQueryDto } from "../../dto/trainer/trainer-booking.dto";
 export class UserController {
   private logger = new Logger("UserController");
   constructor(
@@ -271,7 +271,7 @@ export class UserController {
   ) => {
     try {
       if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
-      const data: UpsertHealthLogDto = req.body;
+      const data = req.body as unknown as UpsertHealthLogDto;
       if (!data.date) throw new AppError(STATUS.BAD_REQUEST, "Date is required");
       const result = await this._healthLogService.upsertHealthLog(req.user.id, data);
       new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, result).send(res);
@@ -829,5 +829,42 @@ export class UserController {
         next(new Error("Unknown error occurred"));
       }
     }
+  };
+
+  getAvailableSlots = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
+      const query = req.query as unknown as GetSlotsQueryDto;
+      const slots = await this._userService.getAvailableSlots(req.params.id, query);
+      new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, slots).send(res);
+    } catch (error) { next(error); }
+  };
+
+  createBooking = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
+      const data = req.body as CreateBookingDto;
+      const booking = await this._userService.createBooking(req.user.id, data);
+      new SuccessResponse(STATUS.CREATED, MESSAGES.TRAINER.BOOKING_CREATED, booking).send(res);
+    } catch (error) { next(error); }
+  };
+
+  getMyBookings = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
+      const query = req.query as unknown as GetBookingsQueryDto;
+      const result = await this._userService.getUserBookings(req.user.id, query);
+      new SuccessResponse(STATUS.OK, MESSAGES.TRAINER.BOOKING_FETCHED, result.data, result.pagination).send(res);
+    } catch (error) { next(error); }
+  };
+
+  cancelBooking = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
+      const data = req.body as { reason?: string };
+      const reason = data.reason as string;
+      const booking = await this._userService.cancelBookingByUser(req.user.id, req.params.bookingId, reason);
+      new SuccessResponse(STATUS.OK, MESSAGES.TRAINER.SESSION_CANCELLED, booking).send(res);
+    } catch (error) { next(error); }
   };
 }

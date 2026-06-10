@@ -48,6 +48,7 @@ import { validate } from "@/middleware/validate";
 const adminRoute = Router();
 const { adminController } = createAdminModule();
 
+
 // Trainer Management
 adminRoute.get(
   ADMIN_ROUTES.GET_TRAINERS,
@@ -432,5 +433,7 @@ adminRoute.patch(
   ROLE_GUARD.ADMIN_GUARD,
   adminController.toggleMealCategoryStatus,
 );
+
+
 
 export default adminRoute;

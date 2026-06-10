@@ -43,4 +43,10 @@ export const USER_ROUTES = {
   MARK_WORKOUT_DAY: "/user/workout-plan/:planId/day/:dayNumber/complete",
   MARK_WORKOUT_EXERCISE: "/user/workout-plan/:planId/day/:dayNumber/exercise/:exerciseId/complete",
   GET_WORKOUT_PROGRESS: "/user/workout-progress",
+
+  // Bookings
+  GET_TRAINER_SLOTS: "/user/trainers/:id/slots",
+  CREATE_BOOKING: "/user/bookings",
+  GET_USER_BOOKINGS: "/user/bookings",
+  CANCEL_BOOKING: "/user/bookings/:bookingId/cancel",
 } as const;

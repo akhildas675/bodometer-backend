@@ -54,17 +54,22 @@ import { IAnswerRepository } from "@/interfaces/repository-interface/onboarding/
 import { ROLES } from "@/constants/roles";
 import { PaginationMeta } from "@/interfaces/domain.interface/common.interface";
 import { IHealthMetrics } from "@/interfaces/service-interface/health.metrics/health.metrics-service.interface";
-import { IExerciseRepository } from "@/interfaces/repository-interface/exercise/exercise-repository.interface";
-import { IEquipmentRepository } from "@/interfaces/repository-interface/equipment/equipment-repository.interface";
+import { IExerciseRepository } from "../../interfaces/repository-interface/exercise/exercise-repository.interface";
+import { IEquipmentRepository } from "../../interfaces/repository-interface/equipment/equipment-repository.interface";
 import { ExerciseMapper } from "../../mappers/exercise/exercise.mapper";
 import { EquipmentMapper } from "../../mappers/equipment/equipment.mapper";
+import { ITrainerBookingRepository } from "../../interfaces/repository-interface/trainer/trainer-booking.repository.interface";
+import { ITrainerAvailabilityRepository } from "../../interfaces/repository-interface/trainer/trainer-availability.repository.interface";
+import { GetSlotsQueryDto, GetBookingsQueryDto, CreateBookingDto, DynamicSlotDto } from "../../dto/trainer/trainer-booking.dto";
+import { PopulatedTrainerBooking } from "../../interfaces/domain.interface/trainer-booking.interface";
+import { BOOKING_STATUS } from "../../models/trainer-booking.model";
+import { parseTime, formatTime, generateReference } from "../../utils/booking.utils";
 import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto } from "../../dto/exercise/exercise.dto";
 import { WorkoutPlanDetailDto, WorkoutPlanResponseDto, GetWorkoutPlansResponseDto, WorkoutProgressResponseDto, MarkDayCompletedDto, MarkExerciseStatusDto } from "../../dto/workout/workout-plan.dto";
 import { EquipmentQueryDto, GetAllEquipmentResponseDto } from "../../dto/equipment/equipment.dto";
 import { MealCategoryQueryDto, GetAllMealCategoriesResponseDto } from "../../dto/meal.category/meal-category.dto";
 import { IWorkoutPlanService } from "../../interfaces/service-interface/workout/workout-plan.service.interface";
 import { IMealCategoryRepository } from "@/interfaces/repository-interface/meal.category/meal-category.repository";
-
 
 export class UserService implements IUserService {
 
@@ -83,6 +88,8 @@ export class UserService implements IUserService {
     private _healthMetrics: IHealthMetrics,
     private _exerciseRepo: IExerciseRepository,
     private _equipmentRepo: IEquipmentRepository,
+    private _trainerBookingRepo: ITrainerBookingRepository,
+    private _trainerAvailabilityRepo: ITrainerAvailabilityRepository,
     private _mealCategoryRepo: IMealCategoryRepository,
     private _workoutPlanService: IWorkoutPlanService,
   ) { }
@@ -600,5 +607,186 @@ export class UserService implements IUserService {
   async getWorkoutProgress(userId: string, timeframe?: Timeframe): Promise<WorkoutProgressResponseDto> {
     const activeSub = await this.getActiveSubscription(userId);
     return this._workoutPlanService.getWorkoutProgress(userId, timeframe, !!activeSub);
+  }
+
+  // --- TRAINER BOOKING (USER SIDE) ---
+
+  async getAvailableSlots(trainerIdOrProfileId: string, query: GetSlotsQueryDto): Promise<DynamicSlotDto[]> {
+    const from = query.from ? new Date(query.from) : new Date();
+    from.setUTCHours(0, 0, 0, 0);
+    const to = query.to ? new Date(query.to) : new Date(from);
+    to.setDate(to.getDate() + 30);
+    to.setUTCHours(0, 0, 0, 0);
+
+    let trainerId = trainerIdOrProfileId;
+    try {
+      const profile = await this._trainerProfileRepo.findById(trainerIdOrProfileId);
+      if (profile && profile.userId) {
+        trainerId = profile.userId.toString();
+      }
+    } catch {
+      // Ignore error if it's not a profile ID
+    }
+
+    const availabilities = await this._trainerAvailabilityRepo.findByTrainerId(trainerId);
+    const activeAvailabilities = availabilities.filter(a => a.isActive);
+
+    if (activeAvailabilities.length === 0) return [];
+
+    const availableSlots: DynamicSlotDto[] = [];
+    const uniqueDatesWithSlots = new Set<string>();
+
+    for (let d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) {
+      if (uniqueDatesWithSlots.size >= 7) break;
+
+      const currentDate = new Date(d);
+      const dateStr = currentDate.toISOString().split('T')[0];
+      let addedSlotForThisDate = false;
+
+      const matchingRules = activeAvailabilities.filter(a =>
+        currentDate >= a.startDate && currentDate <= a.endDate
+      );
+
+      for (const rule of matchingRules) {
+        for (const tw of rule.timeWindows) {
+          let currentStartMinutes = parseTime(tw.startTime);
+          const endMinutes = parseTime(tw.endTime);
+
+          while (currentStartMinutes + rule.sessionDuration <= endMinutes) {
+            const slotStartMinutes = currentStartMinutes;
+            const slotEndMinutes = currentStartMinutes + rule.sessionDuration;
+
+            const startTimeStr = formatTime(slotStartMinutes);
+            const endTimeStr = formatTime(slotEndMinutes);
+
+            const slotStartDateTime = new Date(`${currentDate.toISOString().split('T')[0]}T${startTimeStr}:00`);
+            if (slotStartDateTime <= new Date()) {
+              currentStartMinutes += rule.sessionDuration;
+              continue;
+            }
+
+            const hasOverlap = await this._trainerBookingRepo.hasOverlappingBooking(
+              trainerId,
+              currentDate,
+              startTimeStr,
+              endTimeStr
+            );
+
+            if (!hasOverlap) {
+              availableSlots.push({
+                date: dateStr,
+                startTime: startTimeStr,
+                endTime: endTimeStr,
+              });
+              addedSlotForThisDate = true;
+            }
+
+            currentStartMinutes += rule.sessionDuration;
+          }
+        }
+      }
+
+      if (addedSlotForThisDate) {
+        uniqueDatesWithSlots.add(dateStr);
+      }
+    }
+
+    return availableSlots;
+  }
+
+  async createBooking(userId: string, data: CreateBookingDto): Promise<PopulatedTrainerBooking> {
+    const activeSub = await this._userSubscriptionRepository.findActiveByUserId(userId);
+    if (!activeSub) {
+      throw new AppError(STATUS.FORBIDDEN, "Only premium users can book trainers.");
+    }
+
+    let actualTrainerUserId = data.trainerId;
+    let trainerProfile = await this._trainerProfileRepo.findByUserId(actualTrainerUserId);
+
+    if (!trainerProfile) {
+      try {
+        const profileByDocId = await this._trainerProfileRepo.findById(actualTrainerUserId);
+        if (profileByDocId) {
+          actualTrainerUserId = profileByDocId.userId.toString();
+          trainerProfile = profileByDocId;
+        }
+      } catch {
+        // Ignore error if it's not a profile ID
+      }
+    }
+
+    if (!trainerProfile || trainerProfile.verificationStatus !== "approved") {
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.NOT_FOUND);
+    }
+
+    data.trainerId = actualTrainerUserId;
+
+    const bookingDate = new Date(data.date);
+    bookingDate.setUTCHours(0, 0, 0, 0);
+
+    const slotStartDateTime = new Date(`${bookingDate.toISOString().split('T')[0]}T${data.startTime}:00`);
+    if (slotStartDateTime <= new Date()) {
+      throw new AppError(STATUS.BAD_REQUEST, "Cannot book a slot in the past.");
+    }
+
+    const hasOverlap = await this._trainerBookingRepo.hasOverlappingBooking(
+      data.trainerId,
+      bookingDate,
+      data.startTime,
+      data.endTime
+    );
+    if (hasOverlap) {
+      throw new AppError(STATUS.CONFLICT, "This slot is no longer available or you already have a booking at this time.");
+    }
+
+    const bookingData = {
+      userId,
+      trainerId: data.trainerId,
+      bookingReference: generateReference(),
+      bookingType: data.bookingType || "ONLINE",
+      bookingDate,
+      startTime: data.startTime,
+      endTime: data.endTime,
+      status: BOOKING_STATUS.PENDING,
+      userNotes: data.userNotes || "",
+      statusUpdatedAt: new Date()
+    };
+
+    const newBooking = await this._trainerBookingRepo.create(bookingData);
+
+    const populated = await this._trainerBookingRepo.findPopulatedById(newBooking._id);
+    return populated!;
+  }
+
+  async getUserBookings(userId: string, query: GetBookingsQueryDto): Promise<{ data: PopulatedTrainerBooking[]; pagination: PaginationMeta }> {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const date = query.date ? new Date(query.date) : undefined;
+
+    const search = query.search;
+    const sortBy = query.sortBy;
+    const sortOrder = query.sortOrder;
+
+    return this._trainerBookingRepo.findByUserIdPaginated(userId, page, limit, query.status, date, search, sortBy, sortOrder);
+  }
+
+  async cancelBookingByUser(userId: string, bookingId: string, reason?: string): Promise<PopulatedTrainerBooking> {
+    if (!reason || reason.trim() === "") throw new AppError(STATUS.BAD_REQUEST, "Cancellation reason is required.");
+
+    const booking = await this._trainerBookingRepo.findById(bookingId);
+    if (!booking) throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.BOOKING_NOT_FOUND);
+    if (booking.userId.toString() !== userId) throw new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED);
+
+    if (booking.status !== BOOKING_STATUS.PENDING && booking.status !== BOOKING_STATUS.APPROVED) {
+      throw new AppError(STATUS.BAD_REQUEST, "Invalid state transition. Only PENDING or APPROVED bookings can be CANCELLED.");
+    }
+
+    const updated = await this._trainerBookingRepo.updateStatus(bookingId, {
+      status: BOOKING_STATUS.CANCELLED,
+      cancellationReason: reason,
+      cancelledAt: new Date(),
+      statusUpdatedAt: new Date()
+    });
+    return updated!;
   }
 }

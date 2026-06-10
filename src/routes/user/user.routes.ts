@@ -14,6 +14,10 @@ import {
   uploadProfilePictureSchema,
   verifyPaymentSchema,
   exerciseQuerySchema,
+  getTrainerSlotsSchema,
+  createBookingSchema,
+  getUserBookingsSchema,
+  cancelBookingSchema,
 } from "../../validators/user/user.validator";
 import { mediaUpload } from "../../config/multer";
 
@@ -207,6 +211,35 @@ userRoute.get(
   USER_ROUTES.GET_WORKOUT_PROGRESS,
   ROLE_GUARD.USER_GUARD,
   userController.getWorkoutProgress,
+);
+
+// Bookings
+userRoute.get(
+  USER_ROUTES.GET_TRAINER_SLOTS,
+  validate(getTrainerSlotsSchema),
+  ROLE_GUARD.USER_GUARD,
+  userController.getAvailableSlots,
+);
+
+userRoute.post(
+  USER_ROUTES.CREATE_BOOKING,
+  validate(createBookingSchema),
+  ROLE_GUARD.USER_GUARD,
+  userController.createBooking,
+);
+
+userRoute.get(
+  USER_ROUTES.GET_USER_BOOKINGS,
+  validate(getUserBookingsSchema),
+  ROLE_GUARD.USER_GUARD,
+  userController.getMyBookings,
+);
+
+userRoute.patch(
+  USER_ROUTES.CANCEL_BOOKING,
+  validate(cancelBookingSchema),
+  ROLE_GUARD.USER_GUARD,
+  userController.cancelBooking,
 );
 
 export default userRoute;

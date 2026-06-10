@@ -26,7 +26,8 @@ import {
   AiWorkoutExerciseDto, 
   RecentActivityDto, 
   MarkDayCompletedDto, 
-  MarkExerciseStatusDto 
+  MarkExerciseStatusDto,
+  CompletedHistoryItemDto
 } from "../../dto/workout/workout-plan.dto";
 import { IWorkoutPlanService } from "../../interfaces/service-interface/workout/workout-plan.service.interface";
 
@@ -73,7 +74,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
     const userDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
     
-    // Fix 2: Count week number only within the same planType so Free week 1 and Premium week 1 are independent
+    
     const samePlanTypeDocs = userDocs.filter(doc => doc.planType === planType);
     const previousPlansCount = samePlanTypeDocs.length;
 
@@ -140,7 +141,6 @@ export class WorkoutPlanService implements IWorkoutPlanService {
           sets: ex.sets,
           reps: ex.reps,
           durationSeconds: ex.durationSeconds,
-          // Fix 3: Save estimatedDurationSeconds from the AI response to the DB
           estimatedDurationSeconds: ex.estimatedDurationSeconds,
           restSeconds: ex.restSeconds,
           notes: ex.notes,
@@ -184,10 +184,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
   async getWorkoutPlans(userId: string, isPremium?: boolean, preventAutoGenerate: boolean = false): Promise<GetWorkoutPlansResponseDto> {
     let userDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
     
-    // Always filter by planType strictly:
-    // - Premium users only see PREMIUM plans
-    // - Free users only see FREE plans
-    // This ensures the two tiers are completely separate on the plans page
+  
     if (userDocs) {
       const targetPlanType = isPremium ? PLAN_TYPE.PREMIUM : PLAN_TYPE.FREE;
       userDocs = userDocs.filter(doc => doc.planType === targetPlanType);
@@ -214,7 +211,8 @@ export class WorkoutPlanService implements IWorkoutPlanService {
           hasCompletedWorkoutToday: false,
           firstPendingDayNumber: -1
         },
-        isPremium: isPremium || false
+        isPremium: isPremium || false,
+        completedHistory: []
       };
     }
 
@@ -272,6 +270,20 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       firstPendingDayNumber = pendingDay ? pendingDay.dayNumber : -1;
     }
 
+    const allDays: CompletedHistoryItemDto[] = [];
+    plans.forEach((plan) => {
+      plan.days.forEach((day) => {
+        if (day.status === WORKOUT_DAY_STATUS.COMPLETED && day.completedAt) {
+          allDays.push({
+            date: new Date(day.completedAt),
+            planWeek: plan.weekNumber,
+            day,
+          });
+        }
+      });
+    });
+    const completedHistory = allDays.sort((a, b) => b.date.getTime() - a.date.getTime());
+
     return {
       plans,
       generationStatus: {
@@ -281,7 +293,8 @@ export class WorkoutPlanService implements IWorkoutPlanService {
         hasCompletedWorkoutToday,
         firstPendingDayNumber
       },
-      isPremium: isPremium || false
+      isPremium: isPremium || false,
+      completedHistory
     };
   }
 
@@ -403,16 +416,15 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     const recentActivities: RecentActivityDto[] = [];
     const muscleMap = new Map<string, number>();
 
-    // ── Trend Data generation based on timeframe ───────────────────────────
     const trendData: { label: string; completionRate: number }[] = [];
 
     if (timeframe === TIMEFRAME.DAILY && activePlan) {
-      // Last 7 days / Current active plan days
+     
       for (const day of activePlan.days) {
         if (day.type === 'workout') {
           const rate = day.status === WORKOUT_DAY_STATUS.COMPLETED ? 100 : 0;
           trendData.push({
-            label: day.day, // "Mon", "Tue"
+            label: day.day, 
             completionRate: rate
           });
         }
@@ -587,7 +599,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     }
 
     const totalMuscleHits = Array.from(muscleMap.values()).reduce((sum, count) => sum + count, 0);
-    // ── Progress Bar Calculation based on timeframe ────────────────────────
+    
     let title = "Monthly Workout Progress";
     let goalLabel = "Monthly Goal";
     let value = totalPlanned > 0 ? Math.round((totalCompleted / totalPlanned) * 100) : 0;
@@ -612,7 +624,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       valueLabel
     };
 
-    // ── Pie Chart Calculation 
+  
     const totalPie = totalCompletedExercises + totalSkippedExercises;
     const pieChart = {
       labels: totalPie > 0 ? ['Completed', 'Skipped'] : ['No Data', ''],

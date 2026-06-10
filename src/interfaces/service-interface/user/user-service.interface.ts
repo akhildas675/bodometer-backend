@@ -11,6 +11,8 @@ import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto } from "../..
 import { WorkoutPlanDetailDto, WorkoutPlanResponseDto, GetWorkoutPlansResponseDto, WorkoutProgressResponseDto, MarkDayCompletedDto, MarkExerciseStatusDto } from "../../../dto/workout/workout-plan.dto";
 import { EquipmentQueryDto, GetAllEquipmentResponseDto } from "../../../dto/equipment/equipment.dto";
 import { MealCategoryQueryDto, GetAllMealCategoriesResponseDto } from "../../../dto/meal.category/meal-category.dto";
+import { CreateBookingDto, GetBookingsQueryDto, GetSlotsQueryDto, DynamicSlotDto } from "../../../dto/trainer/trainer-booking.dto";
+import { PopulatedTrainerBooking } from "../../../interfaces/domain.interface/trainer-booking.interface";
 
 import { WorkoutExerciseStatus, Timeframe } from "../../../constants/fitness.constant";
 export interface IUserService {
@@ -45,4 +47,10 @@ export interface IUserService {
   markDayCompleted(data: MarkDayCompletedDto): Promise<WorkoutPlanResponseDto>;
   markExerciseStatus(data: MarkExerciseStatusDto): Promise<WorkoutPlanResponseDto>;
   getWorkoutProgress(userId: string, timeframe?: Timeframe): Promise<WorkoutProgressResponseDto>;
+  
+  // Trainer Booking Methods
+  getAvailableSlots(trainerId: string, query: GetSlotsQueryDto): Promise<DynamicSlotDto[]>;
+  createBooking(userId: string, data: CreateBookingDto): Promise<PopulatedTrainerBooking>;
+  getUserBookings(userId: string, query: GetBookingsQueryDto): Promise<{ data: PopulatedTrainerBooking[]; pagination: PaginationMeta }>;
+  cancelBookingByUser(userId: string, bookingId: string, reason?: string): Promise<PopulatedTrainerBooking>;
 }

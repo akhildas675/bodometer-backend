@@ -11,9 +11,12 @@ import {
 } from "../../dto/trainer/trainer.dto";
 import { MESSAGES } from "../../constants/messages";
 import { SuccessResponse } from "../../utils/success.response";
+import { CreateAvailabilityDto, GetAvailabilitiesQueryDto, UpdateAvailabilityDto, GetBookingsQueryDto } from "../../dto/trainer/trainer-booking.dto";
 
 export class TrainerController {
-  constructor(private _trainerService: ITrainerService) {}
+  constructor(
+    private _trainerService: ITrainerService,
+  ) {}
 
   getTrainer = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
@@ -242,5 +245,81 @@ export class TrainerController {
         next(new Error("Unknown error occurred"));
       }
     }
+  };
+
+
+
+  createAvailability = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
+      const data = req.body as CreateAvailabilityDto;
+      const result = await this._trainerService.createAvailability(req.user.id, data);
+      new SuccessResponse(STATUS.CREATED, result.message, result).send(res);
+    } catch (error) { next(error); }
+  };
+
+  getAvailabilities = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
+      const query = req.query as unknown as GetAvailabilitiesQueryDto;
+      const result = await this._trainerService.getAvailabilities(req.user.id, query);
+      new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, result.data, result.pagination).send(res);
+    } catch (error) { next(error); }
+  };
+
+  updateAvailabilityStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
+      const data = req.body as UpdateAvailabilityDto;
+      const updated = await this._trainerService.updateAvailabilityStatus(req.user.id, req.params.availabilityId, data);
+      new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, updated).send(res);
+    } catch (error) { next(error); }
+  };
+
+ 
+
+  getMyBookings = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
+      const query = req.query as unknown as GetBookingsQueryDto;
+      const result = await this._trainerService.getTrainerBookings(req.user.id, query);
+      new SuccessResponse(STATUS.OK, MESSAGES.TRAINER.BOOKING_FETCHED, result.data, result.pagination).send(res);
+    } catch (error) { next(error); }
+  };
+
+  confirmBooking = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
+      const booking = await this._trainerService.confirmBooking(req.user.id, req.params.bookingId);
+      new SuccessResponse(STATUS.OK, MESSAGES.TRAINER.BOOKING_ACCEPTED, booking).send(res);
+    } catch (error) { next(error); }
+  };
+
+  rejectBooking = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
+      const data = req.body as { reason?: string };
+      const reason = data.reason as string;
+      const booking = await this._trainerService.rejectBooking(req.user.id, req.params.bookingId, reason);
+      new SuccessResponse(STATUS.OK, MESSAGES.TRAINER.BOOKING_REJECTED, booking).send(res);
+    } catch (error) { next(error); }
+  };
+
+  completeBooking = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
+      const booking = await this._trainerService.completeBooking(req.user.id, req.params.bookingId);
+      new SuccessResponse(STATUS.OK, MESSAGES.TRAINER.SESSION_COMPLETED, booking).send(res);
+    } catch (error) { next(error); }
+  };
+
+  cancelBooking = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
+      const data = req.body as { reason?: string };
+      const reason = data.reason as string;
+      const booking = await this._trainerService.cancelBookingByTrainer(req.user.id, req.params.bookingId, reason);
+      new SuccessResponse(STATUS.OK, MESSAGES.TRAINER.SESSION_CANCELLED, booking).send(res);
+    } catch (error) { next(error); }
   };
 }

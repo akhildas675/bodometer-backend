@@ -152,3 +152,42 @@ export const exerciseQuerySchema = z.object({
     sortOrder: z.enum(["asc", "desc"]).optional(),
   })
 });
+
+export const getTrainerSlotsSchema = z.object({
+  params: z.object({
+    id: z.string().min(1, "Trainer ID is required"),
+  }),
+  query: z.object({
+    from: z.string().optional(),
+    to: z.string().optional(),
+  })
+});
+
+export const createBookingSchema = z.object({
+  body: z.object({
+    trainerId: z.string().min(1, "Trainer ID is required"),
+    date: z.string().min(1, "Date is required"),
+    startTime: z.string().min(1, "Start time is required"),
+    endTime: z.string().min(1, "End time is required"),
+    userNotes: z.string().optional(),
+    bookingType: z.enum(["ONLINE", "OFFLINE"]).optional(),
+  })
+});
+
+export const getUserBookingsSchema = z.object({
+  query: z.object({
+    page: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().min(1).optional()),
+    limit: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().min(1).optional()),
+    status: z.string().optional(),
+    date: z.string().optional(),
+  })
+});
+
+export const cancelBookingSchema = z.object({
+  params: z.object({
+    bookingId: z.string().min(1, "Booking ID is required"),
+  }),
+  body: z.object({
+    reason: z.string().min(1, "Cancellation reason is required"),
+  })
+});

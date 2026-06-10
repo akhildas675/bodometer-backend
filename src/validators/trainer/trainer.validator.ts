@@ -141,3 +141,51 @@ export const uploadTrainerDocumentSchema = z.object({
         })
         .optional(),
 });
+
+export const createAvailabilitySchema = z.object({
+    body: z.object({
+        startDate: z.string().min(1, "Start date is required"),
+        endDate: z.string().min(1, "End date is required"),
+        timeWindows: z.array(z.object({
+            startTime: z.string().min(1, "Start time is required"),
+            endTime: z.string().min(1, "End time is required"),
+        })).min(1, "At least one time window is required").max(4, "Maximum 4 time windows allowed"),
+        sessionDuration: z.number().min(15, "Minimum session duration is 15 minutes"),
+    })
+});
+
+export const updateAvailabilitySchema = z.object({
+    params: z.object({
+        availabilityId: z.string().min(1, "Availability ID is required"),
+    }),
+    body: z.object({
+        isActive: z.boolean({ message: "isActive must be a boolean" }),
+    })
+});
+
+export const getAvailabilitiesSchema = z.object({
+    query: z.object({
+        page: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().min(1).optional()),
+        limit: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().min(1).optional()),
+        status: z.string().optional(),
+    })
+});
+
+export const trainerGetBookingsSchema = z.object({
+    query: z.object({
+        page: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().min(1).optional()),
+        limit: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().min(1).optional()),
+        status: z.string().optional(),
+        date: z.string().optional(),
+        search: z.string().optional(),
+    })
+});
+
+export const trainerBookingActionSchema = z.object({
+    params: z.object({
+        bookingId: z.string().min(1, "Booking ID is required"),
+    }),
+    body: z.object({
+        reason: z.string().min(1, "Reason is required").optional(),
+    }).optional()
+});
