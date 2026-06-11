@@ -2,6 +2,7 @@ import { ITrainerBookingRepository } from "@/interfaces/repository-interface/tra
 import { BaseRepository } from "../base/base.repository";
 import { PopulatedTrainerBooking, TrainerBooking } from "@/interfaces/domain.interface/trainer-booking.interface";
 import { BookingStatus, ITrainerBookingDocument, TrainerBookingModel } from "@/models/trainer-booking.model";
+import { IUserDocument } from "@/models/user.model";
 import { PaginationMeta } from "@/interfaces/domain.interface/common.interface";
 import { PipelineStage } from "mongoose";
 
@@ -182,8 +183,8 @@ export class TrainerBookingRepository extends BaseRepository<TrainerBooking, ITr
 
     return {
       _id: doc._id.toString(),
-      userId: doc.userId as any,
-      trainerId: doc.trainerId as any,
+      userId: doc.userId as unknown as IUserDocument,
+      trainerId: doc.trainerId as unknown as IUserDocument,
       bookingReference: doc.bookingReference,
       bookingType: doc.bookingType as "ONLINE" | "OFFLINE",
       bookingDate: doc.bookingDate,
@@ -213,8 +214,8 @@ export class TrainerBookingRepository extends BaseRepository<TrainerBooking, ITr
 
     return {
       _id: doc._id.toString(),
-      userId: doc.userId as any,
-      trainerId: doc.trainerId as any,
+      userId: doc.userId as unknown as IUserDocument,
+      trainerId: doc.trainerId as unknown as IUserDocument,
       bookingReference: doc.bookingReference,
       bookingType: doc.bookingType as "ONLINE" | "OFFLINE",
       bookingDate: doc.bookingDate,

@@ -42,7 +42,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
   async generateWorkout(userId: string, planType: PlanType): Promise<WorkoutPlanDetailDto> {
     if (generationLocks.has(userId)) {
-      throw new AppError(STATUS.CONFLICT, "A workout plan is already being generated for you. Please wait.");
+      throw new AppError(STATUS.CONFLICT, MESSAGES.WORKOUT_PLAN.GENERATION_CONFLICT);
     }
     generationLocks.add(userId);
 
@@ -51,7 +51,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       
       if (planType === PLAN_TYPE.PREMIUM) {
       if (!onboardingAnswers || !onboardingAnswers.completed) {
-        throw new AppError(STATUS.BAD_REQUEST, "Please complete onboarding before generating a workout plan.");
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.WORKOUT_PLAN.ONBOARDING_REQUIRED);
       }
     }
 
@@ -316,12 +316,12 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     }
     
     if (activeWeek.planType === PLAN_TYPE.FREE) {
-      throw new AppError(STATUS.FORBIDDEN, "Workout tracking is only available for Premium plans.");
+      throw new AppError(STATUS.FORBIDDEN, MESSAGES.WORKOUT_PLAN.PREMIUM_REQUIRED);
     }
 
     const day = activeWeek.workoutDays.find((d) => d.dayNumber === dayNumber);
     if (!day) {
-      throw new AppError(STATUS.NOT_FOUND, "Workout day not found");
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT_PLAN.DAY_NOT_FOUND);
     }
 
     day.status = completed ? WORKOUT_DAY_STATUS.COMPLETED : WORKOUT_DAY_STATUS.PENDING;
@@ -339,7 +339,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
     const plansResponse = await this.getWorkoutPlans(userId, true);
     const updatedPlan = plansResponse.plans.find((p) => p.workoutPlanId === activeWeek._id.toString());
-    if (!updatedPlan) throw new AppError(STATUS.INTERNAL_ERROR, "Failed to fetch updated plan");
+    if (!updatedPlan) throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.WORKOUT_PLAN.UPDATE_FAILED);
     return updatedPlan;
   }
 
@@ -350,17 +350,17 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     }
 
     if (activeWeek.planType === PLAN_TYPE.FREE) {
-      throw new AppError(STATUS.FORBIDDEN, "Workout tracking is only available for Premium plans.");
+      throw new AppError(STATUS.FORBIDDEN, MESSAGES.WORKOUT_PLAN.PREMIUM_REQUIRED);
     }
 
     const day = activeWeek.workoutDays.find((d) => d.dayNumber === dayNumber);
     if (!day) {
-      throw new AppError(STATUS.NOT_FOUND, "Workout day not found");
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT_PLAN.DAY_NOT_FOUND);
     }
 
     const exercise = day.exercises.find((e) => e.instanceId === instanceId);
     if (!exercise) {
-      throw new AppError(STATUS.NOT_FOUND, "Exercise not found");
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT_PLAN.EXERCISE_NOT_FOUND);
     }
 
     if (status === WORKOUT_EXERCISE_STATUS.ACTIVE) {
@@ -369,7 +369,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       );
 
       if (isAnyActive) {
-        throw new AppError(STATUS.BAD_REQUEST, "Another exercise is currently in progress. Please complete or pause it first.");
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.WORKOUT_PLAN.EXERCISE_IN_PROGRESS);
       }
 
       exercise.startedAt = new Date();
@@ -394,7 +394,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
     const plansResponse = await this.getWorkoutPlans(userId, true);
     const updatedPlan = plansResponse.plans.find((p) => p.workoutPlanId === activeWeek._id.toString());
-    if (!updatedPlan) throw new AppError(STATUS.INTERNAL_ERROR, "Failed to retrieve updated plan");
+    if (!updatedPlan) throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.WORKOUT_PLAN.UPDATE_FAILED);
     return updatedPlan;
   }
 

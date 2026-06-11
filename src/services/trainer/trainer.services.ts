@@ -287,26 +287,26 @@ export class TrainerService implements ITrainerService {
     endDate.setUTCHours(0, 0, 0, 0);
 
     if (startDate > endDate) {
-      throw new AppError(STATUS.BAD_REQUEST, "Start date cannot be after end date.");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.START_DATE_AFTER_END);
     }
 
     const diffDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     if (diffDays >= 7) {
-      throw new AppError(STATUS.BAD_REQUEST, "Availability can be created for a maximum of 7 days.");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.MAX_AVAILABILITY_DAYS);
     }
 
     if (!data.timeWindows || data.timeWindows.length === 0) {
-      throw new AppError(STATUS.BAD_REQUEST, "At least one time window is required.");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.TIME_WINDOW_REQUIRED);
     }
     if (data.timeWindows.length > 4) {
-      throw new AppError(STATUS.BAD_REQUEST, "Maximum of 4 time windows allowed.");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.MAX_TIME_WINDOWS);
     }
 
     for (const tw of data.timeWindows) {
       const startMinutes = parseTime(tw.startTime);
       const endMinutes = parseTime(tw.endTime);
       if (startMinutes >= endMinutes) {
-        throw new AppError(STATUS.BAD_REQUEST, "Start time must be before end time in a time window.");
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.START_TIME_AFTER_END);
       }
       if ((endMinutes - startMinutes) < data.sessionDuration) {
         throw new AppError(STATUS.BAD_REQUEST, `Time window ${tw.startTime}-${tw.endTime} is shorter than the session duration.`);
@@ -324,7 +324,7 @@ export class TrainerService implements ITrainerService {
     });
 
     if (hasOverlap) {
-      throw new AppError(STATUS.CONFLICT, "You already have an active availability rule that overlaps with this date range.");
+      throw new AppError(STATUS.CONFLICT, MESSAGES.TRAINER.OVERLAPPING_AVAILABILITY_RULE);
     }
 
     const availabilityData = {
@@ -356,7 +356,7 @@ export class TrainerService implements ITrainerService {
   async updateAvailabilityStatus(trainerId: string, availabilityId: string, data: UpdateAvailabilityDto): Promise<TrainerAvailability> {
     const availability = await this._trainerAvailabilityRepo.findById(availabilityId);
     if (!availability) {
-      throw new AppError(STATUS.NOT_FOUND, "Availability configuration not found.");
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.AVAILABILITY_NOT_FOUND);
     }
     if (availability.trainerId.toString() !== trainerId) {
       throw new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED);
@@ -369,7 +369,7 @@ export class TrainerService implements ITrainerService {
         availability.endDate
       );
       if (hasActive) {
-        throw new AppError(STATUS.BAD_REQUEST, "Cannot deactivate availability because there are active bookings in this period. Please cancel or reject them first.");
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.CANNOT_DEACTIVATE_ACTIVE_BOOKINGS);
       }
     }
 
@@ -395,7 +395,7 @@ export class TrainerService implements ITrainerService {
     if (booking.trainerId.toString() !== trainerId) throw new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED);
 
     if (booking.status !== BOOKING_STATUS.PENDING) {
-      throw new AppError(STATUS.BAD_REQUEST, "Invalid state transition. Only PENDING bookings can be APPROVED.");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.INVALID_APPROVAL_STATE);
     }
 
     const updated = await this._trainerBookingRepo.updateStatus(bookingId, {
@@ -407,14 +407,14 @@ export class TrainerService implements ITrainerService {
   }
 
   async rejectBooking(trainerId: string, bookingId: string, reason: string): Promise<PopulatedTrainerBooking> {
-    if (!reason || reason.trim() === "") throw new AppError(STATUS.BAD_REQUEST, "Rejection reason is required.");
+    if (!reason || reason.trim() === "") throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.REJECTION_REASON_REQUIRED);
 
     const booking = await this._trainerBookingRepo.findById(bookingId);
     if (!booking) throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.BOOKING_NOT_FOUND);
     if (booking.trainerId.toString() !== trainerId) throw new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED);
 
     if (booking.status !== BOOKING_STATUS.PENDING) {
-      throw new AppError(STATUS.BAD_REQUEST, "Invalid state transition. Only PENDING bookings can be REJECTED.");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.INVALID_REJECTION_STATE);
     }
 
     const updated = await this._trainerBookingRepo.updateStatus(bookingId, {
@@ -432,7 +432,7 @@ export class TrainerService implements ITrainerService {
     if (booking.trainerId.toString() !== trainerId) throw new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED);
 
     if (booking.status !== BOOKING_STATUS.APPROVED) {
-      throw new AppError(STATUS.BAD_REQUEST, "Invalid state transition. Only APPROVED bookings can be COMPLETED.");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.INVALID_COMPLETION_STATE);
     }
 
     const updated = await this._trainerBookingRepo.updateStatus(bookingId, {
@@ -444,14 +444,14 @@ export class TrainerService implements ITrainerService {
   }
 
   async cancelBookingByTrainer(trainerId: string, bookingId: string, reason?: string): Promise<PopulatedTrainerBooking> {
-    if (!reason || reason.trim() === "") throw new AppError(STATUS.BAD_REQUEST, "Cancellation reason is required.");
+    if (!reason || reason.trim() === "") throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.CANCELLATION_REASON_REQUIRED);
 
     const booking = await this._trainerBookingRepo.findById(bookingId);
     if (!booking) throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.BOOKING_NOT_FOUND);
     if (booking.trainerId.toString() !== trainerId) throw new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED);
 
     if (booking.status !== BOOKING_STATUS.PENDING && booking.status !== BOOKING_STATUS.APPROVED) {
-      throw new AppError(STATUS.BAD_REQUEST, "Invalid state transition. Only PENDING or APPROVED bookings can be CANCELLED.");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.INVALID_CANCELLATION_STATE);
     }
 
     const updated = await this._trainerBookingRepo.updateStatus(bookingId, {

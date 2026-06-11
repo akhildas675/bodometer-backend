@@ -669,7 +669,7 @@ export class AdminService implements IAdminService {
     groupId: string,
   ): Promise<QuestionGroupResponseDto> {
     const group = await this._groupRepository.getGroupById(groupId);
-    if (!group) throw new AppError(STATUS.NOT_FOUND, "Group not found");
+    if (!group) throw new AppError(STATUS.NOT_FOUND, MESSAGES.ONBOARDING.GROUP_NOT_FOUND);
     return {
       groupId: group.groupId!,
       key: group.key,
@@ -744,7 +744,7 @@ export class AdminService implements IAdminService {
     questionId: string,
   ): Promise<OnboardingQuestionResponseDto> {
     const q = await this._questionRepository.getQuestionById(questionId);
-    if (!q) throw new AppError(STATUS.NOT_FOUND, "Question not found");
+    if (!q) throw new AppError(STATUS.NOT_FOUND, MESSAGES.ONBOARDING.QUESTION_NOT_FOUND);
     return {
       questionId: q.questionId!,
       key: q.key,
@@ -1155,7 +1155,7 @@ export class AdminService implements IAdminService {
   async getMealCategoryById(mealCategoryId: string): Promise<MealCategoryDto> {
     const category = await this._mealCategoryRepository.getMealCategoryById(mealCategoryId);
     if (!category) {
-      throw new AppError(STATUS.NOT_FOUND, "Meal category not found");
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.MEAL_CATEGORY.NOT_FOUND);
     }
     return category as MealCategoryDto;
   }
@@ -1163,7 +1163,7 @@ export class AdminService implements IAdminService {
   async updateMealCategory(mealCategoryId: string, data: UpdateMealCategoryDto): Promise<void> {
     const category = await this._mealCategoryRepository.getMealCategoryById(mealCategoryId);
     if (!category) {
-      throw new AppError(STATUS.NOT_FOUND, "Meal category not found");
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.MEAL_CATEGORY.NOT_FOUND);
     }
 
     const updateData: Partial<MealCategory> = {
@@ -1177,7 +1177,7 @@ export class AdminService implements IAdminService {
   async toggleMealCategoryStatus(mealCategoryId: string): Promise<ToggleMealCategoryStatusResponseDto> {
     const category = await this._mealCategoryRepository.toggleMealCategoryStatus(mealCategoryId);
     if (!category) {
-      throw new AppError(STATUS.NOT_FOUND, "Meal category not found");
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.MEAL_CATEGORY.NOT_FOUND);
     }
     return {
       message: category.isActive ? "Meal category unblocked successfully" : "Meal category blocked successfully",

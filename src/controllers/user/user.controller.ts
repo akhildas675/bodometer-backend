@@ -272,7 +272,7 @@ export class UserController {
     try {
       if (!req.user) throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
       const data = req.body as unknown as UpsertHealthLogDto;
-      if (!data.date) throw new AppError(STATUS.BAD_REQUEST, "Date is required");
+      if (!data.date) throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.DATE_REQUIRED);
       const result = await this._healthLogService.upsertHealthLog(req.user.id, data);
       new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, result).send(res);
     } catch (error: unknown) {
@@ -756,7 +756,7 @@ export class UserController {
       const { completed } = req.body as { completed: boolean };
 
       if (typeof completed !== "boolean") {
-        throw new AppError(STATUS.BAD_REQUEST, "completed field is required and must be a boolean");
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.COMPLETED_FIELD_REQUIRED);
       }
 
       const updatedPlan = await this._userService.markDayCompleted({ userId: req.user.id, planId, dayNumber: Number(dayNumber), completed });
@@ -789,7 +789,7 @@ export class UserController {
         status !== WORKOUT_EXERCISE_STATUS.COMPLETED &&
         status !== WORKOUT_EXERCISE_STATUS.SKIPPED
       ) {
-        throw new AppError(STATUS.BAD_REQUEST, "status field is required and must be PENDING, ACTIVE, COMPLETED, or SKIPPED");
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.STATUS_FIELD_REQUIRED);
       }
 
       const updatedPlan = await this._userService.markExerciseStatus({ userId: req.user.id, planId, dayNumber: Number(dayNumber), instanceId: exerciseId, status });

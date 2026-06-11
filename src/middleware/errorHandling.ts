@@ -2,6 +2,14 @@ import { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/appError";
 import { STATUS } from "../constants/statuscode";
 
+interface MongoError extends Error {
+  code?: number;
+  keyValue?: Record<string, unknown>;
+}
+
+interface MongooseValidationError extends Error {
+  errors?: Record<string, { path: string; message: string }>;
+}
 export const errorHandler = (
   err: unknown,
   req: Request,
@@ -23,8 +31,8 @@ export const errorHandler = (
     const errorName = err.name;
 
     // Handle MongoDB Duplicate Key Error
-    if (errorName === "MongoServerError" && (err as any).code === 11000) {
-      const field = Object.keys((err as any).keyValue || {})[0];
+    if (errorName === "MongoServerError" && (err as MongoError).code === 11000) {
+      const field = Object.keys((err as MongoError).keyValue || {})[0];
       const message = field 
         ? `A record with this ${field} already exists.`
         : "A record with this value already exists.";
@@ -37,7 +45,7 @@ export const errorHandler = (
     // Handle Mongoose Validation Error
     if (errorName === "ValidationError") {
       const errors: Record<string, string> = {};
-      Object.values((err as any).errors || {}).forEach((e: any) => {
+      Object.values((err as MongooseValidationError).errors || {}).forEach((e) => {
         errors[e.path] = e.message;
       });
       return res.status(STATUS.BAD_REQUEST).json({

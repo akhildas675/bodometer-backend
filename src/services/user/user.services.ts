@@ -705,7 +705,7 @@ export class UserService implements IUserService {
   async createBooking(userId: string, data: CreateBookingDto): Promise<PopulatedTrainerBooking> {
     const activeSub = await this._userSubscriptionRepository.findActiveByUserId(userId);
     if (!activeSub) {
-      throw new AppError(STATUS.FORBIDDEN, "Only premium users can book trainers.");
+      throw new AppError(STATUS.FORBIDDEN, MESSAGES.USER.PREMIUM_REQUIRED_FOR_TRAINER);
     }
 
     let actualTrainerUserId = data.trainerId;
@@ -734,7 +734,7 @@ export class UserService implements IUserService {
 
     const slotStartDateTime = new Date(`${bookingDate.toISOString().split('T')[0]}T${data.startTime}:00`);
     if (slotStartDateTime <= new Date()) {
-      throw new AppError(STATUS.BAD_REQUEST, "Cannot book a slot in the past.");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.PAST_SLOT_BOOKING);
     }
 
     const hasOverlap = await this._trainerBookingRepo.hasOverlappingBooking(
@@ -744,7 +744,7 @@ export class UserService implements IUserService {
       data.endTime
     );
     if (hasOverlap) {
-      throw new AppError(STATUS.CONFLICT, "This slot is no longer available or you already have a booking at this time.");
+      throw new AppError(STATUS.CONFLICT, MESSAGES.TRAINER.SLOT_UNAVAILABLE_OR_CONFLICT);
     }
 
     const bookingData = {
@@ -779,14 +779,14 @@ export class UserService implements IUserService {
   }
 
   async cancelBookingByUser(userId: string, bookingId: string, reason?: string): Promise<PopulatedTrainerBooking> {
-    if (!reason || reason.trim() === "") throw new AppError(STATUS.BAD_REQUEST, "Cancellation reason is required.");
+    if (!reason || reason.trim() === "") throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.CANCELLATION_REASON_REQUIRED);
 
     const booking = await this._trainerBookingRepo.findById(bookingId);
     if (!booking) throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.BOOKING_NOT_FOUND);
     if (booking.userId.toString() !== userId) throw new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED);
 
     if (booking.status !== BOOKING_STATUS.PENDING && booking.status !== BOOKING_STATUS.APPROVED) {
-      throw new AppError(STATUS.BAD_REQUEST, "Invalid state transition. Only PENDING or APPROVED bookings can be CANCELLED.");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.INVALID_CANCELLATION_STATE);
     }
 
     const updated = await this._trainerBookingRepo.updateStatus(bookingId, {

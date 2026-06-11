@@ -10,6 +10,7 @@ import {
   MacroDistributionDto,
   DailyNutritionSummaryDto,
 } from "../../dto/health-log/health-log.dto";
+import { MESSAGES } from "../../constants/messages";
 import { TIMEFRAME, Timeframe } from "../../constants/fitness.constant";
 import { IHealthLogModel, IEmbeddedMeal } from "../../models/health-log.model";
 import mongoose from "mongoose";
@@ -49,19 +50,19 @@ export class HealthLogService implements IHealthLogService {
     const today = new Date();
     today.setHours(23, 59, 59, 999);
     if (date > today) {
-      throw new AppError(STATUS.BAD_REQUEST, "Cannot log meals for future dates.");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.HEALTH_LOG.NO_FUTURE_DATES);
     }
 
     // Validate target date is not before subscription started
     const activeSub = await this._userSubscriptionRepo.findActiveByUserId(userId);
     if (!activeSub) {
-      throw new AppError(STATUS.BAD_REQUEST, "No active subscription found.");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.HEALTH_LOG.NO_ACTIVE_SUBSCRIPTION);
     }
 
     const subStart = new Date(activeSub.startDate);
     subStart.setHours(0, 0, 0, 0);
     if (date < subStart) {
-      throw new AppError(STATUS.BAD_REQUEST, "Cannot log meals before your subscription start date.");
+      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.HEALTH_LOG.BEFORE_SUBSCRIPTION_START);
     }
 
     const existingLog = await this._healthLogRepo.findByUserAndDate(userId, date);
