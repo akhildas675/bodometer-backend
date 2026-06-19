@@ -1,11 +1,8 @@
-import {
-  CategoryDetailDto,
-  CategoryResponseDto,
-  GetCategoryByIdResponseDto,
-} from "../../dto/category/category.dto";
-import { Category } from "../../interfaces/domain.interface/category.interface";
 
-export class CategoryMappers {
+import { Category } from "../interface/category.interface";
+import { CategoryDetailDto, CategoryResponseDto, GetCategoryByIdResponseDto } from "../dto/category.dto";
+
+export class CategoryMapper {
   static toCategoryDetailDto(category: Category): CategoryDetailDto {
     return {
       categoryId: category.categoryId!,

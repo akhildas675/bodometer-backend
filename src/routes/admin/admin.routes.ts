@@ -1,14 +1,11 @@
 import { Router } from "express";
 import { ADMIN_ROUTES } from "../../constants/routes.constant/admin-routes.constant";
-import { createAdminModule } from "../../modules/admin/admin.module";
+import { createAdminModule } from "../../moduless/admin/admin.module";
 import { ROLE_GUARD } from "../../constants/role.guard";
 
 import { mediaUpload } from "@/config/multer";
 
 import {
-  categoryIdParamSchema,
-  categoryUpdateSchema,
-  categoryValidationSchema,
   featureIdParamSchema,
   featureUpdateSchema,
   featureValidationSchema,
@@ -125,36 +122,7 @@ adminRoute.patch(
   adminController.unblockUser,
 );
 
-adminRoute.post(
-  ADMIN_ROUTES.CREATE_CATEGORY,
-  ROLE_GUARD.ADMIN_GUARD,
-  mediaUpload.single("image"),
-  validate(categoryValidationSchema),
-  adminController.createCategory,
-);
-adminRoute.put(
-  ADMIN_ROUTES.UPDATE_CATEGORY,
-  ROLE_GUARD.ADMIN_GUARD,
-  mediaUpload.single("image"),
-  validate(categoryUpdateSchema),
-  adminController.updateCategory,
-);
-adminRoute.get(
-  ADMIN_ROUTES.GET_CATEGORY_BY_ID,
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getCategoryById,
-);
-adminRoute.get(
-  ADMIN_ROUTES.GET_ALL_CATEGORIES,
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getAllCategories,
-);
-adminRoute.patch(
-  ADMIN_ROUTES.TOGGLE_CATEGORY_STATUS,
-  ROLE_GUARD.ADMIN_GUARD,
-  validate(categoryIdParamSchema),
-  adminController.toggleCategoryStatus,
-);
+
 adminRoute.get(
   ADMIN_ROUTES.GET_ALL_FEATURES,
   ROLE_GUARD.ADMIN_GUARD,

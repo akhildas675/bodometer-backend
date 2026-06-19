@@ -1,20 +1,18 @@
-import { CategoryQuery, GetAllCategoriesResponse } from "../../../interfaces/domain.interface/category.interface";
+
 import { GetAllQuestionGroupsResponse, GetAllQuestionsResponse, OnboardingValue, UserAnswerSubmission } from "../../../interfaces/domain.interface/onboarding.interface";
 import { ChangePasswordDto, FindUserResponseDto, UpdateBmiDto, UpdateBmiResponseDto, UpdateUserProfileDto } from "../../../dto/user/user.dto";
 import { ActiveSubscriptionDto, UserSubscriptionPlanResponseDto, SubscriptionTransactionDto, SubscriptionTransactionQueryDto } from "../../../dto/subscription/subscription.dto";
 import { GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto } from "../../../dto/trainer/trainer.dto";
-import { CategoryDetailDto } from "../../../dto/category/category.dto";
 import { PaginationMeta } from "../../../interfaces/domain.interface/common.interface";
-import { Exercise } from "../../../interfaces/domain.interface/exercise.interface";
-import { PaginatedResult } from "../../../interfaces/domain.interface/common.interface";
+
 import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto } from "../../../dto/exercise/exercise.dto";
 import { WorkoutPlanDetailDto, WorkoutPlanResponseDto, GetWorkoutPlansResponseDto, WorkoutProgressResponseDto, MarkDayCompletedDto, MarkExerciseStatusDto } from "../../../dto/workout/workout-plan.dto";
 import { EquipmentQueryDto, GetAllEquipmentResponseDto } from "../../../dto/equipment/equipment.dto";
 import { MealCategoryQueryDto, GetAllMealCategoriesResponseDto } from "../../../dto/meal.category/meal-category.dto";
 import { CreateBookingDto, GetBookingsQueryDto, GetSlotsQueryDto, DynamicSlotDto } from "../../../dto/trainer/trainer-booking.dto";
 import { PopulatedTrainerBooking } from "../../../interfaces/domain.interface/trainer-booking.interface";
+import { Timeframe } from "@/constants/fitness.constant";
 
-import { WorkoutExerciseStatus, Timeframe } from "../../../constants/fitness.constant";
 export interface IUserService {
   fetchUser(userId: string): Promise<FindUserResponseDto>;
   updateProfile(userId: string, updateData: UpdateUserProfileDto): Promise<FindUserResponseDto>;
@@ -22,10 +20,9 @@ export interface IUserService {
   changePassword(userId: string, dto: ChangePasswordDto): Promise<void>;
   getTrainers(query: GetTrainersQueryDto): Promise<TrainerListResponseDto>;
   getTrainerById(id: string): Promise<TrainerDetailDto>;
-  getCategories(query: CategoryQuery): Promise<GetAllCategoriesResponse>;
+ 
   getAllEquipment(query: EquipmentQueryDto): Promise<GetAllEquipmentResponseDto>;
   getMealCategories(query: MealCategoryQueryDto): Promise<GetAllMealCategoriesResponseDto>;
-  getCategoryById(id: string): Promise<CategoryDetailDto>;
   getMySubscriptions(): Promise<UserSubscriptionPlanResponseDto[] | null>
   createCheckoutSession(userId: string, planId: string): Promise<{ checkoutUrl: string }>;
   verifyPaymentAndSave(userId: string, sessionId: string): Promise<ActiveSubscriptionDto>;

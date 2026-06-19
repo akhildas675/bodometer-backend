@@ -1,12 +1,14 @@
+import { injectable } from "inversify";
 import {
   Category,
   CategoryQuery,
   GetAllCategoriesResponse,
-} from "@/interfaces/domain.interface/category.interface";
+} from "@/modules/category/interface/category.interface";
 import { BaseRepository } from "@/repositories/base/base.repository";
 import { CategoryModel, ICategory } from "@/models/category.model";
-import { ICategoryRepository } from "@/interfaces/repository-interface/category/category-repository.interface";
+import { ICategoryRepository } from "@/modules/category/interface/category-repository.interface";
 
+@injectable()
 export default class CategoryRepository
   extends BaseRepository<Category, ICategory>
   implements ICategoryRepository

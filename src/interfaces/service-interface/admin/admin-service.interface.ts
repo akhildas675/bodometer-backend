@@ -1,6 +1,6 @@
 import { AdminGetUsersDto, AdminGetUsersResponseDto } from "../../../dto/user/user.dto";
 import { AdminGetTrainersDto, AdminGetTrainersResponseDto, GetTrainerAppointmentsQueryDto, GetTrainerByIdResponseDto, ApproveTrainerResponseDto, RejectTrainerResponseDto, GetTrainerAppointmentsResponseDto } from "../../../dto/trainer/trainer.dto";
-import { CategoryQueryDto, CreateCategoryDto, UpdateCategoryDto, GetCategoryByIdResponseDto, GetAllCategoriesResponseDto, ToggleCategoryStatusResponseDto } from "../../../dto/category/category.dto";
+
 import { SubscriptionFeatureQueryDto, GetAllSubscriptionFeaturesResponseDto, CreateSubscriptionFeatureDto, UpdateSubscriptionFeatureDto, ToggleSubscriptionFeatureStatusResponseDto, SubscriptionFeatureDto, CreateSubscriptionPlanDto, SubscriptionPlanQueryDto, GetAllSubscriptionPlansResponseDto, GetSubscriptionPlanByIdResponseDto, UpdateSubscriptionPlanDto, ToggleSubscriptionPlanStatusResponseDto, SubscriptionTransactionQueryDto, GetAllSubscriptionTransactionsResponseDto } from "../../../dto/subscription/subscription.dto";
 import { CreateQuestionGroupDto, UpdateQuestionGroupDto, GetAllQuestionGroupsResponseDto, QuestionQueryDto, CreateQuestionDto, UpdateQuestionDto, GetAllQuestionsResponseDto, QuestionGroupResponseDto, OnboardingQuestionResponseDto } from "../../../dto/onboarding/onboarding.dto";
 import { PaginatedResponseDto } from "../../../dto/common.dto";
@@ -34,11 +34,6 @@ export interface IAdminService {
   approveTrainer(profileId: string): Promise<ApproveTrainerResponseDto>;
   rejectTrainer(profileId: string, reason: string): Promise<RejectTrainerResponseDto>;
 
-  createCategory(data: CreateCategoryDto): Promise<void>
-  updateCategory(data: UpdateCategoryDto): Promise<void>
-  getCategoryById(categoryId: string): Promise<GetCategoryByIdResponseDto>
-  getAllCategories(query: CategoryQueryDto): Promise<GetAllCategoriesResponseDto>;
-  toggleCategoryStatus(categoryId: string): Promise<ToggleCategoryStatusResponseDto>
 
   getAllSubscriptionFeatures(query: SubscriptionFeatureQueryDto): Promise<GetAllSubscriptionFeaturesResponseDto>;
   createSubscriptionFeature(data: CreateSubscriptionFeatureDto): Promise<void>

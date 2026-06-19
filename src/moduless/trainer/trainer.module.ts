@@ -6,8 +6,8 @@ import TrainerProfileRepository from "@/repositories/trainer/trainer-profile.rep
 import UserRepository from "@/repositories/user/user.repository";
 import { S3Service } from "../../services/s3/s3.service";
 import { TrainerService } from "../../services/trainer/trainer.services";
-import CategoryRepository from "@/repositories/category/category.repository";
-import { ICategoryRepository } from "../../interfaces/repository-interface/category/category-repository.interface";
+import CategoryRepository from "@/modules/category/repository/category.repository";
+import { ICategoryRepository } from "../../modules/category/interface/category-repository.interface";
 
 import { ITrainerBookingRepository } from "../../interfaces/repository-interface/trainer/trainer-booking.repository.interface";
 import { TrainerBookingRepository } from "../../repositories/trainer/trainer-booking.repository";

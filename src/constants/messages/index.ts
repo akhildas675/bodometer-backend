@@ -15,6 +15,7 @@ import { WORKOUT_MESSAGES } from "./workout.messages";
 import { SUBSCRIPTION_MESSAGES } from "./subscription.messages";
 import { COMMON_MESSAGES } from "./common.messages";
 import { HEALTH_LOG_MESSAGES } from "./health-log.messages";
+import { CATEGORY_MESSAGES } from "./category.message";
 
 export const MESSAGES = {
   ...AUTH_MESSAGES,
@@ -25,4 +26,5 @@ export const MESSAGES = {
   ...SUBSCRIPTION_MESSAGES,
   ...COMMON_MESSAGES,
   ...HEALTH_LOG_MESSAGES,
+  ...CATEGORY_MESSAGES,
 };

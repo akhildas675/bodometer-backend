@@ -4,7 +4,7 @@ import {
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import * as crypto from "crypto";
-
+import { injectable } from "inversify";
 export interface UploadedFile {
   fieldname: string;
   originalname: string;
@@ -13,6 +13,7 @@ export interface UploadedFile {
   size: number;
   buffer: Buffer;
 }
+  @injectable()
 
 export class S3Service {
   private s3Client: S3Client;

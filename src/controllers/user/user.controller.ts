@@ -197,29 +197,6 @@ export class UserController {
     }
   };
 
-  getCategories = async (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      const query = parsePaginationQuery(req);
-
-      const result = await this._userService.getCategories(query);
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.COMMON.SUCCESS,
-        result.data,
-        result.pagination
-      ).send(res);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        next(error);
-      } else {
-        next(new Error("Unknown error occurred"));
-      }
-    }
-  };
 
   getMealCategories = async (
     req: AuthRequest,
@@ -327,33 +304,7 @@ export class UserController {
     }
   };
 
-  getCategoryById = async (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      const { categoryId } = req.params;
 
-      if (!categoryId) {
-        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
-      }
-
-      const result = await this._userService.getCategoryById(categoryId);
-
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.COMMON.SUCCESS,
-        result
-      ).send(res);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        next(error);
-      } else {
-        next(new Error("Unknown error occurred"));
-      }
-    }
-  };
 
   getMySubscriptions = async (
     req: AuthRequest,

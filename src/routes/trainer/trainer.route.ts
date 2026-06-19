@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { TRAINER_ROUTES } from "../../constants/routes.constant/trainer-routes.constant";
 import { ROLE_GUARD } from "../../constants/role.guard";
-import { createTrainerModule } from "../../modules/trainer/trainer.module";
+import { createTrainerModule } from "../../moduless/trainer/trainer.module";
 import { mediaUpload } from "../../config/multer";
 import { validate } from "@/middleware/validate";
 import {
@@ -66,11 +66,7 @@ trainerRoute.get(
   ROLE_GUARD.TRAINER_GUARD,
   trainerController.getProfileStatus,
 );
-trainerRoute.get(
-  TRAINER_ROUTES.GET_CATEGORIES,
-  ROLE_GUARD.TRAINER_GUARD,
-  trainerController.getCategories,
-);
+
 
 // Availability
 trainerRoute.post(

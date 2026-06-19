@@ -1,4 +1,4 @@
-import { CategoryQuery, GetAllCategoriesResponse } from "../../../interfaces/domain.interface/category.interface";
+import { CategoryQuery, GetAllCategoriesResponse } from "../../../modules/category/interface/category.interface";
 import { FindTrainerResponseDto, TrainerProfileDto, TrainerStatusResponseDto, UpdateTrainerProfileDto } from "../../../dto/trainer/trainer.dto";
 import { CreateAvailabilityDto, UpdateAvailabilityDto, GetBookingsQueryDto, GetAvailabilitiesQueryDto } from "../../../dto/trainer/trainer-booking.dto";
 import { PopulatedTrainerBooking, TrainerAvailability } from "../../../interfaces/domain.interface/trainer-booking.interface";

@@ -31,19 +31,18 @@ import {
   TrainerDetailDto,
   TrainerListResponseDto,
 } from "../../dto/trainer/trainer.dto";
-import { CategoryDetailDto } from "../../dto/category/category.dto";
-import { ICategoryRepository } from "../../interfaces/repository-interface/category/category-repository.interface";
+
+import { ICategoryRepository } from "../../modules/category/interface/category-repository.interface";
 import {
   CategoryQuery,
   GetAllCategoriesResponse,
-} from "../../interfaces/domain.interface/category.interface";
+} from "../../modules/category/interface/category.interface";
 import {
   GetAllQuestionGroupsResponse,
   GetAllQuestionsResponse,
   OnboardingValue,
   UserAnswerSubmission,
 } from "../../interfaces/domain.interface/onboarding.interface";
-import { CategoryMappers } from "@/mappers/category/category.mapper";
 import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/subscription/subscription-plan.repository";
 import Stripe from "stripe";
 import { ISubscriptionTransactionRepository } from "@/interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
@@ -262,12 +261,7 @@ export class UserService implements IUserService {
     } as CategoryQuery);
   }
 
-  // Fetch category details
-  async getCategoryById(id: string): Promise<CategoryDetailDto> {
-    const category = await this._categoryRepo.getCategoryById(id);
-    if (!category) throw new AppError(STATUS.NOT_FOUND, MESSAGES.ADMIN.CATEGORY_NOT_FOUND);
-    return CategoryMappers.toCategoryDetailDto(category);
-  }
+
 
   // Fetch all equipment
   async getAllEquipment(query: EquipmentQueryDto): Promise<GetAllEquipmentResponseDto> {

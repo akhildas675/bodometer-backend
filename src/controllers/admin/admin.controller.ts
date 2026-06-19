@@ -16,11 +16,7 @@ import {
   GetTrainerAppointmentsQueryDto,
   RejectTrainerBodyDto,
 } from "../../dto/trainer/trainer.dto";
-import {
-  CategoryQueryDto,
-  CreateCategoryDto,
-  UpdateCategoryDto,
-} from "../../dto/category/category.dto";
+
 import {
   CreateSubscriptionFeatureDto,
   CreateSubscriptionPlanDto,
@@ -277,133 +273,12 @@ export class AdminController {
     }
   };
 
-  createCategory = async (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      const body = req.body as { name?: string; description?: string };
-      const data: CreateCategoryDto = {
-        name: body.name?.trim() || "",
-        description: body.description?.trim() || "",
-        image: req.file,
-      };
+ 
 
-      await this._adminService.createCategory(data);
 
-      new SuccessResponse(STATUS.CREATED, MESSAGES.ADMIN.CATEGORY_CREATED).send(
-        res,
-      );
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        next(error);
-      } else {
-        next(new Error("Unknown error occurred"));
-      }
-    }
-  };
 
-  updateCategory = async (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      const body = req.body as {
-        name?: string;
-        description?: string;
-        categoryId?: string;
-      };
-      const data: UpdateCategoryDto = {
-        categoryId: (req.params.categoryId || body.categoryId)?.trim() || "",
-        name: body.name?.trim(),
-        description: body.description?.trim(),
-        image: req.file,
-      };
 
-      await this._adminService.updateCategory(data);
 
-      new SuccessResponse(STATUS.CREATED, MESSAGES.ADMIN.CATEGORY_UPDATED).send(
-        res,
-      );
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        next(error);
-      } else {
-        next(new Error("Unknown error occurred"));
-      }
-    }
-  };
-
-  getCategoryById = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { categoryId } = req.params;
-      const category = await this._adminService.getCategoryById(categoryId);
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.ADMIN.CATEGORY_FETCHED,
-        category,
-      ).send(res);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        next(error);
-      } else {
-        next(new Error("Unknown error occurred"));
-      }
-    }
-  };
-
-  getAllCategories = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      const query: CategoryQueryDto = {
-        search: "",
-        page: 1,
-        limit: 10,
-        sortBy: "createdAt",
-        sortOrder: "desc",
-        ...parsePaginationQuery(req),
-      };
-
-      const { data, pagination } =
-        await this._adminService.getAllCategories(query);
-
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.ADMIN.CATEGORY_FETCHED,
-        data,
-        pagination,
-      ).send(res);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        next(error);
-      } else {
-        next(new Error("Unknown error occurred"));
-      }
-    }
-  };
-
-  toggleCategoryStatus = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      const { categoryId } = req.params;
-      const result = await this._adminService.toggleCategoryStatus(categoryId);
-      new SuccessResponse(STATUS.OK, result.message, result.category).send(res);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        next(error);
-      } else {
-        next(new Error("Unknown error occurred"));
-      }
-    }
-  };
 
   getAllSubscriptionFeatures = async (
     req: Request,

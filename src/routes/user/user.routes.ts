@@ -1,11 +1,10 @@
 import { Router } from "express";
-import { createUserModule } from "../../modules/user/user.module";
+import { createUserModule } from "../../moduless/user/user.module";
 import { USER_ROUTES } from "../../constants/routes.constant/user-routes.constant";
 import { ROLE_GUARD } from "../../constants/role.guard";
 import { validate } from "../../middleware/validate";
 import {
   bmiCalculationSchema,
-  categoryIdParamSchema,
   changePasswordSchema,
   checkoutSessionSchema,
   submitOnboardingSchema,
@@ -61,11 +60,7 @@ userRoute.patch(
   userController.changePassword,
 );
 
-userRoute.get(
-  USER_ROUTES.GET_CATEGORIES,
-  ROLE_GUARD.USER_GUARD,
-  userController.getCategories,
-);
+
 
 userRoute.get(
   USER_ROUTES.GET_MEAL_CATEGORIES,
@@ -97,11 +92,6 @@ userRoute.get(
   userController.getAllEquipment,
 );
 
-userRoute.get(
-  USER_ROUTES.GET_CATEGORY_BY_ID, validate(categoryIdParamSchema),
-  ROLE_GUARD.USER_GUARD,
-  userController.getCategoryById,
-);
 
 userRoute.get(
   USER_ROUTES.GET_MY_SUBSCRIPTIONS,

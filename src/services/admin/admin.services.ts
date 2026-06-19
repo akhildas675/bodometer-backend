@@ -1,4 +1,4 @@
-import { ICategoryRepository } from "@/interfaces/repository-interface/category/category-repository.interface";
+import { ICategoryRepository } from "@/modules/category/interface/category-repository.interface";
 import { MESSAGES } from "../../constants/messages";
 import { ROLES } from "../../constants/roles";
 import { STATUS } from "../../constants/statuscode";
@@ -16,14 +16,6 @@ import {
   ApproveTrainerResponseDto,
   RejectTrainerResponseDto,
 } from "../../dto/trainer/trainer.dto";
-import {
-  CategoryQueryDto,
-  CreateCategoryDto,
-  UpdateCategoryDto,
-  GetCategoryByIdResponseDto,
-  GetAllCategoriesResponseDto,
-  ToggleCategoryStatusResponseDto,
-} from "../../dto/category/category.dto";
 import {
   SubscriptionFeatureQueryDto,
   GetAllSubscriptionFeaturesResponseDto,
@@ -52,7 +44,7 @@ import {
   OnboardingQuestionResponseDto,
 } from "../../dto/onboarding/onboarding.dto";
 import { PaginatedResponseDto } from "../../dto/common.dto";
-import { Category } from "../../interfaces/domain.interface/category.interface";
+
 import { PaginatedResult } from "../../interfaces/domain.interface/common.interface";
 import {
   SubscriptionFeature,
@@ -67,7 +59,6 @@ import {
   AdminAccountMapper,
   TrainerMapper,
 } from "../../mappers/admin/admin.mappers";
-import { CategoryMappers } from "../../mappers/category/category.mapper";
 import { SubscriptionMapper } from "@/mappers/subscription/subscription.mapper";
 import { AppError } from "../../utils/appError";
 import { ISubscriptionFeatureRepository } from "@/interfaces/repository-interface/subscription/feature-repository.interface";
@@ -321,122 +312,6 @@ export class AdminService implements IAdminService {
     return TrainerMapper.toRejectDto(updated);
   }
 
-  async createCategory(data: CreateCategoryDto): Promise<void> {
-    if (!data.image) {
-      throw new AppError(
-        STATUS.NOT_FOUND,
-        MESSAGES.ADMIN.CATEGORY_CREATION_FAILED,
-      );
-    }
-
-    const imageUrl = await this._s3Service.uploadFile(data.image, data.name);
-    const categoryData: Category = {
-      name: data.name,
-      description: data.description,
-      media: { image: { url: imageUrl } },
-      isActive: true,
-    };
-
-    await this._categoryRepository.createCategory(categoryData);
-  }
-
-  async getCategoryById(
-    categoryId: string,
-  ): Promise<GetCategoryByIdResponseDto> {
-    const category = await this._categoryRepository.getCategoryById(categoryId);
-    if (!category) {
-      throw new AppError(STATUS.NOT_FOUND, MESSAGES.ADMIN.CATEGORY_NOT_FOUND);
-    }
-    return CategoryMappers.toGetCategoryByIdResponseDto(category);
-  }
-
-  async updateCategory(data: UpdateCategoryDto): Promise<void> {
-    if (!data.categoryId) {
-      throw new AppError(
-        STATUS.BAD_REQUEST,
-        MESSAGES.ADMIN.CATEGORY_CREATION_FAILED || "Category ID is required",
-      );
-    }
-    if (!data.name) {
-      throw new AppError(
-        STATUS.BAD_REQUEST,
-        MESSAGES.ADMIN.CATEGORY_CREATION_FAILED || "Name is required",
-      );
-    }
-    if (!data.description) {
-      throw new AppError(
-        STATUS.BAD_REQUEST,
-        MESSAGES.ADMIN.CATEGORY_CREATION_FAILED || "Description is required",
-      );
-    }
-
-    const category = await this._categoryRepository.getCategoryById(
-      data.categoryId,
-    );
-    if (!category) {
-      throw new AppError(
-        STATUS.NOT_FOUND,
-        MESSAGES.ADMIN.CATEGORY_NOT_FOUND || "Category not found",
-      );
-    }
-
-    let imageUrl = category.media.image.url;
-    if (data.image) {
-      imageUrl = await this._s3Service.uploadFile(data.image, data.name);
-    }
-
-    const categoryData: Category = {
-      name: data.name,
-      description: data.description,
-      media: { image: { url: imageUrl } },
-    };
-
-    await this._categoryRepository.updateCategory(
-      data.categoryId,
-      categoryData,
-    );
-  }
-
-  async getAllCategories(
-    query: CategoryQueryDto,
-  ): Promise<GetAllCategoriesResponseDto> {
-    const { data, pagination } =
-      await this._categoryRepository.getAllCategories({
-        search: query.search,
-        page: query.page,
-        limit: query.limit,
-      });
-
-    return {
-      data: CategoryMappers.toCategoryResponseDtoList(data),
-      pagination,
-    };
-  }
-
-  async toggleCategoryStatus(
-    categoryId: string,
-  ): Promise<ToggleCategoryStatusResponseDto> {
-    const category = await this._categoryRepository.getCategoryById(categoryId);
-    if (!category) {
-      throw new AppError(
-        STATUS.NOT_FOUND,
-        MESSAGES.ADMIN.CATEGORY_NOT_FOUND || "Category not found",
-      );
-    }
-    const updated =
-      await this._categoryRepository.toggleCategoryStatus(categoryId);
-    if (!updated) {
-      throw new AppError(
-        STATUS.INTERNAL_ERROR,
-        MESSAGES.ADMIN.CATEGORY_CREATION_FAILED ||
-          "Failed to toggle category status",
-      );
-    }
-    return {
-      message: MESSAGES.ADMIN.CATEGORY_STATUS_TOGGLED,
-      category: CategoryMappers.toCategoryResponseDto(updated),
-    };
-  }
 
   async getAllSubscriptionFeatures(
     query: SubscriptionFeatureQueryDto,

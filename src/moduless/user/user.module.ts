@@ -3,14 +3,14 @@ import { ITrainerProfileRepository } from "../../interfaces/repository-interface
 import { IUserRepository } from "../../interfaces/repository-interface/user/user-repository.interface";
 import { IS3Service } from "../../interfaces/service-interface/s3/s3-service.interface";
 import { IUserService } from "../../interfaces/service-interface/user/user-service.interface";
-import { ICategoryRepository } from "../../interfaces/repository-interface/category/category-repository.interface";
+import { ICategoryRepository } from "../../modules/category/interface/category-repository.interface";
 import TrainerProfileRepository from "@/repositories/trainer/trainer-profile.repository";
 import UserRepository from "@/repositories/user/user.repository";
-import CategoryRepository from "@/repositories/category/category.repository";
+import CategoryRepository from "@/modules/category/repository/category.repository";
 import { PaymentService } from "../../services/payments/stripe.service";
 import { S3Service } from "../../services/s3/s3.service";
 import { UserService } from "../../services/user/user.services";
-import SubscriptionPlanRepository from "@/repositories/subscription/subscription-plan.repository";
+import SubscriptionPlanRepository from "@/modules/subscription/repository/subscription-plan.repository";
 import { ISubscriptionPlanRepository } from "../../interfaces/repository-interface/subscription/subscription-plan.repository";
 import MealCategoryRepository from "@/repositories/meal-category/meal-cateogry.repository";
 import { IMealCategoryRepository } from "@/interfaces/repository-interface/meal.category/meal-category.repository";

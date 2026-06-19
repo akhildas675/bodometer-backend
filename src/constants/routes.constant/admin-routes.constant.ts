@@ -17,11 +17,6 @@ export const ADMIN_ROUTES = {
   // Appointment Management
   GET_TRAINER_APPOINTMENTS: '/admin/get-trainer-appointments',
 
-  CREATE_CATEGORY: "/admin/create-category",
-  UPDATE_CATEGORY: "/admin/update-category/:categoryId",
-  GET_CATEGORY_BY_ID: "/admin/categories/:categoryId",
-  GET_ALL_CATEGORIES: "/admin/get-categories",
-  TOGGLE_CATEGORY_STATUS: "/admin/categories/:categoryId/toggle",
 
   //Subscription features
   GET_ALL_FEATURES: "/admin/get-subscription-features",

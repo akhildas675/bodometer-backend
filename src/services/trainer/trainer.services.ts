@@ -22,11 +22,11 @@ import { PopulatedTrainerBooking, TrainerAvailability } from "../../interfaces/d
 import { PaginationMeta } from "../../interfaces/domain.interface/common.interface";
 import { BOOKING_STATUS } from "../../models/trainer-booking.model";
 import { parseTime, formatTime, generateReference } from "../../utils/booking.utils";
-import { ICategoryRepository } from "../../interfaces/repository-interface/category/category-repository.interface";
+import { ICategoryRepository } from "../../modules/category/interface/category-repository.interface";
 import {
   CategoryQuery,
   GetAllCategoriesResponse,
-} from "../../interfaces/domain.interface/category.interface";
+} from "../../modules/category/interface/category.interface";
 import { AppError } from "../../utils/appError";
 import { STATUS } from "../../constants/statuscode";
 import { MESSAGES } from "../../constants/messages";
