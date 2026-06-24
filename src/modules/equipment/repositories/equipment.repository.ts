@@ -2,7 +2,7 @@ import { injectable } from "inversify";
 import { IEquipmentRepository } from "../interface/equipment-repository.interface";
 import { BaseRepository } from "@/repositories/base/base.repository";
 import { Equipment } from "@/interfaces/domain.interface/equipment";
-import { IEquipment, EquipmentModel } from "@/models/equipment.model";
+import { IEquipment, EquipmentModel } from "@/modules/equipment/models/equipment.model";
 import { PaginatedResult } from "@/interfaces/domain.interface/common.interface";
 import { EquipmentQueryDto } from "../dto/equipment.dto";
 

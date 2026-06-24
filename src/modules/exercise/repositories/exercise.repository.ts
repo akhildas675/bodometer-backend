@@ -2,7 +2,7 @@ import { injectable } from "inversify";
 import { IExerciseRepository } from "../interface/exercise-repository.interface";
 import { BaseRepository } from "@/repositories/base/base.repository";
 import { Exercise } from "@/interfaces/domain.interface/exercise.interface";
-import { IExercise, ExerciseModel } from "@/models/exercise.model";
+import { IExercise, ExerciseModel } from "@/modules/exercise/models/exercise.model";
 import { PaginatedResult } from "@/interfaces/domain.interface/common.interface";
 import { ExerciseQueryDto } from "../dto/exercise.dto";
 import mongoose from "mongoose";

@@ -5,7 +5,7 @@ import {
   GetAllCategoriesResponse,
 } from "@/modules/category/interface/category.interface";
 import { BaseRepository } from "@/repositories/base/base.repository";
-import { CategoryModel, ICategory } from "@/models/category.model";
+import { CategoryModel, ICategory } from "@/modules/category/models/category.model";
 import { ICategoryRepository } from "@/modules/category/interface/category-repository.interface";
 
 @injectable()
