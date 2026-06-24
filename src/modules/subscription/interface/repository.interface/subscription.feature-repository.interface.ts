@@ -1,7 +1,7 @@
 import {
   SubscriptionFeature,
   SubscriptionFeatureQuery,
-} from "@/interfaces/domain.interface/subscription.interface";
+} from "@/modules/subscription/interface/subscription.interface";
 import { PaginatedResult } from "@/interfaces/domain.interface/common.interface";
 
 export interface ISubscriptionFeatureRepository {

@@ -52,45 +52,6 @@ export const ADMIN_MESSAGES = {
 
     CATEGORY_IMAGE_REQUIRED: "Category image is required.",
     CATEGORY_IMAGE_UPLOAD_FAILED: "Failed to upload category image.",
-
-    SUBSCRIPTION_FEATURE_CREATED: "Subscription feature created successfully.",
-    SUBSCRIPTION_FEATURE_CREATION_FAILED: "Failed to create subscription feature.",
-
-    SUBSCRIPTION_FEATURE_UPDATED: "Subscription feature updated successfully.",
-    SUBSCRIPTION_FEATURE_UPDATE_FAILED: "Failed to update subscription feature.",
-
-    SUBSCRIPTION_FEATURE_DELETED: "Subscription feature deleted successfully.",
-    SUBSCRIPTION_FEATURE_DELETE_FAILED: "Failed to delete subscription feature.",
-    SUBSCRIPTION_FEATURE_STATUS_TOGGLED: "Subscription feature status toggled successfully.",
-
-    SUBSCRIPTION_FEATURE_FETCHED: "Subscription feature fetched successfully.",
-    SUBSCRIPTION_FEATURES_FETCHED: "Subscription features fetched successfully.",
-    SUBSCRIPTION_FEATURE_FETCH_FAILED: "Failed to fetch subscription feature.",
-
-    SUBSCRIPTION_FEATURE_NOT_FOUND: "Subscription feature not found.",
-    SUBSCRIPTION_FEATURE_ALREADY_EXISTS: "Subscription feature already exists.",
-
-    SUBSCRIPTION_FEATURE_IMAGE_REQUIRED: "Subscription feature image is required.",
-    SUBSCRIPTION_FEATURE_IMAGE_UPLOAD_FAILED: "Failed to upload subscription feature image.",
-
-    SUBSCRIPTION_PLAN_TOGGLED: "Subscription plan status toggled successfully.",
-    SUBSCRIPTION_PLAN_TOGGLE_FAILED: "Failed to toggle subscription plan status.",
-
-    SUBSCRIPTION_PLAN_FETCHED: "Subscription plan fetched successfully.",
-    SUBSCRIPTION_PLANS_FETCHED: "Subscription plans fetched successfully.",
-    SUBSCRIPTION_PLAN_FETCH_FAILED: "Failed to fetch subscription plan.",
-
-
-    SUBSCRIPTION_PLAN_UPDATE_FAILED: "Failed to update subscription plan.",
-
-    SUBSCRIPTION_PLAN_TOGGLE: "Subscription plan status toggled successfully.",
-
-
-    SUBSCRIPTION_PLAN_NOT_FOUND: "Subscription plan not found.",
-    SUBSCRIPTION_PLAN_ALREADY_EXISTS: "Subscription plan already exists.",
-
-    SUBSCRIPTION_PLAN_IMAGE_REQUIRED: "Subscription plan image is required.",
-    SUBSCRIPTION_PLAN_IMAGE_UPLOAD_FAILED: "Failed to upload subscription plan image.",
     PROFILE_ID_REQUIRED: "Profile ID is required.",
     UNAUTHORIZED_CONTEXT: "Unauthorized context.",
   },

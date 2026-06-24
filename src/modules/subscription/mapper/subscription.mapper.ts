@@ -5,11 +5,11 @@ import {
   GetSubscriptionPlanByIdResponseDto,
   UserSubscriptionPlanResponseDto,
   SubscriptionTransactionDto,
-} from "../../dto/subscription/subscription.dto";
+} from "../dto/subscription.dto";
 import {
   SubscriptionFeature,
   SubscriptionPlan,
-} from "../../interfaces/domain.interface/subscription.interface";
+} from "../interface/subscription.interface";
 
 export interface PopulatedSubscriptionTransaction {
   _id: mongoose.Types.ObjectId;

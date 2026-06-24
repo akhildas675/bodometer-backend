@@ -1,8 +1,8 @@
-import { FeatureType } from "../../constants/subscription.constant";
-import { PaginationMetaDto, PaginationQueryDto } from "../common.dto";
+import { FeatureType } from "../constants/subscription.constant";
+import { PaginationMetaDto, PaginationQueryDto } from "../../../dto/common.dto";
 
 export interface CreateCheckoutSessionDto {
-  planId: string;
+  subscriptionPlanId: string;
 }
 
 export interface CheckoutSessionResponseDto {
@@ -28,7 +28,7 @@ export interface UserSubscriptionPlanResponseDto {
 
 export interface ActiveSubscriptionDto {
   subscriptionId: string;
-  planId: string;
+  subscriptionPlanId: string;
   planName: string;
   startDate: Date;
   endDate: Date;
@@ -61,7 +61,7 @@ export interface CreateSubscriptionFeatureDto {
 }
 
 export interface UpdateSubscriptionFeatureDto {
-  subscriptionFeatureId: string;
+  
   title?: string;
   description?: string;
   type?: FeatureType;
@@ -102,7 +102,6 @@ export interface GetAllSubscriptionPlansResponseDto {
 }
 
 export interface ToggleSubscriptionPlanStatusResponseDto {
-  message: string;
   plan: SubscriptionPlanDto;
 }
 
@@ -118,7 +117,6 @@ export interface GetSubscriptionPlanByIdResponseDto {
 }
 
 export interface UpdateSubscriptionPlanDto {
-  subscriptionPlanId: string;
   name?: string;
   description?: string;
   price?: number;

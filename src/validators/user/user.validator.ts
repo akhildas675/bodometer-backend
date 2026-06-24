@@ -55,23 +55,6 @@ export const categoryIdParamSchema = z.object({
   })
 });
 
-export const subscriptionIdParamSchema = z.object({
-  params: z.object({
-    subscriptionId: z.string().min(1, "Subscription ID is required"),
-  })
-});
-
-export const checkoutSessionSchema = z.object({
-  body: z.object({
-    planId: z.string().min(1, "Plan ID is required"),
-  })
-});
-
-export const verifyPaymentSchema = z.object({
-  query: z.object({
-    session_id: z.string().min(1, "Session ID is required"),
-  })
-});
 
 export const groupIdParamSchema = z.object({
   params: z.object({

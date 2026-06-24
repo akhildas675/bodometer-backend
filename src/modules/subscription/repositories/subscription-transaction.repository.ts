@@ -1,17 +1,20 @@
 import {
   SubscriptionTransactionModel,
   ISubscriptionTransaction,
-} from "@/models/subscription-transaction.model";
+} from "../models/subscription-transaction.model";
 import {
   PaymentGateway,
   TransactionStatus,
-} from "@/constants/subscription.constant";
-import { ISubscriptionTransactionRepository } from "@/interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
-import { PaginationMeta } from "@/interfaces/domain.interface/common.interface";
-import { PopulatedSubscriptionTransaction } from "@/mappers/subscription/subscription.mapper";
-import { SubscriptionPlanModel } from "@/models/subscription-plan.model";
+} from "../constants/subscription.constant";
+import { PopulatedSubscriptionTransaction } from "../mapper/subscription.mapper";
+import { SubscriptionPlanModel } from "../models/subscription-plan.model";
 import { UserModel } from "@/models/user.model";
+import { ISubscriptionTransactionRepository } from "../interface/repository.interface/subscription.transaction-repository.interface";
+import { SubscriptionTransactionPaginatedResult, SubscriptionTransactionQuery } from "../interface/subscription.interface";
+import { injectable } from "inversify";
+import mongoose from "mongoose";
 
+@injectable()
 export class SubscriptionTransactionRepository implements ISubscriptionTransactionRepository {
   async create(data: {
     userId: string;
@@ -38,13 +41,17 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
   }
 
   async findAllPaginated(
-    search?: string,
-    sortBy?: string,
-    sortOrder?: "asc" | "desc",
-    page?: number,
-    limit?: number,
-    status?: string,
-  ): Promise<{ data: PopulatedSubscriptionTransaction[]; pagination: PaginationMeta }> {
+  query:SubscriptionTransactionQuery
+  ): Promise<SubscriptionTransactionPaginatedResult> {
+    const {
+    search,
+    sortBy,
+    sortOrder,
+    page = 1,
+    limit = 10,
+    status,
+  } = query;
+
     const filter: Record<string, unknown> = {};
 
     if (status) {
@@ -116,14 +123,19 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
 
   async findUserTransactionsPaginated(
     userId: string,
-    search?: string,
-    sortBy?: string,
-    sortOrder?: "asc" | "desc",
-    page?: number,
-    limit?: number,
-    status?: string,
-  ): Promise<{ data: PopulatedSubscriptionTransaction[]; pagination: PaginationMeta }> {
-    const filter: Record<string, unknown> = { userId };
+    query:SubscriptionTransactionQuery
+  ): Promise<SubscriptionTransactionPaginatedResult> {
+
+     const {
+    search,
+    sortBy,
+    sortOrder,
+    page = 1,
+    limit = 10,
+    status,
+  } = query;
+
+    const filter: Record<string, unknown> = { userId: new mongoose.Types.ObjectId(userId) };
 
     if (status) {
       filter.paymentStatus = status;
@@ -136,7 +148,7 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
       const planIds = plans.map((p) => p._id);
 
       filter.$and = [
-        { userId },
+        { userId: new mongoose.Types.ObjectId(userId) },
         {
           $or: [
             { transactionId: { $regex: search, $options: "i" } },

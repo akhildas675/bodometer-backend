@@ -6,15 +6,15 @@ import TrainerProfileRepository from "@/repositories/trainer/trainer-profile.rep
 import UserRepository from "@/repositories/user/user.repository";
 import { S3Service } from "../../services/s3/s3.service";
 import { TrainerService } from "../../services/trainer/trainer.services";
-import CategoryRepository from "@/modules/category/repository/category.repository";
+import CategoryRepository from "@/modules/category/repositories/category.repository";
 import { ICategoryRepository } from "../../modules/category/interface/category-repository.interface";
 
 import { ITrainerBookingRepository } from "../../interfaces/repository-interface/trainer/trainer-booking.repository.interface";
 import { TrainerBookingRepository } from "../../repositories/trainer/trainer-booking.repository";
 import { ITrainerAvailabilityRepository } from "../../interfaces/repository-interface/trainer/trainer-availability.repository.interface";
 import { TrainerAvailabilityRepository } from "../../repositories/trainer/trainer-availability.repository";
-import { IUserSubscriptionRepository } from "../../interfaces/repository-interface/subscription/user.subscription.repository.interface";
-import { UserSubscriptionRepository } from "../../repositories/subscription/user-subscription.repository";
+import { IUserSubscriptionRepository } from "../../modules/subscription/interface/repository.interface/user.subscription.repository.interface";
+import { UserSubscriptionRepository } from "../../modules/subscription/repositories/user-subscription.repository";
 
 export function createTrainerModule(){
     const userRepository = new UserRepository()

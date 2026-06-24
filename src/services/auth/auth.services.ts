@@ -16,7 +16,7 @@ import {
 import { ResendOtpDto, VerifyOtpDto } from "../../dto/otp/otp.dto";
 import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
 import { IUserRepository } from "../../interfaces/repository-interface/user/user-repository.interface";
-import { IUserSubscriptionRepository } from "../../interfaces/repository-interface/subscription/user.subscription.repository.interface";
+import { IUserSubscriptionRepository } from "../../modules/subscription/interface/repository.interface/user.subscription.repository.interface";
 import { IAnswerRepository } from "../../interfaces/repository-interface/onboarding/answer-repository.interface";
 import { IAuthService } from "../../interfaces/service-interface/auth/auth-service.interface";
 import { ISessionService } from "../../interfaces/service-interface/auth/session-service.interface";

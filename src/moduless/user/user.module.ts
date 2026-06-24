@@ -6,18 +6,17 @@ import { IUserService } from "../../interfaces/service-interface/user/user-servi
 import { ICategoryRepository } from "../../modules/category/interface/category-repository.interface";
 import TrainerProfileRepository from "@/repositories/trainer/trainer-profile.repository";
 import UserRepository from "@/repositories/user/user.repository";
-import CategoryRepository from "@/modules/category/repository/category.repository";
+import CategoryRepository from "@/modules/category/repositories/category.repository";
 import { PaymentService } from "../../services/payments/stripe.service";
 import { S3Service } from "../../services/s3/s3.service";
 import { UserService } from "../../services/user/user.services";
-import SubscriptionPlanRepository from "@/modules/subscription/repository/subscription-plan.repository";
-import { ISubscriptionPlanRepository } from "../../interfaces/repository-interface/subscription/subscription-plan.repository";
-import MealCategoryRepository from "@/repositories/meal-category/meal-cateogry.repository";
+import SubscriptionPlanRepository from "@/modules/subscription/repositories/subscription-plan.repository";
+import { ISubscriptionPlanRepository } from "../../modules/subscription/interface/repository.interface/subscription-plan.repository";
+import MealCategoryRepository from "@/repositories/meal-category/meal-category.repository";
 import { IMealCategoryRepository } from "@/interfaces/repository-interface/meal.category/meal-category.repository";
-import { SubscriptionTransactionRepository } from "@/repositories/subscription/subscription-transaction.repository";
-import { UserSubscriptionRepository } from "@/repositories/subscription/user-subscription.repository";
-import { ISubscriptionTransactionRepository } from "../../interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
-import { IUserSubscriptionRepository } from "../../interfaces/repository-interface/subscription/user.subscription.repository.interface";
+import { SubscriptionTransactionRepository } from "@/modules/subscription/repositories/subscription-transaction.repository";
+import { UserSubscriptionRepository } from "@/modules/subscription/repositories/user-subscription.repository";
+import { IUserSubscriptionRepository } from "../../modules/subscription/interface/repository.interface/user.subscription.repository.interface";
 import { IGroupRepository } from "../../interfaces/repository-interface/onboarding/group-repository.interface";
 import { IQuestionRepository } from "../../interfaces/repository-interface/onboarding/question-repository.interface";
 import { IAnswerRepository } from "../../interfaces/repository-interface/onboarding/answer-repository.interface";
@@ -42,6 +41,7 @@ import { ITrainerBookingRepository } from "../../interfaces/repository-interface
 import { TrainerBookingRepository } from "../../repositories/trainer/trainer-booking.repository";
 import { ITrainerAvailabilityRepository } from "../../interfaces/repository-interface/trainer/trainer-availability.repository.interface";
 import { TrainerAvailabilityRepository } from "../../repositories/trainer/trainer-availability.repository";
+import { ISubscriptionTransactionRepository } from "../../modules/subscription/interface/repository.interface/subscription.transaction-repository.interface";
 
 export function createUserModule() {
   const userRepository: IUserRepository = new UserRepository();

@@ -1,4 +1,4 @@
-import { ICategoryRepository } from "@/modules/category/interface/category-repository.interface";
+
 import { MESSAGES } from "../../constants/messages";
 import { ROLES } from "../../constants/roles";
 import { STATUS } from "../../constants/statuscode";
@@ -16,22 +16,7 @@ import {
   ApproveTrainerResponseDto,
   RejectTrainerResponseDto,
 } from "../../dto/trainer/trainer.dto";
-import {
-  SubscriptionFeatureQueryDto,
-  GetAllSubscriptionFeaturesResponseDto,
-  CreateSubscriptionFeatureDto,
-  UpdateSubscriptionFeatureDto,
-  ToggleSubscriptionFeatureStatusResponseDto,
-  SubscriptionFeatureDto,
-  CreateSubscriptionPlanDto,
-  SubscriptionPlanQueryDto,
-  GetAllSubscriptionPlansResponseDto,
-  GetSubscriptionPlanByIdResponseDto,
-  UpdateSubscriptionPlanDto,
-  ToggleSubscriptionPlanStatusResponseDto,
-  SubscriptionTransactionQueryDto,
-  GetAllSubscriptionTransactionsResponseDto,
-} from "../../dto/subscription/subscription.dto";
+
 import {
   CreateQuestionGroupDto,
   UpdateQuestionGroupDto,
@@ -46,10 +31,7 @@ import {
 import { PaginatedResponseDto } from "../../dto/common.dto";
 
 import { PaginatedResult } from "../../interfaces/domain.interface/common.interface";
-import {
-  SubscriptionFeature,
-  SubscriptionPlan,
-} from "../../interfaces/domain.interface/subscription.interface";
+
 import { QuestionGroupQuery } from "../../interfaces/domain.interface/onboarding.interface";
 import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
 import { IUserRepository } from "../../interfaces/repository-interface/user/user-repository.interface";
@@ -59,18 +41,17 @@ import {
   AdminAccountMapper,
   TrainerMapper,
 } from "../../mappers/admin/admin.mappers";
-import { SubscriptionMapper } from "@/mappers/subscription/subscription.mapper";
+
 import { AppError } from "../../utils/appError";
-import { ISubscriptionFeatureRepository } from "@/interfaces/repository-interface/subscription/feature-repository.interface";
-import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/subscription/subscription-plan.repository";
+
+import { ISubscriptionPlanRepository } from "@/modules/subscription/interface/repository.interface/subscription-plan.repository";
 import { IGroupRepository } from "@/interfaces/repository-interface/onboarding/group-repository.interface";
 import { IQuestionRepository } from "@/interfaces/repository-interface/onboarding/question-repository.interface";
 import {
   generateKeySlug,
   generateOptionValue,
 } from "@/utils/string-formatters";
-import { SubscriptionTransactionRepository } from "@/repositories/subscription/subscription-transaction.repository";
-import { ISubscriptionTransactionRepository } from "../../interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
+
 import { DATA_SOURCES } from "../../constants/question.constant";
 import {
   CreateTargetMuscleDto,
@@ -116,15 +97,12 @@ import { MealCategory } from "@/interfaces/domain.interface/meal-category.interf
 import { IMealCategoryRepository } from "@/interfaces/repository-interface/meal.category/meal-category.repository";
 
 export class AdminService implements IAdminService {
-  private _subscriptionTransactionRepository: ISubscriptionTransactionRepository =
-    new SubscriptionTransactionRepository();
+
 
   constructor(
     private _userRepository: IUserRepository,
     private _trainerProfileRepository: ITrainerProfileRepository,
     private _s3Service: IS3Service,
-    private _categoryRepository: ICategoryRepository,
-    private _subscriptionFeatureRepository: ISubscriptionFeatureRepository,
     private _subscriptionPlanRepository: ISubscriptionPlanRepository,
     private _groupRepository: IGroupRepository,
     private _questionRepository: IQuestionRepository,
@@ -313,207 +291,6 @@ export class AdminService implements IAdminService {
   }
 
 
-  async getAllSubscriptionFeatures(
-    query: SubscriptionFeatureQueryDto,
-  ): Promise<GetAllSubscriptionFeaturesResponseDto> {
-    const { data, pagination } =
-      await this._subscriptionFeatureRepository.getAllSubscriptionFeatures({
-        search: query.search,
-        page: query.page,
-        limit: query.limit,
-      });
-
-    return {
-      data: SubscriptionMapper.toFeatureDtoList(data),
-      pagination,
-    };
-  }
-
-  async createSubscriptionFeature(
-    data: CreateSubscriptionFeatureDto,
-  ): Promise<void> {
-    const generateFeatureKey = (title: string) => {
-      return title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "_")
-        .replace(/^_|_$/g, "");
-    };
-
-    const featureData: SubscriptionFeature = {
-      key: generateFeatureKey(data.title),
-      title: data.title,
-      description: data.description,
-      type: data.type,
-    };
-
-    await this._subscriptionFeatureRepository.createSubscriptionFeature(
-      featureData,
-    );
-  }
-
-  async updateSubscriptionFeature(
-    data: UpdateSubscriptionFeatureDto,
-  ): Promise<void> {
-    if (!data.subscriptionFeatureId) {
-      throw new AppError(
-        STATUS.BAD_REQUEST,
-        MESSAGES.VALIDATION?.ID_REQUIRED ||
-          "Subscription Feature ID is required",
-      );
-    }
-
-    const updated =
-      await this._subscriptionFeatureRepository.updateSubscriptionFeature(
-        data.subscriptionFeatureId,
-        {
-          title: data.title,
-          description: data.description,
-          type: data.type,
-        },
-      );
-
-    if (!updated) {
-      throw new AppError(
-        STATUS.INTERNAL_ERROR,
-        MESSAGES.ADMIN.SUBSCRIPTION_FEATURE_CREATION_FAILED ||
-          "Failed to update subscription feature",
-      );
-    }
-  }
-
-  async toggleSubscriptionFeatureStatus(
-    subscriptionFeatureId: string,
-  ): Promise<ToggleSubscriptionFeatureStatusResponseDto> {
-    const updated =
-      await this._subscriptionFeatureRepository.toggleSubscriptionFeatureStatus(
-        subscriptionFeatureId,
-      );
-    if (!updated) {
-      throw new AppError(
-        STATUS.INTERNAL_ERROR,
-        MESSAGES.ADMIN.SUBSCRIPTION_FEATURE_CREATION_FAILED ||
-          "Failed to toggle subscription feature status",
-      );
-    }
-    return {
-      message: MESSAGES.ADMIN.SUBSCRIPTION_FEATURE_STATUS_TOGGLED,
-      feature: SubscriptionMapper.toFeatureDto(updated),
-    };
-  }
-
-  async getSubscriptionFeatureById(
-    subscriptionFeatureId: string,
-  ): Promise<SubscriptionFeatureDto> {
-    const feature =
-      await this._subscriptionFeatureRepository.getSubscriptionFeatureById(
-        subscriptionFeatureId,
-      );
-    if (!feature) {
-      throw new AppError(
-        STATUS.NOT_FOUND,
-        MESSAGES.ADMIN.SUBSCRIPTION_FEATURE_CREATION_FAILED ||
-          "Subscription feature not found",
-      );
-    }
-    return SubscriptionMapper.toFeatureDto(feature);
-  }
-
-  async createSubscriptionPlan(data: CreateSubscriptionPlanDto): Promise<void> {
-    const planData: SubscriptionPlan = {
-      name: data.name,
-      description: data.description,
-      price: data.price,
-      durationInDays: data.durationInDays,
-      features: data.features,
-      isPopular: data.isPopular ?? false,
-    };
-
-    await this._subscriptionPlanRepository.createSubscriptionPlan(planData);
-  }
-
-  async getAllSubscriptionPlans(
-    query: SubscriptionPlanQueryDto,
-  ): Promise<GetAllSubscriptionPlansResponseDto> {
-    const { data, pagination } =
-      await this._subscriptionPlanRepository.getAllSubscriptionPlans({
-        search: query.search,
-        page: query.page,
-        limit: query.limit,
-        sortBy: query.sortBy,
-        sortOrder: query.sortOrder,
-      });
-
-    return {
-      data: SubscriptionMapper.toPlanDtoList(data),
-      pagination,
-    };
-  }
-
-  async getSubscriptionPlanById(
-    subscriptionPlanId: string,
-  ): Promise<GetSubscriptionPlanByIdResponseDto> {
-    const plan =
-      await this._subscriptionPlanRepository.getSubscriptionPlanById(
-        subscriptionPlanId,
-      );
-    if (!plan) {
-      throw new AppError(
-        STATUS.NOT_FOUND,
-        MESSAGES.ADMIN.SUBSCRIPTION_PLAN_FETCH_FAILED ||
-          "Subscription plan not found",
-      );
-    }
-    return SubscriptionMapper.toPlanByIdResponseDto(plan);
-  }
-
-  async updateSubscriptionPlan(data: UpdateSubscriptionPlanDto): Promise<void> {
-    if (!data.subscriptionPlanId) {
-      throw new AppError(
-        STATUS.BAD_REQUEST,
-        MESSAGES.VALIDATION?.ID_REQUIRED || "Subscription plan ID is required",
-      );
-    }
-    const updated =
-      await this._subscriptionPlanRepository.updateSubscriptionPlan(
-        data.subscriptionPlanId,
-        {
-          name: data.name,
-          description: data.description,
-          price: data.price,
-          durationInDays: data.durationInDays,
-          isPopular: data.isPopular,
-          isActive: data.isActive,
-          features: data.features,
-        },
-      );
-    if (!updated) {
-      throw new AppError(
-        STATUS.INTERNAL_ERROR,
-        MESSAGES.ADMIN.SUBSCRIPTION_PLAN_UPDATE_FAILED ||
-          "Failed to update subscription plan",
-      );
-    }
-  }
-
-  async toggleSubscriptionPlanStatus(
-    subscriptionPlanId: string,
-  ): Promise<ToggleSubscriptionPlanStatusResponseDto> {
-    const updated =
-      await this._subscriptionPlanRepository.toggleSubscriptionPlanStatus(
-        subscriptionPlanId,
-      );
-    if (!updated) {
-      throw new AppError(
-        STATUS.INTERNAL_ERROR,
-        MESSAGES.ADMIN.SUBSCRIPTION_PLAN_TOGGLE_FAILED ||
-          "Failed to toggle subscription plan status",
-      );
-    }
-    return {
-      message: MESSAGES.ADMIN.SUBSCRIPTION_PLAN_TOGGLED,
-      plan: SubscriptionMapper.toPlanDto(updated),
-    };
-  }
 
   // Question Groups
   async createQuestionGroup(data: CreateQuestionGroupDto): Promise<void> {
@@ -660,24 +437,7 @@ export class AdminService implements IAdminService {
     await this._questionRepository.toggleQuestionStatus(questionId);
   }
 
-  async getAllSubscriptionTransactions(
-    query: SubscriptionTransactionQueryDto,
-  ): Promise<GetAllSubscriptionTransactionsResponseDto> {
-    const { data, pagination } =
-      await this._subscriptionTransactionRepository.findAllPaginated(
-        query.search,
-        query.sortBy,
-        query.sortOrder,
-        query.page,
-        query.limit,
-        query.status,
-      );
-
-    return {
-      data: SubscriptionMapper.toTransactionDtoList(data),
-      pagination,
-    };
-  }
+ 
 
   getQuestionDataSources(): Promise<{ label: string; value: string }[]> {
     const labels: Record<string, string> = {

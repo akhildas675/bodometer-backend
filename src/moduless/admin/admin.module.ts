@@ -1,4 +1,4 @@
-import { ICategoryRepository } from "@/modules/category/interface/category-repository.interface";
+
 import { AdminController } from "../../controllers/admin/admin.controller";
 import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
 import { IUserRepository } from "../../interfaces/repository-interface/user/user-repository.interface";
@@ -7,11 +7,9 @@ import TrainerProfileRepository from "@/repositories/trainer/trainer-profile.rep
 import UserRepository from "@/repositories/user/user.repository";
 import { AdminService } from "../../services/admin/admin.services";
 import { S3Service } from "../../services/s3/s3.service";
-import CategoryRepository from "@/modules/category/repository/category.repository";
-import { ISubscriptionFeatureRepository } from "@/interfaces/repository-interface/subscription/feature-repository.interface";
-import SubscriptionFeatureRepository from "@/repositories/subscription/subscription-feature.repository";
-import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/subscription/subscription-plan.repository";
-import SubscriptionPlanRepository from "@/modules/subscription/repository/subscription-plan.repository";
+
+import { ISubscriptionPlanRepository } from "@/modules/subscription/interface/repository.interface/subscription-plan.repository";
+import SubscriptionPlanRepository from "@/modules/subscription/repositories/subscription-plan.repository";
 import GroupRepository from "@/repositories/onboarding/group.repository";
 import QuestionRepository from "@/repositories/onboarding/question.repository";
 import { IGroupRepository } from "@/interfaces/repository-interface/onboarding/group-repository.interface";
@@ -22,7 +20,7 @@ import EquipmentRepository from "@/repositories/equipment/equipment.repository";
 import { IEquipmentRepository } from "@/interfaces/repository-interface/equipment/equipment-repository.interface";
 import ExerciseRepository from "@/repositories/exercise/exercise.repository";
 import { IExerciseRepository } from "@/interfaces/repository-interface/exercise/exercise-repository.interface";
-import MealCategoryRepository from "@/repositories/meal-category/meal-cateogry.repository";
+import MealCategoryRepository from "@/repositories/meal-category/meal-category.repository";
 import { IMealCategoryRepository } from "@/interfaces/repository-interface/meal.category/meal-category.repository";
 
 
@@ -30,8 +28,7 @@ export function createAdminModule() {
 
   const userRepository: IUserRepository = new UserRepository();
   const trainerProfileRepository: ITrainerProfileRepository = new TrainerProfileRepository();
-  const categoryRepository: ICategoryRepository = new CategoryRepository();
-  const subscriptionFeatureRepository: ISubscriptionFeatureRepository = new SubscriptionFeatureRepository();
+
   const subscriptionPlanRepository: ISubscriptionPlanRepository = new SubscriptionPlanRepository();
   const groupRepository: IGroupRepository = new GroupRepository();
   const questionRepository: IQuestionRepository = new QuestionRepository();
@@ -45,8 +42,6 @@ export function createAdminModule() {
     userRepository,
     trainerProfileRepository,
     s3Service,
-    categoryRepository,
-    subscriptionFeatureRepository,
     subscriptionPlanRepository,
     groupRepository,
     questionRepository,

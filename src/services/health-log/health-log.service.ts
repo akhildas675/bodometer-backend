@@ -1,6 +1,6 @@
 import { IHealthLogService } from "../../interfaces/service-interface/health-log/health-log-service.interface";
 import { IHealthLogRepository } from "../../interfaces/repository-interface/health-log/health-log-repository.interface";
-import { IUserSubscriptionRepository } from "../../interfaces/repository-interface/subscription/user.subscription.repository.interface";
+import { IUserSubscriptionRepository } from "../../modules/subscription/interface/repository.interface/user.subscription.repository.interface";
 import { AiHealthService, MealMacroEstimate } from "../ai-services/ai-health.service";
 import {
   HealthLogDto,

@@ -6,12 +6,12 @@ import { validate } from "../../middleware/validate";
 import {
   bmiCalculationSchema,
   changePasswordSchema,
-  checkoutSessionSchema,
+
   submitOnboardingSchema,
   trainerIdParamSchema,
   updateUserProfileSchema,
   uploadProfilePictureSchema,
-  verifyPaymentSchema,
+
   exerciseQuerySchema,
   getTrainerSlotsSchema,
   createBookingSchema,
@@ -93,35 +93,8 @@ userRoute.get(
 );
 
 
-userRoute.get(
-  USER_ROUTES.GET_MY_SUBSCRIPTIONS,
-  ROLE_GUARD.USER_GUARD,
-  userController.getMySubscriptions,
-);
 
-userRoute.post(
-  USER_ROUTES.CHECKOUT_SESSION, validate(checkoutSessionSchema),
-  ROLE_GUARD.USER_GUARD,
-  userController.createCheckoutSession,
-);
 
-userRoute.get(
-  USER_ROUTES.VERIFY_PAYMENT, validate(verifyPaymentSchema),
-  ROLE_GUARD.USER_GUARD,
-  userController.verifyPayment,
-);
-
-userRoute.get(
-  USER_ROUTES.GET_ACTIVE_SUBSCRIPTION,
-  ROLE_GUARD.USER_GUARD,
-  userController.getActiveSubscription,
-);
-
-userRoute.get(
-  USER_ROUTES.GET_MY_TRANSACTIONS,
-  ROLE_GUARD.USER_GUARD,
-  userController.getUserTransactions,
-);
 
 // onboarding routes
 userRoute.get(

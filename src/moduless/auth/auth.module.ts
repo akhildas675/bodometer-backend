@@ -4,11 +4,11 @@ import { IAuthService } from "../../interfaces/service-interface/auth/auth-servi
 import { ISessionService } from "../../interfaces/service-interface/auth/session-service.interface";
 import { IMailService } from "../../interfaces/service-interface/otp/mail-service.interface";
 import { IOtpService } from "../../interfaces/service-interface/otp/otp-service.interface";
-import { IUserSubscriptionRepository } from "../../interfaces/repository-interface/subscription/user.subscription.repository.interface";
+import { IUserSubscriptionRepository } from "../../modules/subscription/interface/repository.interface/user.subscription.repository.interface";
 import { IAnswerRepository } from "../../interfaces/repository-interface/onboarding/answer-repository.interface";
 import TrainerProfileRepository from "@/repositories/trainer/trainer-profile.repository";
 import UserRepository from "@/repositories/user/user.repository";
-import { UserSubscriptionRepository } from "@/repositories/subscription/user-subscription.repository";
+import { UserSubscriptionRepository } from "@/modules/subscription/repositories/user-subscription.repository";
 import AnswerRepository from "@/repositories/onboarding/answer.repository";
 import { AuthService } from "../../services/auth/auth.services";
 import { MailService } from "../../services/auth/otp/mail.services";

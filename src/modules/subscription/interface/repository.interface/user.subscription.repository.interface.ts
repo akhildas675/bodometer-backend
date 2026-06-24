@@ -1,4 +1,4 @@
-import { IUserSubscription } from "@/models/user-subscription.model";
+import { IUserSubscription } from "../../models/user-subscription.model";
 
 export interface IUserSubscriptionRepository {
   create(data: {

@@ -1,7 +1,7 @@
 import { AdminGetUsersDto, AdminGetUsersResponseDto } from "../../../dto/user/user.dto";
 import { AdminGetTrainersDto, AdminGetTrainersResponseDto, GetTrainerAppointmentsQueryDto, GetTrainerByIdResponseDto, ApproveTrainerResponseDto, RejectTrainerResponseDto, GetTrainerAppointmentsResponseDto } from "../../../dto/trainer/trainer.dto";
 
-import { SubscriptionFeatureQueryDto, GetAllSubscriptionFeaturesResponseDto, CreateSubscriptionFeatureDto, UpdateSubscriptionFeatureDto, ToggleSubscriptionFeatureStatusResponseDto, SubscriptionFeatureDto, CreateSubscriptionPlanDto, SubscriptionPlanQueryDto, GetAllSubscriptionPlansResponseDto, GetSubscriptionPlanByIdResponseDto, UpdateSubscriptionPlanDto, ToggleSubscriptionPlanStatusResponseDto, SubscriptionTransactionQueryDto, GetAllSubscriptionTransactionsResponseDto } from "../../../dto/subscription/subscription.dto";
+
 import { CreateQuestionGroupDto, UpdateQuestionGroupDto, GetAllQuestionGroupsResponseDto, QuestionQueryDto, CreateQuestionDto, UpdateQuestionDto, GetAllQuestionsResponseDto, QuestionGroupResponseDto, OnboardingQuestionResponseDto } from "../../../dto/onboarding/onboarding.dto";
 import { PaginatedResponseDto } from "../../../dto/common.dto";
 import { PaginatedResult } from "../../domain.interface/common.interface";
@@ -35,18 +35,6 @@ export interface IAdminService {
   rejectTrainer(profileId: string, reason: string): Promise<RejectTrainerResponseDto>;
 
 
-  getAllSubscriptionFeatures(query: SubscriptionFeatureQueryDto): Promise<GetAllSubscriptionFeaturesResponseDto>;
-  createSubscriptionFeature(data: CreateSubscriptionFeatureDto): Promise<void>
-  updateSubscriptionFeature(data: UpdateSubscriptionFeatureDto): Promise<void>
-  toggleSubscriptionFeatureStatus(subscriptionFeatureId: string): Promise<ToggleSubscriptionFeatureStatusResponseDto>
-  getSubscriptionFeatureById(subscriptionFeatureId: string): Promise<SubscriptionFeatureDto>
-
-  //subscription plan
-  createSubscriptionPlan(data: CreateSubscriptionPlanDto): Promise<void>
-  getAllSubscriptionPlans(query: SubscriptionPlanQueryDto): Promise<GetAllSubscriptionPlansResponseDto>;
-  getSubscriptionPlanById(subscriptionPlanId: string): Promise<GetSubscriptionPlanByIdResponseDto>;
-  updateSubscriptionPlan(data: UpdateSubscriptionPlanDto): Promise<void>;
-  toggleSubscriptionPlanStatus(subscriptionPlanId: string): Promise<ToggleSubscriptionPlanStatusResponseDto>;
 
   // Question Groups
   createQuestionGroup(data: CreateQuestionGroupDto): Promise<void>;
@@ -63,7 +51,7 @@ export interface IAdminService {
   toggleQuestionStatus(questionId: string): Promise<void>;
 
   // Subscription Transactions
-  getAllSubscriptionTransactions(query: SubscriptionTransactionQueryDto): Promise<GetAllSubscriptionTransactionsResponseDto>;
+  
 
   // Data Sources
   getQuestionDataSources(): Promise<{ label: string; value: string }[]>;

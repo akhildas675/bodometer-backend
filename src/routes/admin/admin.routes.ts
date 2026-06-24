@@ -6,9 +6,7 @@ import { ROLE_GUARD } from "../../constants/role.guard";
 import { mediaUpload } from "@/config/multer";
 
 import {
-  featureIdParamSchema,
-  featureUpdateSchema,
-  featureValidationSchema,
+ 
   getTrainersSchema,
   groupIdParamSchema,
   groupUpdateSchema,
@@ -16,9 +14,7 @@ import {
   questionIdParamSchema,
   questionUpdateSchema,
   questionValidationSchema,
-  subscriptionPlanIdParamSchema,
-  subscriptionPlanUpdateSchema,
-  subscriptionPlanValidationSchema,
+
   profileIdParamSchema,
   rejectTrainerSchema,
   userIdParamSchema,
@@ -123,63 +119,6 @@ adminRoute.patch(
 );
 
 
-adminRoute.get(
-  ADMIN_ROUTES.GET_ALL_FEATURES,
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getAllSubscriptionFeatures,
-);
-adminRoute.post(
-  ADMIN_ROUTES.CREATE_FEATURE,
-  validate(featureValidationSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.createSubscriptionFeature,
-);
-adminRoute.put(
-  ADMIN_ROUTES.UPDATE_FEATURE,
-  validate(featureUpdateSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.updateSubscriptionFeature,
-);
-adminRoute.patch(
-  ADMIN_ROUTES.TOGGLE_FEATURE_STATUS,
-  validate(featureIdParamSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.toggleSubscriptionFeatureStatus,
-);
-adminRoute.get(
-  ADMIN_ROUTES.GET_FEATURE_BY_ID,
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getSubscriptionFeatureById,
-);
-adminRoute.post(
-  ADMIN_ROUTES.CREATE_SUBSCRIPTION_PLAN,
-  validate(subscriptionPlanValidationSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.createSubscriptionPlan,
-);
-adminRoute.get(
-  ADMIN_ROUTES.GET_ALL_SUBSCRIPTION_PLANS,
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getAllSubscriptionPlans,
-);
-adminRoute.patch(
-  ADMIN_ROUTES.TOGGLE_SUBSCRIPTION_PLAN_STATUS,
-  validate(subscriptionPlanIdParamSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.toggleSubscriptionPlanStatus,
-);
-adminRoute.get(
-  ADMIN_ROUTES.GET_SUBSCRIPTION_PLAN_BY_ID,
-  validate(subscriptionPlanIdParamSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getSubscriptionPlanById,
-);
-adminRoute.put(
-  ADMIN_ROUTES.UPDATE_SUBSCRIPTION_PLAN,
-  validate(subscriptionPlanUpdateSchema.merge(subscriptionPlanIdParamSchema)),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.updateSubscriptionPlan,
-);
 
 // Question Group Routes
 adminRoute.post(
@@ -250,11 +189,7 @@ adminRoute.get(
 );
 
 // Subscription Transactions
-adminRoute.get(
-  ADMIN_ROUTES.GET_ALL_SUBSCRIPTION_TRANSACTIONS,
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getAllSubscriptionTransactions,
-);
+
 
 //Target Muscles
 

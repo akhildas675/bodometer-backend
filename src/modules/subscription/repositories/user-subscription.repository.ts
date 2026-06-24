@@ -1,10 +1,12 @@
-import { IUserSubscriptionRepository } from "@/interfaces/repository-interface/subscription/user.subscription.repository.interface";
+import { IUserSubscriptionRepository } from "@/modules/subscription/interface/repository.interface/user.subscription.repository.interface";
 import {
   UserSubscriptionModel,
   IUserSubscription,
-} from "@/models/user-subscription.model";
+} from "../models/user-subscription.model";
 import mongoose from "mongoose";
+import { injectable } from "inversify";
 
+@injectable()
 export class UserSubscriptionRepository implements IUserSubscriptionRepository {
   async create(data: {
     userId: string;

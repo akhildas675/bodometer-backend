@@ -6,7 +6,7 @@ import { IPaymentService } from "../../interfaces/service-interface/payment/stri
 import { IS3Service } from "../../interfaces/service-interface/s3/s3-service.interface";
 import { IUserService } from "../../interfaces/service-interface/user/user-service.interface";
 import { UserMapper, UserMappers } from "../../mappers/user/user.mappers";
-import { SubscriptionMapper } from "@/mappers/subscription/subscription.mapper";
+
 import { AppError } from "../../utils/appError";
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
@@ -20,12 +20,7 @@ import {
   UpdateBmiResponseDto,
   UpdateUserProfileDto,
 } from "../../dto/user/user.dto";
-import {
-  ActiveSubscriptionDto,
-  SubscriptionTransactionDto,
-  UserSubscriptionPlanResponseDto,
-  SubscriptionTransactionQueryDto,
-} from "../../dto/subscription/subscription.dto";
+
 import {
   GetTrainersQueryDto,
   TrainerDetailDto,
@@ -43,10 +38,7 @@ import {
   OnboardingValue,
   UserAnswerSubmission,
 } from "../../interfaces/domain.interface/onboarding.interface";
-import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/subscription/subscription-plan.repository";
-import Stripe from "stripe";
-import { ISubscriptionTransactionRepository } from "@/interfaces/repository-interface/subscription/subscription.transaction-repository.interface";
-import { IUserSubscriptionRepository } from "@/interfaces/repository-interface/subscription/user.subscription.repository.interface";
+
 import { IGroupRepository } from "@/interfaces/repository-interface/onboarding/group-repository.interface";
 import { IQuestionRepository } from "@/interfaces/repository-interface/onboarding/question-repository.interface";
 import { IAnswerRepository } from "@/interfaces/repository-interface/onboarding/answer-repository.interface";
@@ -69,6 +61,10 @@ import { EquipmentQueryDto, GetAllEquipmentResponseDto } from "../../dto/equipme
 import { MealCategoryQueryDto, GetAllMealCategoriesResponseDto } from "../../dto/meal.category/meal-category.dto";
 import { IWorkoutPlanService } from "../../interfaces/service-interface/workout/workout-plan.service.interface";
 import { IMealCategoryRepository } from "@/interfaces/repository-interface/meal.category/meal-category.repository";
+import { ISubscriptionTransactionRepository } from "@/modules/subscription/interface/repository.interface/subscription.transaction-repository.interface";
+import { ISubscriptionPlanRepository } from "@/modules/subscription/interface/repository.interface/subscription-plan.repository";
+import { IUserSubscriptionRepository } from "@/modules/subscription/interface/repository.interface/user.subscription.repository.interface";
+import { ActiveSubscriptionDto} from "@/modules/subscription/dto/subscription.dto";
 
 export class UserService implements IUserService {
 
@@ -295,153 +291,12 @@ export class UserService implements IUserService {
   }
 
   // Fetch user subscriptions
-  async getMySubscriptions(): Promise<
-    UserSubscriptionPlanResponseDto[] | null
-  > {
-    const plans = await this._subscriptionPlanRepository.getActiveSubscriptionPlans();
-    if (!plans) return null;
-    return SubscriptionMapper.toUserPlanResponseDtoList(plans);
-  }
 
-  // Create checkout session
-  async createCheckoutSession(
-    userId: string,
-    planId: string,
-  ): Promise<{ checkoutUrl: string }> {
-    const activeSub =
-      await this._userSubscriptionRepository.findActiveByUserId(userId);
-    if (activeSub) {
-      throw new AppError(
-        STATUS.BAD_REQUEST,
-        MESSAGES.SUBSCRIPTION_PLAN.ALREADY_SUBSCRIBED,
-      );
-    }
-
-    const plan =
-      await this._subscriptionPlanRepository.getSubscriptionPlanById(planId);
-    if (!plan) {
-      throw new AppError(STATUS.NOT_FOUND, MESSAGES.SUBSCRIPTION_PLAN.NOT_FOUND);
-    }
-
-    const result = await this._paymentService.createCheckoutSession({
-      planName: plan.name,
-      description: plan.description ?? "Bodometer Premium Access",
-      amount: Math.round(plan.price * 100),
-      currency: "inr",
-      successUrl: `${process.env.CLIENT_URL}/subscription-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancelUrl: `${process.env.CLIENT_URL}/subscription-cancel`,
-      metadata: {
-        userId,
-        planId,
-      },
-    });
-
-    return { checkoutUrl: result.url };
-  }
-
-  //verifyPaymentAndSave
-
-  // Verify payment intent
-  async verifyPaymentAndSave(
-    userId: string,
-    sessionId: string,
-  ): Promise<ActiveSubscriptionDto> {
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-
-    if (session.payment_status !== "paid") {
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.PAYMENT_NOT_COMPLETED);
-    }
-
-    const sessionUserId = session.metadata?.userId;
-    if (sessionUserId !== userId) {
-      throw new AppError(
-        STATUS.FORBIDDEN,
-        MESSAGES.VALIDATION.SESSION_USER_MISMATCH,
-      );
-    }
-
-    const planId = session.metadata?.planId;
-    if (!planId) {
-      throw new AppError(
-        STATUS.BAD_REQUEST,
-        MESSAGES.VALIDATION.PLAN_ID_REQUIRED,
-      );
-    }
-
-    const existing =
-      await this._subscriptionTransactionRepository.findByTransactionId(
-        sessionId,
-      );
-    if (existing) {
-      const activeSub = await this.getActiveSubscription(userId);
-      if (!activeSub)
-        throw new AppError(
-          STATUS.NOT_FOUND,
-          MESSAGES.SUBSCRIPTION_PLAN.NO_ACTIVE_SUB_FOR_SESSION,
-        );
-      return activeSub;
-    }
-
-    const plan =
-      await this._subscriptionPlanRepository.getSubscriptionPlanById(planId);
-    if (!plan) {
-      throw new AppError(STATUS.NOT_FOUND, MESSAGES.SUBSCRIPTION_PLAN.NOT_FOUND);
-    }
-
-    const startDate = new Date();
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + (plan.durationInDays ?? 30));
-
-    const userSubscription = await this._userSubscriptionRepository.create({
-      userId,
-      subscriptionPlanId: planId,
-      startDate,
-      endDate,
-    });
-
-    await this._subscriptionTransactionRepository.create({
-      userId,
-      subscriptionPlanId: planId,
-      userSubscriptionId: String(userSubscription._id),
-      amount: (session.amount_total ?? 0) / 100,
-      currency: (session.currency ?? "inr").toUpperCase(),
-      paymentMethod: "card",
-      paymentGateway: "stripe",
-      transactionId: sessionId,
-      paymentStatus: "success",
-      paidAt: new Date(),
-      meta: {
-        stripeSessionId: sessionId,
-        customerEmail: session.customer_details?.email,
-      },
-    });
-
-    const onboardingStatus = await this.getOnboardingStatus(userId);
-    if (onboardingStatus.completed) {
-      const existingPlans = await this._workoutPlanService.getWorkoutPlans(userId, true, true);
-      const hasActivePremium = existingPlans.plans.some(p => p.status === "active" && p.planType === PLAN_TYPE.PREMIUM);
-      if (!hasActivePremium) {
-        await this._workoutPlanService.generateWorkout(userId, PLAN_TYPE.PREMIUM).catch(err => {
-          console.error("Failed to generate premium workout after payment:", err);
-        });
-      }
-    }
-
-    return {
-      subscriptionId: String(userSubscription._id),
-      planId,
-      planName: plan.name,
-      startDate,
-      endDate,
-      status: "active",
-      daysRemaining: plan.durationInDays ?? 30,
-    };
-  }
 
   // Fetch active subscription
   async getActiveSubscription(
     userId: string,
+ 
   ): Promise<ActiveSubscriptionDto | null> {
     const sub =
       await this._userSubscriptionRepository.findActiveByUserId(userId);
@@ -461,7 +316,7 @@ export class UserService implements IUserService {
 
     return {
       subscriptionId: String(sub._id),
-      planId: String(plan?._id),
+      subscriptionPlanId: plan?._id ? String(plan._id) : "",
       planName: plan?.name ?? "Unknown",
       startDate: sub.startDate,
       endDate: sub.endDate,
@@ -470,15 +325,6 @@ export class UserService implements IUserService {
     };
   }
 
-  // Build subscription DTO
-  private async _buildActiveSubscriptionDto(
-    userId: string,
-  ): Promise<ActiveSubscriptionDto> {
-    const sub = await this.getActiveSubscription(userId);
-    if (!sub)
-      throw new AppError(STATUS.NOT_FOUND, MESSAGES.SUBSCRIPTION_PLAN.NO_ACTIVE_SUB);
-    return sub;
-  }
 
   // Fetch question groups
   async getOnboardingGroups(): Promise<GetAllQuestionGroupsResponse> {
@@ -533,27 +379,6 @@ export class UserService implements IUserService {
     return this._answerRepo.getUserAnswers(userId);
   }
 
-  // Fetch user transactions
-  async getUserTransactions(
-    userId: string,
-    query: SubscriptionTransactionQueryDto,
-  ): Promise<{ data: SubscriptionTransactionDto[]; pagination: PaginationMeta }> {
-    const { data, pagination } =
-      await this._subscriptionTransactionRepository.findUserTransactionsPaginated(
-        userId,
-        query.search,
-        query.sortBy,
-        query.sortOrder,
-        query.page,
-        query.limit,
-        query.status,
-      );
-
-    return {
-      data: SubscriptionMapper.toTransactionDtoList(data),
-      pagination,
-    };
-  }
 
   // Calculate user BMI
   async calculateBmi(data: UpdateBmiDto): Promise<UpdateBmiResponseDto> {

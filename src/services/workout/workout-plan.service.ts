@@ -30,9 +30,10 @@ import {
   CompletedHistoryItemDto
 } from "../../dto/workout/workout-plan.dto";
 import { IWorkoutPlanService } from "../../interfaces/service-interface/workout/workout-plan.service.interface";
+import { injectable } from "inversify";
 
 const generationLocks = new Set<string>();
-
+@injectable()
 export class WorkoutPlanService implements IWorkoutPlanService {
   constructor(
     private _userWorkoutPlanRepo: IUserWorkoutPlanRepository,

@@ -1,7 +1,7 @@
 
 import { GetAllQuestionGroupsResponse, GetAllQuestionsResponse, OnboardingValue, UserAnswerSubmission } from "../../../interfaces/domain.interface/onboarding.interface";
 import { ChangePasswordDto, FindUserResponseDto, UpdateBmiDto, UpdateBmiResponseDto, UpdateUserProfileDto } from "../../../dto/user/user.dto";
-import { ActiveSubscriptionDto, UserSubscriptionPlanResponseDto, SubscriptionTransactionDto, SubscriptionTransactionQueryDto } from "../../../dto/subscription/subscription.dto";
+
 import { GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto } from "../../../dto/trainer/trainer.dto";
 import { PaginationMeta } from "../../../interfaces/domain.interface/common.interface";
 
@@ -13,6 +13,7 @@ import { CreateBookingDto, GetBookingsQueryDto, GetSlotsQueryDto, DynamicSlotDto
 import { PopulatedTrainerBooking } from "../../../interfaces/domain.interface/trainer-booking.interface";
 import { Timeframe } from "@/constants/fitness.constant";
 
+
 export interface IUserService {
   fetchUser(userId: string): Promise<FindUserResponseDto>;
   updateProfile(userId: string, updateData: UpdateUserProfileDto): Promise<FindUserResponseDto>;
@@ -23,19 +24,14 @@ export interface IUserService {
  
   getAllEquipment(query: EquipmentQueryDto): Promise<GetAllEquipmentResponseDto>;
   getMealCategories(query: MealCategoryQueryDto): Promise<GetAllMealCategoriesResponseDto>;
-  getMySubscriptions(): Promise<UserSubscriptionPlanResponseDto[] | null>
-  createCheckoutSession(userId: string, planId: string): Promise<{ checkoutUrl: string }>;
-  verifyPaymentAndSave(userId: string, sessionId: string): Promise<ActiveSubscriptionDto>;
-  getActiveSubscription(userId: string): Promise<ActiveSubscriptionDto | null>;
+ 
+
   getOnboardingGroups(): Promise<GetAllQuestionGroupsResponse>;
   getOnboardingQuestions(): Promise<GetAllQuestionsResponse>;
   submitOnboarding(userId: string, data: { answers: { questionId: string; key: string; value: OnboardingValue }[] }): Promise<void>;
   getOnboardingStatus(userId: string): Promise<{ completed: boolean }>;
   getOnboardingAnswers(userId: string): Promise<UserAnswerSubmission | null>;
-  getUserTransactions(
-    userId: string,
-    query: SubscriptionTransactionQueryDto,
-  ): Promise<{ data: SubscriptionTransactionDto[]; pagination: PaginationMeta }>;
+
   calculateBmi: (data: UpdateBmiDto) => Promise<UpdateBmiResponseDto>;
   getExercises(query: ExerciseQueryDto): Promise<GetAllExercisesResponseDto>;
   getExerciseById(id: string): Promise<ExerciseDto>;

@@ -5,7 +5,7 @@ import { ITrainerProfileRepository } from "../../interfaces/repository-interface
 import { IS3Service } from "../../interfaces/service-interface/s3/s3-service.interface";
 import { ITrainerBookingRepository } from "../../interfaces/repository-interface/trainer/trainer-booking.repository.interface";
 import { ITrainerAvailabilityRepository } from "../../interfaces/repository-interface/trainer/trainer-availability.repository.interface";
-import { IUserSubscriptionRepository } from "../../interfaces/repository-interface/subscription/user.subscription.repository.interface";
+import { IUserSubscriptionRepository } from "../../modules/subscription/interface/repository.interface/user.subscription.repository.interface";
 import {
   FindTrainerResponseDto,
   TrainerProfileDto,

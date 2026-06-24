@@ -1,22 +1,24 @@
 import {
   ISubscriptionPlan,
   SubscriptionPlanModel,
-} from "@/models/subscription-plan.model";
-import { ISubscriptionFeature } from "@/models/subscription-feature.model";
+} from "../models/subscription-plan.model";
+import { ISubscriptionFeature } from "../models/subscription-feature.model";
 import { BaseRepository } from "@/repositories/base/base.repository";
 import { Types } from "mongoose";
-import { LimitType } from "@/constants/subscription.constant";
+import { LimitType } from "../constants/subscription.constant";
 import {
   GetAllSubscriptionPlansResponse,
   SubscriptionPlan,
   SubscriptionPlanQuery,
-} from "@/interfaces/domain.interface/subscription.interface";
-import { ISubscriptionPlanRepository } from "@/interfaces/repository-interface/subscription/subscription-plan.repository";
+} from "@/modules/subscription/interface/subscription.interface";
+import { ISubscriptionPlanRepository } from "@/modules/subscription/interface/repository.interface/subscription-plan.repository";
+import { injectable } from "inversify";
 
+
+@injectable()
 export default class SubscriptionPlanRepository
   extends BaseRepository<SubscriptionPlan, ISubscriptionPlan>
-  implements ISubscriptionPlanRepository
-{
+  implements ISubscriptionPlanRepository {
   constructor() {
     super(SubscriptionPlanModel);
   }
@@ -24,7 +26,6 @@ export default class SubscriptionPlanRepository
   protected toInterface(doc: ISubscriptionPlan): SubscriptionPlan {
     return {
       subscriptionPlanId: doc._id.toString(),
-      planId: doc._id.toString(),
       name: doc.name,
       description: doc.description?.toString() ?? "",
       price: doc.price,
@@ -48,7 +49,7 @@ export default class SubscriptionPlanRepository
     return await this.create(data);
   }
 
-  async getAllSubscriptionPlans(
+  async getSubscriptionPlans(
     query: SubscriptionPlanQuery,
   ): Promise<GetAllSubscriptionPlansResponse> {
     const {
@@ -64,6 +65,9 @@ export default class SubscriptionPlanRepository
     const filter: Record<string, unknown> = {};
     if (search) {
       filter.$text = { $search: search };
+    }
+    if (query.isActive !== undefined) {
+      filter.isActive = query.isActive;
     }
     const total = await this.countDocuments(filter);
     const plans = await this.model

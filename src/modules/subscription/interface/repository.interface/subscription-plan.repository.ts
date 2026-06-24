@@ -2,11 +2,11 @@ import {
   GetAllSubscriptionPlansResponse,
   SubscriptionPlan,
   SubscriptionPlanQuery,
-} from "@/interfaces/domain.interface/subscription.interface";
+} from "@/modules/subscription/interface/subscription.interface";
 
 export interface ISubscriptionPlanRepository {
   createSubscriptionPlan(data: SubscriptionPlan): Promise<SubscriptionPlan>;
-  getAllSubscriptionPlans(
+  getSubscriptionPlans(
     query: SubscriptionPlanQuery,
   ): Promise<GetAllSubscriptionPlansResponse>;
   getSubscriptionPlanById(

@@ -1,6 +1,6 @@
 import { Container } from "inversify";
 import { CATEGORY_TYPES } from "./category.types";
-import CategoryRepository from "./repository/category.repository";
+import CategoryRepository from "./repositories/category.repository";
 import { CategoryService } from "./service/category.services";
 import { CategoryController } from "./controller/category.controller";
 import { ICategoryRepository } from "./interface/category-repository.interface";

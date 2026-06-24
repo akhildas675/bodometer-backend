@@ -1,15 +1,18 @@
 import {
   ISubscriptionFeature,
   SubscriptionFeatureModel,
-} from "@/models/subscription-feature.model";
+} from "../models/subscription-feature.model";
 import { BaseRepository } from "@/repositories/base/base.repository";
 import {
   SubscriptionFeature,
   SubscriptionFeatureQuery,
-} from "@/interfaces/domain.interface/subscription.interface";
+} from "@/modules/subscription/interface/subscription.interface";
 import { PaginatedResult } from "@/interfaces/domain.interface/common.interface";
-import { ISubscriptionFeatureRepository } from "@/interfaces/repository-interface/subscription/feature-repository.interface";
+import { ISubscriptionFeatureRepository } from "@/modules/subscription/interface/repository.interface/subscription.feature-repository.interface";
+import { injectable } from "inversify";
 
+
+@injectable()
 export default class SubscriptionFeatureRepository
   extends BaseRepository<SubscriptionFeature, ISubscriptionFeature>
   implements ISubscriptionFeatureRepository

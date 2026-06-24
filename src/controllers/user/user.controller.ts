@@ -12,7 +12,7 @@ import {
   UpdateUserProfileDto,
 } from "../../dto/user/user.dto";
 import { GetTrainersQueryDto } from "../../dto/trainer/trainer.dto";
-import { SubscriptionTransactionQueryDto } from "../../dto/subscription/subscription.dto";
+
 import { IUserService } from "../../interfaces/service-interface/user/user-service.interface";
 import { IHealthLogService } from "../../interfaces/service-interface/health-log/health-log-service.interface";
 import { UpsertHealthLogDto } from "../../dto/health-log/health-log.dto";
@@ -306,122 +306,6 @@ export class UserController {
 
 
 
-  getMySubscriptions = async (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      if (!req.user?.id) {
-        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.USER.USER_NOT_FOUND);
-      }
-
-      const result = await this._userService.getMySubscriptions();
-
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.COMMON.SUCCESS,
-        result
-      ).send(res);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        next(error);
-      } else {
-        next(new Error("Unknown error occurred"));
-      }
-    }
-  };
-
-  createCheckoutSession = async (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      if (!req.user?.id) {
-        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
-      }
-
-      const body = req.body as { planId?: string };
-      const planId = body.planId;
-      if (!planId) {
-        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
-      }
-
-      const result = await this._userService.createCheckoutSession(
-        req.user.id,
-        planId,
-      );
-
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.COMMON.SUCCESS,
-        result
-      ).send(res);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        next(error);
-      } else {
-        next(new Error("Unknown error occurred"));
-      }
-    }
-  };
-
-  verifyPayment = async (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      const { session_id } = req.query;
-      if (!session_id || typeof session_id !== "string") {
-        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.SESSION_ID_REQUIRED);
-      }
-
-      const result = await this._userService.verifyPaymentAndSave(
-        req.user!.id,
-        session_id,
-      );
-
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.USER.PAYMENT_VERIFIED,
-        result
-      ).send(res);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        next(error);
-      } else {
-        next(new Error("Unknown error occurred"));
-      }
-    }
-  };
-
-  getActiveSubscription = async (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      if (!req.user?.id) {
-        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
-      }
-
-      const result = await this._userService.getActiveSubscription(req.user.id);
-
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.COMMON.SUCCESS,
-        result
-      ).send(res);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        next(error);
-      } else {
-        next(new Error("Unknown error occurred"));
-      }
-    }
-  };
 
   getOnboardingGroups = async (
     req: Request,
@@ -531,44 +415,6 @@ export class UserController {
         STATUS.OK,
         MESSAGES.COMMON.SUCCESS,
         result
-      ).send(res);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        next(error);
-      } else {
-        next(new Error("Unknown error occurred"));
-      }
-    }
-  };
-
-  getUserTransactions = async (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      if (!req.user?.id) {
-        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
-      }
-      const parsed = parsePaginationQuery(req);
-      const status = typeof req.query.status === "string" ? req.query.status : undefined;
-      const query: SubscriptionTransactionQueryDto = {
-        page: parsed.page,
-        limit: parsed.limit,
-        search: parsed.search,
-        sortBy: parsed.sortBy,
-        sortOrder: parsed.sortOrder,
-        status,
-      };
-      const result = await this._userService.getUserTransactions(
-        req.user.id,
-        query,
-      );
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.COMMON.SUCCESS,
-        result.data,
-        result.pagination
       ).send(res);
     } catch (error: unknown) {
       if (error instanceof Error) {
