@@ -17,22 +17,10 @@ import {
   RejectTrainerResponseDto,
 } from "../../dto/trainer/trainer.dto";
 
-import {
-  CreateQuestionGroupDto,
-  UpdateQuestionGroupDto,
-  GetAllQuestionGroupsResponseDto,
-  QuestionQueryDto,
-  CreateQuestionDto,
-  UpdateQuestionDto,
-  GetAllQuestionsResponseDto,
-  QuestionGroupResponseDto,
-  OnboardingQuestionResponseDto,
-} from "../../dto/onboarding/onboarding.dto";
 import { PaginatedResponseDto } from "../../dto/common.dto";
 
 import { PaginatedResult } from "../../interfaces/domain.interface/common.interface";
 
-import { QuestionGroupQuery } from "../../interfaces/domain.interface/onboarding.interface";
 import { ITrainerProfileRepository } from "../../interfaces/repository-interface/trainer/trainer.profile-repository.interface";
 import { IUserRepository } from "../../interfaces/repository-interface/user/user-repository.interface";
 import { IAdminService } from "../../interfaces/service-interface/admin/admin-service.interface";
@@ -45,14 +33,11 @@ import {
 import { AppError } from "../../utils/appError";
 
 import { ISubscriptionPlanRepository } from "@/modules/subscription/interface/repository.interface/subscription-plan.repository";
-import { IGroupRepository } from "@/interfaces/repository-interface/onboarding/group-repository.interface";
-import { IQuestionRepository } from "@/interfaces/repository-interface/onboarding/question-repository.interface";
 import {
   generateKeySlug,
   generateOptionValue,
 } from "@/utils/string-formatters";
 
-import { DATA_SOURCES } from "../../constants/question.constant";
 import {
   CreateTargetMuscleDto,
   GetAllTargetMusclesResponseDto,
@@ -104,8 +89,6 @@ export class AdminService implements IAdminService {
     private _trainerProfileRepository: ITrainerProfileRepository,
     private _s3Service: IS3Service,
     private _subscriptionPlanRepository: ISubscriptionPlanRepository,
-    private _groupRepository: IGroupRepository,
-    private _questionRepository: IQuestionRepository,
     private _targetMuscleRepository: ITargetMuscleRepository,
     private _equipmentRepository: IEquipmentRepository,
     private _exerciseRepository: IExerciseRepository,
@@ -292,166 +275,7 @@ export class AdminService implements IAdminService {
 
 
 
-  // Question Groups
-  async createQuestionGroup(data: CreateQuestionGroupDto): Promise<void> {
-    await this._groupRepository.createGroup({
-      key: generateKeySlug(data.title),
-      title: data.title,
-      order: data.order,
-    });
-  }
 
-  async getAllQuestionGroups(
-    query: QuestionGroupQuery,
-  ): Promise<GetAllQuestionGroupsResponseDto> {
-    const result = await this._groupRepository.getAllGroups(query);
-    return {
-      data: result.data.map((g) => ({
-        groupId: g.groupId!,
-        key: g.key,
-        title: g.title,
-        order: g.order,
-        isActive: g.isActive ?? true,
-      })),
-      pagination: result.pagination,
-    };
-  }
-
-  async getQuestionGroupById(
-    groupId: string,
-  ): Promise<QuestionGroupResponseDto> {
-    const group = await this._groupRepository.getGroupById(groupId);
-    if (!group) throw new AppError(STATUS.NOT_FOUND, MESSAGES.ONBOARDING.GROUP_NOT_FOUND);
-    return {
-      groupId: group.groupId!,
-      key: group.key,
-      title: group.title,
-      order: group.order,
-      isActive: group.isActive ?? true,
-    };
-  }
-
-  async updateQuestionGroup(
-    groupId: string,
-    data: UpdateQuestionGroupDto,
-  ): Promise<void> {
-    await this._groupRepository.updateGroup(groupId, {
-      title: data.title,
-      order: data.order,
-      key: "",
-    });
-  }
-
-  async toggleQuestionGroupStatus(groupId: string): Promise<void> {
-    await this._groupRepository.toggleGroupStatus(groupId);
-  }
-
-  // Questions
-  async createQuestion(
-    data: CreateQuestionDto,
-    adminId: string,
-  ): Promise<void> {
-    const options =
-      data.dataSource === "category" || data.dataSource === "equipment"
-        ? []
-        : data.options?.map((o) => ({
-            label: o.label.trim(),
-            value: generateOptionValue(o.label),
-          }));
-
-    await this._questionRepository.createQuestion({
-      ...data,
-      key: generateKeySlug(data.question),
-      createdBy: adminId,
-      options,
-    });
-  }
-
-  async getAllQuestions(
-    query: QuestionQueryDto,
-  ): Promise<GetAllQuestionsResponseDto> {
-    const result = await this._questionRepository.getAllQuestions(query);
-    return {
-      data: result.data.map((q) => ({
-        questionId: q.questionId!,
-        key: q.key,
-        question: q.question,
-        description: q.description,
-        groupId: q.groupId,
-        order: q.order,
-        isActive: q.isActive ?? true,
-        type: q.type,
-        options: q.options,
-        dataSource: q.dataSource,
-        next: q.next,
-        numberConfig: q.numberConfig,
-        validation: q.validation,
-        createdAt: q.createdAt,
-      })),
-      pagination: result.pagination,
-    };
-  }
-
-  async getQuestionById(
-    questionId: string,
-  ): Promise<OnboardingQuestionResponseDto> {
-    const q = await this._questionRepository.getQuestionById(questionId);
-    if (!q) throw new AppError(STATUS.NOT_FOUND, MESSAGES.ONBOARDING.QUESTION_NOT_FOUND);
-    return {
-      questionId: q.questionId!,
-      key: q.key,
-      question: q.question,
-      description: q.description,
-      groupId: q.groupId,
-      order: q.order,
-      isActive: q.isActive ?? true,
-      type: q.type,
-      options: q.options,
-      dataSource: q.dataSource,
-      next: q.next,
-      numberConfig: q.numberConfig,
-      validation: q.validation,
-      createdAt: q.createdAt,
-    };
-  }
-
-  async updateQuestion(
-    questionId: string,
-    data: UpdateQuestionDto,
-  ): Promise<void> {
-    const options =
-      data.dataSource === "category" || data.dataSource === "equipment"
-        ? []
-        : data.options?.map((o) => ({
-            label: o.label.trim(),
-            value: generateOptionValue(o.label),
-          }));
-
-    await this._questionRepository.updateQuestion(questionId, {
-      ...data,
-      options,
-    });
-  }
-
-  async toggleQuestionStatus(questionId: string): Promise<void> {
-    await this._questionRepository.toggleQuestionStatus(questionId);
-  }
-
- 
-
-  getQuestionDataSources(): Promise<{ label: string; value: string }[]> {
-    const labels: Record<string, string> = {
-      category: "Workout Categories",
-      equipment: "Workout Equipment",
-    };
-    return Promise.resolve(
-      DATA_SOURCES.map((source) => ({
-        value: source,
-        label:
-          labels[source] || source.charAt(0).toUpperCase() + source.slice(1),
-      })),
-    );
-  }
 
   //Target Muscles
 

@@ -3,17 +3,20 @@ import {
   QuestionQuery,
   GetAllQuestionsResponse,
   OnboardingValue,
-} from "@/interfaces/domain.interface/onboarding.interface";
+} from "../interface/onboarding.interface";
 import { BaseRepository } from "@/repositories/base/base.repository";
-import { QuestionModel, IQuestion } from "@/models/question.model";
-import { IQuestionRepository } from "@/interfaces/repository-interface/onboarding/question-repository.interface";
+import { QuestionModel, IQuestion } from "../models/question.model";
+import { GroupModel } from "../models/group.model";
+import { IQuestionRepository } from "../interface/repository.interface/question-repository.interface";
 import mongoose from "mongoose";
 import {
   ConditionOperator,
   QuestionType,
   DataSource,
-} from "@/constants/question.constant";
+} from "../onboarding.types";
+import { injectable } from "inversify";
 
+@injectable()
 export default class QuestionRepository
   extends BaseRepository<OnboardingQuestion, IQuestion>
   implements IQuestionRepository
@@ -170,6 +173,21 @@ export default class QuestionRepository
     }
     if (query.isActive !== undefined) {
       filter.isActive = query.isActive === true ? { $ne: false } : false;
+
+      if (query.isActive === true) {
+        const activeGroups = await GroupModel.find({ isActive: { $ne: false } }).select("_id").exec();
+        const activeGroupIds = activeGroups.map((g) => g._id);
+
+        if (filter.groupId) {
+          const targetGroupIdStr = String(filter.groupId);
+          const isActiveGroup = activeGroupIds.some((id) => id.toString() === targetGroupIdStr);
+          if (!isActiveGroup) {
+            filter.groupId = new mongoose.Types.ObjectId();
+          }
+        } else {
+          filter.groupId = { $in: activeGroupIds };
+        }
+      }
     }
 
     const sort: Record<string, 1 | -1> = {};

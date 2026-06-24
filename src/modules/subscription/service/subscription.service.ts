@@ -2,7 +2,7 @@ import { ISubscriptionFeatureRepository } from "@/modules/subscription/interface
 import { ISubscriptionPlanRepository } from "@/modules/subscription/interface/repository.interface/subscription-plan.repository";
 import { ISubscriptionTransactionRepository } from "../interface/repository.interface/subscription.transaction-repository.interface";
 import { IUserSubscriptionRepository } from "@/modules/subscription/interface/repository.interface/user.subscription.repository.interface";
-import { IAnswerRepository } from "@/interfaces/repository-interface/onboarding/answer-repository.interface";
+import { IAnswerRepository } from "@/modules/onboarding/interface/repository.interface/answer-repository.interface";
 import { IPaymentService } from "@/interfaces/service-interface/payment/stripe-service.interface";
 import { IWorkoutPlanService } from "@/interfaces/service-interface/workout/workout-plan.service.interface";
 

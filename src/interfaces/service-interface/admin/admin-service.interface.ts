@@ -2,10 +2,8 @@ import { AdminGetUsersDto, AdminGetUsersResponseDto } from "../../../dto/user/us
 import { AdminGetTrainersDto, AdminGetTrainersResponseDto, GetTrainerAppointmentsQueryDto, GetTrainerByIdResponseDto, ApproveTrainerResponseDto, RejectTrainerResponseDto, GetTrainerAppointmentsResponseDto } from "../../../dto/trainer/trainer.dto";
 
 
-import { CreateQuestionGroupDto, UpdateQuestionGroupDto, GetAllQuestionGroupsResponseDto, QuestionQueryDto, CreateQuestionDto, UpdateQuestionDto, GetAllQuestionsResponseDto, QuestionGroupResponseDto, OnboardingQuestionResponseDto } from "../../../dto/onboarding/onboarding.dto";
 import { PaginatedResponseDto } from "../../../dto/common.dto";
 import { PaginatedResult } from "../../domain.interface/common.interface";
-import { QuestionGroupQuery } from "../../domain.interface/onboarding.interface";
 import { CreateTargetMuscleDto, GetAllTargetMusclesResponseDto, TargetMuscleDto, TargetMuscleQueryDto, ToggleTargetMuscleStatusResponseDto, UpdateTargetMuscleDto } from "../../../dto/target.muscles/target-muscles.dto";
 import { CreateEquipmentDto, GetAllEquipmentResponseDto, EquipmentDto, EquipmentQueryDto, ToggleEquipmentStatusResponseDto, UpdateEquipmentDto } from "../../../dto/equipment/equipment.dto";
 import { CreateExerciseDto, ExerciseDto, ExerciseQueryDto, GetAllExercisesResponseDto, ToggleExerciseStatusResponseDto, UpdateExerciseDto } from "../../../dto/exercise/exercise.dto";
@@ -36,25 +34,7 @@ export interface IAdminService {
 
 
 
-  // Question Groups
-  createQuestionGroup(data: CreateQuestionGroupDto): Promise<void>;
-  getAllQuestionGroups(query: QuestionGroupQuery): Promise<GetAllQuestionGroupsResponseDto>;
-  getQuestionGroupById(groupId: string): Promise<QuestionGroupResponseDto>;
-  updateQuestionGroup(groupId: string, data: UpdateQuestionGroupDto): Promise<void>;
-  toggleQuestionGroupStatus(groupId: string): Promise<void>;
 
-  // Questions
-  createQuestion(data: CreateQuestionDto, adminId: string): Promise<void>;
-  getAllQuestions(query: QuestionQueryDto): Promise<GetAllQuestionsResponseDto>;
-  getQuestionById(questionId: string): Promise<OnboardingQuestionResponseDto>;
-  updateQuestion(questionId: string, data: UpdateQuestionDto): Promise<void>;
-  toggleQuestionStatus(questionId: string): Promise<void>;
-
-  // Subscription Transactions
-  
-
-  // Data Sources
-  getQuestionDataSources(): Promise<{ label: string; value: string }[]>;
 
   // Target Muscles
   createTargetMuscle(data: CreateTargetMuscleDto): Promise<void>;

@@ -7,7 +7,6 @@ import {
   bmiCalculationSchema,
   changePasswordSchema,
 
-  submitOnboardingSchema,
   trainerIdParamSchema,
   updateUserProfileSchema,
   uploadProfilePictureSchema,
@@ -95,37 +94,6 @@ userRoute.get(
 
 
 
-
-// onboarding routes
-userRoute.get(
-  USER_ROUTES.GET_ONBOARDING_GROUPS,
-  ROLE_GUARD.USER_GUARD,
-  userController.getOnboardingGroups,
-);
-
-userRoute.get(
-  USER_ROUTES.GET_ONBOARDING_QUESTIONS,
-  ROLE_GUARD.USER_GUARD,
-  userController.getOnboardingQuestions,
-);
-
-userRoute.post(
-  USER_ROUTES.SUBMIT_ONBOARDING, validate(submitOnboardingSchema),
-  ROLE_GUARD.USER_GUARD,
-  userController.submitOnboarding,
-);
-
-userRoute.get(
-  USER_ROUTES.GET_ONBOARDING_STATUS,
-  ROLE_GUARD.USER_GUARD,
-  userController.getOnboardingStatus,
-);
-
-userRoute.get(
-  USER_ROUTES.GET_ONBOARDING_ANSWERS,
-  ROLE_GUARD.USER_GUARD,
-  userController.getOnboardingAnswers,
-);
 
 userRoute.post(
   USER_ROUTES.CALCULATE_BMI_PUBLIC, validate(bmiCalculationSchema),

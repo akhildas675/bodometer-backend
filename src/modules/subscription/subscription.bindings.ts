@@ -8,8 +8,8 @@ import { ISubscriptionTransactionRepository } from "./interface/repository.inter
 import { SubscriptionTransactionRepository } from "./repositories/subscription-transaction.repository";
 import { IUserSubscriptionRepository } from "./interface/repository.interface/user.subscription.repository.interface";
 import { UserSubscriptionRepository } from "./repositories/user-subscription.repository";
-import { IAnswerRepository } from "@/interfaces/repository-interface/onboarding/answer-repository.interface";
-import AnswerRepository from "@/repositories/onboarding/answer.repository";
+import { IAnswerRepository } from "@/modules/onboarding/interface/repository.interface/answer-repository.interface";
+import AnswerRepository from "@/modules/onboarding/repositories/answer.repository";
 import { IPaymentService } from "@/interfaces/service-interface/payment/stripe-service.interface";
 import { PaymentService } from "@/services/payments/stripe.service";
 import { IWorkoutPlanService } from "@/interfaces/service-interface/workout/workout-plan.service.interface";
@@ -34,9 +34,6 @@ export const loadSubscriptionBindings=(
 
     container.bind<IUserSubscriptionRepository>(SUBSCRIPTION_TYPES.UserSubscriptionRepository)
     .to(UserSubscriptionRepository);
-
-    container.bind<IAnswerRepository>(SUBSCRIPTION_TYPES.AnswerRepository)
-    .to(AnswerRepository);
 
     container.bind<IPaymentService>(SUBSCRIPTION_TYPES.PaymentService)
     .to(PaymentService)

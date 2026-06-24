@@ -1,5 +1,3 @@
-
-import { GetAllQuestionGroupsResponse, GetAllQuestionsResponse, OnboardingValue, UserAnswerSubmission } from "../../../interfaces/domain.interface/onboarding.interface";
 import { ChangePasswordDto, FindUserResponseDto, UpdateBmiDto, UpdateBmiResponseDto, UpdateUserProfileDto } from "../../../dto/user/user.dto";
 
 import { GetTrainersQueryDto, TrainerDetailDto, TrainerListResponseDto } from "../../../dto/trainer/trainer.dto";
@@ -26,11 +24,7 @@ export interface IUserService {
   getMealCategories(query: MealCategoryQueryDto): Promise<GetAllMealCategoriesResponseDto>;
  
 
-  getOnboardingGroups(): Promise<GetAllQuestionGroupsResponse>;
-  getOnboardingQuestions(): Promise<GetAllQuestionsResponse>;
-  submitOnboarding(userId: string, data: { answers: { questionId: string; key: string; value: OnboardingValue }[] }): Promise<void>;
-  getOnboardingStatus(userId: string): Promise<{ completed: boolean }>;
-  getOnboardingAnswers(userId: string): Promise<UserAnswerSubmission | null>;
+
 
   calculateBmi: (data: UpdateBmiDto) => Promise<UpdateBmiResponseDto>;
   getExercises(query: ExerciseQueryDto): Promise<GetAllExercisesResponseDto>;

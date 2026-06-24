@@ -2,11 +2,13 @@ import {
   QuestionGroup,
   QuestionGroupQuery,
   GetAllQuestionGroupsResponse,
-} from "@/interfaces/domain.interface/onboarding.interface";
+} from "../interface/onboarding.interface";
 import { BaseRepository } from "@/repositories/base/base.repository";
-import { GroupModel, IGroup } from "@/models/group.model";
-import { IGroupRepository } from "@/interfaces/repository-interface/onboarding/group-repository.interface";
+import { GroupModel, IGroup } from "../models/group.model";
+import { IGroupRepository } from "../interface/repository.interface/group-repository.interface";
+import { injectable } from "inversify";
 
+@injectable()
 export default class GroupRepository
   extends BaseRepository<QuestionGroup, IGroup>
   implements IGroupRepository

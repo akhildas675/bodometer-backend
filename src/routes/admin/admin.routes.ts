@@ -8,12 +8,6 @@ import { mediaUpload } from "@/config/multer";
 import {
  
   getTrainersSchema,
-  groupIdParamSchema,
-  groupUpdateSchema,
-  groupValidationSchema,
-  questionIdParamSchema,
-  questionUpdateSchema,
-  questionValidationSchema,
 
   profileIdParamSchema,
   rejectTrainerSchema,
@@ -42,6 +36,7 @@ const adminRoute = Router();
 const { adminController } = createAdminModule();
 
 
+// Trainer Management
 // Trainer Management
 adminRoute.get(
   ADMIN_ROUTES.GET_TRAINERS,
@@ -116,76 +111,6 @@ adminRoute.patch(
   ROLE_GUARD.ADMIN_GUARD,
   validate(userIdParamSchema),
   adminController.unblockUser,
-);
-
-
-
-// Question Group Routes
-adminRoute.post(
-  ADMIN_ROUTES.CREATE_QUESTION_GROUP,
-  ROLE_GUARD.ADMIN_GUARD,
-  validate(groupValidationSchema),
-  adminController.createQuestionGroup,
-);
-adminRoute.get(
-  ADMIN_ROUTES.GET_ALL_QUESTION_GROUPS,
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getAllQuestionGroups,
-);
-adminRoute.get(
-  ADMIN_ROUTES.GET_QUESTION_GROUP_BY_ID,
-  validate(groupIdParamSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getQuestionGroupById,
-);
-adminRoute.put(
-  ADMIN_ROUTES.UPDATE_QUESTION_GROUP,
-  validate(groupUpdateSchema.merge(groupIdParamSchema)),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.updateQuestionGroup,
-);
-adminRoute.patch(
-  ADMIN_ROUTES.TOGGLE_QUESTION_GROUP_STATUS,
-  validate(groupIdParamSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.toggleQuestionGroupStatus,
-);
-
-// Question Routes
-adminRoute.post(
-  ADMIN_ROUTES.CREATE_QUESTION,
-  validate(questionValidationSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.createQuestion,
-);
-adminRoute.get(
-  ADMIN_ROUTES.GET_ALL_QUESTIONS,
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getAllQuestions,
-);
-adminRoute.get(
-  ADMIN_ROUTES.GET_QUESTION_BY_ID,
-  validate(questionIdParamSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getQuestionById,
-);
-adminRoute.put(
-  ADMIN_ROUTES.UPDATE_QUESTION,
-  validate(questionUpdateSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.updateQuestion,
-);
-adminRoute.patch(
-  ADMIN_ROUTES.TOGGLE_QUESTION_STATUS,
-  validate(questionIdParamSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.toggleQuestionStatus,
-);
-
-adminRoute.get(
-  ADMIN_ROUTES.GET_QUESTION_DATA_SOURCES,
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getQuestionDataSources,
 );
 
 // Subscription Transactions

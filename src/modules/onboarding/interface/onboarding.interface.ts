@@ -1,4 +1,4 @@
-import { PaginationMeta } from "./common.interface";
+import { PaginationMeta } from "@/interfaces/domain.interface/common.interface";
 
 export type OnboardingValue = string | number | boolean | string[] | number[];
 

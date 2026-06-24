@@ -6,6 +6,7 @@ import trainerRoute from "./trainer/trainer.route";
 import { API_ROUTES } from "@/constants/routes.constant/combined.routes.constant";
 import categoryRoute from "@/modules/category/routes/category.route";
 import subscriptionRoute from "@/modules/subscription/routes/subscription.routes";
+import onboardingRoute from "@/modules/onboarding/routes/onboarding.routes";
 
 const routes = (app: Application) => {
   app.use(API_ROUTES.BASE, authRoute);
@@ -13,8 +14,8 @@ const routes = (app: Application) => {
   app.use(API_ROUTES.BASE, trainerRoute);
   app.use(API_ROUTES.BASE, adminRoute);
   app.use("/api/categories", categoryRoute);
-  app.use("/api/subscription",subscriptionRoute)
-
+  app.use("/api/subscription", subscriptionRoute);
+  app.use("/api/onboarding", onboardingRoute);
 };
 
 export default routes;

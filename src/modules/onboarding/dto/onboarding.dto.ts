@@ -1,5 +1,5 @@
-import { OnboardingValue } from "../../interfaces/domain.interface/onboarding.interface";
-import { PaginationMetaDto, PaginationQueryDto } from "../common.dto";
+import { OnboardingValue } from "../interface/onboarding.interface";
+import { PaginationMetaDto, PaginationQueryDto } from "@/dto/common.dto";
 
 export interface QuestionGroupResponseDto {
   groupId: string;
@@ -10,7 +10,7 @@ export interface QuestionGroupResponseDto {
 }
 
 export interface CreateQuestionGroupDto {
-  key: string;
+  key?: string; // Optional slug key generated from title if missing
   title: string;
   order: number;
 }
@@ -48,10 +48,13 @@ export interface OnboardingQuestionResponseDto {
 export interface QuestionQueryDto extends PaginationQueryDto {
   groupId?: string;
   search?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  isActive?: boolean;
 }
 
 export interface CreateQuestionDto {
-  key: string;
+  key?: string; // Optional slug key generated from question title if missing
   question: string;
   description?: string;
   groupId: string;

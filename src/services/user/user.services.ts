@@ -32,16 +32,6 @@ import {
   CategoryQuery,
   GetAllCategoriesResponse,
 } from "../../modules/category/interface/category.interface";
-import {
-  GetAllQuestionGroupsResponse,
-  GetAllQuestionsResponse,
-  OnboardingValue,
-  UserAnswerSubmission,
-} from "../../interfaces/domain.interface/onboarding.interface";
-
-import { IGroupRepository } from "@/interfaces/repository-interface/onboarding/group-repository.interface";
-import { IQuestionRepository } from "@/interfaces/repository-interface/onboarding/question-repository.interface";
-import { IAnswerRepository } from "@/interfaces/repository-interface/onboarding/answer-repository.interface";
 import { ROLES } from "@/constants/roles";
 import { PaginationMeta } from "@/interfaces/domain.interface/common.interface";
 import { IHealthMetrics } from "@/interfaces/service-interface/health.metrics/health.metrics-service.interface";
@@ -77,9 +67,7 @@ export class UserService implements IUserService {
     private _subscriptionPlanRepository: ISubscriptionPlanRepository,
     private _subscriptionTransactionRepository: ISubscriptionTransactionRepository,
     private _userSubscriptionRepository: IUserSubscriptionRepository,
-    private _groupRepo: IGroupRepository,
-    private _questionRepo: IQuestionRepository,
-    private _answerRepo: IAnswerRepository,
+
     private _healthMetrics: IHealthMetrics,
     private _exerciseRepo: IExerciseRepository,
     private _equipmentRepo: IEquipmentRepository,
@@ -326,58 +314,7 @@ export class UserService implements IUserService {
   }
 
 
-  // Fetch question groups
-  async getOnboardingGroups(): Promise<GetAllQuestionGroupsResponse> {
-    return this._groupRepo.getAllGroups({ limit: 100, isActive: true });
-  }
 
-  // Fetch onboarding questions
-  async getOnboardingQuestions(): Promise<GetAllQuestionsResponse> {
-    return this._questionRepo.getAllQuestions({ limit: 500, isActive: true });
-  }
-
-  // Submit onboarding answers
-  async submitOnboarding(
-    userId: string,
-    data: {
-      answers: { questionId: string; key: string; value: OnboardingValue }[];
-    },
-  ): Promise<void> {
-    const submission: UserAnswerSubmission = {
-      userId,
-      answers: data.answers.map((ans) => ({
-        questionId: ans.questionId,
-        questionKey: ans.key,
-        answer: ans.value,
-      })),
-      completed: true,
-    };
-    await this._answerRepo.saveUserAnswers(submission);
-
-    const activeSub = await this.getActiveSubscription(userId);
-    if (activeSub) {
-      const existingPlans = await this._workoutPlanService.getWorkoutPlans(userId, true, true);
-      const hasActivePremium = existingPlans.plans.some(p => p.status === "active" && p.planType === PLAN_TYPE.PREMIUM);
-      if (!hasActivePremium) {
-        await this._workoutPlanService.generateWorkout(userId, PLAN_TYPE.PREMIUM).catch(err => {
-           console.error("Failed to generate premium workout after onboarding:", err);
-        });
-      }
-    }
-  }
-
-  // Fetch onboarding status
-  async getOnboardingStatus(userId: string): Promise<{ completed: boolean }> {
-    const userAnswers = await this._answerRepo.getUserAnswers(userId);
-    return { completed: userAnswers?.completed ?? false };
-  }
-
-  // Fetch onboarding answers
-  async getOnboardingAnswers(
-    userId: string,
-  ): Promise<UserAnswerSubmission | null> {
-    return this._answerRepo.getUserAnswers(userId);
-  }
 
 
   // Calculate user BMI

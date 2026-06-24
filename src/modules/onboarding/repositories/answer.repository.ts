@@ -1,8 +1,10 @@
-import { UserAnswerSubmission } from "@/interfaces/domain.interface/onboarding.interface";
-import { AnswerModel, IAnswer } from "@/models/answer.model";
-import { IAnswerRepository } from "@/interfaces/repository-interface/onboarding/answer-repository.interface";
+import { UserAnswerSubmission } from "../interface/onboarding.interface";
+import { AnswerModel, IAnswer } from "../models/answer.model";
+import { IAnswerRepository } from "../interface/repository.interface/answer-repository.interface";
 import mongoose from "mongoose";
+import { injectable } from "inversify";
 
+@injectable()
 export default class AnswerRepository implements IAnswerRepository {
   async saveUserAnswers(data: UserAnswerSubmission): Promise<void> {
     await AnswerModel.findOneAndUpdate(

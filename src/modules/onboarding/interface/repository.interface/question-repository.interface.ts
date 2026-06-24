@@ -2,7 +2,7 @@ import {
   OnboardingQuestion,
   QuestionQuery,
   GetAllQuestionsResponse,
-} from "@/interfaces/domain.interface/onboarding.interface";
+} from "../onboarding.interface";
 
 export interface IQuestionRepository {
   createQuestion(data: OnboardingQuestion): Promise<void>;

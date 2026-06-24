@@ -5,7 +5,7 @@ import { MESSAGES } from "../../constants/messages";
 import { WorkoutMapper } from "../../mappers/workout/workout-plan.mappers";
 import { AiWorkoutService } from "../ai-services/ai-workout.service";
 import { IUserWorkoutPlanRepository } from "@/interfaces/repository-interface/workout/user-workout-plan.repository.interface";
-import { IAnswerRepository } from "../../interfaces/repository-interface/onboarding/answer-repository.interface";
+import { IAnswerRepository } from "../../modules/onboarding/interface/repository.interface/answer-repository.interface";
 import { IExerciseRepository } from "../../interfaces/repository-interface/exercise/exercise-repository.interface";
 import {
   WORKOUT_DAY_TYPE, 

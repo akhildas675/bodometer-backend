@@ -17,12 +17,6 @@ import { IMealCategoryRepository } from "@/interfaces/repository-interface/meal.
 import { SubscriptionTransactionRepository } from "@/modules/subscription/repositories/subscription-transaction.repository";
 import { UserSubscriptionRepository } from "@/modules/subscription/repositories/user-subscription.repository";
 import { IUserSubscriptionRepository } from "../../modules/subscription/interface/repository.interface/user.subscription.repository.interface";
-import { IGroupRepository } from "../../interfaces/repository-interface/onboarding/group-repository.interface";
-import { IQuestionRepository } from "../../interfaces/repository-interface/onboarding/question-repository.interface";
-import { IAnswerRepository } from "../../interfaces/repository-interface/onboarding/answer-repository.interface";
-import GroupRepository from "@/repositories/onboarding/group.repository";
-import QuestionRepository from "@/repositories/onboarding/question.repository";
-import AnswerRepository from "@/repositories/onboarding/answer.repository";
 import { IPaymentService } from "@/interfaces/service-interface/payment/stripe-service.interface";
 import { HealthMetricsService } from "../../services/health.metrics/health-metrics.service";
 import ExerciseRepository from "@/repositories/exercise/exercise.repository";
@@ -42,6 +36,7 @@ import { TrainerBookingRepository } from "../../repositories/trainer/trainer-boo
 import { ITrainerAvailabilityRepository } from "../../interfaces/repository-interface/trainer/trainer-availability.repository.interface";
 import { TrainerAvailabilityRepository } from "../../repositories/trainer/trainer-availability.repository";
 import { ISubscriptionTransactionRepository } from "../../modules/subscription/interface/repository.interface/subscription.transaction-repository.interface";
+import AnswerRepository from "@/modules/onboarding/repositories/answer.repository"; // Keep AnswerRepository for WorkoutPlanService constructor
 
 export function createUserModule() {
   const userRepository: IUserRepository = new UserRepository();
@@ -51,9 +46,6 @@ export function createUserModule() {
   const subscriptionPlanRepository: ISubscriptionPlanRepository = new SubscriptionPlanRepository();
   const subscriptionTransactionRepository: ISubscriptionTransactionRepository = new SubscriptionTransactionRepository();
   const userSubscriptionRepository: IUserSubscriptionRepository = new UserSubscriptionRepository();
-  const groupRepository: IGroupRepository = new GroupRepository();
-  const questionRepository: IQuestionRepository = new QuestionRepository();
-  const answerRepository: IAnswerRepository = new AnswerRepository();
   const healthMetricsService = new HealthMetricsService();
   const exerciseRepository: IExerciseRepository = new ExerciseRepository();
   const equipmentRepository: IEquipmentRepository = new EquipmentRepository();
@@ -63,7 +55,11 @@ export function createUserModule() {
   const trainerBookingRepository: ITrainerBookingRepository = new TrainerBookingRepository();
   const trainerAvailabilityRepository: ITrainerAvailabilityRepository = new TrainerAvailabilityRepository();
   const paymentService: IPaymentService = new PaymentService();
+  
+ 
+  const answerRepository = new AnswerRepository();
   const workoutPlanService = new WorkoutPlanService(userWorkoutPlanRepository, exerciseRepository, answerRepository);
+  
   const aiHealthService = new AiHealthService();
   const healthLogService: IHealthLogService = new HealthLogService(
     healthLogRepository,
@@ -80,9 +76,6 @@ export function createUserModule() {
     subscriptionPlanRepository,
     subscriptionTransactionRepository,
     userSubscriptionRepository,
-    groupRepository,
-    questionRepository,
-    answerRepository,
     healthMetricsService,
     exerciseRepository,
     equipmentRepository,

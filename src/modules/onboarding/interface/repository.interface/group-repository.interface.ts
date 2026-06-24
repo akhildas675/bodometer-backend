@@ -2,7 +2,7 @@ import {
   QuestionGroup,
   QuestionGroupQuery,
   GetAllQuestionGroupsResponse,
-} from "@/interfaces/domain.interface/onboarding.interface";
+} from "../onboarding.interface";
 
 export interface IGroupRepository {
   createGroup(data: QuestionGroup): Promise<void>;
