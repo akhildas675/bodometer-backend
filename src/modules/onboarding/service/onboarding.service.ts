@@ -29,7 +29,7 @@ import { AppError } from "@/utils/appError";
 import { STATUS } from "@/constants/statuscode";
 import { MESSAGES } from "@/constants/messages";
 import { generateKeySlug, generateOptionValue } from "@/utils/string-formatters";
-import { PLAN_TYPE } from "@/constants/fitness.constant";
+
 
 
 @injectable()

@@ -1,9 +1,9 @@
-import { ITargetMuscleRepository } from "@/interfaces/repository-interface/target.muscle/target.muscle-repository.interface";
+import { ITargetMuscleRepository } from "../interface/target-muscle-repository.interface";
 import { BaseRepository } from "@/repositories/base/base.repository";
 import { TargetMuscle } from "@/interfaces/domain.interface/target.muscle";
 import { ITargetMuscle, TargetMuscleModel } from "@/models/target-muscle.model";
 import { PaginatedResult } from "@/interfaces/domain.interface/common.interface";
-import { TargetMuscleQueryDto } from "@/dto/target.muscles/target-muscles.dto";
+import { TargetMuscleQueryDto } from "../dto/target-muscle.dto";
 
 export default class TargetMuscleRepository extends BaseRepository<TargetMuscle, ITargetMuscle> implements ITargetMuscleRepository {
 

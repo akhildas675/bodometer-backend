@@ -47,6 +47,8 @@ export const WORKOUT_MESSAGES = {
   TARGET_MUSCLE: {
     BLOCKED: "Target muscle blocked successfully.",
     UNBLOCKED: "Target muscle unblocked successfully.",
+    EXISTS: "Target muscle already exists.",
+    NOT_FOUND: "Target muscle not found."
   },
 
   EQUIPMENT: {

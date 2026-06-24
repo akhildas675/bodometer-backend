@@ -15,16 +15,7 @@ import {
   getTrainerAppointmentsSchema,
   trainerIdParamSchema,
   getUsersSchema,
-  createTargetMuscleSchema,
-  targetMuscleIdParamSchema,
-  updateTargetMuscleSchema,
-  createEquipmentSchema,
-  equipmentIdParamSchema,
-  updateEquipmentSchema,
-  createExerciseSchema,
-  exerciseIdParamSchema,
-  updateExerciseSchema,
-  getAllExercisesSchema,
+
   mealCategoryValidationSchema,
   mealCategoryIdParamSchema,
   updateMealCategorySchema,
@@ -118,114 +109,6 @@ adminRoute.patch(
 
 //Target Muscles
 
-adminRoute.post(
-  ADMIN_ROUTES.CREATE_TARGET_MUSCLE,
-  mediaUpload.single("image"),
-  validate(createTargetMuscleSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.createTargetMuscle,
-);
-adminRoute.get(
-  ADMIN_ROUTES.GET_ALL_TARGET_MUSCLES,
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getAllTargetMuscles,
-);
-adminRoute.get(
-  ADMIN_ROUTES.GET_TARGET_MUSCLE_BY_ID,
-  validate(targetMuscleIdParamSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getTargetMuscleById,
-);
-adminRoute.put(
-  ADMIN_ROUTES.UPDATE_TARGET_MUSCLE,
-  mediaUpload.single("image"),
-  validate(updateTargetMuscleSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.updateTargetMuscle,
-);
-adminRoute.patch(
-  ADMIN_ROUTES.TOGGLE_TARGET_MUSCLE_STATUS,
-  validate(targetMuscleIdParamSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.toggleTargetMuscleStatus,
-);
-
-// Equipment
-
-adminRoute.post(
-  ADMIN_ROUTES.CREATE_EQUIPMENT,
-  mediaUpload.single("image"),
-  validate(createEquipmentSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.createEquipment,
-);
-adminRoute.get(
-  ADMIN_ROUTES.GET_ALL_EQUIPMENT,
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getAllEquipment,
-);
-adminRoute.get(
-  ADMIN_ROUTES.GET_EQUIPMENT_BY_ID,
-  validate(equipmentIdParamSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getEquipmentById,
-);
-adminRoute.put(
-  ADMIN_ROUTES.UPDATE_EQUIPMENT,
-  mediaUpload.single("image"),
-  validate(updateEquipmentSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.updateEquipment,
-);
-adminRoute.patch(
-  ADMIN_ROUTES.TOGGLE_EQUIPMENT_STATUS,
-  validate(equipmentIdParamSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.toggleEquipmentStatus,
-);
-
-// Exercises
-
-adminRoute.post(
-  ADMIN_ROUTES.CREATE_EXERCISE,
-  mediaUpload.fields([
-    { name: "image", maxCount: 1 },
-    { name: "video", maxCount: 1 },
-  ]),
-
-  validate(createExerciseSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.createExercise,
-);
-adminRoute.get(
-  ADMIN_ROUTES.GET_ALL_EXERCISES,
-  validate(getAllExercisesSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getAllExercises,
-);
-adminRoute.get(
-  ADMIN_ROUTES.GET_EXERCISE_BY_ID,
-  validate(exerciseIdParamSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getExerciseById,
-);
-adminRoute.put(
-  ADMIN_ROUTES.UPDATE_EXERCISE,
-  mediaUpload.fields([
-    { name: "image", maxCount: 1 },
-    { name: "video", maxCount: 1 },
-  ]),
-
-  validate(updateExerciseSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.updateExercise,
-);
-adminRoute.patch(
-  ADMIN_ROUTES.TOGGLE_EXERCISE_STATUS,
-  validate(exerciseIdParamSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.toggleExerciseStatus,
-);
 
 adminRoute.post(
   ADMIN_ROUTES.MEAL_CATEGORY_CREATE,

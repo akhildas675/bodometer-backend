@@ -64,7 +64,7 @@ export function createUserModule() {
   const healthLogService: IHealthLogService = new HealthLogService(
     healthLogRepository,
     aiHealthService,
-    userSubscriptionRepository
+    userSubscriptionRepository,
   );
 
   const userService: IUserService = new UserService(

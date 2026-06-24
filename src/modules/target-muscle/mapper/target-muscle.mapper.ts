@@ -1,4 +1,4 @@
-import { TargetMuscleDto } from "@/dto/target.muscles/target-muscles.dto";
+import { TargetMuscleDto } from "../dto/target-muscle.dto";
 import { TargetMuscle } from "@/interfaces/domain.interface/target.muscle";
 
 export class TargetMuscleMapper {
