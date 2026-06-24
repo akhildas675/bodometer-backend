@@ -1,10 +1,12 @@
-import { IMealCategory, MealCategoryModel } from "@/models/meal-category.model";
-import { BaseRepository } from "../base/base.repository";
-import { MealCategoryQueryDto } from "@/dto/meal.category/meal-category.dto";
+import { injectable } from "inversify";
+import { IMealCategory, MealCategoryModel } from "../models/meal-category.model";
+import { BaseRepository } from "@/repositories/base/base.repository";
+import { MealCategoryQueryDto } from "../dto/meal-category.dto";
 import { PaginatedResult } from "@/interfaces/domain.interface/common.interface";
-import { MealCategory } from "@/interfaces/domain.interface/meal-category.interface";
-import { IMealCategoryRepository } from "@/interfaces/repository-interface/meal.category/meal-category.repository";
+import { MealCategory } from "../interface/meal-category.interface";
+import { IMealCategoryRepository } from "../interface/meal-category-repository.interface";
 
+@injectable()
 export default class MealCategoryRepository extends BaseRepository<MealCategory, IMealCategory> implements IMealCategoryRepository {
     constructor() {
         super(MealCategoryModel)

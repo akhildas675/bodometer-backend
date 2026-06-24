@@ -6,7 +6,7 @@ import { PaginationMeta } from "../../../interfaces/domain.interface/common.inte
 import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto } from "../../../dto/exercise/exercise.dto";
 import { WorkoutPlanDetailDto, WorkoutPlanResponseDto, GetWorkoutPlansResponseDto, WorkoutProgressResponseDto, MarkDayCompletedDto, MarkExerciseStatusDto } from "../../../dto/workout/workout-plan.dto";
 import { EquipmentQueryDto, GetAllEquipmentResponseDto } from "../../../dto/equipment/equipment.dto";
-import { MealCategoryQueryDto, GetAllMealCategoriesResponseDto } from "../../../dto/meal.category/meal-category.dto";
+import { MealCategoryQueryDto, GetAllMealCategoriesResponseDto } from "@/modules/meal-category/dto/meal-category.dto";
 import { CreateBookingDto, GetBookingsQueryDto, GetSlotsQueryDto, DynamicSlotDto } from "../../../dto/trainer/trainer-booking.dto";
 import { PopulatedTrainerBooking } from "../../../interfaces/domain.interface/trainer-booking.interface";
 import { Timeframe } from "@/constants/fitness.constant";

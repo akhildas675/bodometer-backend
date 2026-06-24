@@ -39,16 +39,6 @@ import {
 } from "@/utils/string-formatters";
 
 
-import { 
-  MealCategoryDto, 
-  UpdateMealCategoryDto, 
-  MealCategoryQueryDto, 
-  GetAllMealCategoriesResponseDto, 
-  ToggleMealCategoryStatusResponseDto 
-} from "@/dto/meal.category/meal-category.dto";
-import { MealCategory } from "@/interfaces/domain.interface/meal-category.interface";
-import { IMealCategoryRepository } from "@/interfaces/repository-interface/meal.category/meal-category.repository";
-
 export class AdminService implements IAdminService {
 
 
@@ -58,7 +48,6 @@ export class AdminService implements IAdminService {
     private _s3Service: IS3Service,
     private _subscriptionPlanRepository: ISubscriptionPlanRepository,
 
-    private _mealCategoryRepository:IMealCategoryRepository,
   ) {}
 
   //  Users
@@ -237,62 +226,5 @@ export class AdminService implements IAdminService {
       );
 
     return TrainerMapper.toRejectDto(updated);
-  }
-
-
-
-
-
-  async createMealCategory(data: MealCategoryDto): Promise<void> {
-    const mealCategoryPayload: MealCategory = data;
-    await this._mealCategoryRepository.createMealCategory(mealCategoryPayload);
-  }
-
-  async getAllMealCategories(query: MealCategoryQueryDto): Promise<GetAllMealCategoriesResponseDto> {
-  const { data, pagination } = await this._mealCategoryRepository.getAllMealCategories({
-      search: query.search,
-      page: query.page,
-      limit: query.limit,
-      sortBy: query.sortBy,
-      sortOrder: query.sortOrder,
-    });
-    return {
-      data: data as MealCategoryDto[], 
-      pagination,
-    };
-  }
-
-  async getMealCategoryById(mealCategoryId: string): Promise<MealCategoryDto> {
-    const category = await this._mealCategoryRepository.getMealCategoryById(mealCategoryId);
-    if (!category) {
-      throw new AppError(STATUS.NOT_FOUND, MESSAGES.MEAL_CATEGORY.NOT_FOUND);
-    }
-    return category as MealCategoryDto;
-  }
-
-  async updateMealCategory(mealCategoryId: string, data: UpdateMealCategoryDto): Promise<void> {
-    const category = await this._mealCategoryRepository.getMealCategoryById(mealCategoryId);
-    if (!category) {
-      throw new AppError(STATUS.NOT_FOUND, MESSAGES.MEAL_CATEGORY.NOT_FOUND);
-    }
-
-    const updateData: Partial<MealCategory> = {
-      title: data.title,
-      description: data.description,
-    };
-
-    await this._mealCategoryRepository.updateMealCategory(mealCategoryId, updateData);
-  }
-
-  async toggleMealCategoryStatus(mealCategoryId: string): Promise<ToggleMealCategoryStatusResponseDto> {
-    const category = await this._mealCategoryRepository.toggleMealCategoryStatus(mealCategoryId);
-    if (!category) {
-      throw new AppError(STATUS.NOT_FOUND, MESSAGES.MEAL_CATEGORY.NOT_FOUND);
-    }
-    return {
-      message: category.isActive ? "Meal category unblocked successfully" : "Meal category blocked successfully",
-      mealCategoryId: mealCategoryId,
-      isActive: category.isActive ?? true,
-    };
   }
 }

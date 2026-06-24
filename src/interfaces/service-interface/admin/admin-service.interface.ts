@@ -5,13 +5,7 @@ import { AdminGetTrainersDto, AdminGetTrainersResponseDto, GetTrainerAppointment
 import { PaginatedResponseDto } from "../../../dto/common.dto";
 import { PaginatedResult } from "../../domain.interface/common.interface";
 
-import { 
-  MealCategoryDto, 
-  UpdateMealCategoryDto, 
-  MealCategoryQueryDto, 
-  GetAllMealCategoriesResponseDto, 
-  ToggleMealCategoryStatusResponseDto 
-} from "@/dto/meal.category/meal-category.dto";
+
 
 
 
@@ -29,16 +23,4 @@ export interface IAdminService {
   getTrainerByProfileId(profileId: string): Promise<GetTrainerByIdResponseDto>;
   approveTrainer(profileId: string): Promise<ApproveTrainerResponseDto>;
   rejectTrainer(profileId: string, reason: string): Promise<RejectTrainerResponseDto>;
-
-
-
-
-
-
-
-  createMealCategory(data: MealCategoryDto): Promise<void>;
-  getAllMealCategories(query: MealCategoryQueryDto): Promise<GetAllMealCategoriesResponseDto>;
-  getMealCategoryById(mealCategoryId: string): Promise<MealCategoryDto>;
-  updateMealCategory(mealCategoryId: string, data: UpdateMealCategoryDto): Promise<void>;
-  toggleMealCategoryStatus(mealCategoryId: string): Promise<ToggleMealCategoryStatusResponseDto>;
 }

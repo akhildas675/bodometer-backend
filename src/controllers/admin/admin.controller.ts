@@ -20,8 +20,6 @@ import {
 import { AuthRequest } from "@/middleware/authGuard";
 import { SuccessResponse } from "@/utils/success.response";
 
-import { MealCategoryDto, UpdateMealCategoryDto } from "@/dto/meal.category/meal-category.dto";
-
 export class AdminController {
   constructor(private _adminService: IAdminService) {}
 
@@ -239,78 +237,6 @@ export class AdminController {
       } else {
         next(new Error("Unknown error occurred"));
       }
-    }
-  };
-
-
-
-  createMealCategory = async(req:AuthRequest,res:Response,next:NextFunction)=>{
-    try {
-      const data = req.body as MealCategoryDto;
-
-      await this._adminService.createMealCategory(data);
-      new SuccessResponse(STATUS.CREATED,MESSAGES.MEAL_CATEGORY.CREATED).send(res)
-      
-    } catch (error:unknown) {
-       if(error instanceof Error){
-
-        next(error);
-    }else{
-      next(new Error("Failed to create Meal Category"))
-    }
-    }
-  }
-
-  getAllMealCategories = async (req: AuthRequest, res: Response, next: NextFunction) => {
-    try {
-      const query = {
-        page: parseInt(req.query.page as string) || 1,
-        limit: parseInt(req.query.limit as string) || 10,
-        search: req.query.search as string,
-        sortBy: req.query.sortBy as string,
-        sortOrder: req.query.sortOrder as "asc" | "desc",
-        status: req.query.status as string,
-      };
-      const { data, pagination } = await this._adminService.getAllMealCategories(query);
-      new SuccessResponse(
-        STATUS.OK, 
-        "Meal Categories fetched successfully", 
-        data, 
-        pagination
-      ).send(res);
-    } catch (error: unknown) {
-      next(error);
-    }
-  };
-
-  getMealCategoryById = async (req: AuthRequest, res: Response, next: NextFunction) => {
-    try {
-      const { id } = req.params;
-      const result = await this._adminService.getMealCategoryById(id);
-      new SuccessResponse(STATUS.OK, "Meal Category fetched successfully", result).send(res);
-    } catch (error: unknown) {
-      next(error);
-    }
-  };
-
-  updateMealCategory = async (req: AuthRequest, res: Response, next: NextFunction) => {
-    try {
-      const { id } = req.params;
-      const data = req.body as UpdateMealCategoryDto;
-      await this._adminService.updateMealCategory(id, data);
-      new SuccessResponse(STATUS.OK, "Meal Category updated successfully").send(res);
-    } catch (error: unknown) {
-      next(error);
-    }
-  };
-
-  toggleMealCategoryStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
-    try {
-      const { id } = req.params;
-      const result = await this._adminService.toggleMealCategoryStatus(id);
-      new SuccessResponse(STATUS.OK, result.message, result).send(res);
-    } catch (error: unknown) {
-      next(error);
     }
   };
 }

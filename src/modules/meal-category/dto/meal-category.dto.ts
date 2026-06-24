@@ -1,4 +1,4 @@
-import { PaginatedResponseDto, PaginationQueryDto } from "../common.dto";
+import { PaginatedResponseDto, PaginationQueryDto } from "../../../dto/common.dto";
 
 export interface MealCategoryDto {
   mealCategoryId?: string;

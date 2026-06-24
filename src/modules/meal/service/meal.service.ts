@@ -1,12 +1,6 @@
 import axios from "axios";
-
-export interface MealMacroEstimate {
-  correctedMeal: string;
-  estimatedCalories: number;
-  estimatedProtein: number;
-  estimatedCarbs: number;
-  estimatedFat: number;
-}
+import { injectable } from "inversify";
+import { IMealService, MealMacroEstimate } from "../interface/meal-service.interface";
 
 interface GeminiResponse {
   candidates?: Array<{
@@ -107,7 +101,8 @@ async function makeAiRequestWithFallback(payload: unknown): Promise<{ data: Gemi
   throw lastError || new Error("AI request failed after exhausting all fallback models");
 }
 
-export class AiHealthService {
+@injectable()
+export class MealService implements IMealService {
   async estimateMealMacros(description: string): Promise<MealMacroEstimate> {
     const prompt = `You are an expert AI nutritionist. Your task is to estimate the macros for the following meal description: "${description}".
 
@@ -234,8 +229,8 @@ EXPECTED FORMAT:
   }
 
   private cleanJsonString(input: string): string {
-    // 1. Try to find content within markdown code blocks: ```json ... ``` or ``` ... ```
-    const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)\s*```/i;
+    // 1. Try to find content within markdown code blocks: \`\`\`json ... \`\`\` or \`\`\` ... \`\`\`
+    const codeBlockRegex = /\`\`\`(?:json)?\s*([\s\S]*?)\s*\`\`\`/i;
     const match = input.match(codeBlockRegex);
     if (match && match[1]) {
       return match[1].trim();
@@ -261,5 +256,4 @@ EXPECTED FORMAT:
 
     return input.trim();
   }
-
 }

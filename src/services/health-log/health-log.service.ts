@@ -1,7 +1,7 @@
 import { IHealthLogService } from "../../interfaces/service-interface/health-log/health-log-service.interface";
 import { IHealthLogRepository } from "../../interfaces/repository-interface/health-log/health-log-repository.interface";
 import { IUserSubscriptionRepository } from "../../modules/subscription/interface/repository.interface/user.subscription.repository.interface";
-import { AiHealthService, MealMacroEstimate } from "../ai-services/ai-health.service";
+import { IMealService, MealMacroEstimate } from "../../modules/meal/interface/meal-service.interface";
 import {
   HealthLogDto,
   UpsertHealthLogDto,
@@ -20,7 +20,7 @@ import { STATUS } from "../../constants/statuscode";
 export class HealthLogService implements IHealthLogService {
   constructor(
     private _healthLogRepo: IHealthLogRepository,
-    private _aiHealthService: AiHealthService,
+    private _mealService: IMealService,
     private _userSubscriptionRepo: IUserSubscriptionRepository
   ) { }
 
@@ -92,7 +92,7 @@ export class HealthLogService implements IHealthLogService {
     let batchEstimates: MealMacroEstimate[] = [];
     if (mealsToEstimate.length > 0) {
       try {
-        batchEstimates = await this._aiHealthService.estimateBatchMealMacros(
+        batchEstimates = await this._mealService.estimateBatchMealMacros(
           mealsToEstimate.map(m => m.description)
         );
       } catch (error) {

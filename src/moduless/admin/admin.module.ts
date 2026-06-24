@@ -11,8 +11,7 @@ import { S3Service } from "../../services/s3/s3.service";
 import { ISubscriptionPlanRepository } from "@/modules/subscription/interface/repository.interface/subscription-plan.repository";
 import SubscriptionPlanRepository from "@/modules/subscription/repositories/subscription-plan.repository";
 
-import MealCategoryRepository from "@/repositories/meal-category/meal-category.repository";
-import { IMealCategoryRepository } from "@/interfaces/repository-interface/meal.category/meal-category.repository";
+
 
 
 export function createAdminModule() {
@@ -22,15 +21,13 @@ export function createAdminModule() {
 
   const subscriptionPlanRepository: ISubscriptionPlanRepository = new SubscriptionPlanRepository();
 
-  const mealCategoryRepository: IMealCategoryRepository = new MealCategoryRepository();
 
   const s3Service: IS3Service = new S3Service();
   const adminService = new AdminService(
     userRepository,
     trainerProfileRepository,
     s3Service,
-    subscriptionPlanRepository,
-    mealCategoryRepository
+    subscriptionPlanRepository
   );
 
   const adminController = new AdminController(adminService)

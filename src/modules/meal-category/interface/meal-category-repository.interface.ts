@@ -1,5 +1,5 @@
-import { MealCategory } from "@/interfaces/domain.interface/meal-category.interface";
-import { MealCategoryQueryDto } from "@/dto/meal.category/meal-category.dto";
+import { MealCategory } from "./meal-category.interface";
+import { MealCategoryQueryDto } from "../dto/meal-category.dto";
 import { PaginatedResult } from "@/interfaces/domain.interface/common.interface";
 
 export interface IMealCategoryRepository {

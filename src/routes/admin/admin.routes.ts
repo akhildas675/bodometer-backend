@@ -16,10 +16,6 @@ import {
   trainerIdParamSchema,
   getUsersSchema,
 
-  mealCategoryValidationSchema,
-  mealCategoryIdParamSchema,
-  updateMealCategorySchema,
-  getAllMealCategoriesSchema,
 } from "@/validators/admin/admin-validator";
 import { validate } from "@/middleware/validate";
 
@@ -109,41 +105,6 @@ adminRoute.patch(
 
 //Target Muscles
 
-
-adminRoute.post(
-  ADMIN_ROUTES.MEAL_CATEGORY_CREATE,
-  validate(mealCategoryValidationSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.createMealCategory,
-);
-
-adminRoute.get(
-  "/admin/meal-category",
-  validate(getAllMealCategoriesSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getAllMealCategories,
-);
-
-adminRoute.get(
-  "/admin/meal-category/:id",
-  validate(mealCategoryIdParamSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.getMealCategoryById,
-);
-
-adminRoute.put(
-  "/admin/meal-category/:id",
-  validate(updateMealCategorySchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.updateMealCategory,
-);
-
-adminRoute.patch(
-  "/admin/meal-category/:id/toggle-status",
-  validate(mealCategoryIdParamSchema),
-  ROLE_GUARD.ADMIN_GUARD,
-  adminController.toggleMealCategoryStatus,
-);
 
 
 

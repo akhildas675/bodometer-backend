@@ -12,8 +12,8 @@ import { S3Service } from "../../services/s3/s3.service";
 import { UserService } from "../../services/user/user.services";
 import SubscriptionPlanRepository from "@/modules/subscription/repositories/subscription-plan.repository";
 import { ISubscriptionPlanRepository } from "../../modules/subscription/interface/repository.interface/subscription-plan.repository";
-import MealCategoryRepository from "@/repositories/meal-category/meal-category.repository";
-import { IMealCategoryRepository } from "@/interfaces/repository-interface/meal.category/meal-category.repository";
+import MealCategoryRepository from "@/modules/meal-category/repositories/meal-category.repository";
+import { IMealCategoryRepository } from "@/modules/meal-category/interface/meal-category-repository.interface";
 import { SubscriptionTransactionRepository } from "@/modules/subscription/repositories/subscription-transaction.repository";
 import { UserSubscriptionRepository } from "@/modules/subscription/repositories/user-subscription.repository";
 import { IUserSubscriptionRepository } from "../../modules/subscription/interface/repository.interface/user.subscription.repository.interface";
@@ -28,7 +28,7 @@ import { UserWorkoutPlanRepository } from "@/repositories/workout/user-workout-p
 import { WorkoutPlanService } from "../../services/workout/workout-plan.service";
 import { IHealthLogRepository } from "../../interfaces/repository-interface/health-log/health-log-repository.interface";
 import { HealthLogRepository } from "../../repositories/health-log/health-log.repository";
-import { AiHealthService } from "../../services/ai-services/ai-health.service";
+import { MealService } from "../../modules/meal/service/meal.service";
 import { HealthLogService } from "../../services/health-log/health-log.service";
 import { IHealthLogService } from "../../interfaces/service-interface/health-log/health-log-service.interface";
 import { ITrainerBookingRepository } from "../../interfaces/repository-interface/trainer/trainer-booking.repository.interface";
@@ -60,10 +60,10 @@ export function createUserModule() {
   const answerRepository = new AnswerRepository();
   const workoutPlanService = new WorkoutPlanService(userWorkoutPlanRepository, exerciseRepository, answerRepository);
   
-  const aiHealthService = new AiHealthService();
+  const mealService = new MealService();
   const healthLogService: IHealthLogService = new HealthLogService(
     healthLogRepository,
-    aiHealthService,
+    mealService,
     userSubscriptionRepository,
   );
 

@@ -4,6 +4,8 @@ import { loadOnboardingBindings } from "@/modules/onboarding/onboarding.bindings
 import { loadTargetMuscleBindings } from "@/modules/target-muscle/target-muscle.bindings";
 import { loadEquipmentBindings } from "@/modules/equipment/equipment.bindings";
 import { loadExerciseBindings } from "@/modules/exercise/exercise.bindings";
+import { loadMealCategoryBindings } from "@/modules/meal-category/meal-category.bindings";
+import { loadMealBindings } from "@/modules/meal/meal.bindings";
 import {Container} from "inversify";
 
 const container = new Container();
@@ -14,5 +16,7 @@ loadOnboardingBindings(container);
 loadTargetMuscleBindings(container);
 loadEquipmentBindings(container);
 loadExerciseBindings(container);
+loadMealCategoryBindings(container);
+loadMealBindings(container);
 
 export default container;

@@ -48,9 +48,9 @@ import { parseTime, formatTime, generateReference } from "../../utils/booking.ut
 import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto } from "../../dto/exercise/exercise.dto";
 import { WorkoutPlanDetailDto, WorkoutPlanResponseDto, GetWorkoutPlansResponseDto, WorkoutProgressResponseDto, MarkDayCompletedDto, MarkExerciseStatusDto } from "../../dto/workout/workout-plan.dto";
 import { EquipmentQueryDto, GetAllEquipmentResponseDto } from "../../dto/equipment/equipment.dto";
-import { MealCategoryQueryDto, GetAllMealCategoriesResponseDto } from "../../dto/meal.category/meal-category.dto";
+import { MealCategoryQueryDto, GetAllMealCategoriesResponseDto } from "@/modules/meal-category/dto/meal-category.dto";
 import { IWorkoutPlanService } from "../../interfaces/service-interface/workout/workout-plan.service.interface";
-import { IMealCategoryRepository } from "@/interfaces/repository-interface/meal.category/meal-category.repository";
+import { IMealCategoryRepository } from "@/modules/meal-category/interface/meal-category-repository.interface";
 import { ISubscriptionTransactionRepository } from "@/modules/subscription/interface/repository.interface/subscription.transaction-repository.interface";
 import { ISubscriptionPlanRepository } from "@/modules/subscription/interface/repository.interface/subscription-plan.repository";
 import { IUserSubscriptionRepository } from "@/modules/subscription/interface/repository.interface/user.subscription.repository.interface";
