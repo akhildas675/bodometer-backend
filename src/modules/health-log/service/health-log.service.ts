@@ -1,7 +1,7 @@
-import { IHealthLogService } from "../../interfaces/service-interface/health-log/health-log-service.interface";
-import { IHealthLogRepository } from "../../interfaces/repository-interface/health-log/health-log-repository.interface";
-import { IUserSubscriptionRepository } from "../../modules/subscription/interface/repository.interface/user.subscription.repository.interface";
-import { IMealService, MealMacroEstimate } from "../../modules/meal/interface/meal-service.interface";
+import { IHealthLogService } from "../interface/health-log-service.interface";
+import { IHealthLogRepository } from "../interface/health-log-repository.interface";
+import { IUserSubscriptionRepository } from "../../subscription/interface/repository.interface/user.subscription.repository.interface";
+import { IMealService, MealMacroEstimate } from "../../meal/interface/meal-service.interface";
 import {
   HealthLogDto,
   UpsertHealthLogDto,
@@ -9,19 +9,24 @@ import {
   HealthLogTrendDataDto,
   MacroDistributionDto,
   DailyNutritionSummaryDto,
-} from "../../dto/health-log/health-log.dto";
-import { MESSAGES } from "../../constants/messages";
-import { TIMEFRAME, Timeframe } from "../../constants/fitness.constant";
-import { IHealthLogModel, IEmbeddedMeal } from "../../models/health-log.model";
+} from "../dto/health-log.dto";
+import { MESSAGES } from "../../../constants/messages";
+import { TIMEFRAME, Timeframe } from "../../../constants/fitness.constant";
+import { IHealthLogModel, IEmbeddedMeal } from "../models/health-log.model";
 import mongoose from "mongoose";
-import { AppError } from "../../utils/appError";
-import { STATUS } from "../../constants/statuscode";
+import { AppError } from "../../../utils/appError";
+import { STATUS } from "../../../constants/statuscode";
+import { inject, injectable } from "inversify";
+import { HEALTH_LOG_TYPES } from "../health-log.types";
+import { MEAL_TYPES } from "../../meal/meal.types";
+import { SUBSCRIPTION_TYPES } from "../../subscription/subscription.types";
 
+@injectable()
 export class HealthLogService implements IHealthLogService {
   constructor(
-    private _healthLogRepo: IHealthLogRepository,
-    private _mealService: IMealService,
-    private _userSubscriptionRepo: IUserSubscriptionRepository
+    @inject(HEALTH_LOG_TYPES.HealthLogRepository) private _healthLogRepo: IHealthLogRepository,
+    @inject(MEAL_TYPES.IMealService) private _mealService: IMealService,
+    @inject(SUBSCRIPTION_TYPES.UserSubscriptionRepository) private _userSubscriptionRepo: IUserSubscriptionRepository
   ) { }
 
   async getHealthLog(userId: string, dateStr: string): Promise<HealthLogDto> {
@@ -93,7 +98,7 @@ export class HealthLogService implements IHealthLogService {
     if (mealsToEstimate.length > 0) {
       try {
         batchEstimates = await this._mealService.estimateBatchMealMacros(
-          mealsToEstimate.map(m => m.description)
+          mealsToEstimate.map((m: IEmbeddedMeal) => m.description)
         );
       } catch (error) {
         console.error("AI Batch Estimation failed:", error);
@@ -145,7 +150,7 @@ export class HealthLogService implements IHealthLogService {
   }
 
   private mapToDto(log: IHealthLogModel, dateStr: string): HealthLogDto {
-    const meals = log.meals.map(m => ({
+    const meals = log.meals.map((m: IEmbeddedMeal) => ({
       mealCategoryId: m.mealCategoryId.toString(),
       description: m.description,
       correctedMeal: m.correctedMeal,
@@ -162,10 +167,10 @@ export class HealthLogService implements IHealthLogService {
       waterLiters: log.waterLiters,
       steps: log.steps,
       meals,
-      totalCalories: meals.reduce((s, m) => s + (m.estimatedCalories ?? 0), 0),
-      totalProtein: meals.reduce((s, m) => s + (m.estimatedProtein ?? 0), 0),
-      totalCarbs: meals.reduce((s, m) => s + (m.estimatedCarbs ?? 0), 0),
-      totalFat: meals.reduce((s, m) => s + (m.estimatedFat ?? 0), 0),
+      totalCalories: meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedCalories ?? 0), 0),
+      totalProtein: meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedProtein ?? 0), 0),
+      totalCarbs: meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedCarbs ?? 0), 0),
+      totalFat: meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedFat ?? 0), 0),
     };
   }
 
@@ -210,10 +215,10 @@ export class HealthLogService implements IHealthLogService {
         key = d.toLocaleDateString("en-US", { month: "short" });
       }
 
-      const logCals = log.meals.reduce((s, m) => s + (m.estimatedCalories || 0), 0);
-      const logProtein = log.meals.reduce((s, m) => s + (m.estimatedProtein || 0), 0);
-      const logCarbs = log.meals.reduce((s, m) => s + (m.estimatedCarbs || 0), 0);
-      const logFat = log.meals.reduce((s, m) => s + (m.estimatedFat || 0), 0);
+      const logCals = log.meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedCalories || 0), 0);
+      const logProtein = log.meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedProtein || 0), 0);
+      const logCarbs = log.meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedCarbs || 0), 0);
+      const logFat = log.meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedFat || 0), 0);
 
       totalCalories += logCals;
       totalProtein += logProtein;
@@ -307,10 +312,10 @@ export class HealthLogService implements IHealthLogService {
     if (targetLog) {
       dailySummary = {
         date: new Date(targetLog.date).toISOString().split("T")[0],
-        totalCalories: targetLog.meals.reduce((s, m) => s + (m.estimatedCalories || 0), 0),
-        totalProtein: targetLog.meals.reduce((s, m) => s + (m.estimatedProtein || 0), 0),
-        totalCarbs: targetLog.meals.reduce((s, m) => s + (m.estimatedCarbs || 0), 0),
-        totalFat: targetLog.meals.reduce((s, m) => s + (m.estimatedFat || 0), 0),
+        totalCalories: targetLog.meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedCalories || 0), 0),
+        totalProtein: targetLog.meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedProtein || 0), 0),
+        totalCarbs: targetLog.meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedCarbs || 0), 0),
+        totalFat: targetLog.meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedFat || 0), 0),
       };
     }
 

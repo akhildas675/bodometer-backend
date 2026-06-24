@@ -1,4 +1,4 @@
-import { IHealthLogModel } from "../../../models/health-log.model";
+import { IHealthLogModel } from "../models/health-log.model";
 
 export interface IHealthLogRepository {
   findByUserAndDate(userId: string, date: Date): Promise<IHealthLogModel | null>;

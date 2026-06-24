@@ -1,4 +1,4 @@
-import { HealthLogDto, UpsertHealthLogDto, HealthLogProgressResponseDto } from "../../../dto/health-log/health-log.dto";
+import { HealthLogDto, UpsertHealthLogDto, HealthLogProgressResponseDto } from "../dto/health-log.dto";
 import { Timeframe } from "../../../constants/fitness.constant";
 
 export interface IHealthLogService {

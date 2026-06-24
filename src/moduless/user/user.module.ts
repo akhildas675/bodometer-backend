@@ -26,11 +26,7 @@ import { IEquipmentRepository } from "../../interfaces/repository-interface/equi
 import { IUserWorkoutPlanRepository } from "@/interfaces/repository-interface/workout/user-workout-plan.repository.interface";
 import { UserWorkoutPlanRepository } from "@/repositories/workout/user-workout-plan.repository";
 import { WorkoutPlanService } from "../../services/workout/workout-plan.service";
-import { IHealthLogRepository } from "../../interfaces/repository-interface/health-log/health-log-repository.interface";
-import { HealthLogRepository } from "../../repositories/health-log/health-log.repository";
 import { MealService } from "../../modules/meal/service/meal.service";
-import { HealthLogService } from "../../services/health-log/health-log.service";
-import { IHealthLogService } from "../../interfaces/service-interface/health-log/health-log-service.interface";
 import { ITrainerBookingRepository } from "../../interfaces/repository-interface/trainer/trainer-booking.repository.interface";
 import { TrainerBookingRepository } from "../../repositories/trainer/trainer-booking.repository";
 import { ITrainerAvailabilityRepository } from "../../interfaces/repository-interface/trainer/trainer-availability.repository.interface";
@@ -51,7 +47,7 @@ export function createUserModule() {
   const equipmentRepository: IEquipmentRepository = new EquipmentRepository();
   const mealCategoryRepository: IMealCategoryRepository = new MealCategoryRepository();
   const userWorkoutPlanRepository: IUserWorkoutPlanRepository = new UserWorkoutPlanRepository();
-  const healthLogRepository: IHealthLogRepository = new HealthLogRepository();
+
   const trainerBookingRepository: ITrainerBookingRepository = new TrainerBookingRepository();
   const trainerAvailabilityRepository: ITrainerAvailabilityRepository = new TrainerAvailabilityRepository();
   const paymentService: IPaymentService = new PaymentService();
@@ -61,11 +57,7 @@ export function createUserModule() {
   const workoutPlanService = new WorkoutPlanService(userWorkoutPlanRepository, exerciseRepository, answerRepository);
   
   const mealService = new MealService();
-  const healthLogService: IHealthLogService = new HealthLogService(
-    healthLogRepository,
-    mealService,
-    userSubscriptionRepository,
-  );
+
 
   const userService: IUserService = new UserService(
     userRepository,
@@ -86,7 +78,7 @@ export function createUserModule() {
   );
 
 
-  const userController = new UserController(userService, healthLogService);
+  const userController = new UserController(userService);
 
   return { userController };
 }

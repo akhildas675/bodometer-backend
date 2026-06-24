@@ -67,23 +67,7 @@ userRoute.get(
   userController.getMealCategories,
 );
 
-userRoute.get(
-  USER_ROUTES.GET_HEALTH_LOG,
-  ROLE_GUARD.USER_GUARD,
-  userController.getHealthLog,
-);
 
-userRoute.post(
-  USER_ROUTES.UPSERT_HEALTH_LOG,
-  ROLE_GUARD.USER_GUARD,
-  userController.upsertHealthLog,
-);
-
-userRoute.get(
-  USER_ROUTES.GET_HEALTH_LOG_PROGRESS,
-  ROLE_GUARD.USER_GUARD,
-  userController.getHealthLogProgress,
-);
 
 userRoute.get(
   USER_ROUTES.GET_EQUIPMENT,

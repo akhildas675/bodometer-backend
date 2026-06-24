@@ -11,6 +11,7 @@ import targetMuscleRoute from "@/modules/target-muscle/routes/target-muscle.rout
 import equipmentRoute from "@/modules/equipment/routes/equipment.routes";
 import exerciseRoute from "@/modules/exercise/routes/exercise.routes";
 import { mealCategoryRoute } from "@/modules/meal-category/routes/meal-category.route";
+import healthLogRoute from "@/modules/health-log/routes/health-log.routes";
 import container from "@/container/container";
 
 const routes = (app: Application) => {
@@ -25,6 +26,7 @@ const routes = (app: Application) => {
   app.use("/api/equipment", equipmentRoute);
   app.use("/api/exercises", exerciseRoute);
   app.use("/api", mealCategoryRoute(container));
+  app.use("/api/user/health-log", healthLogRoute);
 };
 
 export default routes;

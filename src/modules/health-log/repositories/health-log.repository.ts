@@ -1,5 +1,5 @@
-import { IHealthLogRepository } from "../../interfaces/repository-interface/health-log/health-log-repository.interface";
-import { HealthLogModel, IHealthLogModel, IEmbeddedMeal } from "../../models/health-log.model";
+import { IHealthLogRepository } from "../interface/health-log-repository.interface";
+import { HealthLogModel, IHealthLogModel, IEmbeddedMeal } from "../models/health-log.model";
 import mongoose from "mongoose";
 
 export class HealthLogRepository implements IHealthLogRepository {
