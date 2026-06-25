@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
-import { AppError } from "../../utils/appError";
-import { STATUS } from "../../constants/statuscode";
-import { MESSAGES } from "../../constants/messages";
-import { WorkoutMapper } from "../../mappers/workout/workout-plan.mappers";
-import { AiWorkoutService } from "../ai-services/ai-workout.service";
-import { IUserWorkoutPlanRepository } from "@/interfaces/repository-interface/workout/user-workout-plan.repository.interface";
-import { IAnswerRepository } from "../../modules/onboarding/interface/repository.interface/answer-repository.interface";
-import { IExerciseRepository } from "../../interfaces/repository-interface/exercise/exercise-repository.interface";
+import { AppError } from "../../../utils/appError";
+import { STATUS } from "../../../constants/statuscode";
+import { MESSAGES } from "../../../constants/messages";
+import { WorkoutMapper } from "../mapper/workout-plan.mapper";
+import { AiWorkoutService } from "../../../services/ai-services/ai-workout.service";
+import { IUserWorkoutPlanRepository } from "../interface/user-workout-plan-repository.interface";
+import { IAnswerRepository } from "../../../modules/onboarding/interface/repository.interface/answer-repository.interface";
+import { IExerciseRepository } from "../../../interfaces/repository-interface/exercise/exercise-repository.interface";
 import {
   WORKOUT_DAY_TYPE, 
   WORKOUT_DAY_STATUS, 
@@ -17,7 +17,7 @@ import {
   PLAN_TYPE,
   PlanType,
 } from "@/constants/fitness.constant";
-import { IEmbeddedWorkoutDay, IEmbeddedWorkoutExercise } from "@/models/user.workout-plan.model";
+import { IEmbeddedWorkoutDay, IEmbeddedWorkoutExercise } from "../models/user.workout-plan.model";
 import { 
   WorkoutPlanDetailDto, 
   WorkoutPlanResponseDto, 
@@ -28,20 +28,31 @@ import {
   MarkDayCompletedDto, 
   MarkExerciseStatusDto,
   CompletedHistoryItemDto
-} from "../../dto/workout/workout-plan.dto";
-import { IWorkoutPlanService } from "../../interfaces/service-interface/workout/workout-plan.service.interface";
-import { injectable } from "inversify";
+} from "../dto/workout-plan.dto";
+import { IUserSubscriptionRepository } from "../../subscription/interface/repository.interface/user.subscription.repository.interface";
+import { SUBSCRIPTION_TYPES } from "../../subscription/subscription.types";
+import { inject, injectable } from "inversify";
+import { WORKOUT_PLAN_TYPES } from "../workout-plan.types";
+import { IWorkoutPlanService } from "../interface/workout-plan-service.interface";
 
 const generationLocks = new Set<string>();
 @injectable()
 export class WorkoutPlanService implements IWorkoutPlanService {
   constructor(
-    private _userWorkoutPlanRepo: IUserWorkoutPlanRepository,
-    private _exerciseRepo: IExerciseRepository,
-    private _answerRepo: IAnswerRepository
+    @inject(WORKOUT_PLAN_TYPES.UserWorkoutPlanRepository) private _userWorkoutPlanRepo: IUserWorkoutPlanRepository,
+    @inject(Symbol.for("ExerciseRepository")) private _exerciseRepo: IExerciseRepository,
+    @inject(Symbol.for("AnswerRepository")) private _answerRepo: IAnswerRepository,
+    @inject(SUBSCRIPTION_TYPES.UserSubscriptionRepository) private _userSubscriptionRepo: IUserSubscriptionRepository
   ) {}
 
-  async generateWorkout(userId: string, planType: PlanType): Promise<WorkoutPlanDetailDto> {
+  private async getActiveSubscription(userId: string) {
+    const subscription = await this._userSubscriptionRepo.findActiveByUserId(userId);
+    return subscription ? true : false;
+  }
+
+  async generateWorkout(userId: string): Promise<WorkoutPlanDetailDto> {
+    const hasActiveSub = await this.getActiveSubscription(userId);
+    const planType = hasActiveSub ? PLAN_TYPE.PREMIUM : PLAN_TYPE.FREE;
     if (generationLocks.has(userId)) {
       throw new AppError(STATUS.CONFLICT, MESSAGES.WORKOUT_PLAN.GENERATION_CONFLICT);
     }
@@ -57,7 +68,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     }
 
     const isPremium = planType === PLAN_TYPE.PREMIUM;
-    const { generationStatus } = await this.getWorkoutPlans(userId, isPremium, true);
+    const { generationStatus } = await this.getWorkoutPlans(userId);
 
     if (!generationStatus.canGenerate) {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.WORKOUT_PLAN.GENERATE_LOCKED);
@@ -75,7 +86,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     const activeExercises = await this._exerciseRepo.findAll({ isActive: true });
 
     const exerciseDataMap = new Map(
-      activeExercises.map((ex) => [
+      activeExercises.map((ex: any) => [
         ex._id?.toString() ?? "",
         { title: ex.title, image: ex.media?.image ?? "" },
       ]),
@@ -96,7 +107,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       }
     }
 
-    const availableExercises = activeExercises.map((ex) => ({
+    const availableExercises = activeExercises.map((ex: any) => ({
       id: ex._id ? ex._id.toString() : "",
       key: ex.key,
       title: ex.title,
@@ -109,11 +120,11 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     const past4Weeks = samePlanTypeDocs.slice(-4).map(week => ({
       weekNumber: week.weekNumber,
       status: week.status,
-      workoutDays: week.workoutDays.map(day => ({
+      workoutDays: week.workoutDays.map((day: any) => ({
         dayNumber: day.dayNumber,
         type: day.type,
         status: day.status,
-        exercises: day.exercises.map(ex => {
+        exercises: day.exercises.map((ex: any) => {
           const exData = exerciseDataMap.get(ex.exerciseId.toString());
           return {
             exerciseTitle: exData?.title ?? "Unknown Exercise",
@@ -193,7 +204,10 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     }
   }
 
-  async getWorkoutPlans(userId: string, isPremium?: boolean, preventAutoGenerate: boolean = false): Promise<GetWorkoutPlansResponseDto> {
+  async getWorkoutPlans(userId: string, preventAutoGenerate: boolean = false): Promise<GetWorkoutPlansResponseDto> {
+    const hasActiveSub = await this.getActiveSubscription(userId);
+    const planType = hasActiveSub ? PLAN_TYPE.PREMIUM : PLAN_TYPE.FREE;
+    const isPremium = hasActiveSub;
     let userDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
     
   
@@ -207,7 +221,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       const now = new Date();
       if (activeDoc && new Date(activeDoc.endDate) < now && !preventAutoGenerate) {
    
-        await this.generateWorkout(userId, activeDoc.planType || PLAN_TYPE.PREMIUM);
+        await this.generateWorkout(userId);
         const allDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
         const targetPlanType = isPremium ? PLAN_TYPE.PREMIUM : PLAN_TYPE.FREE;
         userDocs = allDocs.filter(doc => doc.planType === targetPlanType);
@@ -232,15 +246,15 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
     const exerciseIds = new Set<string>();
     sortedWeeks.forEach(week => {
-      week.workoutDays.forEach(day => {
-        day.exercises.forEach(ex => exerciseIds.add(ex.exerciseId.toString()));
+      week.workoutDays.forEach((day: any) => {
+        day.exercises.forEach((ex: any) => exerciseIds.add(ex.exerciseId.toString()));
       });
     });
 
     const exercises = await this._exerciseRepo.findByIds(Array.from(exerciseIds));
 
     const exerciseDataMap = new Map(
-      exercises.map((ex) => {
+      exercises.map((ex: any) => {
         return [ex._id?.toString() ?? "", { title: ex.title, image: ex.media?.image ?? "", muscles: ex.targetMuscles }];
       })
     );
@@ -267,8 +281,8 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       hasCompletedWorkoutToday = mostRecentCompleted.toDateString() === todayStr;
     }
 
-    const allDaysFinished = latestPlan ? latestPlan.days.every(d => d.status === WORKOUT_DAY_STATUS.COMPLETED || d.status === WORKOUT_DAY_STATUS.SKIPPED) : true;
-    const pendingDaysCount = latestPlan ? latestPlan.days.filter(d => d.status === WORKOUT_DAY_STATUS.PENDING).length : 0;
+    const allDaysFinished = latestPlan ? latestPlan.days.every((d: any) => d.status === WORKOUT_DAY_STATUS.COMPLETED || d.status === WORKOUT_DAY_STATUS.SKIPPED) : true;
+    const pendingDaysCount = latestPlan ? latestPlan.days.filter((d: any) => d.status === WORKOUT_DAY_STATUS.PENDING).length : 0;
     
     const nowTime = new Date().getTime();
     const isExpired = latestPlan && new Date(latestPlan.endDate).getTime() < nowTime;
@@ -278,13 +292,13 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
     let firstPendingDayNumber = -1;
     if (latestPlan) {
-      const pendingDay = latestPlan.days.find(d => d.status === WORKOUT_DAY_STATUS.PENDING);
+      const pendingDay = latestPlan.days.find((d: any) => d.status === WORKOUT_DAY_STATUS.PENDING);
       firstPendingDayNumber = pendingDay ? pendingDay.dayNumber : -1;
     }
 
     const allDays: CompletedHistoryItemDto[] = [];
     plans.forEach((plan) => {
-      plan.days.forEach((day) => {
+      plan.days.forEach((day: any) => {
         if (day.status === WORKOUT_DAY_STATUS.COMPLETED && day.completedAt) {
           allDays.push({
             date: new Date(day.completedAt),
@@ -320,7 +334,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       throw new AppError(STATUS.FORBIDDEN, MESSAGES.WORKOUT_PLAN.PREMIUM_REQUIRED);
     }
 
-    const day = activeWeek.workoutDays.find((d) => d.dayNumber === dayNumber);
+    const day = activeWeek.workoutDays.find((d: any) => d.dayNumber === dayNumber);
     if (!day) {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT_PLAN.DAY_NOT_FOUND);
     }
@@ -328,7 +342,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     day.status = completed ? WORKOUT_DAY_STATUS.COMPLETED : WORKOUT_DAY_STATUS.PENDING;
     day.completedAt = completed ? new Date() : undefined;
     if (day.exercises && day.exercises.length > 0) {
-      day.exercises.forEach((ex) => {
+      day.exercises.forEach((ex: any) => {
         ex.status = completed ? WORKOUT_EXERCISE_STATUS.COMPLETED : WORKOUT_EXERCISE_STATUS.PENDING;
         if (completed && !ex.timeTakenSeconds) {
           ex.timeTakenSeconds = ex.durationSeconds ?? 60;
@@ -338,7 +352,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
     await this._userWorkoutPlanRepo.saveWeek(activeWeek);
 
-    const plansResponse = await this.getWorkoutPlans(userId, true);
+    const plansResponse = await this.getWorkoutPlans(userId);
     const updatedPlan = plansResponse.plans.find((p) => p.workoutPlanId === activeWeek._id.toString());
     if (!updatedPlan) throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.WORKOUT_PLAN.UPDATE_FAILED);
     return updatedPlan;
@@ -354,19 +368,19 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       throw new AppError(STATUS.FORBIDDEN, MESSAGES.WORKOUT_PLAN.PREMIUM_REQUIRED);
     }
 
-    const day = activeWeek.workoutDays.find((d) => d.dayNumber === dayNumber);
+    const day = activeWeek.workoutDays.find((d: any) => d.dayNumber === dayNumber);
     if (!day) {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT_PLAN.DAY_NOT_FOUND);
     }
 
-    const exercise = day.exercises.find((e) => e.instanceId === instanceId);
+    const exercise = day.exercises.find((e: any) => e.instanceId === instanceId);
     if (!exercise) {
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.WORKOUT_PLAN.EXERCISE_NOT_FOUND);
     }
 
     if (status === WORKOUT_EXERCISE_STATUS.ACTIVE) {
-      const isAnyActive = activeWeek.workoutDays.some((d) =>
-        d.exercises.some((e) => e.status === WORKOUT_EXERCISE_STATUS.ACTIVE && e.instanceId !== instanceId)
+      const isAnyActive = activeWeek.workoutDays.some((d: any) =>
+        d.exercises.some((e: any) => e.status === WORKOUT_EXERCISE_STATUS.ACTIVE && e.instanceId !== instanceId)
       );
 
       if (isAnyActive) {
@@ -386,21 +400,22 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
     exercise.status = status;
 
-    const allExercisesFinished = day.exercises.length > 0 && day.exercises.every(e => e.status === WORKOUT_EXERCISE_STATUS.COMPLETED || e.status === WORKOUT_EXERCISE_STATUS.SKIPPED);
+    const allExercisesFinished = day.exercises.length > 0 && day.exercises.every((e: any) => e.status === WORKOUT_EXERCISE_STATUS.COMPLETED || e.status === WORKOUT_EXERCISE_STATUS.SKIPPED);
 
     day.status = allExercisesFinished ? WORKOUT_DAY_STATUS.COMPLETED : WORKOUT_DAY_STATUS.PENDING;
     day.completedAt = allExercisesFinished ? new Date() : undefined;
 
     await this._userWorkoutPlanRepo.saveWeek(activeWeek);
 
-    const plansResponse = await this.getWorkoutPlans(userId, true);
+    const plansResponse = await this.getWorkoutPlans(userId);
     const updatedPlan = plansResponse.plans.find((p) => p.workoutPlanId === activeWeek._id.toString());
     if (!updatedPlan) throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.WORKOUT_PLAN.UPDATE_FAILED);
     return updatedPlan;
   }
 
-  async getWorkoutProgress(userId: string, timeframe?: Timeframe, isPremium?: boolean): Promise<WorkoutProgressResponseDto> {
-    const plansResponse = await this.getWorkoutPlans(userId, isPremium);
+  async getWorkoutProgress(userId: string, timeframe?: Timeframe): Promise<WorkoutProgressResponseDto> {
+    const isPremium = await this.getActiveSubscription(userId);
+    const plansResponse = await this.getWorkoutPlans(userId);
     return this.calculateWorkoutProgress(plansResponse.plans, timeframe);
   }
 
@@ -444,8 +459,8 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     } else if (timeframe === TIMEFRAME.WEEKLY) {
       // Weekly trend
       const weeklyTrends = plans.map(p => {
-        const wDays = p.days.filter(d => d.type === 'workout');
-        const wCompleted = wDays.filter(d => d.status === WORKOUT_DAY_STATUS.COMPLETED).length;
+        const wDays = p.days.filter((d: any) => d.type === 'workout');
+        const wCompleted = wDays.filter((d: any) => d.status === WORKOUT_DAY_STATUS.COMPLETED).length;
         return {
           label: `Week ${p.weekNumber}`,
           completionRate: wDays.length > 0 ? Math.round((wCompleted / wDays.length) * 100) : 0
@@ -459,8 +474,8 @@ export class WorkoutPlanService implements IWorkoutPlanService {
         if (plan.startDate) {
           const monthName = new Date(plan.startDate).toLocaleString('default', { month: 'short' });
           const entry = monthlyMap.get(monthName) || { planned: 0, completed: 0 };
-          const wDays = plan.days.filter(d => d.type === 'workout');
-          const wCompleted = wDays.filter(d => d.status === WORKOUT_DAY_STATUS.COMPLETED).length;
+          const wDays = plan.days.filter((d: any) => d.type === 'workout');
+          const wCompleted = wDays.filter((d: any) => d.status === WORKOUT_DAY_STATUS.COMPLETED).length;
           entry.planned += wDays.length;
           entry.completed += wCompleted;
           monthlyMap.set(monthName, entry);
@@ -547,14 +562,14 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     let currentWeekProgress = 0;
     let todayWorkoutProgress = 0;
     if (activePlan) {
-      const wDays = activePlan.days.filter(d => d.type === 'workout');
-      const wCompleted = wDays.filter(d => d.status === WORKOUT_DAY_STATUS.COMPLETED).length;
+      const wDays = activePlan.days.filter((d: any) => d.type === 'workout');
+      const wCompleted = wDays.filter((d: any) => d.status === WORKOUT_DAY_STATUS.COMPLETED).length;
       currentWeekProgress = wDays.length > 0 ? Math.round((wCompleted / wDays.length) * 100) : 0;
 
       // workout
       const todayDate = new Date();
       todayDate.setHours(0, 0, 0, 0);
-      let targetDay = activePlan.days.find(d => {
+      let targetDay = activePlan.days.find((d: any) => {
         if (!d.scheduledDate) return false;
         const dDate = new Date(d.scheduledDate);
         dDate.setHours(0, 0, 0, 0);
@@ -562,11 +577,11 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       });
 
       if (!targetDay || targetDay.type !== 'workout') {
-        targetDay = activePlan.days.find(d => d.type === 'workout' && d.status === WORKOUT_DAY_STATUS.PENDING);
+        targetDay = activePlan.days.find((d: any) => d.type === 'workout' && d.status === WORKOUT_DAY_STATUS.PENDING);
       }
 
       if (targetDay && targetDay.exercises && targetDay.exercises.length > 0) {
-        const completedEx = targetDay.exercises.filter(ex => ex.status === WORKOUT_EXERCISE_STATUS.COMPLETED).length;
+        const completedEx = targetDay.exercises.filter((ex: any) => ex.status === WORKOUT_EXERCISE_STATUS.COMPLETED).length;
         todayWorkoutProgress = Math.round((completedEx / targetDay.exercises.length) * 100);
       } else if (targetDay && targetDay.status === WORKOUT_DAY_STATUS.COMPLETED) {
         todayWorkoutProgress = 100;
@@ -575,7 +590,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
     // Current Streak Calculation
     let currentStreak = 0;
-    const allDays = plans.flatMap(p => p.days).filter(d => d.scheduledDate).sort((a, b) => new Date(b.scheduledDate!).getTime() - new Date(a.scheduledDate!).getTime());
+    const allDays = plans.flatMap(p => p.days).filter((d: any) => d.scheduledDate).sort((a, b) => new Date(b.scheduledDate!).getTime() - new Date(a.scheduledDate!).getTime());
     const todayDate = new Date();
     todayDate.setHours(0, 0, 0, 0);
 
@@ -584,7 +599,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
     while (!foundBreak) {
       const targetTime = currentDate.getTime();
-      const dayForDate = allDays.find(d => {
+      const dayForDate = allDays.find((d: any) => {
         const dTime = new Date(d.scheduledDate!).setHours(0, 0, 0, 0);
         return dTime === targetTime;
       });

@@ -98,7 +98,7 @@ export class HealthLogService implements IHealthLogService {
     if (mealsToEstimate.length > 0) {
       try {
         batchEstimates = await this._mealService.estimateBatchMealMacros(
-          mealsToEstimate.map((m: IEmbeddedMeal) => m.description)
+          mealsToEstimate.map((m: any) => m.description)
         );
       } catch (error) {
         console.error("AI Batch Estimation failed:", error);
@@ -150,7 +150,7 @@ export class HealthLogService implements IHealthLogService {
   }
 
   private mapToDto(log: IHealthLogModel, dateStr: string): HealthLogDto {
-    const meals = log.meals.map((m: IEmbeddedMeal) => ({
+    const meals = log.meals.map((m: any) => ({
       mealCategoryId: m.mealCategoryId.toString(),
       description: m.description,
       correctedMeal: m.correctedMeal,
@@ -167,10 +167,10 @@ export class HealthLogService implements IHealthLogService {
       waterLiters: log.waterLiters,
       steps: log.steps,
       meals,
-      totalCalories: meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedCalories ?? 0), 0),
-      totalProtein: meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedProtein ?? 0), 0),
-      totalCarbs: meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedCarbs ?? 0), 0),
-      totalFat: meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedFat ?? 0), 0),
+      totalCalories: meals.reduce((s: number, m: any) => s + (m.estimatedCalories ?? 0), 0),
+      totalProtein: meals.reduce((s: number, m: any) => s + (m.estimatedProtein ?? 0), 0),
+      totalCarbs: meals.reduce((s: number, m: any) => s + (m.estimatedCarbs ?? 0), 0),
+      totalFat: meals.reduce((s: number, m: any) => s + (m.estimatedFat ?? 0), 0),
     };
   }
 
@@ -215,10 +215,10 @@ export class HealthLogService implements IHealthLogService {
         key = d.toLocaleDateString("en-US", { month: "short" });
       }
 
-      const logCals = log.meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedCalories || 0), 0);
-      const logProtein = log.meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedProtein || 0), 0);
-      const logCarbs = log.meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedCarbs || 0), 0);
-      const logFat = log.meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedFat || 0), 0);
+      const logCals = log.meals.reduce((s: number, m: any) => s + (m.estimatedCalories || 0), 0);
+      const logProtein = log.meals.reduce((s: number, m: any) => s + (m.estimatedProtein || 0), 0);
+      const logCarbs = log.meals.reduce((s: number, m: any) => s + (m.estimatedCarbs || 0), 0);
+      const logFat = log.meals.reduce((s: number, m: any) => s + (m.estimatedFat || 0), 0);
 
       totalCalories += logCals;
       totalProtein += logProtein;
@@ -312,10 +312,10 @@ export class HealthLogService implements IHealthLogService {
     if (targetLog) {
       dailySummary = {
         date: new Date(targetLog.date).toISOString().split("T")[0],
-        totalCalories: targetLog.meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedCalories || 0), 0),
-        totalProtein: targetLog.meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedProtein || 0), 0),
-        totalCarbs: targetLog.meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedCarbs || 0), 0),
-        totalFat: targetLog.meals.reduce((s: number, m: IEmbeddedMeal) => s + (m.estimatedFat || 0), 0),
+        totalCalories: targetLog.meals.reduce((s: number, m: any) => s + (m.estimatedCalories || 0), 0),
+        totalProtein: targetLog.meals.reduce((s: number, m: any) => s + (m.estimatedProtein || 0), 0),
+        totalCarbs: targetLog.meals.reduce((s: number, m: any) => s + (m.estimatedCarbs || 0), 0),
+        totalFat: targetLog.meals.reduce((s: number, m: any) => s + (m.estimatedFat || 0), 0),
       };
     }
 

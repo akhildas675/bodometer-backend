@@ -1,9 +1,9 @@
-import { IUserWorkoutPlanRepository } from "@/interfaces/repository-interface/workout/user-workout-plan.repository.interface";
-import { CreateWeekInput } from "@/interfaces/domain.interface/workout.interface";
+import { IUserWorkoutPlanRepository } from "../interface/user-workout-plan-repository.interface";
+import { CreateWeekInput } from "../interface/workout.interface";
 import {
   UserWorkoutPlanModel,
   IUserWorkoutPlanModel,
-} from "@/models/user.workout-plan.model";
+} from "../models/user.workout-plan.model";
 import mongoose from "mongoose";
 import { WORKOUT_PLAN_STATUS, WORKOUT_DAY_STATUS } from "@/constants/fitness.constant";
 

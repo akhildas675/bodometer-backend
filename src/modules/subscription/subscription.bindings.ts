@@ -12,9 +12,9 @@ import { IAnswerRepository } from "@/modules/onboarding/interface/repository.int
 import AnswerRepository from "@/modules/onboarding/repositories/answer.repository";
 import { IPaymentService } from "@/interfaces/service-interface/payment/stripe-service.interface";
 import { PaymentService } from "@/services/payments/stripe.service";
-import { IWorkoutPlanService } from "@/interfaces/service-interface/workout/workout-plan.service.interface";
-import { WorkoutPlanService } from "@/services/workout/workout-plan.service";
-import { UserWorkoutPlanRepository } from "@/repositories/workout/user-workout-plan.repository";
+import { IWorkoutPlanService } from "../workout-plan/interface/workout-plan-service.interface";
+import { WorkoutPlanService } from "../workout-plan/service/workout-plan.service";
+import { UserWorkoutPlanRepository } from "../workout-plan/repositories/user-workout-plan.repository";
 import ExerciseRepository from "@/repositories/exercise/exercise.repository";
 import { ISubscriptionService } from "./interface/subscription-interface.service";
 import { SubscriptionService } from "./service/subscription.service";
@@ -41,7 +41,7 @@ export const loadSubscriptionBindings=(
     const userWorkoutPlanRepository = new UserWorkoutPlanRepository();
     const exerciseRepository = new ExerciseRepository();
     const answerRepository = new AnswerRepository();
-    const workoutPlanService = new WorkoutPlanService(userWorkoutPlanRepository, exerciseRepository, answerRepository);
+    const workoutPlanService = new WorkoutPlanService(userWorkoutPlanRepository, exerciseRepository, answerRepository, new UserSubscriptionRepository());
 
     container.bind<IWorkoutPlanService>(SUBSCRIPTION_TYPES.WorkoutPlanService)
     .toConstantValue(workoutPlanService);

@@ -1,4 +1,4 @@
-import { WorkoutExerciseStatus, PlanType } from "../../constants/fitness.constant";
+import { WorkoutExerciseStatus, PlanType } from "../../../constants/fitness.constant";
 
 export interface MarkDayCompletedDto {
   userId: string;

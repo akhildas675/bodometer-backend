@@ -6,7 +6,7 @@ import { IGroupRepository } from "../interface/repository.interface/group-reposi
 import { IQuestionRepository } from "../interface/repository.interface/question-repository.interface";
 import { IAnswerRepository } from "../interface/repository.interface/answer-repository.interface";
 import { IUserSubscriptionRepository } from "@/modules/subscription/interface/repository.interface/user.subscription.repository.interface";
-import { IWorkoutPlanService } from "@/interfaces/service-interface/workout/workout-plan.service.interface";
+import { IWorkoutPlanService } from "../../workout-plan/interface/workout-plan-service.interface";
 
 import {
   CreateQuestionGroupDto,

@@ -23,9 +23,6 @@ import ExerciseRepository from "@/repositories/exercise/exercise.repository";
 import { IExerciseRepository } from "../../interfaces/repository-interface/exercise/exercise-repository.interface";
 import EquipmentRepository from "@/repositories/equipment/equipment.repository";
 import { IEquipmentRepository } from "../../interfaces/repository-interface/equipment/equipment-repository.interface";
-import { IUserWorkoutPlanRepository } from "@/interfaces/repository-interface/workout/user-workout-plan.repository.interface";
-import { UserWorkoutPlanRepository } from "@/repositories/workout/user-workout-plan.repository";
-import { WorkoutPlanService } from "../../services/workout/workout-plan.service";
 import { MealService } from "../../modules/meal/service/meal.service";
 import { ITrainerBookingRepository } from "../../interfaces/repository-interface/trainer/trainer-booking.repository.interface";
 import { TrainerBookingRepository } from "../../repositories/trainer/trainer-booking.repository";
@@ -46,16 +43,12 @@ export function createUserModule() {
   const exerciseRepository: IExerciseRepository = new ExerciseRepository();
   const equipmentRepository: IEquipmentRepository = new EquipmentRepository();
   const mealCategoryRepository: IMealCategoryRepository = new MealCategoryRepository();
-  const userWorkoutPlanRepository: IUserWorkoutPlanRepository = new UserWorkoutPlanRepository();
 
   const trainerBookingRepository: ITrainerBookingRepository = new TrainerBookingRepository();
   const trainerAvailabilityRepository: ITrainerAvailabilityRepository = new TrainerAvailabilityRepository();
   const paymentService: IPaymentService = new PaymentService();
   
  
-  const answerRepository = new AnswerRepository();
-  const workoutPlanService = new WorkoutPlanService(userWorkoutPlanRepository, exerciseRepository, answerRepository);
-  
   const mealService = new MealService();
 
 
@@ -74,7 +67,6 @@ export function createUserModule() {
     trainerBookingRepository,
     trainerAvailabilityRepository,
     mealCategoryRepository,
-    workoutPlanService,
   );
 
 

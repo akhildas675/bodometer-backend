@@ -4,7 +4,7 @@ import { ISubscriptionTransactionRepository } from "../interface/repository.inte
 import { IUserSubscriptionRepository } from "@/modules/subscription/interface/repository.interface/user.subscription.repository.interface";
 import { IAnswerRepository } from "@/modules/onboarding/interface/repository.interface/answer-repository.interface";
 import { IPaymentService } from "@/interfaces/service-interface/payment/stripe-service.interface";
-import { IWorkoutPlanService } from "@/interfaces/service-interface/workout/workout-plan.service.interface";
+import { IWorkoutPlanService } from "../../workout-plan/interface/workout-plan-service.interface";
 
 import { ISubscriptionService } from "../interface/subscription-interface.service";
 import {
@@ -391,17 +391,14 @@ export class SubscriptionService implements ISubscriptionService {
 
     if (userAnswers && userAnswers.completed) {
       const existingPlans = await this._workoutPlanService.getWorkoutPlans(
-        userId,
-        true,
-        true,
+        userId
       );
       const hasActivePremium = existingPlans.plans.some(
-        (p) => p.status === "active" && p.planType === PLAN_TYPE.PREMIUM,
+        (p: any) => p.status === "active" && p.planType === PLAN_TYPE.PREMIUM,
       );
       if (!hasActivePremium) {
         await this._workoutPlanService.generateWorkout(
-          userId,
-          PLAN_TYPE.PREMIUM,
+          userId
         );
       }
     }

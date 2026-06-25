@@ -12,6 +12,7 @@ import equipmentRoute from "@/modules/equipment/routes/equipment.routes";
 import exerciseRoute from "@/modules/exercise/routes/exercise.routes";
 import { mealCategoryRoute } from "@/modules/meal-category/routes/meal-category.route";
 import healthLogRoute from "@/modules/health-log/routes/health-log.routes";
+import workoutPlanRoute from "@/modules/workout-plan/routes/workout-plan.routes";
 import container from "@/container/container";
 
 const routes = (app: Application) => {
@@ -19,6 +20,7 @@ const routes = (app: Application) => {
   app.use(API_ROUTES.BASE, userRoute);
   app.use(API_ROUTES.BASE, trainerRoute);
   app.use(API_ROUTES.BASE, adminRoute);
+  app.use(API_ROUTES.BASE, workoutPlanRoute);
   app.use("/api/categories", categoryRoute);
   app.use("/api/subscription", subscriptionRoute);
   app.use("/api/onboarding", onboardingRoute);

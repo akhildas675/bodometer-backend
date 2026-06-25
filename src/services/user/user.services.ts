@@ -46,10 +46,8 @@ import { PopulatedTrainerBooking } from "../../interfaces/domain.interface/train
 import { BOOKING_STATUS } from "../../models/trainer-booking.model";
 import { parseTime, formatTime, generateReference } from "../../utils/booking.utils";
 import { ExerciseQueryDto, GetAllExercisesResponseDto, ExerciseDto } from "../../dto/exercise/exercise.dto";
-import { WorkoutPlanDetailDto, WorkoutPlanResponseDto, GetWorkoutPlansResponseDto, WorkoutProgressResponseDto, MarkDayCompletedDto, MarkExerciseStatusDto } from "../../dto/workout/workout-plan.dto";
 import { EquipmentQueryDto, GetAllEquipmentResponseDto } from "../../dto/equipment/equipment.dto";
 import { MealCategoryQueryDto, GetAllMealCategoriesResponseDto } from "@/modules/meal-category/dto/meal-category.dto";
-import { IWorkoutPlanService } from "../../interfaces/service-interface/workout/workout-plan.service.interface";
 import { IMealCategoryRepository } from "@/modules/meal-category/interface/meal-category-repository.interface";
 import { ISubscriptionTransactionRepository } from "@/modules/subscription/interface/repository.interface/subscription.transaction-repository.interface";
 import { ISubscriptionPlanRepository } from "@/modules/subscription/interface/repository.interface/subscription-plan.repository";
@@ -73,8 +71,7 @@ export class UserService implements IUserService {
     private _equipmentRepo: IEquipmentRepository,
     private _trainerBookingRepo: ITrainerBookingRepository,
     private _trainerAvailabilityRepo: ITrainerAvailabilityRepository,
-    private _mealCategoryRepo: IMealCategoryRepository,
-    private _workoutPlanService: IWorkoutPlanService,
+    private _mealCategoryRepo: IMealCategoryRepository
   ) { }
 
   // Fetch user details
@@ -342,35 +339,6 @@ export class UserService implements IUserService {
     }
 
     return ExerciseMapper.toExerciseDto(exercise);
-  }
-
-  // Generate workout plan
-  async generateWorkout(userId: string): Promise<WorkoutPlanDetailDto> {
-    const activeSub = await this.getActiveSubscription(userId);
-    const planType = activeSub ? PLAN_TYPE.PREMIUM : PLAN_TYPE.FREE;
-    return this._workoutPlanService.generateWorkout(userId, planType);
-  }
-
-  // Fetch workout plans
-  async getWorkoutPlans(userId: string): Promise<GetWorkoutPlansResponseDto> {
-    const activeSub = await this.getActiveSubscription(userId);
-    return this._workoutPlanService.getWorkoutPlans(userId, !!activeSub);
-  }
-
-  // Mark day completed
-  async markDayCompleted(data: MarkDayCompletedDto): Promise<WorkoutPlanResponseDto> {
-    return this._workoutPlanService.markDayCompleted(data);
-  }
-
-  // Mark exercise status
-  async markExerciseStatus(data: MarkExerciseStatusDto): Promise<WorkoutPlanResponseDto> {
-    return this._workoutPlanService.markExerciseStatus(data);
-  }
-
-  // Fetch workout progress
-  async getWorkoutProgress(userId: string, timeframe?: Timeframe): Promise<WorkoutProgressResponseDto> {
-    const activeSub = await this.getActiveSubscription(userId);
-    return this._workoutPlanService.getWorkoutProgress(userId, timeframe, !!activeSub);
   }
 
   // --- TRAINER BOOKING (USER SIDE) ---

@@ -1,5 +1,5 @@
-import { IUserWorkoutPlanModel } from "@/models/user.workout-plan.model";
-import { CreateWeekInput } from "@/interfaces/domain.interface/workout.interface";
+import { IUserWorkoutPlanModel } from "../models/user.workout-plan.model";
+import { CreateWeekInput } from "../interface/workout.interface";
 
 export interface IUserWorkoutPlanRepository {
 
