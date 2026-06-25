@@ -8,6 +8,7 @@ import { loadMealCategoryBindings } from "@/modules/meal-category/meal-category.
 import { loadMealBindings } from "@/modules/meal/meal.bindings";
 import { loadHealthLogBindings } from "@/modules/health-log/health-log.bindings";
 import { loadWorkoutPlanBindings } from "@/modules/workout-plan/workout-plan.bindings";
+import { loadDietPlanBindings } from "@/modules/diet-plan/diet-plan.bindings";
 import {Container} from "inversify";
 
 const container = new Container();
@@ -22,5 +23,6 @@ loadMealCategoryBindings(container);
 loadMealBindings(container);
 loadHealthLogBindings(container);
 loadWorkoutPlanBindings(container);
+loadDietPlanBindings(container);
 
 export default container;

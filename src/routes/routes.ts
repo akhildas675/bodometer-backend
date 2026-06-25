@@ -13,6 +13,7 @@ import exerciseRoute from "@/modules/exercise/routes/exercise.routes";
 import { mealCategoryRoute } from "@/modules/meal-category/routes/meal-category.route";
 import healthLogRoute from "@/modules/health-log/routes/health-log.routes";
 import workoutPlanRoute from "@/modules/workout-plan/routes/workout-plan.routes";
+import { dietPlanRoutes } from "@/modules/diet-plan/routes/diet-plan.routes";
 import container from "@/container/container";
 
 const routes = (app: Application) => {
@@ -29,6 +30,7 @@ const routes = (app: Application) => {
   app.use("/api/exercises", exerciseRoute);
   app.use("/api", mealCategoryRoute(container));
   app.use("/api/user/health-log", healthLogRoute);
+  app.use("/api/user/diet-plan", dietPlanRoutes);
 };
 
 export default routes;

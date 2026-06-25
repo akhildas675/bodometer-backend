@@ -38,14 +38,6 @@ export const loadSubscriptionBindings=(
     container.bind<IPaymentService>(SUBSCRIPTION_TYPES.PaymentService)
     .to(PaymentService)
 
-    const userWorkoutPlanRepository = new UserWorkoutPlanRepository();
-    const exerciseRepository = new ExerciseRepository();
-    const answerRepository = new AnswerRepository();
-    const workoutPlanService = new WorkoutPlanService(userWorkoutPlanRepository, exerciseRepository, answerRepository, new UserSubscriptionRepository());
-
-    container.bind<IWorkoutPlanService>(SUBSCRIPTION_TYPES.WorkoutPlanService)
-    .toConstantValue(workoutPlanService);
-
     container.bind<ISubscriptionService>(SUBSCRIPTION_TYPES.Service)
     .to(SubscriptionService)
 
