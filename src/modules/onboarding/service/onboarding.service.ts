@@ -220,12 +220,6 @@ export class OnboardingService implements IOnboardingService {
     );
   }
 
-
-
-  async getOnboardingGroups(): Promise<GetAllQuestionGroupsResponseDto> {
-    return this.getAllQuestionGroups({ limit: 100, isActive: true });
-  }
-
   async submitOnboarding(
     userId: string,
     data: {

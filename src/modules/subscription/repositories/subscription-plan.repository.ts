@@ -3,7 +3,7 @@ import {
   SubscriptionPlanModel,
 } from "../models/subscription-plan.model";
 import { ISubscriptionFeature } from "../models/subscription-feature.model";
-import { BaseRepository } from "@/repositories/base/base.repository";
+import { BaseRepository } from '@/modules/base/repository/base.repository';
 import { Types } from "mongoose";
 import { LimitType } from "../constants/subscription.constant";
 import {

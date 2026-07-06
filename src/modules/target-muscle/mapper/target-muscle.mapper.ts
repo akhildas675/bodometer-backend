@@ -1,5 +1,5 @@
 import { TargetMuscleDto } from "../dto/target-muscle.dto";
-import { TargetMuscle } from "@/interfaces/domain.interface/target.muscle";
+import { TargetMuscle } from '@/modules/target-muscle/interface/target.muscle.interface';
 
 export class TargetMuscleMapper {
     static toTargetMuscleDto(targetMuscle: TargetMuscle): TargetMuscleDto {

@@ -6,7 +6,7 @@ import {
 } from "@/modules/category/interface/category.interface";
 import { ICategoryRepository } from "@/modules/category/interface/category-repository.interface";
 import { ICategoryService } from "@/modules/category/interface/category-interface.service";
-import { IS3Service } from "@/interfaces/service-interface/s3/s3-service.interface";
+import { IS3Service } from '@/modules/s3/interface/s3-service.interface';
 import { CategoryMapper } from "@/modules/category/mapper/category.mapper";
 import { AppError } from "@/utils/appError";
 import {

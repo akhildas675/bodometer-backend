@@ -1,5 +1,5 @@
 import jwt, { SignOptions, Secret } from "jsonwebtoken";
-import { AccessTokenPayload, RefreshTokenPayload } from "../interfaces/service-interface/auth/auth.interface";
+import { AccessTokenPayload, RefreshTokenPayload } from "../modules/auth/interface/auth.interface";
 
 
 if (!process.env.JWT_ACCESS_SECRET || !process.env.JWT_REFRESH_SECRET) {

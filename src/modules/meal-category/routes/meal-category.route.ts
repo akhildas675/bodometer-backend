@@ -9,46 +9,45 @@ import {
   mealCategoryIdParamSchema, 
   updateMealCategorySchema 
 } from "../validation/meal-category.validation";
-import { Container } from "inversify";
+import container from "@/container/container";
+import { MEAL_CATEGORY_PATHS } from "@/constants/routes.constant/meal-category.path";
 
-export const mealCategoryRoute = (container: Container) => {
-  const router = Router();
-  const controller = container.get<MealCategoryController>(MEAL_CATEGORY_TYPES.MealCategoryController);
+const mealCategoryRoute = Router();
+const controller = container.get<MealCategoryController>(MEAL_CATEGORY_TYPES.MealCategoryController);
 
-  router.post(
-    "/admin/meal-category",
-    validate(mealCategoryValidationSchema),
-    ROLE_GUARD.ADMIN_GUARD,
-    controller.createMealCategory,
-  );
+mealCategoryRoute.post(
+  MEAL_CATEGORY_PATHS.ROOT,
+  validate(mealCategoryValidationSchema),
+  ROLE_GUARD.ADMIN_GUARD,
+  controller.createMealCategory,
+);
 
-  router.get(
-    "/admin/meal-category",
-    validate(getAllMealCategoriesSchema),
-    ROLE_GUARD.ADMIN_GUARD,
-    controller.getAllMealCategories,
-  );
+mealCategoryRoute.get(
+  MEAL_CATEGORY_PATHS.ROOT,
+  validate(getAllMealCategoriesSchema),
+  ROLE_GUARD.ADMIN_GUARD,
+  controller.getAllMealCategories,
+);
 
-  router.get(
-    "/admin/meal-category/:id",
-    validate(mealCategoryIdParamSchema),
-    ROLE_GUARD.ADMIN_GUARD,
-    controller.getMealCategoryById,
-  );
+mealCategoryRoute.get(
+  MEAL_CATEGORY_PATHS.BY_ID,
+  validate(mealCategoryIdParamSchema),
+  ROLE_GUARD.ADMIN_GUARD,
+  controller.getMealCategoryById,
+);
 
-  router.put(
-    "/admin/meal-category/:id",
-    validate(updateMealCategorySchema),
-    ROLE_GUARD.ADMIN_GUARD,
-    controller.updateMealCategory,
-  );
+mealCategoryRoute.put(
+  MEAL_CATEGORY_PATHS.BY_ID,
+  validate(updateMealCategorySchema),
+  ROLE_GUARD.ADMIN_GUARD,
+  controller.updateMealCategory,
+);
 
-  router.patch(
-    "/admin/meal-category/:id/toggle-status",
-    validate(mealCategoryIdParamSchema),
-    ROLE_GUARD.ADMIN_GUARD,
-    controller.toggleMealCategoryStatus,
-  );
+mealCategoryRoute.patch(
+  MEAL_CATEGORY_PATHS.STATUS,
+  validate(mealCategoryIdParamSchema),
+  ROLE_GUARD.ADMIN_GUARD,
+  controller.toggleMealCategoryStatus,
+);
 
-  return router;
-};
+export default mealCategoryRoute;

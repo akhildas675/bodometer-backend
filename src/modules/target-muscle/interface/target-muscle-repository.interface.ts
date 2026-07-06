@@ -1,6 +1,6 @@
 import { TargetMuscleQueryDto } from "../dto/target-muscle.dto";
-import { PaginatedResult } from "@/interfaces/domain.interface/common.interface";
-import { TargetMuscle } from "@/interfaces/domain.interface/target.muscle";
+import { PaginatedResult } from '@/modules/base/interface/common.interface';
+import { TargetMuscle } from '@/modules/target-muscle/interface/target.muscle.interface';
 
 export interface ITargetMuscleRepository {
     createTargetMuscle(targetMuscleData: TargetMuscle): Promise<TargetMuscle>;

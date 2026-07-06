@@ -8,14 +8,15 @@ import { validate } from "@/middleware/validate";
 import {
     createEquipmentSchema,
     updateEquipmentSchema,
-} from "@/validators/admin/admin-validator";
+} from "../validation/equipment.validator";
+import { EQUIPMENT_PATHS } from "@/constants/routes.constant/equipment.paths";
 
 const equipmentRoute = Router();
 
 const equipmentController = container.get<EquipmentController>(EQUIPMENT_TYPES.Controller);
 
 equipmentRoute.post(
-    "/",
+    EQUIPMENT_PATHS.ROOT,
     ROLE_GUARD.ADMIN_GUARD,
     mediaUpload.single("image"),
     validate(createEquipmentSchema),
@@ -23,7 +24,7 @@ equipmentRoute.post(
 );
 
 equipmentRoute.put(
-    "/:id",
+    EQUIPMENT_PATHS.BY_ID,
     ROLE_GUARD.ADMIN_GUARD,
     mediaUpload.single("image"),
     validate(updateEquipmentSchema),
@@ -31,19 +32,19 @@ equipmentRoute.put(
 );
 
 equipmentRoute.get(
-    "/:id",
+    EQUIPMENT_PATHS.BY_ID,
     ROLE_GUARD.ALL_GUARDS,
     equipmentController.getEquipmentById,
 );
 
 equipmentRoute.get(
-    "/",
+    EQUIPMENT_PATHS.ROOT,
     ROLE_GUARD.ALL_GUARDS,
     equipmentController.getAllEquipment,
 );
 
 equipmentRoute.patch(
-    "/:id/status",
+    EQUIPMENT_PATHS.STATUS,
     ROLE_GUARD.ADMIN_GUARD,
     equipmentController.toggleEquipmentStatus,
 );

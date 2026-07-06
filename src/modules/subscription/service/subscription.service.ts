@@ -3,7 +3,7 @@ import { ISubscriptionPlanRepository } from "@/modules/subscription/interface/re
 import { ISubscriptionTransactionRepository } from "../interface/repository.interface/subscription.transaction-repository.interface";
 import { IUserSubscriptionRepository } from "@/modules/subscription/interface/repository.interface/user.subscription.repository.interface";
 import { IAnswerRepository } from "@/modules/onboarding/interface/repository.interface/answer-repository.interface";
-import { IPaymentService } from "@/interfaces/service-interface/payment/stripe-service.interface";
+import { IPaymentService } from '@/modules/payment/interface/stripe-service.interface';
 import { IWorkoutPlanService } from "../../workout-plan/interface/workout-plan-service.interface";
 
 import { ISubscriptionService } from "../interface/subscription-interface.service";
@@ -37,7 +37,7 @@ import { MESSAGES } from "@/constants/messages";
 import { Role, ROLES } from "@/constants/roles";
 import Stripe from "stripe";
 import { PLAN_TYPE } from "@/constants/fitness.constant";
-import { PaginationMeta } from "@/interfaces/domain.interface/common.interface";
+import { PaginationMeta } from '@/modules/base/interface/common.interface';
 import { inject, injectable } from "inversify";
 import { SUBSCRIPTION_TYPES } from "../subscription.types";
 
@@ -394,7 +394,7 @@ export class SubscriptionService implements ISubscriptionService {
         userId
       );
       const hasActivePremium = existingPlans.plans.some(
-        (p: any) => p.status === "active" && p.planType === PLAN_TYPE.PREMIUM,
+        (p) => p.status === "active" && p.planType === PLAN_TYPE.PREMIUM,
       );
       if (!hasActivePremium) {
         await this._workoutPlanService.generateWorkout(

@@ -9,7 +9,7 @@ import { IUserDietPlanRepository } from "../interface/user-diet-plan-repository.
 import { IUserSubscriptionRepository } from "../../subscription/interface/repository.interface/user.subscription.repository.interface";
 import { SUBSCRIPTION_TYPES } from "../../subscription/subscription.types";
 import { IAnswerRepository } from "../../../modules/onboarding/interface/repository.interface/answer-repository.interface";
-import { IAiDietService } from "../../../interfaces/service-interface/ai/ai.diet-service.interface";
+import { IAiDietService } from '@/modules/ai/interface/ai.diet-service.interface';
 import { DietPlanResponseDto, GetDietPlansResponseDto } from "../dto/diet-plan.dto";
 import { AiDietService } from "../../../services/ai-services/ai-diet.service";
 
@@ -100,7 +100,7 @@ export class DietPlanService implements IDietPlanService {
         startDate: dietPlan.startDate,
         endDate: dietPlan.endDate,
         status: dietPlan.status,
-        days: dietPlan.days.map((d: any) => ({
+        days: dietPlan.days.map((d) => ({
           dayNumber: d.dayNumber,
           day: d.day,
           calories: d.calories,
@@ -133,7 +133,7 @@ export class DietPlanService implements IDietPlanService {
       startDate: p.startDate,
       endDate: p.endDate,
       status: p.status,
-      days: p.days.map((d: any) => ({
+      days: p.days.map((d) => ({
         dayNumber: d.dayNumber,
         day: d.day,
         calories: d.calories,

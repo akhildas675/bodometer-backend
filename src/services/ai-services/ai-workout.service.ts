@@ -1,7 +1,7 @@
 import axios from "axios";
-import { WorkoutGenerationPayload } from "@/interfaces/domain.interface/ai.interface";
+import { WorkoutGenerationPayload } from '@/modules/ai/interface/ai.interface';
 import { GenerateWorkoutDto } from "@/modules/workout-plan/dto/workout-plan.dto";
-import { IAiWorkoutService } from "@/interfaces/service-interface/ai/ai.workout-service.interface";
+import { IAiWorkoutService } from '@/modules/ai/interface/ai.workout-service.interface';
 
 export interface WeekPlanResponse {
   weekPlan: GenerateWorkoutDto[];

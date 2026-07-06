@@ -1,6 +1,6 @@
 import { PopulatedSubscriptionTransaction } from "../mapper/subscription.mapper";
 import { FeatureType, PaymentGateway, TransactionStatus } from "../constants/subscription.constant";
-import { PaginationMeta } from "../../../interfaces/domain.interface/common.interface";
+import { PaginationMeta } from '@/modules/base/interface/common.interface';
 
 export interface SubscriptionFeature {
   subscriptionFeatureId?: string;

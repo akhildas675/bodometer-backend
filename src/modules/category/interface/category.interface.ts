@@ -1,4 +1,4 @@
-import { PaginationMeta } from "../../../interfaces/domain.interface/common.interface";
+import { PaginationMeta } from '@/modules/base/interface/common.interface';
 
 export interface Category {
   categoryId?: string;

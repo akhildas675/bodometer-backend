@@ -8,11 +8,11 @@ import {
 } from "../constants/subscription.constant";
 import { PopulatedSubscriptionTransaction } from "../mapper/subscription.mapper";
 import { SubscriptionPlanModel } from "../models/subscription-plan.model";
-import { UserModel } from "@/models/user.model";
 import { ISubscriptionTransactionRepository } from "../interface/repository.interface/subscription.transaction-repository.interface";
 import { SubscriptionTransactionPaginatedResult, SubscriptionTransactionQuery } from "../interface/subscription.interface";
 import { injectable } from "inversify";
 import mongoose from "mongoose";
+import { UserModel } from "@/modules/auth/model/user.model";
 
 @injectable()
 export class SubscriptionTransactionRepository implements ISubscriptionTransactionRepository {

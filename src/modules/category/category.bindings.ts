@@ -5,7 +5,7 @@ import { CategoryService } from "./service/category.services";
 import { CategoryController } from "./controller/category.controller";
 import { ICategoryRepository } from "./interface/category-repository.interface";
 import { ICategoryService } from "./interface/category-interface.service";
-import { IS3Service } from "@/interfaces/service-interface/s3/s3-service.interface";
+import { IS3Service } from '@/modules/s3/interface/s3-service.interface';
 import { S3Service } from "@/services/s3/s3.service";
 
 export const loadCategoryBindings=(
@@ -20,7 +20,6 @@ export const loadCategoryBindings=(
     container.bind<ICategoryService>(CATEGORY_TYPES.Service)
     .to(CategoryService);
 
-
     container.bind(CATEGORY_TYPES.Controller)
-    .to(CategoryController)
+    .to(CategoryController);
 };

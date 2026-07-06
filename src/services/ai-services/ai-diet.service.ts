@@ -125,7 +125,7 @@ async function makeAiRequestWithFallback(payload: unknown): Promise<{ data: Gemi
 }
 
 export class AiDietService {
-  async generateDietPlan(userAnswers: Record<string, any>): Promise<DietWeekPlanResponse> {
+  async generateDietPlan(userAnswers: Record<string, unknown>): Promise<DietWeekPlanResponse> {
     const promptText = `
       You are an expert nutritionist and fitness coach. Based on the following user profile answers, generate a personalized 7-day diet plan.
       
@@ -179,16 +179,17 @@ export class AiDietService {
       let parsedResponse: DietWeekPlanResponse;
       try {
         const cleanText = text.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-        parsedResponse = JSON.parse(cleanText);
+        parsedResponse = JSON.parse(cleanText) as DietWeekPlanResponse;
       } catch (parseError) {
         console.error("Failed to parse JSON response:", text);
         throw new Error("AI returned malformed JSON");
       }
 
       return parsedResponse;
-    } catch (error: any) {
-      console.error("Failed to generate diet plan:", error.message);
-      throw new Error(`AI Diet Generation failed: ${error.message}`);
+    } catch (error) {
+      const err = error as Error;
+      console.error("Failed to generate diet plan:", err.message);
+      throw new Error(`AI Diet Generation failed: ${err.message}`);
     }
   }
 }

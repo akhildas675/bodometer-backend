@@ -2,12 +2,12 @@ import {
   ISubscriptionFeature,
   SubscriptionFeatureModel,
 } from "../models/subscription-feature.model";
-import { BaseRepository } from "@/repositories/base/base.repository";
+import { BaseRepository } from '@/modules/base/repository/base.repository';
 import {
   SubscriptionFeature,
   SubscriptionFeatureQuery,
 } from "@/modules/subscription/interface/subscription.interface";
-import { PaginatedResult } from "@/interfaces/domain.interface/common.interface";
+import { PaginatedResult } from '@/modules/base/interface/common.interface';
 import { ISubscriptionFeatureRepository } from "@/modules/subscription/interface/repository.interface/subscription.feature-repository.interface";
 import { injectable } from "inversify";
 

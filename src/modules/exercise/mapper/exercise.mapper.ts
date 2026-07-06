@@ -1,5 +1,5 @@
 import { ExerciseDto } from "../dto/exercise.dto";
-import { Exercise } from "@/interfaces/domain.interface/exercise.interface";
+import { Exercise } from '@/modules/exercise/interface/exercise.interface';
 
 export class ExerciseMapper {
     static toExerciseDto(exercise: Exercise): ExerciseDto {

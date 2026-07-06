@@ -1,10 +1,11 @@
 import { ITargetMuscleRepository } from "../interface/target-muscle-repository.interface";
-import { BaseRepository } from "@/repositories/base/base.repository";
-import { TargetMuscle } from "@/interfaces/domain.interface/target.muscle";
+import { BaseRepository } from '@/modules/base/repository/base.repository';
+import { TargetMuscle } from '@/modules/target-muscle/interface/target.muscle.interface';
 import { ITargetMuscle, TargetMuscleModel } from "@/modules/target-muscle/models/target-muscle.model";
-import { PaginatedResult } from "@/interfaces/domain.interface/common.interface";
+import { PaginatedResult } from '@/modules/base/interface/common.interface';
 import { TargetMuscleQueryDto } from "../dto/target-muscle.dto";
-
+import { injectable } from "inversify";
+@injectable()
 export default class TargetMuscleRepository extends BaseRepository<TargetMuscle, ITargetMuscle> implements ITargetMuscleRepository {
 
     constructor() {

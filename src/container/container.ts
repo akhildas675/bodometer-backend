@@ -10,9 +10,15 @@ import { loadHealthLogBindings } from "@/modules/health-log/health-log.bindings"
 import { loadWorkoutPlanBindings } from "@/modules/workout-plan/workout-plan.bindings";
 import { loadDietPlanBindings } from "@/modules/diet-plan/diet-plan.bindings";
 import {Container} from "inversify";
+import { loadAuthBindings } from "@/modules/auth/auth.bindings";
+import { loadUserBindings } from "@/modules/user/user.bindings";
+import { loadTrainerBindings } from "@/modules/trainer/trainer.bindings";
 
 const container = new Container();
 
+loadAuthBindings(container);
+loadUserBindings(container);
+loadTrainerBindings(container);
 loadCategoryBindings(container);
 loadSubscriptionBindings(container);
 loadOnboardingBindings(container);
@@ -24,5 +30,6 @@ loadMealBindings(container);
 loadHealthLogBindings(container);
 loadWorkoutPlanBindings(container);
 loadDietPlanBindings(container);
+
 
 export default container;

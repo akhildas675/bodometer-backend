@@ -4,7 +4,7 @@ import {
   GetAllQuestionsResponse,
   OnboardingValue,
 } from "../interface/onboarding.interface";
-import { BaseRepository } from "@/repositories/base/base.repository";
+import { BaseRepository } from '@/modules/base/repository/base.repository';
 import { QuestionModel, IQuestion } from "../models/question.model";
 import { GroupModel } from "../models/group.model";
 import { IQuestionRepository } from "../interface/repository.interface/question-repository.interface";

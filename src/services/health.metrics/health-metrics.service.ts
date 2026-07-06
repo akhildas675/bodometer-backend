@@ -1,9 +1,9 @@
 import { UNITS } from "@/constants/fitness.constant";
 import { STATUS } from "@/constants/statuscode";
 import { MESSAGES } from "@/constants/messages";
-import { UpdateBmiDto, UpdateBmiResponseDto } from "@/dto/user/user.dto";
+import { UpdateBmiDto, UpdateBmiResponseDto } from "@/modules/user/dto/user.dto";
 import { AppError } from "@/utils/appError";
-import { IHealthMetrics } from "@/interfaces/service-interface/health.metrics/health.metrics-service.interface";
+import { IHealthMetrics } from '@/modules/health-metrics/interface/health.metrics-service.interface';
 
 export class HealthMetricsService implements IHealthMetrics {
   bmiCalculator(data: UpdateBmiDto): Promise<UpdateBmiResponseDto> {

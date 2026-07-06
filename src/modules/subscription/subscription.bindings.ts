@@ -8,14 +8,10 @@ import { ISubscriptionTransactionRepository } from "./interface/repository.inter
 import { SubscriptionTransactionRepository } from "./repositories/subscription-transaction.repository";
 import { IUserSubscriptionRepository } from "./interface/repository.interface/user.subscription.repository.interface";
 import { UserSubscriptionRepository } from "./repositories/user-subscription.repository";
-import { IAnswerRepository } from "@/modules/onboarding/interface/repository.interface/answer-repository.interface";
-import AnswerRepository from "@/modules/onboarding/repositories/answer.repository";
-import { IPaymentService } from "@/interfaces/service-interface/payment/stripe-service.interface";
+
+import { IPaymentService } from '@/modules/payment/interface/stripe-service.interface';
 import { PaymentService } from "@/services/payments/stripe.service";
-import { IWorkoutPlanService } from "../workout-plan/interface/workout-plan-service.interface";
-import { WorkoutPlanService } from "../workout-plan/service/workout-plan.service";
-import { UserWorkoutPlanRepository } from "../workout-plan/repositories/user-workout-plan.repository";
-import ExerciseRepository from "@/repositories/exercise/exercise.repository";
+
 import { ISubscriptionService } from "./interface/subscription-interface.service";
 import { SubscriptionService } from "./service/subscription.service";
 import { SubscriptionController } from "./controller/subscription.controller";

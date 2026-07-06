@@ -1,0 +1,29 @@
+export const API_MOUNTS = {
+
+    AUTH: "/api/auth",
+
+    USER: "/api/user",
+
+    TRAINER: "/api/trainer",
+
+    ADMIN: "/api/admin",
+
+    CATEGORY: "/api/categories",
+
+    SUBSCRIPTION: "/api/subscriptions",
+
+    EQUIPMENT: "/api/equipment",
+
+    EXERCISE: "/api/exercises",
+
+    TARGET_MUSCLE: "/api/target-muscles",
+
+    MEAL_CATEGORY: "/api/meal-categories",
+
+    HEALTH_LOG: "/api/user/health-log",
+
+    DIET_PLAN: "/api/user/diet-plan",
+
+    WORKOUT_PLAN: "/api/user/workout-plan",
+
+} as const;

@@ -7,8 +7,8 @@ import { IExerciseService } from "../interface/exercise-service.interface";
 import { IExerciseRepository } from "../interface/exercise-repository.interface";
 import { EXERCISE_TYPES } from "../exercise.types";
 import { ExerciseMapper } from "../mapper/exercise.mapper";
-import { Exercise } from "@/interfaces/domain.interface/exercise.interface";
-import { IS3Service } from "@/interfaces/service-interface/s3/s3-service.interface";
+import { Exercise } from '@/modules/exercise/interface/exercise.interface';
+import { IS3Service } from '@/modules/s3/interface/s3-service.interface';
 import {
     CreateExerciseDto,
     ExerciseDto,

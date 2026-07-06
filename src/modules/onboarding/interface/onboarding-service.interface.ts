@@ -31,7 +31,6 @@ export interface IOnboardingService {
   getQuestionDataSources(): Promise<{ label: string; value: string }[]>;
 
   // User Methods
-  getOnboardingGroups(): Promise<GetAllQuestionGroupsResponseDto>;
   submitOnboarding(
     userId: string,
     data: {

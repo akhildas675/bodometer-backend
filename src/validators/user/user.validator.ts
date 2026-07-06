@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { GENDER } from "../../constants/identity.constants";
 import { DIFFICULTY_LEVEL } from "../../constants/fitness.constant";
-
+import { ROLES } from "@/constants/roles";
 
 
 export const updateUserProfileSchema = z.object({
@@ -146,31 +146,20 @@ export const getTrainerSlotsSchema = z.object({
   })
 });
 
-export const createBookingSchema = z.object({
-  body: z.object({
-    trainerId: z.string().min(1, "Trainer ID is required"),
-    date: z.string().min(1, "Date is required"),
-    startTime: z.string().min(1, "Start time is required"),
-    endTime: z.string().min(1, "End time is required"),
-    userNotes: z.string().optional(),
-    bookingType: z.enum(["ONLINE", "OFFLINE"]).optional(),
-  })
+export const getUsersSchema = z.object({
+    query: z.object({
+        page: z.coerce.number().min(1).optional(),
+        limit: z.coerce.number().min(1).optional(),
+        search: z.string().optional(),
+        role: z.enum([ROLES.USER] as [string, ...string[]]).optional(),
+        isBlocked: z.coerce.boolean().optional(),
+        sortBy: z.string().optional(),
+        sortOrder: z.enum(["asc", "desc"]).optional(),
+    }),
 });
 
-export const getUserBookingsSchema = z.object({
-  query: z.object({
-    page: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().min(1).optional()),
-    limit: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().min(1).optional()),
-    status: z.string().optional(),
-    date: z.string().optional(),
-  })
-});
-
-export const cancelBookingSchema = z.object({
-  params: z.object({
-    bookingId: z.string().min(1, "Booking ID is required"),
-  }),
-  body: z.object({
-    reason: z.string().min(1, "Cancellation reason is required"),
-  })
+export const userIdParamSchema = z.object({
+    params: z.object({
+        userId: z.string().min(1, "User ID is required"),
+    }),
 });

@@ -1,5 +1,5 @@
 import { EquipmentDto } from "../dto/equipment.dto";
-import { Equipment } from "@/interfaces/domain.interface/equipment";
+import { Equipment } from '@/modules/equipment/interface/equipment.interface';
 
 export class EquipmentMapper {
     static toEquipmentDto(equipment: Equipment): EquipmentDto {

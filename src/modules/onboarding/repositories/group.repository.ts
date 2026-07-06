@@ -3,7 +3,7 @@ import {
   QuestionGroupQuery,
   GetAllQuestionGroupsResponse,
 } from "../interface/onboarding.interface";
-import { BaseRepository } from "@/repositories/base/base.repository";
+import { BaseRepository } from '@/modules/base/repository/base.repository';
 import { GroupModel, IGroup } from "../models/group.model";
 import { IGroupRepository } from "../interface/repository.interface/group-repository.interface";
 import { injectable } from "inversify";

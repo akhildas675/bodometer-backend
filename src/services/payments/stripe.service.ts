@@ -1,5 +1,5 @@
-import { CheckoutResult, CreateCheckoutParams, ParsedWebhookEvent } from "@/interfaces/domain.interface/payment.interface/stripe.interface";
-import { IPaymentService } from "@/interfaces/service-interface/payment/stripe-service.interface";
+import { CheckoutResult, CreateCheckoutParams, ParsedWebhookEvent } from '@/modules/payment/interface/stripe.interface';
+import { IPaymentService } from '@/modules/payment/interface/stripe-service.interface';
 import Stripe from "stripe";
 
 export class PaymentService implements IPaymentService {

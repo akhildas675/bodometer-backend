@@ -1,7 +1,9 @@
+import { injectable } from "inversify";
 import { IHealthLogRepository } from "../interface/health-log-repository.interface";
 import { HealthLogModel, IHealthLogModel, IEmbeddedMeal } from "../models/health-log.model";
 import mongoose from "mongoose";
 
+@injectable()
 export class HealthLogRepository implements IHealthLogRepository {
   async findByUserAndDate(userId: string, date: Date): Promise<IHealthLogModel | null> {
     const startOfDay = new Date(date);

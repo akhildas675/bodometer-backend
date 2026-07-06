@@ -1,8 +1,8 @@
 import { injectable } from "inversify";
 import { IMealCategory, MealCategoryModel } from "../models/meal-category.model";
-import { BaseRepository } from "@/repositories/base/base.repository";
+import { BaseRepository } from '@/modules/base/repository/base.repository';
 import { MealCategoryQueryDto } from "../dto/meal-category.dto";
-import { PaginatedResult } from "@/interfaces/domain.interface/common.interface";
+import { PaginatedResult } from '@/modules/base/interface/common.interface';
 import { MealCategory } from "../interface/meal-category.interface";
 import { IMealCategoryRepository } from "../interface/meal-category-repository.interface";
 

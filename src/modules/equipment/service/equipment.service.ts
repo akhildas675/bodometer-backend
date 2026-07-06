@@ -6,8 +6,8 @@ import { IEquipmentService } from "../interface/equipment-service.interface";
 import { IEquipmentRepository } from "../interface/equipment-repository.interface";
 import { EQUIPMENT_TYPES } from "../equipment.types";
 import { EquipmentMapper } from "../mapper/equipment.mapper";
-import { Equipment } from "@/interfaces/domain.interface/equipment";
-import { IS3Service } from "@/interfaces/service-interface/s3/s3-service.interface";
+import { Equipment } from '@/modules/equipment/interface/equipment.interface';
+import { IS3Service } from '@/modules/s3/interface/s3-service.interface';
 import {
     CreateEquipmentDto,
     EquipmentDto,

@@ -6,8 +6,8 @@ import { ITargetMuscleService } from "../interface/target-muscle-service.interfa
 import { ITargetMuscleRepository } from "../interface/target-muscle-repository.interface";
 import { TARGET_MUSCLE_TYPES } from "../target-muscle.types";
 import { TargetMuscleMapper } from "../mapper/target-muscle.mapper";
-import { TargetMuscle } from "@/interfaces/domain.interface/target.muscle";
-import { IS3Service } from "@/interfaces/service-interface/s3/s3-service.interface";
+import { TargetMuscle } from '@/modules/target-muscle/interface/target.muscle.interface';
+import { IS3Service } from '@/modules/s3/interface/s3-service.interface';
 import {
   CreateTargetMuscleDto,
   GetAllTargetMusclesResponseDto,

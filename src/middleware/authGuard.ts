@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { Role } from "../constants/roles";
-import { UserModel } from "../models/user.model";
+import { UserModel } from "@/modules/auth/model/user.model";
 import { AppError } from "../utils/appError";
 import { STATUS } from "../constants/statuscode";
 import { MESSAGES } from "../constants/messages";

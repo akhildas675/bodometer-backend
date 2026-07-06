@@ -16,6 +16,7 @@ import { SUBSCRIPTION_MESSAGES } from "@/modules/subscription/constants/subscrip
 import { COMMON_MESSAGES } from "./common.messages";
 import { HEALTH_LOG_MESSAGES } from "./health-log.messages";
 import { CATEGORY_MESSAGES } from "./category.message";
+import { BOOKING_MESSAGES } from "./booking.messages";
 
 export const MESSAGES = {
   ...AUTH_MESSAGES,
@@ -27,4 +28,5 @@ export const MESSAGES = {
   ...COMMON_MESSAGES,
   ...HEALTH_LOG_MESSAGES,
   ...CATEGORY_MESSAGES,
+  ...BOOKING_MESSAGES
 };

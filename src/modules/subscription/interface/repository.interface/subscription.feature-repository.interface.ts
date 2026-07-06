@@ -2,7 +2,7 @@ import {
   SubscriptionFeature,
   SubscriptionFeatureQuery,
 } from "@/modules/subscription/interface/subscription.interface";
-import { PaginatedResult } from "@/interfaces/domain.interface/common.interface";
+import { PaginatedResult } from '@/modules/base/interface/common.interface';
 
 export interface ISubscriptionFeatureRepository {
   getAllSubscriptionFeatures(

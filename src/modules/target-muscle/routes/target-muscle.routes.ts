@@ -8,7 +8,8 @@ import { validate } from "@/middleware/validate";
 import {
   createTargetMuscleSchema,
   updateTargetMuscleSchema,
-} from "@/validators/admin/admin-validator";
+} from "../validation/target-muscle.validator";
+import { TARGET_MUSCLE_PATHS } from "@/constants/routes.constant/target-muscles.path";
 
 
 const targetMuscleRoute = Router();
@@ -16,7 +17,7 @@ const targetMuscleRoute = Router();
 const targetMuscleController = container.get<TargetMuscleController>(TARGET_MUSCLE_TYPES.Controller);
 
 targetMuscleRoute.post(
-  "/",
+  TARGET_MUSCLE_PATHS.ROOT,
   ROLE_GUARD.ADMIN_GUARD,
   mediaUpload.single("image"),
   validate(createTargetMuscleSchema),
@@ -24,7 +25,7 @@ targetMuscleRoute.post(
 );
 
 targetMuscleRoute.put(
-  "/:id",
+  TARGET_MUSCLE_PATHS.BY_ID,
   ROLE_GUARD.ADMIN_GUARD,
   mediaUpload.single("image"),
   validate(updateTargetMuscleSchema),
@@ -32,19 +33,19 @@ targetMuscleRoute.put(
 );
 
 targetMuscleRoute.get(
-  "/:id",
+  TARGET_MUSCLE_PATHS.BY_ID,
   ROLE_GUARD.ALL_GUARDS,
   targetMuscleController.getTargetMuscleById,
 );
 
 targetMuscleRoute.get(
-  "/",
+  TARGET_MUSCLE_PATHS.ROOT,
   ROLE_GUARD.ALL_GUARDS,
   targetMuscleController.getAllTargetMuscles,
 );
 
 targetMuscleRoute.patch(
-  "/:id/status",
+  TARGET_MUSCLE_PATHS.STATUS,
   ROLE_GUARD.ADMIN_GUARD,
   targetMuscleController.toggleTargetMuscleStatus,
 );

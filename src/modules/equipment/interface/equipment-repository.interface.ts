@@ -1,6 +1,6 @@
-import { Equipment } from "@/interfaces/domain.interface/equipment";
-import { PaginatedResult } from "@/interfaces/domain.interface/common.interface";
-import { EquipmentQueryDto } from "../dto/equipment.dto";
+import { Equipment } from "@/modules/equipment/interface/equipment.interface";
+import { PaginatedResult } from "@/modules/base/interface/common.interface";
+import { EquipmentQueryDto } from "@/modules/equipment/dto/equipment.dto";
 
 export interface IEquipmentRepository {
     createEquipment(equipmentData: Equipment): Promise<Equipment>;

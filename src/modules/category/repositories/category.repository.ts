@@ -4,7 +4,7 @@ import {
   CategoryQuery,
   GetAllCategoriesResponse,
 } from "@/modules/category/interface/category.interface";
-import { BaseRepository } from "@/repositories/base/base.repository";
+import { BaseRepository } from '@/modules/base/repository/base.repository';
 import { CategoryModel, ICategory } from "@/modules/category/models/category.model";
 import { ICategoryRepository } from "@/modules/category/interface/category-repository.interface";
 
@@ -31,16 +31,7 @@ export default class CategoryRepository
     };
   }
   async createCategory(data: Category): Promise<void> {
-    await CategoryModel.create({
-      name: data.name,
-      description: data.description,
-      media: {
-        image: {
-          url: data.media.image.url,
-        },
-      },
-      isActive: data.isActive ?? true,
-    });
+    await this.create(data)
   }
 
   async getCategoryById(categoryId: string): Promise<Category | null> {
