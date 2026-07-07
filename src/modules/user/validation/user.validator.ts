@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { GENDER } from "../../constants/identity.constants";
-import { DIFFICULTY_LEVEL } from "../../constants/fitness.constant";
+import { GENDER } from "../../../constants/identity.constants";
+import { DIFFICULTY_LEVEL } from "../../../constants/fitness.constant";
 import { ROLES } from "@/constants/roles";
 
 
@@ -120,6 +120,7 @@ export const bmiCalculationSchema = z.object({
     unit: z.enum(["metric", "imperial"]),
     heightFt: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().nonnegative().optional()),
     heightIn: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().nonnegative().optional()),
+    gender: z.nativeEnum(GENDER, { message: "Invalid gender" }).optional(),
   })
 });
 
@@ -160,6 +161,6 @@ export const getUsersSchema = z.object({
 
 export const userIdParamSchema = z.object({
     params: z.object({
-        userId: z.string().min(1, "User ID is required"),
+        id: z.string().min(1, "User ID is required"),
     }),
 });

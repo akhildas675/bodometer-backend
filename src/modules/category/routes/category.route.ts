@@ -37,7 +37,7 @@ categoryRoute.get(
 
 categoryRoute.get(
   CATEGORY_PATHS.ROOT,
-  ROLE_GUARD.ALL_GUARDS,
+  ROLE_GUARD.OPTIONAL_AUTH,
   categoryController.getAllCategories,
 );
 categoryRoute.patch(

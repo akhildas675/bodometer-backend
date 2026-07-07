@@ -12,9 +12,10 @@ import {
   GetAllTrainersResponseDto,
   GetTrainerAppointmentsQueryDto,
   GetTrainerAppointmentsResponseDto,
-  GetTrainerByIdResponseDto,
   ApproveTrainerResponseDto,
   RejectTrainerResponseDto,
+  TrainerListItemDto,
+  TrainerDetailDto,
 } from "../dto/trainer.dto";
 import { ROLES } from "@/constants/roles";
 import { PaginatedResponseDto } from "../../../dto/common.dto";
@@ -24,6 +25,7 @@ import { AppError } from "../../../utils/appError";
 import { STATUS } from "../../../constants/statuscode";
 import { MESSAGES } from "../../../constants/messages";
 import { TrainerMapper } from "../mapper/trainer.mapper";
+import { UserMappers } from "../../user/mapper/user.mappers";
 import { VERIFICATION_STATUS } from "../../../constants/verification.constants";
 import { inject, injectable } from "inversify";
 import { USER_TYPES } from "@/modules/user/user.types";
@@ -38,9 +40,9 @@ export class TrainerService implements ITrainerService {
     private _trainerProfileRepository: ITrainerProfileRepository,
     @inject(USER_TYPES.S3Service)
     private _s3Service: IS3Service,
-  
- 
-  ) {}
+
+
+  ) { }
 
   //Profile
   async fetchTrainer(trainerId: string): Promise<FindTrainerResponseDto> {
@@ -128,8 +130,8 @@ export class TrainerService implements ITrainerService {
     if (trainer.profilePic) {
       try {
         await this._s3Service.deleteFile(trainer.profilePic);
-      } catch  {
-        throw new AppError(STATUS.BAD_REQUEST,MESSAGES.USER.PROFILE_PICTURE_DELETE_FAILED)
+      } catch (err) {
+        console.error("Warning: Failed to delete previous profile picture:", err);
       }
     }
 
@@ -145,6 +147,37 @@ export class TrainerService implements ITrainerService {
     return profilePicUrl;
   }
 
+  async uploadTrainerCoverPhoto(
+    trainerId: string,
+    file: Express.Multer.File,
+  ): Promise<string> {
+    const trainer = await this._userRepository.findById(trainerId);
+    if (!trainer) {
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND);
+    }
+
+    const profile = await this._trainerProfileRepository.findByUserId(trainerId);
+    if (profile && profile.coverPhoto) {
+      try {
+        await this._s3Service.deleteFile(profile.coverPhoto);
+      } catch (err) {
+        console.error("Warning: Failed to delete previous cover photo:", err);
+      }
+    }
+
+    const coverPhotoUrl = await this._s3Service.uploadFile(
+      file,
+      "trainer-cover-photos",
+    );
+
+    await this._trainerProfileRepository.upsert(
+      { userId: trainerId },
+      { coverPhoto: coverPhotoUrl }
+    );
+
+    return coverPhotoUrl;
+  }
+
   async uploadTrainerDocument(file: Express.Multer.File): Promise<string> {
     const documentUrl = await this._s3Service.uploadFile(
       file,
@@ -154,7 +187,7 @@ export class TrainerService implements ITrainerService {
   }
 
   // Trainer Application
-  async createProfile(userId: string, data: TrainerProfileDto): Promise<void> {
+  async submitTrainerProfile(userId: string, data: TrainerProfileDto): Promise<void> {
     const existing = await this._trainerProfileRepository.findByUserId(userId);
 
     if (existing?.verificationStatus === VERIFICATION_STATUS.PENDING) {
@@ -215,12 +248,12 @@ export class TrainerService implements ITrainerService {
 
     await this._userRepository.updateProfile(userId, userUpdateFields);
 
-    const certifications = certificateUrl 
-      ? [certificateUrl] 
+    const certifications = certificateUrl
+      ? [certificateUrl]
       : (existing?.certifications || []);
-    
-    const coverPhoto = coverPhotoUrl 
-      ? coverPhotoUrl 
+
+    const coverPhoto = coverPhotoUrl
+      ? coverPhotoUrl
       : (existing?.coverPhoto || "");
 
     if (existing?.verificationStatus === VERIFICATION_STATUS.REJECTED) {
@@ -271,9 +304,35 @@ export class TrainerService implements ITrainerService {
 
 
   // Admin Methods
-  async fetchTrainers(
+  async getTrainers(
     query: GetAllTrainersDto,
-  ): Promise<PaginatedResponseDto<GetAllTrainersResponseDto>> {
+    role?: string,
+  ): Promise<PaginatedResponseDto<TrainerListItemDto | GetAllTrainersResponseDto>> {
+    if (role === "user" || !role) {
+      const page = query.page || 1;
+      const limit = query.limit || 10;
+
+      const { data, total } = await this._trainerProfileRepository.getApprovedTrainersPaginated(
+        page,
+        limit,
+        query.search,
+        query.sortBy,
+        query.sortOrder,
+      );
+
+      return {
+        data: UserMappers.toListItemDtoArray(data),
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(total / limit),
+          totalItems: total,
+          itemsPerPage: limit,
+          hasNextPage: page * limit < total,
+          hasPreviousPage: page > 1,
+        },
+      };
+    }
+
     const { data, pagination } = await this._userRepository.findByRolePaginated(
       ROLES.TRAINER,
       query.search,
@@ -300,16 +359,14 @@ export class TrainerService implements ITrainerService {
     };
   }
 
-  async blockTrainer(trainerId: string): Promise<void> {
-    if (!trainerId)
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
-    await this._userRepository.updateBlockStatus(trainerId, true);
-  }
+  async toggleStatusTrainer(trainerId: string): Promise<void> {
+    const trainer = await this._userRepository.findById(trainerId);
+    if (!trainer) {
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND)
+    }
+    const isBlocked = !trainer.isBlocked;
+    await this._userRepository.updateBlockStatus(trainerId, isBlocked);
 
-  async unblockTrainer(trainerId: string): Promise<void> {
-    if (!trainerId)
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
-    await this._userRepository.updateBlockStatus(trainerId, false);
   }
 
   async getTrainerAppointments(
@@ -331,14 +388,14 @@ export class TrainerService implements ITrainerService {
     };
   }
 
-  async getTrainerByProfileId(
+  async getTrainerProfileById(
     profileId: string,
-  ): Promise<GetTrainerByIdResponseDto> {
+  ): Promise<TrainerDetailDto> {
     const trainer =
       await this._trainerProfileRepository.findByIdWithUser(profileId);
     if (!trainer)
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND);
-    return TrainerMapper.toDetailDto(trainer);
+    return UserMappers.toTrainerDetailDto(trainer);
   }
 
   async approveTrainer(profileId: string): Promise<ApproveTrainerResponseDto> {

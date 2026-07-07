@@ -28,7 +28,7 @@ export class CategoryController {
     next: NextFunction,
   ) => {
     try {
-      const data = req.body as CreateCategoryDto;
+      const data = { ...req.body, image: req.file } as CreateCategoryDto;
 
       await this._categoryService.createCategory(data);
 
@@ -51,11 +51,11 @@ export class CategoryController {
     next: NextFunction,
   ) => {
     try {
-      const {categoryId }= req.params;
-    const data = { ...req.body, categoryId } as UpdateCategoryDto;
+      const { categoryId } = req.params;
+      const data = { ...req.body, categoryId, image: req.file } as UpdateCategoryDto;
 
       await this._categoryService.updateCategory(data);
-       new SuccessResponse(
+      new SuccessResponse(
         STATUS.CREATED,
         MESSAGES.CATEGORY.CATEGORY_UPDATED,
       ).send(res);

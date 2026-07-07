@@ -8,11 +8,15 @@ import { mediaUpload } from "@/config/multer";
 import { validate } from "@/middleware/validate";
 import {
   createTrainerProfileSchema,
+  getTrainersSchema,
+  profileIdParamSchema,
   updateTrainerProfileSchema,
   uploadProfilePictureSchema,
   uploadTrainerDocumentSchema,
+  getTrainerAppointmentsSchema,
 
 } from "@/modules/trainer/validation/trainer.validator";
+import { userIdParamSchema } from "@/modules/user/validation/user.validator";
 
 const trainerRoute = Router();
 
@@ -27,20 +31,33 @@ trainerRoute.post(
     { name: "coverImage", maxCount: 1 },
   ]),
   validate(createTrainerProfileSchema),
-  trainerController.createProfile.bind(trainerController),
+  trainerController.submitTrainerProfile,
 );
 
 trainerRoute.get(
   TRAINER_PATHS.PROFILE,
   ROLE_GUARD.TRAINER_GUARD,
-  trainerController.getTrainer.bind(trainerController),
+  trainerController.getTrainerProfile,
+);
+
+trainerRoute.get(
+  TRAINER_PATHS.TRAINERS,
+  ROLE_GUARD.OPTIONAL_AUTH,
+  validate(getTrainersSchema),
+  trainerController.getTrainers,
+);
+trainerRoute.get(
+  TRAINER_PATHS.TRAINER_BY_ID,
+  ROLE_GUARD.ALL_GUARDS,
+  validate(profileIdParamSchema),
+  trainerController.getTrainerById,
 );
 
 trainerRoute.put(
   TRAINER_PATHS.PROFILE_UPDATE,
   ROLE_GUARD.TRAINER_GUARD,
   validate(updateTrainerProfileSchema),
-  trainerController.updateProfile.bind(trainerController),
+  trainerController.updateTrainerProfile,
 );
 
 trainerRoute.post(
@@ -48,7 +65,15 @@ trainerRoute.post(
   ROLE_GUARD.TRAINER_GUARD,
   mediaUpload.single("file"),
   validate(uploadProfilePictureSchema),
-  trainerController.uploadProfilePicture.bind(trainerController),
+  trainerController.uploadProfilePicture,
+);
+
+trainerRoute.post(
+  TRAINER_PATHS.COVER_PHOTO,
+  ROLE_GUARD.TRAINER_GUARD,
+  mediaUpload.single("file"),
+  validate(uploadProfilePictureSchema),
+  trainerController.uploadCoverPhoto,
 );
 
 trainerRoute.post(
@@ -56,13 +81,27 @@ trainerRoute.post(
   ROLE_GUARD.TRAINER_GUARD,
   mediaUpload.single("file"),
   validate(uploadTrainerDocumentSchema),
-  trainerController.uploadDocument.bind(trainerController),
+  trainerController.uploadDocument,
 );
 
 trainerRoute.get(
   TRAINER_PATHS.PROFILE_STATUS,
   ROLE_GUARD.TRAINER_GUARD,
-  trainerController.getProfileStatus.bind(trainerController),
+  trainerController.getTrainerProfileStatus,
+);
+
+trainerRoute.get(
+  TRAINER_PATHS.APPOINTMENTS,
+  ROLE_GUARD.ADMIN_GUARD,
+  validate(getTrainerAppointmentsSchema),
+  trainerController.getTrainerAppointments,
+);
+
+trainerRoute.patch(
+  TRAINER_PATHS.TOGGLE_TRAINER_STATUS,
+  ROLE_GUARD.ADMIN_GUARD,
+  validate(userIdParamSchema),
+  trainerController.toggleStatusTrainer,
 );
 
 

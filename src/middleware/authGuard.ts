@@ -16,9 +16,10 @@ export interface AuthRequest extends Request {
 }
 
 export const authGuard = (allowedRoles: Role[] = []) => {
-  return async (req: AuthRequest, res: Response, next: NextFunction) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const authHeader = req.headers.authorization;
+      const authReq = req as AuthRequest;
+      const authHeader = authReq.headers.authorization;
       const accessToken = authHeader?.startsWith("Bearer ")
         ? authHeader.split(" ")[1]
         : null;
@@ -49,14 +50,14 @@ export const authGuard = (allowedRoles: Role[] = []) => {
             return next(new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED));
           }
 
-          req.user = { id: payload.sub, role: payload.role };
+          authReq.user = { id: payload.sub, role: payload.role };
           return next();
         } catch {
           // Access token invalid/expired, fall through to refresh token validation
         }
       }
 
-      return await handleRefresh(req, res, next, allowedRoles);
+      return await handleRefresh(authReq, res, next, allowedRoles);
     } catch (error: unknown) {
       if (error instanceof Error) {
         return next(error);
@@ -109,3 +110,55 @@ async function handleRefresh(
     );
   }
 }
+
+export const optionalAuth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const authReq = req as AuthRequest;
+    const authHeader = authReq.headers.authorization;
+    const accessToken = authHeader?.startsWith("Bearer ")
+      ? authHeader.split(" ")[1]
+      : null;
+
+    if (accessToken) {
+      try {
+        const payload = Jwt.verifyAccess(accessToken);
+        const user = await UserModel.findById(payload.sub).select("isBlocked role");
+        if (user && !user.isBlocked) {
+          authReq.user = { id: payload.sub, role: payload.role };
+          next();
+          return;
+        }
+      } catch {
+        // Fall through to cookies validation if verification fails
+      }
+    }
+
+    const cookies = authReq.cookies as Record<string, string | undefined> | undefined;
+    const refreshToken = cookies?.refreshToken;
+
+    if (refreshToken) {
+      try {
+        const payload = Jwt.verifyRefresh(refreshToken);
+        const storedToken = await redis.get(`refresh:${payload.sub}`);
+        if (storedToken && storedToken === refreshToken) {
+          const newAccessToken = Jwt.signAccess({
+            sub: payload.sub,
+            role: payload.role,
+          });
+          res.setHeader("x-access-token", newAccessToken);
+          authReq.user = { id: payload.sub, role: payload.role };
+        }
+      } catch {
+        // Ignore invalid refresh token
+      }
+    }
+
+    next();
+  } catch {
+    next();
+  }
+};

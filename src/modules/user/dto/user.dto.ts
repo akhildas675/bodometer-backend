@@ -58,15 +58,17 @@ export interface BlockUnblockUserDto {
 export interface UpdateBmiDto {
   height: number;
   weight: number;
-  unit: Unit,
+  unit: Unit;
   heightFt?: number;
   heightIn?: number;
+  gender?: Gender;
 }
 
 export interface UpdateBmiResponseDto {
   bmi: number;
   heightCm: number;
   weightKg: number;
+  gender?: Gender;
   category: {
     label: string;
     color: string;

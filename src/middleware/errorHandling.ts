@@ -1,4 +1,4 @@
-import { Request, Response, } from "express";
+import { NextFunction, Request, Response, } from "express";
 import { AppError } from "../utils/appError";
 import { STATUS } from "../constants/statuscode";
 
@@ -14,6 +14,7 @@ export const errorHandler = (
   err: unknown,
   req: Request,
   res: Response,
+  next:NextFunction,
 ) => {
   console.error("Global Error Handler Catch:", err);
 

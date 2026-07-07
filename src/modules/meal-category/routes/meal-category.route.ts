@@ -17,36 +17,36 @@ const controller = container.get<MealCategoryController>(MEAL_CATEGORY_TYPES.Mea
 
 mealCategoryRoute.post(
   MEAL_CATEGORY_PATHS.ROOT,
-  validate(mealCategoryValidationSchema),
   ROLE_GUARD.ADMIN_GUARD,
+  validate(mealCategoryValidationSchema),
   controller.createMealCategory,
 );
 
 mealCategoryRoute.get(
   MEAL_CATEGORY_PATHS.ROOT,
-  validate(getAllMealCategoriesSchema),
   ROLE_GUARD.ADMIN_GUARD,
+  validate(getAllMealCategoriesSchema),
   controller.getAllMealCategories,
 );
 
 mealCategoryRoute.get(
   MEAL_CATEGORY_PATHS.BY_ID,
-  validate(mealCategoryIdParamSchema),
   ROLE_GUARD.ADMIN_GUARD,
+  validate(mealCategoryIdParamSchema),
   controller.getMealCategoryById,
 );
 
 mealCategoryRoute.put(
   MEAL_CATEGORY_PATHS.BY_ID,
-  validate(updateMealCategorySchema),
   ROLE_GUARD.ADMIN_GUARD,
+  validate(updateMealCategorySchema),
   controller.updateMealCategory,
 );
 
 mealCategoryRoute.patch(
   MEAL_CATEGORY_PATHS.STATUS,
-  validate(mealCategoryIdParamSchema),
   ROLE_GUARD.ADMIN_GUARD,
+  validate(mealCategoryIdParamSchema),
   controller.toggleMealCategoryStatus,
 );
 

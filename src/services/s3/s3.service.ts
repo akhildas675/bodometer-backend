@@ -43,8 +43,14 @@ export class S3Service {
 
     await this.s3Client.send(command);
 
+    console.log({
+    bucket: this.bucketName,
+    key: fileName,
+    region: process.env.AWS_REGION,
+  });
     return `https://${this.bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
   }
+
 
   async deleteFile(fileUrl: string): Promise<void> {
     try {

@@ -7,7 +7,7 @@ import { IHealthMetrics } from '@/modules/health-metrics/interface/health.metric
 
 export class HealthMetricsService implements IHealthMetrics {
   bmiCalculator(data: UpdateBmiDto): Promise<UpdateBmiResponseDto> {
-    const { height, weight, unit, heightFt, heightIn } = data;
+    const { height, weight, unit, heightFt, heightIn, gender } = data;
 
     if (UNITS.METRIC !== unit && UNITS.IMPERIAL !== unit) {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.INVALID_UNIT_TYPE);
@@ -64,6 +64,11 @@ export class HealthMetricsService implements IHealthMetrics {
         "Include strength training exercises",
         "Eat frequent, smaller meals with healthy fats"
       ];
+      if (gender === "male") {
+        tips.push("Focus on progressive overload in strength training to stimulate muscle hypertrophy");
+      } else if (gender === "female") {
+        tips.push("Ensure adequate intake of iron, calcium, and vitamin D alongside calorie-dense whole foods");
+      }
     } else if (finalBmi < 25) {
       categoryLabel = "Normal Weight";
       categoryColor = "text-green-400";
@@ -73,6 +78,11 @@ export class HealthMetricsService implements IHealthMetrics {
         "Aim for 150 minutes of moderate activity weekly",
         "Stay hydrated and prioritize quality sleep"
       ];
+      if (gender === "male") {
+        tips.push("Include a mix of resistance and progressive resistance exercises for strength maintenance");
+      } else if (gender === "female") {
+        tips.push("Add weight-bearing activities to help preserve bone density over time");
+      }
     } else if (finalBmi < 30) {
       categoryLabel = "Overweight";
       categoryColor = "text-yellow-400";
@@ -82,12 +92,24 @@ export class HealthMetricsService implements IHealthMetrics {
         "Incorporate daily moderate exercise (brisk walks, cycling)",
         "Reduce intake of highly processed sugar and fats"
       ];
+      if (gender === "male") {
+        tips.push("Incorporate structured weightlifting to preserve lean body mass while lowering body fat");
+      } else if (gender === "female") {
+        tips.push("Combine moderate aerobic work with resistance training to support steady fat loss and heart health");
+      }
+    } else {
+      if (gender === "male") {
+        tips.push("Engage in joint-friendly resistance exercises under guidance to boost lean tissue");
+      } else if (gender === "female") {
+        tips.push("Prioritize lower-impact activities (swimming, elliptical) to protect joint health");
+      }
     }
 
     return Promise.resolve({
       bmi: finalBmi,
       heightCm: finalHeight,
       weightKg: finalWeight,
+      gender,
       category: {
         label: categoryLabel,
         color: categoryColor,

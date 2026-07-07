@@ -14,7 +14,10 @@ import {
   UpdateUserProfileDto,
   GetUsersDto,
   GetUsersResponseDto,
+  UpdateBmiDto,
+  UpdateBmiResponseDto,
 } from "../dto/user.dto";
+import { HealthMetricsService } from "@/services/health.metrics/health-metrics.service";
 import { ROLES } from "@/constants/roles";
 import { PaginatedResponseDto } from "@/dto/common.dto";
 
@@ -105,8 +108,8 @@ export class UserService implements IUserService {
     if (user.profilePic) {
       try {
         await this._s3Service.deleteFile(user.profilePic);
-      } catch {
-        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.USER.PROFILE_PICTURE_DELETE_FAILED)
+      } catch (err) {
+        console.error("Warning: Failed to delete previous profile picture:", err);
       }
     }
     const profilePicUrl = await this._s3Service.uploadFile(
@@ -147,16 +150,15 @@ export class UserService implements IUserService {
     };
   }
 
-  async blockUser(userId: string): Promise<void> {
-    if (!userId)
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
-    await this._userRepository.updateBlockStatus(userId, true);
-  }
 
-  async unblockUser(userId: string): Promise<void> {
-    if (!userId)
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
-    await this._userRepository.updateBlockStatus(userId, false);
+
+  async toggleStatusUser(userId: string): Promise<void> {
+    const user = await this._userRepository.findById(userId);
+    if (!user)
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.USER.USER_NOT_FOUND);
+    const isBlocked = !user.isBlocked;
+    await this._userRepository.updateBlockStatus(userId, isBlocked);
+
   }
 
   // Change user password
@@ -181,5 +183,10 @@ export class UserService implements IUserService {
 
     const hashedPassword = await hashPassword(dto.newPassword);
     await this._userRepository.updatePassword(userId, hashedPassword);
+  }
+
+  async calculateBmi(data: UpdateBmiDto): Promise<UpdateBmiResponseDto> {
+    const healthMetricsService = new HealthMetricsService();
+    return healthMetricsService.bmiCalculator(data);
   }
 }

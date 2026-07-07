@@ -9,9 +9,8 @@ import {
   TrainerProfileDto,
   UpdateTrainerProfileDto,
   GetAllTrainersDto,
-  BlockUnblockTrainerDto,
   RejectTrainerBodyDto,
-  GetTrainerAppointmentsQueryDto
+  GetTrainerAppointmentsQueryDto,
 } from "../dto/trainer.dto";
 import { MESSAGES } from "../../../constants/messages";
 import { SuccessResponse } from "../../../utils/success.response";
@@ -22,10 +21,10 @@ import { TRAINER_TYPES } from "../trainer.types";
 export class TrainerController {
   constructor(
     @inject(TRAINER_TYPES.TrainerService)
-    private _trainerService: ITrainerService
-  ) {}
+    private readonly _trainerService: ITrainerService
+  ) { }
 
-  getTrainer = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  getTrainerProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       if (!req.user) {
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
@@ -54,7 +53,9 @@ export class TrainerController {
         ...parsePaginationQuery(req)
       };
 
-      const result = await this._trainerService.fetchTrainers(query);
+      const role = req.user?.role; // Extract user role
+
+      const result = await this._trainerService.getTrainers(query, role);
       new SuccessResponse(
         STATUS.OK,
         MESSAGES.COMMON.SUCCESS,
@@ -70,35 +71,29 @@ export class TrainerController {
     }
   };
 
-  blockTrainer = async (req: Request, res: Response, next: NextFunction) => {
+  toggleStatusTrainer = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
-      const { trainerId } = req.params as unknown as BlockUnblockTrainerDto;
-      await this._trainerService.blockTrainer(trainerId);
-      new SuccessResponse(STATUS.OK, MESSAGES.ADMIN.USER_BLOCKED).send(res);
-    } catch (error: unknown) {
+      const { id } = req.params;
+      if (!id) {
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.INVALID_ID);
+      }
+
+      await this._trainerService.toggleStatusTrainer(id);
+      new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS).send(res);
+    } catch (error) {
       if (error instanceof Error) {
         next(error);
       } else {
         next(new Error("Unknown error occurred"));
       }
     }
-  };
+  }
 
-  unblockTrainer = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { trainerId } = req.params as unknown as BlockUnblockTrainerDto;
-      await this._trainerService.unblockTrainer(trainerId);
-      new SuccessResponse(STATUS.OK, MESSAGES.ADMIN.USER_UNBLOCKED).send(res);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        next(error);
-      } else {
-        next(new Error("Unknown error occurred"));
-      }
-    }
-  };
-
-  updateProfile = async (
+  updateTrainerProfile = async (
     req: AuthRequest,
     res: Response,
     next: NextFunction,
@@ -165,6 +160,40 @@ export class TrainerController {
     }
   };
 
+  uploadCoverPhoto = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      if (!req.user) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED);
+      }
+
+      if (!req.file) {
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.FILE.FILE_REQUIRED);
+      }
+
+      const trainerId = req.user.id;
+      const file = req.file;
+
+      const coverPhotoUrl =
+        await this._trainerService.uploadTrainerCoverPhoto(trainerId, file);
+
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.USER.PROFILE_IMAGE_UPLOADED,
+        { url: coverPhotoUrl }
+      ).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
+
   uploadDocument = async (
     req: AuthRequest,
     res: Response,
@@ -198,7 +227,7 @@ export class TrainerController {
 
   //Trainer profile
 
-  createProfile = async (
+  submitTrainerProfile = async (
     req: AuthRequest,
     res: Response,
     next: NextFunction,
@@ -239,7 +268,7 @@ export class TrainerController {
             : [],
       };
 
-      await this._trainerService.createProfile(req.user.id, data);
+      await this._trainerService.submitTrainerProfile(req.user.id, data);
 
       new SuccessResponse(
         STATUS.CREATED,
@@ -254,7 +283,7 @@ export class TrainerController {
     }
   };
 
-  getProfileStatus = async (
+  getTrainerProfileStatus = async (
     req: AuthRequest,
     res: Response,
     next: NextFunction,
@@ -280,32 +309,32 @@ export class TrainerController {
     }
   };
 
-   getTrainerAppointments = async (
-      req: Request,
-      res: Response,
-      next: NextFunction,
-    ) => {
-      try {
-        const query: GetTrainerAppointmentsQueryDto = {
-          ...parsePaginationQuery(req),
-          ...(req.query.status && { status: req.query.status as string }),
-        };
-  
-        const result = await this._trainerService.getTrainerAppointments(query);
-        new SuccessResponse(
-          STATUS.OK,
-          MESSAGES.TRAINER.PROFILE_FETCHED,
-          result.data,
-          result.pagination,
-        ).send(res);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          next(error);
-        } else {
-          next(new Error("Unknown error occurred"));
-        }
+  getTrainerAppointments = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const query: GetTrainerAppointmentsQueryDto = {
+        ...parsePaginationQuery(req),
+        ...(req.query.status && { status: req.query.status as string }),
+      };
+
+      const result = await this._trainerService.getTrainerAppointments(query);
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.TRAINER.PROFILE_FETCHED,
+        result.data,
+        result.pagination,
+      ).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
       }
-    };
+    }
+  };
 
 
 
@@ -320,7 +349,7 @@ export class TrainerController {
         );
       }
 
-      const trainer = await this._trainerService.getTrainerByProfileId(profileId);
+      const trainer = await this._trainerService.getTrainerProfileById(profileId);
 
       new SuccessResponse(
         STATUS.OK,
@@ -335,60 +364,58 @@ export class TrainerController {
       }
     }
   };
- 
 
 
-    approveTrainer = async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const { profileId } = req.params;
-  
-        if (!profileId) {
-          throw new AppError(
-            STATUS.BAD_REQUEST,
-            MESSAGES.ADMIN.PROFILE_ID_REQUIRED,
-          );
-        }
-  
-        const result = await this._trainerService.approveTrainer(profileId);
-  
-        new SuccessResponse(STATUS.OK, result.message, result.profile).send(res);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          next(error);
-        } else {
-          next(new Error("Unknown error occurred"));
-        }
+
+  approveTrainer = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { profileId } = req.params;
+
+      if (!profileId) {
+        throw new AppError(
+          STATUS.BAD_REQUEST,
+          MESSAGES.ADMIN.PROFILE_ID_REQUIRED,
+        );
       }
-    };
-  
-    rejectTrainer = async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const { profileId } = req.params;
-        const { reason } = req.body as unknown as RejectTrainerBodyDto;
-  
-        if (!profileId) {
-          throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.INVALID_ID);
-        }
-  
-        if (!reason) {
-          throw new AppError(
-            STATUS.BAD_REQUEST,
-            MESSAGES.VALIDATION.REQUIRED_FIELD,
-          );
-        }
-  
-        const result = await this._trainerService.rejectTrainer(profileId, reason);
-  
-        new SuccessResponse(STATUS.OK, result.message, result.profile).send(res);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          next(error);
-        } else {
-          next(new Error("Unknown error occurred"));
-        }
-      }
-    };
-  
 
+      const result = await this._trainerService.approveTrainer(profileId);
+
+      new SuccessResponse(STATUS.OK, result.message, result.profile).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
+
+  rejectTrainer = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { profileId } = req.params;
+      const { reason } = req.body as unknown as RejectTrainerBodyDto;
+
+      if (!profileId) {
+        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.INVALID_ID);
+      }
+
+      if (!reason) {
+        throw new AppError(
+          STATUS.BAD_REQUEST,
+          MESSAGES.VALIDATION.REQUIRED_FIELD,
+        );
+      }
+
+      const result = await this._trainerService.rejectTrainer(profileId, reason);
+
+      new SuccessResponse(STATUS.OK, result.message, result.profile).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
 
 }

@@ -22,38 +22,38 @@ const onboardingController = container.get<OnboardingController>(
 
 // --- Shared / Unified Routes ---
 onboardingRoute.route(ONBOARDING_PATHS.GROUPS)
-  .get(ROLE_GUARD.ALL_GUARDS, onboardingController.getAllQuestionGroups.bind(onboardingController))
-  .post(ROLE_GUARD.ADMIN_GUARD, validate(groupValidationSchema), onboardingController.createQuestionGroup.bind(onboardingController));
+  .get(ROLE_GUARD.ALL_GUARDS, onboardingController.getAllQuestionGroups)
+  .post(ROLE_GUARD.ADMIN_GUARD, validate(groupValidationSchema), onboardingController.createQuestionGroup);
 
 onboardingRoute.route(ONBOARDING_PATHS.GROUP_BY_ID)
-  .get(ROLE_GUARD.ADMIN_GUARD, validate(groupIdParamSchema), onboardingController.getQuestionGroupById.bind(onboardingController))
-  .put(ROLE_GUARD.ADMIN_GUARD, validate(groupUpdateSchema.merge(groupIdParamSchema)), onboardingController.updateQuestionGroup.bind(onboardingController));
+  .get(ROLE_GUARD.ADMIN_GUARD, validate(groupIdParamSchema), onboardingController.getQuestionGroupById)
+  .put(ROLE_GUARD.ADMIN_GUARD, validate(groupUpdateSchema.merge(groupIdParamSchema)), onboardingController.updateQuestionGroup);
 
 onboardingRoute.route(ONBOARDING_PATHS.GROUP_TOGGLE)
-  .patch(ROLE_GUARD.ADMIN_GUARD, validate(groupIdParamSchema), onboardingController.toggleQuestionGroupStatus.bind(onboardingController));
+  .patch(ROLE_GUARD.ADMIN_GUARD, validate(groupIdParamSchema), onboardingController.toggleQuestionGroupStatus);
 
 onboardingRoute.route(ONBOARDING_PATHS.QUESTIONS)
-  .get(ROLE_GUARD.ALL_GUARDS, onboardingController.getQuestions.bind(onboardingController))
-  .post(ROLE_GUARD.ADMIN_GUARD, validate(questionValidationSchema), onboardingController.createQuestion.bind(onboardingController));
+  .get(ROLE_GUARD.ALL_GUARDS, onboardingController.getQuestions)
+  .post(ROLE_GUARD.ADMIN_GUARD, validate(questionValidationSchema), onboardingController.createQuestion);
 
 onboardingRoute.route(ONBOARDING_PATHS.QUESTION_BY_ID)
-  .get(ROLE_GUARD.ADMIN_GUARD, validate(questionIdParamSchema), onboardingController.getQuestionById.bind(onboardingController))
-  .put(ROLE_GUARD.ADMIN_GUARD, validate(questionUpdateSchema.merge(questionIdParamSchema)), onboardingController.updateQuestion.bind(onboardingController));
+  .get(ROLE_GUARD.ADMIN_GUARD, validate(questionIdParamSchema), onboardingController.getQuestionById)
+  .put(ROLE_GUARD.ADMIN_GUARD, validate(questionUpdateSchema.merge(questionIdParamSchema)), onboardingController.updateQuestion);
 
 onboardingRoute.route(ONBOARDING_PATHS.QUESTION_TOGGLE)
-  .patch(ROLE_GUARD.ADMIN_GUARD, validate(questionIdParamSchema), onboardingController.toggleQuestionStatus.bind(onboardingController));
+  .patch(ROLE_GUARD.ADMIN_GUARD, validate(questionIdParamSchema), onboardingController.toggleQuestionStatus);
 
 onboardingRoute.route(ONBOARDING_PATHS.QUESTIONS_DATA_SOURCES)
-  .get(ROLE_GUARD.ADMIN_GUARD, onboardingController.getQuestionDataSources.bind(onboardingController));
+  .get(ROLE_GUARD.ADMIN_GUARD, onboardingController.getQuestionDataSources);
 
 // --- User Specific Routes ---
 onboardingRoute.route(ONBOARDING_PATHS.SUBMIT)
-  .post(ROLE_GUARD.USER_GUARD, validate(submitOnboardingSchema), onboardingController.submitOnboarding.bind(onboardingController));
+  .post(ROLE_GUARD.USER_GUARD, validate(submitOnboardingSchema), onboardingController.submitOnboarding);
 
 onboardingRoute.route(ONBOARDING_PATHS.STATUS)
-  .get(ROLE_GUARD.USER_GUARD, onboardingController.getOnboardingStatus.bind(onboardingController));
+  .get(ROLE_GUARD.USER_GUARD, onboardingController.getOnboardingStatus);
 
 onboardingRoute.route(ONBOARDING_PATHS.ANSWERS)
-  .get(ROLE_GUARD.USER_GUARD, onboardingController.getOnboardingAnswers.bind(onboardingController));
+  .get(ROLE_GUARD.USER_GUARD, onboardingController.getOnboardingAnswers);
 
 export default onboardingRoute;

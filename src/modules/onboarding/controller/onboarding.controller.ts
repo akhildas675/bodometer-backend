@@ -245,26 +245,6 @@ export class OnboardingController {
   };
 
 
-
-  getOnboardingGroups = async (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction,
-  ) => {
-    try {
-      const result = await this._onboardingService.getOnboardingGroups();
-      new SuccessResponse(
-        STATUS.OK,
-        MESSAGES.COMMON.SUCCESS,
-        result.data,
-        result.pagination,
-      ).send(res);
-    } catch (error: unknown) {
-      next(error);
-    }
-  };
-
-
   submitOnboarding = async (
     req: AuthRequest,
     res: Response,

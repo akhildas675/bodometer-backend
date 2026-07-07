@@ -3,6 +3,6 @@ export const USER_PATHS = {
     PROFILE_PICTURE: "/profile-picture",
     CHANGE_PASSWORD: "/change-password",
     USERS: "/users",
-    USER_BLOCK: "/users/:id/block",
-    USER_UNBLOCK: "/users/:id/unblock"
+    TOGGLE_USER_STATUS: "/:id/toggle-status",
+    CALCULATE_BMI: "/calculate-bmi",
 } as const;

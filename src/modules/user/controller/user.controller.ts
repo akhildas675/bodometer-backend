@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response, Request } from "express";
 import { AuthRequest } from "../../../middleware/authGuard";
 import { Logger } from "../../../utils/logger";
 import { AppError } from "../../../utils/appError";
@@ -6,12 +6,12 @@ import { STATUS } from "../../../constants/statuscode";
 import { MESSAGES } from "../../../constants/messages";
 import {
   ChangePasswordDto,
-  UpdateBmiDto,
   UpdateUserProfileDto,
+  UpdateBmiDto,
 } from "../dto/user.dto";
 import { IUserService } from '@/modules/user/interface/user-service.interface';
 import { SuccessResponse } from "../../../utils/success.response";
-import { BlockUnblockUserDto, GetUsersDto } from "../dto/user.dto";
+import { GetUsersDto } from "../dto/user.dto";
 import { parsePaginationQuery } from "../../../utils/query";
 import { inject, injectable } from "inversify";
 import { USER_TYPES } from "../user.types";
@@ -144,13 +144,11 @@ export class UserController {
     }
   };
 
-  blockUser = async (req: Request, res: Response, next: NextFunction) => {
+  toggleStatusUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const { userId } = req.params as unknown as BlockUnblockUserDto;
-
-      await this._userService.blockUser(userId);
-
-      new SuccessResponse(STATUS.OK, MESSAGES.ADMIN.USER_BLOCKED).send(res);
+      const { id } = req.params;
+      const result = await this._userService.toggleStatusUser(id);
+      new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, result).send(res);
     } catch (error: unknown) {
       if (error instanceof Error) {
         next(error);
@@ -158,23 +156,7 @@ export class UserController {
         next(new Error("Unknown error occurred"));
       }
     }
-  };
-
-  unblockUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
-    try {
-      const { userId } = req.params as unknown as BlockUnblockUserDto;
-
-      await this._userService.unblockUser(userId);
-
-      new SuccessResponse(STATUS.OK, MESSAGES.ADMIN.USER_UNBLOCKED).send(res);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        next(error);
-      } else {
-        next(new Error("Unknown error occurred"));
-      }
-    }
-  };
+  }
 
   getUsers = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
@@ -198,86 +180,34 @@ export class UserController {
     }
   };
 
-  // getTrainers = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  //   try {
-  //     const query: GetTrainersQueryDto = {
-  //       ...parsePaginationQuery(req),
-  //       ...(typeof req.query.specializationId === "string" && { specializationId: req.query.specializationId }),
-  //     };
-
-  //     const result = await this._userService.getTrainers(query);
-  //     new SuccessResponse(
-  //       STATUS.OK,
-  //       MESSAGES.COMMON.SUCCESS,
-  //       result.data,
-  //       result.pagination
-  //     ).send(res);
-  //   } catch (error: unknown) {
-  //     if (error instanceof Error) {
-  //       next(error);
-  //     } else {
-  //       next(new Error("Unknown error occurred"));
-  //     }
-  //   }
-  // };
-  // getTrainerById = async (
-  //   req: AuthRequest,
-  //   res: Response,
-  //   next: NextFunction,
-  // ) => {
-  //   try {
-  //     const { id } = req.params;
-
-  //     if (!id) {
-  //       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.VALIDATION.ID_REQUIRED);
-  //     }
-
-  //     const result = await this._userService.getTrainerById(id);
-
-  //     new SuccessResponse(
-  //       STATUS.OK,
-  //       MESSAGES.COMMON.SUCCESS,
-  //       result
-  //     ).send(res);
-  //   } catch (error: unknown) {
-  //     if (error instanceof Error) {
-  //       next(error);
-  //     } else {
-  //       next(new Error("Unknown error occurred"));
-  //     }
-  //   }
-  // };
-
-
- 
 
 
 
 
-  // calculateBmiPublic = async (
-  //   req: Request,
-  //   res: Response,
-  //   next: NextFunction,
-  // ) => {
-  //   try {
-  //     const data = req.body as UpdateBmiDto;
-  //     const result = await this._userService.calculateBmi(data);
-  //
-  //     new SuccessResponse(
-  //       STATUS.OK,
-  //       MESSAGES.USER.BMI_CALCULATED,
-  //       result
-  //     ).send(res);
-  //   } catch (error: unknown) {
-  //     if (error instanceof Error) {
-  //       next(error);
-  //     } else {
-  //       next(new Error("Unknown error occurred"));
-  //     }
-  //   }
-  // };
+  calculateBmiPublic = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const data = req.body as UpdateBmiDto;
+      const result = await this._userService.calculateBmi(data);
+  
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.USER.BMI_CALCULATED,
+        result
+      ).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
 
- 
 
- 
+
+
 }
