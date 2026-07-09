@@ -32,11 +32,11 @@ import {
   SubscriptionPlanQuery,
 } from "@/modules/subscription/interface/subscription.interface";
 import { AppError } from "@/utils/appError";
-import { STATUS } from "@/constants/statuscode";
+import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { MESSAGES } from "@/constants/messages";
-import { Role, ROLES } from "@/constants/roles";
+import { Role, ROLES } from "@/constants/constant.values.ts/roles";
 import Stripe from "stripe";
-import { PLAN_TYPE } from "@/constants/fitness.constant";
+import { PLAN_TYPE } from "@/constants/constant.values.ts/fitness.constant";
 import { PaginationMeta } from '@/modules/base/interface/common.interface';
 import { inject, injectable } from "inversify";
 import { SUBSCRIPTION_TYPES } from "../subscription.types";

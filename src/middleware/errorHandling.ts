@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response, } from "express";
 import { AppError } from "../utils/appError";
-import { STATUS } from "../constants/statuscode";
+import { STATUS } from "../constants/constant.values.ts/statuscode";
 
 interface MongoError extends Error {
   code?: number;

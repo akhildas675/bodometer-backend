@@ -1,4 +1,4 @@
-import { Role } from "@/constants/roles";
+import { Role } from "@/constants/constant.values.ts/roles";
 import {
   CreateSubscriptionFeatureDto,
   GetAllSubscriptionFeaturesResponseDto,

@@ -11,11 +11,11 @@ import {
   UpdateSubscriptionPlanDto,
 } from "../dto/subscription.dto";
 import { SuccessResponse } from "@/utils/success.response";
-import { STATUS } from "@/constants/statuscode";
+import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { MESSAGES } from "@/constants/messages";
 import { parsePaginationQuery } from "@/utils/query";
 import { SubscriptionPlanQuery } from "@/modules/subscription/interface/subscription.interface";
-import { Role } from "@/constants/roles";
+import { Role } from "@/constants/constant.values.ts/roles";
 import { AppError } from "@/utils/appError";
 import { SUBSCRIPTION_TYPES } from "../subscription.types";
 

@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { Role } from "../constants/roles";
+import { Role } from "../constants/constant.values.ts/roles";
 import { UserModel } from "@/modules/auth/model/user.model";
 import { AppError } from "../utils/appError";
-import { STATUS } from "../constants/statuscode";
+import { STATUS } from "../constants/constant.values.ts/statuscode";
 import { MESSAGES } from "../constants/messages";
 import { redis } from "../config/redis";
 import { Jwt } from "../utils/jwt.utils";

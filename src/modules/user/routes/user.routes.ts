@@ -5,7 +5,7 @@ import { UserController } from "../controller/user.controller";
 import { USER_TYPES } from "../user.types";
 
 import { USER_PATHS } from "@/constants/routes.constant/user.paths";
-import { ROLE_GUARD } from "@/constants/role.guard";
+import { ROLE_GUARD } from "@/constants/constant.values.ts/role.guard";
 import { validate } from "@/middleware/validate";
 import { mediaUpload } from "@/config/multer";
 

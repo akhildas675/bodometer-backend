@@ -1,4 +1,4 @@
-import { Role } from "@/constants/roles";
+import { Role } from "@/constants/constant.values.ts/roles";
 import { CategoryDetailDto, CategoryQueryDto, CreateCategoryDto, GetAllCategoriesResponseDto, ToggleCategoryStatusResponseDto, UpdateCategoryDto } from "../dto/category.dto";
 
 export interface ICategoryService{

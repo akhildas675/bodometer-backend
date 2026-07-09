@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import { Gender } from "@/constants/identity.constants";
-import { VerificationStatus } from "@/constants/verification.constants";
+import { Gender } from "@/constants/constant.values.ts/identity.constants";
+import { VerificationStatus } from "@/constants/constant.values.ts/verification.constants";
 import { ITrainerProfileDocument } from "@/modules/trainer/model/trainer-profile.model";
 import { IUserDocument } from "@/modules/auth/model/user.model";
 import { UserProfile } from "@/modules/user/interface/user.interface";

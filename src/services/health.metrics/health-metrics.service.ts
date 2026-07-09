@@ -1,5 +1,5 @@
-import { UNITS } from "@/constants/fitness.constant";
-import { STATUS } from "@/constants/statuscode";
+import { UNITS } from "@/constants/constant.values.ts/fitness.constant";
+import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { MESSAGES } from "@/constants/messages";
 import { UpdateBmiDto, UpdateBmiResponseDto } from "@/modules/user/dto/user.dto";
 import { AppError } from "@/utils/appError";

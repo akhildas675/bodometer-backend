@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { Logger } from "../../../utils/logger";
 import { IAuthService } from "../interface/auth-service.interface";
 import { ForgotPasswordDto, GoogleLoginDto, LoginDto, OtpVerifyDto, RegisterDto, ResetPasswordDto } from "../dto/auth.dto";
-import { STATUS } from "../../../constants/statuscode";
+import { STATUS } from "../../../constants/constant.values.ts/statuscode";
 import { MESSAGES } from "../../../constants/messages";
 import { ResendOtpDto } from "../../../dto/otp/otp.dto";
 import { redis } from "../../../config/redis";

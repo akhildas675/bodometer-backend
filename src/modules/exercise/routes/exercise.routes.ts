@@ -2,7 +2,7 @@ import container from "@/container/container";
 import { Router } from "express";
 import { ExerciseController } from "../controller/exercise.controller";
 import { EXERCISE_TYPES } from "../exercise.types";
-import { ROLE_GUARD } from "@/constants/role.guard";
+import { ROLE_GUARD } from "@/constants/constant.values.ts/role.guard";
 import { mediaUpload } from "@/config/multer";
 import { validate } from "@/middleware/validate";
 import {

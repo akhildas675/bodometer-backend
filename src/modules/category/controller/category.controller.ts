@@ -1,5 +1,5 @@
 import { MESSAGES } from "@/constants/messages";
-import { STATUS } from "@/constants/statuscode";
+import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { ICategoryService } from "@/modules/category/interface/category-interface.service";
 import { AuthRequest } from "@/middleware/authGuard";
 import { AppError } from "@/utils/appError";
@@ -13,7 +13,7 @@ import {
 } from "../dto/category.dto";
 import { inject, injectable } from "inversify";
 import { CATEGORY_TYPES } from "../category.types";
-import { Role } from "@/constants/roles";
+import { Role } from "@/constants/constant.values.ts/roles";
 
 @injectable()
 export class CategoryController {

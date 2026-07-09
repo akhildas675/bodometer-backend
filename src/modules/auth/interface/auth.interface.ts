@@ -1,5 +1,5 @@
-import { Gender } from "../../../constants/identity.constants";
-import { Role } from "../../../constants/roles";
+import { Gender } from "../../../constants/constant.values.ts/identity.constants";
+import { Role } from "../../../constants/constant.values.ts/roles";
 
 
 

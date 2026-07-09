@@ -1,6 +1,6 @@
-import { Unit } from "../../../constants/fitness.constant";
-import { Gender } from "../../../constants/identity.constants";
-import { Role } from "../../../constants/roles";
+import { Unit } from "../../../constants/constant.values.ts/fitness.constant";
+import { Gender } from "../../../constants/constant.values.ts/identity.constants";
+import { Role } from "../../../constants/constant.values.ts/roles";
 import { BaseUserProfileDto, PaginationQueryDto } from "../../../dto/common.dto";
 
 export interface FindUserDto {

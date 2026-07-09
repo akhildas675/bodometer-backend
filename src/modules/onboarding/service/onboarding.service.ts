@@ -26,7 +26,7 @@ import {
 } from "../interface/onboarding.interface";
 
 import { AppError } from "@/utils/appError";
-import { STATUS } from "@/constants/statuscode";
+import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { MESSAGES } from "@/constants/messages";
 import { generateKeySlug, generateOptionValue } from "@/utils/string-formatters";
 

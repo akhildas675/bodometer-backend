@@ -10,7 +10,7 @@ import {
   WorkoutExerciseStatus,
   PLAN_TYPE,
   PlanType,
-} from "@/constants/fitness.constant";
+} from "@/constants/constant.values.ts/fitness.constant";
 
 //  WorkoutExercise
 

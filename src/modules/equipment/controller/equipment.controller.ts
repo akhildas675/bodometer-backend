@@ -3,7 +3,7 @@ import { inject, injectable } from "inversify";
 import { EQUIPMENT_TYPES } from "../equipment.types";
 import { IEquipmentService } from "../interface/equipment-service.interface";
 import { SuccessResponse } from "@/utils/success.response";
-import { STATUS } from "@/constants/statuscode";
+import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import {
     CreateEquipmentDto,
     EquipmentQueryDto,

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { TRAINER_PATHS } from "@/constants/routes.constant/trainer.paths";
-import { ROLE_GUARD } from "@/constants/role.guard";
+import { ROLE_GUARD } from "@/constants/constant.values.ts/role.guard";
 import container from "@/container/container";
 import { TrainerController } from "../controller/trainer.controller";
 import { TRAINER_TYPES } from "../trainer.types";

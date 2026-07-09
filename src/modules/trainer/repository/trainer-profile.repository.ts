@@ -1,7 +1,7 @@
 import mongoose, { PipelineStage } from "mongoose";
 import {
   VERIFICATION_STATUS,
-} from "@/constants/verification.constants";
+} from "@/constants/constant.values.ts/verification.constants";
 import { PaginationMeta } from '@/modules/base/interface/common.interface';
 import {
   ITrainerWithProfile,

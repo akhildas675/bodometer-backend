@@ -1,4 +1,4 @@
-import { Role, ROLES } from "@/constants/roles";
+import { Role, ROLES } from "@/constants/constant.values.ts/roles";
 import mongoose, { Document, Schema } from "mongoose";
 
 

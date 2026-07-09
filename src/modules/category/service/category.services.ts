@@ -1,5 +1,5 @@
 import { MESSAGES } from "@/constants/messages";
-import { STATUS } from "@/constants/statuscode";
+import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import {
   Category,
   CategoryQuery,
@@ -19,7 +19,7 @@ import {
 } from "../dto/category.dto";
 import { inject, injectable } from "inversify";
 import { CATEGORY_TYPES } from "../category.types";
-import { Role, ROLES } from "@/constants/roles";
+import { Role, ROLES } from "@/constants/constant.values.ts/roles";
 
 @injectable()
 

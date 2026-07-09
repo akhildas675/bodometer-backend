@@ -1,6 +1,6 @@
-import { OtpPurpose } from "../../../constants/otp.constants";
-import { Role } from "../../../constants/roles";
-import { VerificationStatus } from "../../../constants/verification.constants";
+import { OtpPurpose } from "../../../constants/constant.values.ts/otp.constants";
+import { Role } from "../../../constants/constant.values.ts/roles";
+import { VerificationStatus } from "../../../constants/constant.values.ts/verification.constants";
 import { BaseUserDto } from "../../../dto/common.dto";
 
 export interface RegisterDto {

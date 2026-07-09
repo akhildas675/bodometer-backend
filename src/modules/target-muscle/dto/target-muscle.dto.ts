@@ -1,4 +1,4 @@
-import { BodyRegion } from "@/constants/fitness.constant";
+import { BodyRegion } from "@/constants/constant.values.ts/fitness.constant";
 import { PaginatedResponseDto, PaginationMetaDto, PaginationQueryDto } from "@/dto/common.dto";
 
 export interface CreateTargetMuscleDto {
@@ -50,4 +50,4 @@ export interface TargetMuscleQueryDto extends PaginationQueryDto {
     bodyRegion?: BodyRegion;
     status?: string;
 }
-
+

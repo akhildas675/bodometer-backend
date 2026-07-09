@@ -3,7 +3,7 @@ import { inject, injectable } from "inversify";
 import { EXERCISE_TYPES } from "../exercise.types";
 import { IExerciseService } from "../interface/exercise-service.interface";
 import { SuccessResponse } from "@/utils/success.response";
-import { STATUS } from "@/constants/statuscode";
+import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import {
     CreateExerciseDto,
     ExerciseQueryDto,

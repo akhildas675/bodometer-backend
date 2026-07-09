@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DIFFICULTY_LEVEL } from "@/constants/fitness.constant";
+import { DIFFICULTY_LEVEL } from "@/constants/constant.values.ts/fitness.constant";
 
 const jsonArrayPreprocessor = (val: unknown): unknown => {
     if (!val) return [];

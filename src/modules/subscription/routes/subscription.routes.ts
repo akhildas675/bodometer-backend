@@ -4,7 +4,7 @@ import { SUBSCRIPTION_TYPES } from "../subscription.types";
 import container from "@/container/container";
 import { validate } from "@/middleware/validate";
 import { featureIdParamSchema, featureUpdateSchema, featureValidationSchema, subscriptionPlanIdParamSchema, subscriptionPlanUpdateSchema, subscriptionPlanValidationSchema, checkoutSessionSchema, verifyPaymentSchema } from "../validation/subscription.validation";
-import { ROLE_GUARD } from "@/constants/role.guard";
+import { ROLE_GUARD } from "@/constants/constant.values.ts/role.guard";
 import { SUBSCRIPTION_FEATURE_PATHS, SUBSCRIPTION_PLAN_PATHS } from "../constants/subscription.paths";
 
 const subscriptionRoute = Router();

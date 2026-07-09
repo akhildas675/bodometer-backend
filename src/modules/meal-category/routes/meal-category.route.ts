@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ROLE_GUARD } from "@/constants/role.guard";
+import { ROLE_GUARD } from "@/constants/constant.values.ts/role.guard";
 import { validate } from "@/middleware/validate";
 import { MEAL_CATEGORY_TYPES } from "../meal-category.types";
 import { MealCategoryController } from "../controller/meal-category.controller";

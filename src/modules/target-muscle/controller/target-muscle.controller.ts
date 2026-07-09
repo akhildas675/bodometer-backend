@@ -3,7 +3,7 @@ import { inject, injectable } from "inversify";
 import { TARGET_MUSCLE_TYPES } from "../target-muscle.types";
 import { ITargetMuscleService } from "../interface/target-muscle-service.interface";
 import { SuccessResponse } from "@/utils/success.response";
-import { STATUS } from "@/constants/statuscode";
+import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import {
   CreateTargetMuscleDto,
   TargetMuscleQueryDto,

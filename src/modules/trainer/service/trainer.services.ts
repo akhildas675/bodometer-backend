@@ -17,16 +17,16 @@ import {
   TrainerListItemDto,
   TrainerDetailDto,
 } from "../dto/trainer.dto";
-import { ROLES } from "@/constants/roles";
+import { ROLES } from "@/constants/constant.values.ts/roles";
 import { PaginatedResponseDto } from "../../../dto/common.dto";
 import { PaginatedResult } from '@/modules/base/interface/common.interface';
 
 import { AppError } from "../../../utils/appError";
-import { STATUS } from "../../../constants/statuscode";
+import { STATUS } from "../../../constants/constant.values.ts/statuscode";
 import { MESSAGES } from "../../../constants/messages";
 import { TrainerMapper } from "../mapper/trainer.mapper";
 import { UserMappers } from "../../user/mapper/user.mappers";
-import { VERIFICATION_STATUS } from "../../../constants/verification.constants";
+import { VERIFICATION_STATUS } from "../../../constants/constant.values.ts/verification.constants";
 import { inject, injectable } from "inversify";
 import { USER_TYPES } from "@/modules/user/user.types";
 import { TRAINER_TYPES } from "../trainer.types";

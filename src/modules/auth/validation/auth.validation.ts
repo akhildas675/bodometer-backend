@@ -1,6 +1,6 @@
-import { GENDER } from "@/constants/identity.constants";
-import { OTP_PURPOSE } from "@/constants/otp.constants";
-import { ROLES } from "@/constants/roles";
+import { GENDER } from "@/constants/constant.values.ts/identity.constants";
+import { OTP_PURPOSE } from "@/constants/constant.values.ts/otp.constants";
+import { ROLES } from "@/constants/constant.values.ts/roles";
 import { z } from "zod";
 
 

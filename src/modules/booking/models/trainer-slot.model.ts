@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 import {
   SLOT_STATUS,
   SlotStatus,
-} from "@/constants/booking.constant";
+} from "@/constants/constant.values.ts/booking.constant";
 
 export interface ITrainerSlot extends Document {
   availabilityId: mongoose.Types.ObjectId;

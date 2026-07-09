@@ -1,4 +1,4 @@
-import { authGuard, optionalAuth } from "../middleware/authGuard";
+import { authGuard, optionalAuth } from "../../middleware/authGuard";
 
 
 export const ROLE_GUARD={

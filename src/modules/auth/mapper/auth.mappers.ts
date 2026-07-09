@@ -1,4 +1,4 @@
-import { VerificationStatus } from "@/constants/verification.constants";
+import { VerificationStatus } from "@/constants/constant.values.ts/verification.constants";
 import { LoginResponseDto, RegisterResponseDto } from "../dto/auth.dto";
 import { UserInterface } from "../interface/auth.interface";
 

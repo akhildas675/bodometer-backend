@@ -5,9 +5,9 @@ import app from "./app";
 import { connectDB } from "./config/db";
 import { connectRedis } from "./config/redis";
 import { AppError } from "./utils/appError";
-import { STATUS } from "./constants/statuscode";
 import { MESSAGES } from "./constants/messages";
 import logger from "./config/logger.config";
+import { STATUS } from "./constants/constant.values.ts/statuscode";
 
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;

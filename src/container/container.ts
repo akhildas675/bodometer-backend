@@ -13,6 +13,7 @@ import {Container} from "inversify";
 import { loadAuthBindings } from "@/modules/auth/auth.bindings";
 import { loadUserBindings } from "@/modules/user/user.bindings";
 import { loadTrainerBindings } from "@/modules/trainer/trainer.bindings";
+import { loadBookingBindings } from "@/modules/booking/booking.bindings";
 
 const container = new Container();
 
@@ -30,6 +31,7 @@ loadMealBindings(container);
 loadHealthLogBindings(container);
 loadWorkoutPlanBindings(container);
 loadDietPlanBindings(container);
+loadBookingBindings(container)
 
 
 export default container;

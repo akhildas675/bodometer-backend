@@ -1,6 +1,6 @@
 import { IUserWorkoutPlanModel } from "../models/user.workout-plan.model";
 import { WorkoutPlanResponseDto, WorkoutPlanDetailDto } from "../dto/workout-plan.dto";
-import { WORKOUT_EXERCISE_STATUS } from "@/constants/fitness.constant";
+import { WORKOUT_EXERCISE_STATUS } from "@/constants/constant.values.ts/fitness.constant";
 
 
 export class WorkoutMapper {

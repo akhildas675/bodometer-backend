@@ -4,11 +4,11 @@ import { HEALTH_LOG_TYPES } from "../health-log.types";
 import { IHealthLogService } from "../interface/health-log-service.interface";
 import { SuccessResponse } from "../../../utils/success.response";
 import { AppError } from "../../../utils/appError";
-import { STATUS } from "../../../constants/statuscode";
+import { STATUS } from "../../../constants/constant.values.ts/statuscode";
 import { MESSAGES } from "../../../constants/messages";
 import { UpsertHealthLogDto } from "../dto/health-log.dto";
 import { AuthRequest } from "../../../middleware/authGuard";
-import { Timeframe } from "../../../constants/fitness.constant";
+import { Timeframe } from "../../../constants/constant.values.ts/fitness.constant";
 
 @injectable()
 export class HealthLogController {

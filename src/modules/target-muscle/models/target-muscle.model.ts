@@ -1,4 +1,4 @@
-import { BODY_REGION, BodyRegion } from "@/constants/fitness.constant";
+import { BODY_REGION, BodyRegion } from "@/constants/constant.values.ts/fitness.constant";
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface ITargetMuscle extends Document {

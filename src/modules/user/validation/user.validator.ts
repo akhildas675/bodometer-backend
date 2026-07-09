@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { GENDER } from "../../../constants/identity.constants";
-import { DIFFICULTY_LEVEL } from "../../../constants/fitness.constant";
-import { ROLES } from "@/constants/roles";
+import { GENDER } from "../../../constants/constant.values.ts/identity.constants";
+import { DIFFICULTY_LEVEL } from "../../../constants/constant.values.ts/fitness.constant";
+import { ROLES } from "@/constants/constant.values.ts/roles";
 
 
 export const updateUserProfileSchema = z.object({

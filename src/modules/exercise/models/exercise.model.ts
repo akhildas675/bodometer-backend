@@ -4,7 +4,7 @@ import {
   DIFFICULTY_LEVEL,
   DifficultyLevel,
   WORKOUT_ENVIRONMENT,
-} from "@/constants/fitness.constant";
+} from "@/constants/constant.values.ts/fitness.constant";
 
 
 export interface IExercise extends Document {

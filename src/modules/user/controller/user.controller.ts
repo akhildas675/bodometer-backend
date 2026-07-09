@@ -2,7 +2,7 @@ import { NextFunction, Response, Request } from "express";
 import { AuthRequest } from "../../../middleware/authGuard";
 import { Logger } from "../../../utils/logger";
 import { AppError } from "../../../utils/appError";
-import { STATUS } from "../../../constants/statuscode";
+import { STATUS } from "../../../constants/constant.values.ts/statuscode";
 import { MESSAGES } from "../../../constants/messages";
 import {
   ChangePasswordDto,

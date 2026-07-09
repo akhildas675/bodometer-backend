@@ -2,7 +2,7 @@ import container from "@/container/container";
 import { Router } from "express";
 import { TargetMuscleController } from "../controller/target-muscle.controller";
 import { TARGET_MUSCLE_TYPES } from "../target-muscle.types";
-import { ROLE_GUARD } from "@/constants/role.guard";
+import { ROLE_GUARD } from "@/constants/constant.values.ts/role.guard";
 import { mediaUpload } from "@/config/multer";
 import { validate } from "@/middleware/validate";
 import {

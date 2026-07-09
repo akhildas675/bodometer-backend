@@ -18,7 +18,7 @@ export const SLOT_STATUS={
     AVAILABLE:"available",
     BOOKED:"booked",
     EXPIRED:"expired",
-
+    BLOCKED:"blocked",
 } as const;
 
 export type SlotStatus = typeof SLOT_STATUS[keyof typeof SLOT_STATUS];

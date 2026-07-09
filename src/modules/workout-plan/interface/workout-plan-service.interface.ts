@@ -1,7 +1,7 @@
 import { WorkoutPlanDetailDto, WorkoutPlanResponseDto, GetWorkoutPlansResponseDto, WorkoutProgressResponseDto, MarkDayCompletedDto, MarkExerciseStatusDto } from "../dto/workout-plan.dto";
-import { Timeframe } from "../../../constants/fitness.constant";
+import { Timeframe } from "../../../constants/constant.values.ts/fitness.constant";
 
-import { PlanType } from "@/constants/fitness.constant";
+import { PlanType } from "@/constants/constant.values.ts/fitness.constant";
 
 export interface IWorkoutPlanService {
   generateWorkout(userId: string): Promise<WorkoutPlanDetailDto>;

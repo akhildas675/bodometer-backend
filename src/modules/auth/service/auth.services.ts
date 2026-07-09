@@ -1,8 +1,8 @@
 import { googleClient } from "../../../config/google";
 import { MESSAGES } from "../../../constants/messages";
-import { ROLES } from "../../../constants/roles";
-import { STATUS } from "../../../constants/statuscode";
-import { VerificationStatus } from "../../../constants/verification.constants";
+import { ROLES } from "../../../constants/constant.values.ts/roles";
+import { STATUS } from "../../../constants/constant.values.ts/statuscode";
+import { VerificationStatus } from "../../../constants/constant.values.ts/verification.constants";
 import {
   ForgotPasswordResponseDto,
   GoogleLoginDto,

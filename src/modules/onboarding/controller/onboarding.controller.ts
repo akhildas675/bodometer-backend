@@ -4,7 +4,7 @@ import { AuthRequest } from "@/middleware/authGuard";
 import { IOnboardingService } from "../interface/onboarding-service.interface";
 import { ONBOARDING_TYPES } from "../onboarding.types";
 import { SuccessResponse } from "@/utils/success.response";
-import { STATUS } from "@/constants/statuscode";
+import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { MESSAGES } from "@/constants/messages";
 import { AppError } from "@/utils/appError";
 import { parsePaginationQuery } from "@/utils/query";
@@ -15,7 +15,7 @@ import {
   UpdateQuestionDto,
   QuestionQueryDto,
 } from "../dto/onboarding.dto";
-import { ROLES } from "@/constants/roles";
+import { ROLES } from "@/constants/constant.values.ts/roles";
 
 @injectable()
 export class OnboardingController {

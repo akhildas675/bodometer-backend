@@ -1,4 +1,4 @@
-import { DifficultyLevel } from "@/constants/fitness.constant";
+import { DifficultyLevel } from "@/constants/constant.values.ts/fitness.constant";
 
 export interface ExerciseMedia {
   image: string;

@@ -1,8 +1,8 @@
 import { generateOtp } from "@/utils/generateOtp";
 import { redis } from "../../config/redis";
 import { MESSAGES } from "../../constants/messages";
-import { OtpPurpose } from "../../constants/otp.constants";
-import { STATUS } from "../../constants/statuscode";
+import { OtpPurpose } from "../../constants/constant.values.ts/otp.constants";
+import { STATUS } from "../../constants/constant.values.ts/statuscode";
 import { IMailService } from '@/modules/otp/interface/mail-service.interface';
 import { IOtpService } from '@/modules/otp/interface/otp-service.interface';
 import { GenerateOtpPayload, VerifyOtpPayload } from '@/modules/otp/interface/otp.interface';

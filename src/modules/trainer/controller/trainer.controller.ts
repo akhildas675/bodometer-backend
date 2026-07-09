@@ -3,8 +3,8 @@ import { ITrainerService } from '@/modules/trainer/interface/trainer-service.int
 import { AuthRequest } from "../../../middleware/authGuard";
 import { parsePaginationQuery } from "../../../utils/query";
 import { AppError } from "../../../utils/appError";
-import { STATUS } from "../../../constants/statuscode";
-import { Gender } from "../../../constants/identity.constants";
+import { STATUS } from "../../../constants/constant.values.ts/statuscode";
+import { Gender } from "../../../constants/constant.values.ts/identity.constants";
 import {
   TrainerProfileDto,
   UpdateTrainerProfileDto,

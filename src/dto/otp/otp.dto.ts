@@ -1,4 +1,4 @@
-import { OtpPurpose } from "@/constants/otp.constants";
+import { OtpPurpose } from "@/constants/constant.values.ts/otp.constants";
 
 
 

@@ -1,6 +1,6 @@
 import nodemailer, { Transporter } from "nodemailer";
 import { AppError } from "../../utils/appError";
-import { STATUS } from "../../constants/statuscode";
+import { STATUS } from "../../constants/constant.values.ts/statuscode";
 import { MESSAGES } from "../../constants/messages";
 import { IMailService } from '@/modules/otp/interface/mail-service.interface';
 import { injectable } from "inversify";

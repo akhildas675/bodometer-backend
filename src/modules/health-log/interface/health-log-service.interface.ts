@@ -1,5 +1,5 @@
 import { HealthLogDto, UpsertHealthLogDto, HealthLogProgressResponseDto } from "../dto/health-log.dto";
-import { Timeframe } from "../../../constants/fitness.constant";
+import { Timeframe } from "../../../constants/constant.values.ts/fitness.constant";
 
 export interface IHealthLogService {
   getHealthLog(userId: string, date: string): Promise<HealthLogDto>;

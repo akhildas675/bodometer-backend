@@ -11,11 +11,11 @@ import {
   DailyNutritionSummaryDto,
 } from "../dto/health-log.dto";
 import { MESSAGES } from "../../../constants/messages";
-import { TIMEFRAME, Timeframe } from "../../../constants/fitness.constant";
+import { TIMEFRAME, Timeframe } from "../../../constants/constant.values.ts/fitness.constant";
 import { IHealthLogModel, IEmbeddedMeal } from "../models/health-log.model";
 import mongoose from "mongoose";
 import { AppError } from "../../../utils/appError";
-import { STATUS } from "../../../constants/statuscode";
+import { STATUS } from "../../../constants/constant.values.ts/statuscode";
 import { inject, injectable } from "inversify";
 import { HEALTH_LOG_TYPES } from "../health-log.types";
 import { MEAL_TYPES } from "../../meal/meal.types";

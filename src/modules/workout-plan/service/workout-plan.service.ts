@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { AppError } from "../../../utils/appError";
-import { STATUS } from "../../../constants/statuscode";
+import { STATUS } from "../../../constants/constant.values.ts/statuscode";
 import { MESSAGES } from "../../../constants/messages";
 import { WorkoutMapper } from "../mapper/workout-plan.mapper";
 import { AiWorkoutService } from "../../../services/ai-services/ai-workout.service";
@@ -16,7 +16,7 @@ import {
   Timeframe, 
   PLAN_TYPE,
   PlanType,
-} from "@/constants/fitness.constant";
+} from "@/constants/constant.values.ts/fitness.constant";
 import { IEmbeddedWorkoutDay, IEmbeddedWorkoutExercise } from "../models/user.workout-plan.model";
 import { 
   WorkoutPlanDetailDto, 

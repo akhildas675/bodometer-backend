@@ -1,5 +1,5 @@
-import { Gender } from "../../../constants/identity.constants";
-import { VerificationStatus } from "../../../constants/verification.constants";
+import { Gender } from "../../../constants/constant.values.ts/identity.constants";
+import { VerificationStatus } from "../../../constants/constant.values.ts/verification.constants";
 import { BaseUserProfileDto, BaseUserDto, PaginationQueryDto, PaginatedResponseDto } from "../../../dto/common.dto";
 import { BaseUserResponseDto } from "../../user/dto/user.dto";
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BODY_REGION } from "@/constants/fitness.constant";
+import { BODY_REGION } from "@/constants/constant.values.ts/fitness.constant";
 
 export const createTargetMuscleSchema = z.object({
     body: z.object({

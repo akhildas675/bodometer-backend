@@ -3,7 +3,7 @@ import { Router } from "express";
 import { CategoryController } from "../controller/category.controller";
 import { CATEGORY_TYPES } from "../category.types";
 import { CATEGORY_PATHS } from "@/constants/routes.constant/category.paths";
-import { ROLE_GUARD } from "@/constants/role.guard";
+import { ROLE_GUARD } from "@/constants/constant.values.ts/role.guard";
 import { mediaUpload } from "@/config/multer";
 import { validate } from "@/middleware/validate";
 import { categoryIdParamSchema, categoryUpdateSchema, categoryValidationSchema } from "../validation/category.validation";

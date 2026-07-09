@@ -5,7 +5,7 @@ import {
   IUserWorkoutPlanModel,
 } from "../models/user.workout-plan.model";
 import mongoose from "mongoose";
-import { WORKOUT_PLAN_STATUS, WORKOUT_DAY_STATUS } from "@/constants/fitness.constant";
+import { WORKOUT_PLAN_STATUS, WORKOUT_DAY_STATUS } from "@/constants/constant.values.ts/fitness.constant";
 
 export class UserWorkoutPlanRepository implements IUserWorkoutPlanRepository {
 

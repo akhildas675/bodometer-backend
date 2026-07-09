@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import { AppError } from "@/utils/appError";
-import { STATUS } from "@/constants/statuscode";
+import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { MESSAGES } from "@/constants/messages";
 import { IEquipmentService } from "../interface/equipment-service.interface";
 import { IEquipmentRepository } from "../interface/equipment-repository.interface";

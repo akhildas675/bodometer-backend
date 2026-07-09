@@ -3,7 +3,7 @@ import container from "../../../container/container";
 import { WORKOUT_PLAN_TYPES } from "../workout-plan.types";
 import { WorkoutPlanController } from "../controller/workout-plan.controller";
 
-import { ROLE_GUARD } from "../../../constants/role.guard";
+import { ROLE_GUARD } from "../../../constants/constant.values.ts/role.guard";
 import { WORKOUT_PATHS } from "@/constants/routes.constant/workout.paths";
 
 // Assuming USER_ROUTES values from user.routes.ts constants

@@ -12,6 +12,8 @@ export const API_MOUNTS = {
 
     SUBSCRIPTION: "/api/subscriptions",
 
+    ONBOARDING: "/api/onboarding",
+
     EQUIPMENT: "/api/equipment",
 
     EXERCISE: "/api/exercises",
@@ -25,5 +27,7 @@ export const API_MOUNTS = {
     DIET_PLAN: "/api/user/diet-plan",
 
     WORKOUT_PLAN: "/api/user/workout-plan",
+
+    BOOKING: "/api/booking"
 
 } as const;

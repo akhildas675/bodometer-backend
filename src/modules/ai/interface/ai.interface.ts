@@ -1,4 +1,4 @@
-import { PlanType } from "@/constants/fitness.constant";
+import { PlanType } from "@/constants/constant.values.ts/fitness.constant";
 
 export interface AvailableExercise {
   id: string;

@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
-import { BOOKING_STATUS, BookingStatus } from "@/constants/booking.constant";
-import { Role, ROLES } from "@/constants/roles";
+import { BOOKING_STATUS, BookingStatus } from "@/constants/constant.values.ts/booking.constant";
+import { Role, ROLES } from "@/constants/constant.values.ts/roles";
 
 export interface IBooking extends Document {
   userId: mongoose.Types.ObjectId;
@@ -11,6 +11,7 @@ export interface IBooking extends Document {
 
   cancelReason?: string;
   cancelledBy?: Role;
+  note?: string;
 
   createdAt: Date;
   updatedAt: Date;
@@ -43,6 +44,11 @@ const BookingSchema = new Schema<IBooking>(
     cancelledBy: {
       type: String,
       enum: Object.values(ROLES),
+    },
+    note: {
+      type: String,
+      trim: true,
+      maxlength: 500,
     },
   },
   {

@@ -2,7 +2,7 @@ import { NextFunction, Response } from "express";
 import { inject, injectable } from "inversify";
 import { AuthRequest } from "@/middleware/authGuard";
 import { SuccessResponse } from "@/utils/success.response";
-import { STATUS } from "@/constants/statuscode";
+import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { MESSAGES } from "@/constants/messages";
 
 import { MealCategoryDto, UpdateMealCategoryDto } from "../dto/meal-category.dto";

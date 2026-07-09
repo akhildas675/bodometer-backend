@@ -1,5 +1,5 @@
 import { MESSAGES } from "@/constants/messages";
-import { STATUS } from "@/constants/statuscode";
+import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { ITrainerProfileRepository } from '@/modules/trainer/interface/trainer.profile-repository.interface';
 import { IUserRepository } from '@/modules/user/interface/user-repository.interface';
 import { IS3Service } from '@/modules/s3/interface/s3-service.interface';
@@ -18,7 +18,7 @@ import {
   UpdateBmiResponseDto,
 } from "../dto/user.dto";
 import { HealthMetricsService } from "@/services/health.metrics/health-metrics.service";
-import { ROLES } from "@/constants/roles";
+import { ROLES } from "@/constants/constant.values.ts/roles";
 import { PaginatedResponseDto } from "@/dto/common.dto";
 
 import { inject, injectable } from "inversify";

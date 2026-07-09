@@ -1,4 +1,4 @@
-import { BodyRegion } from "@/constants/fitness.constant";
+import { BodyRegion } from "@/constants/constant.values.ts/fitness.constant";
 
 export interface TargetMuscle {
     _id?: string;
@@ -8,4 +8,4 @@ export interface TargetMuscle {
     image: string;
     bodyRegion: BodyRegion;
     isActive?: boolean;
-}
+}

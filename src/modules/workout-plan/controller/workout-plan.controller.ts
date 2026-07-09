@@ -1,10 +1,10 @@
 import { NextFunction, Response } from "express";
 import { AuthRequest } from "../../../middleware/authGuard";
 import { AppError } from "../../../utils/appError";
-import { STATUS } from "../../../constants/statuscode";
+import { STATUS } from "../../../constants/constant.values.ts/statuscode";
 import { MESSAGES } from "../../../constants/messages";
 import { SuccessResponse } from "../../../utils/success.response";
-import { WORKOUT_EXERCISE_STATUS, WorkoutExerciseStatus, Timeframe } from "../../../constants/fitness.constant";
+import { WORKOUT_EXERCISE_STATUS, WorkoutExerciseStatus, Timeframe } from "../../../constants/constant.values.ts/fitness.constant";
 import { inject, injectable } from "inversify";
 import { WORKOUT_PLAN_TYPES } from "../workout-plan.types";
 import { IWorkoutPlanService } from "../interface/workout-plan-service.interface";

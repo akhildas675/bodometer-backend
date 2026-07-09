@@ -1,4 +1,4 @@
-import { WorkoutPlanStatus, PlanType } from "@/constants/fitness.constant";
+import { WorkoutPlanStatus, PlanType } from "@/constants/constant.values.ts/fitness.constant";
 import { IEmbeddedWorkoutDay } from "../models/user.workout-plan.model";
 
 export interface CreateWeekInput {

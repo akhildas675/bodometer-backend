@@ -1,4 +1,4 @@
-import { SLOT_DURATION, SlotDuration } from "@/constants/booking.constant";
+import { SLOT_DURATION, SlotDuration } from "@/constants/constant.values.ts/booking.constant";
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface IShift {

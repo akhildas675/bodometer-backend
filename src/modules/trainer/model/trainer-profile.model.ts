@@ -1,9 +1,9 @@
 import mongoose, { Document, Schema } from "mongoose";
-import { GENDER, Gender } from "../../../constants/identity.constants";
+import { GENDER, Gender } from "../../../constants/constant.values.ts/identity.constants";
 import {
   VERIFICATION_STATUS,
   VerificationStatus,
-} from "../../../constants/verification.constants";
+} from "../../../constants/constant.values.ts/verification.constants";
 
 export interface ITrainerProfileDocument extends Document {
   userId: mongoose.Types.ObjectId;
