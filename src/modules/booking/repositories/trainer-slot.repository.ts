@@ -29,36 +29,29 @@ export default class TrainerSlotRepository
     };
   }
 
-  // ── Single slot insert (legacy/testing) ─────────────────────────────────────
+
 
   async generateTrainerSlot(data: CreateSlot): Promise<TrainerSlot> {
     return this.create(data);
   }
 
-  // ── Bulk slot insert (used by generateTrainerSlot service method) ────────────
-  //
-  // Algorithm: Use MongoDB insertMany for performance — avoids N round-trips.
-  // Does not return results; caller only needs confirmation that slots were saved.
+
 
   async insertManySlots(slots: CreateSlot[]): Promise<void> {
     await this.model.insertMany(slots);
   }
 
-  // ── Lookup by ID ─────────────────────────────────────────────────────────────
+ 
 
   async findSlotById(slotId: string): Promise<TrainerSlot | null> {
     return this.findById(slotId);
   }
 
-  // ── Trainer's own slots (with optional filters) ───────────────────────────────
-  //
-  // Filter logic:
-  //  - status: match exact status (e.g. "available")
-  //  - from/to: startTime range filter (UTC date range)
 
   async findSlotsByTrainerId(
     trainerId: string,
-    filter?: GetSlotsFilter
+    filter?: GetSlotsFilter,
+    excludeRejectedForUserId?: string
   ): Promise<TrainerSlot[]> {
     const query: Record<string, unknown> = {
       trainerId: new Types.ObjectId(trainerId),
@@ -73,6 +66,23 @@ export default class TrainerSlotRepository
       if (filter.from) startTimeFilter.$gte = filter.from;
       if (filter.to) startTimeFilter.$lte = filter.to;
       query.startTime = startTimeFilter;
+    }
+
+ 
+    if (excludeRejectedForUserId) {
+      const rejectedBookings = await BookingModel.find({
+        userId: new Types.ObjectId(excludeRejectedForUserId),
+        status: "rejected",
+      })
+        .select("slotId")
+        .lean()
+        .exec();
+
+      const rejectedSlotIds = rejectedBookings.map((b: { slotId: Types.ObjectId }) => b.slotId);
+
+      if (rejectedSlotIds.length > 0) {
+        query._id = { $nin: rejectedSlotIds };
+      }
     }
 
     const docs = await this.model.find(query).sort({ startTime: 1 }).exec();
@@ -155,7 +165,7 @@ export default class TrainerSlotRepository
     };
   }
 
-  // ── Bulk lookup by IDs (used to find trainer's slots from bookings) ──────────
+
 
   async findSlotsByIds(slotIds: string[]): Promise<TrainerSlot[]> {
     const objectIds = slotIds.map((id) => new Types.ObjectId(id));
@@ -163,10 +173,6 @@ export default class TrainerSlotRepository
     return docs.map((doc) => this.toInterface(doc));
   }
 
-  // ── Status update (called on booking accept/reject/cancel) ───────────────────
-  //
-  // WHY: The slot status is the source of truth for availability.
-  // Resetting to AVAILABLE on reject/cancel allows re-booking.
 
   async updateSlotStatus(slotId: string, status: SlotStatus): Promise<void> {
     await this.model

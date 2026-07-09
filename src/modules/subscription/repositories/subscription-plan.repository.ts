@@ -70,14 +70,43 @@ export default class SubscriptionPlanRepository
       filter.isActive = query.isActive;
     }
     const total = await this.countDocuments(filter);
-    const plans = await this.model
+
+    type PopulatedDoc = Omit<ISubscriptionPlan, "features"> & {
+      features: {
+        featureId: ISubscriptionFeature;
+        limit?: number;
+        limitType?: string;
+      }[];
+    };
+
+    const rawPlans = await this.model
       .find(filter)
       .sort(sortOptions)
       .skip(skip)
       .limit(limit)
-      .lean();
+      .populate("features.featureId")
+      .lean()
+      .exec();
+
+    const populatedPlans = rawPlans as unknown as PopulatedDoc[];
+
+    const data = populatedPlans.map((plan) => {
+      const base = this.toInterface(plan as unknown as ISubscriptionPlan);
+      return {
+        ...base,
+        features: plan.features
+          .filter((f) => f && f.featureId)
+          .map((f) => ({
+            featureId: String(f.featureId?._id || f.featureId),
+            title: f.featureId?.title || "Feature",
+            limit: f.limit,
+            limitType: f.limitType,
+          })),
+      };
+    }) as unknown as SubscriptionPlan[];
+
     return {
-      data: plans.map((plan) => this.toInterface(plan)),
+      data,
       pagination: {
         currentPage: page,
         totalPages: Math.ceil(total / limit) || 1,

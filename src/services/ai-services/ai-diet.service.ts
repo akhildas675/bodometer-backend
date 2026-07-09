@@ -180,7 +180,7 @@ export class AiDietService {
       try {
         const cleanText = text.replace(/^```json\s*/, '').replace(/\s*```$/, '');
         parsedResponse = JSON.parse(cleanText) as DietWeekPlanResponse;
-      } catch (parseError) {
+      } catch {
         console.error("Failed to parse JSON response:", text);
         throw new Error("AI returned malformed JSON");
       }

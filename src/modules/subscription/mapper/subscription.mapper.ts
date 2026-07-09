@@ -60,6 +60,7 @@ export class SubscriptionMapper {
       isActive: plan.isActive ?? true,
       features: plan.features.map((f) => ({
         featureId: f.featureId,
+        title: f.title,
         limit: f.limit,
         limitType: f.limitType,
       })),
@@ -81,6 +82,7 @@ export class SubscriptionMapper {
       isActive: plan.isActive ?? true,
       features: plan.features.map((f) => ({
         featureId: f.featureId,
+        title: f.title,
         limit: f.limit,
         limitType: f.limitType,
       })),

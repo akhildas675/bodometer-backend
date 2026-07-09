@@ -15,7 +15,6 @@ import {
   TIMEFRAME, 
   Timeframe, 
   PLAN_TYPE,
-  PlanType,
 } from "@/constants/constant.values.ts/fitness.constant";
 import { IEmbeddedWorkoutDay, IEmbeddedWorkoutExercise } from "../models/user.workout-plan.model";
 import { 
@@ -67,7 +66,6 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       }
     }
 
-    const isPremium = planType === PLAN_TYPE.PREMIUM;
     const { generationStatus } = await this.getWorkoutPlans(userId);
 
     if (!generationStatus.canGenerate) {
@@ -415,6 +413,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
 
   async getWorkoutProgress(userId: string, timeframe?: Timeframe): Promise<WorkoutProgressResponseDto> {
     const isPremium = await this.getActiveSubscription(userId);
+  
     const plansResponse = await this.getWorkoutPlans(userId);
     return this.calculateWorkoutProgress(plansResponse.plans, timeframe);
   }

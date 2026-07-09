@@ -26,6 +26,7 @@ export interface SubscriptionPlan {
   durationInDays: number;
   features: {
     featureId: string;
+    title?: string;
     limit?: number;
     limitType?: string;
   }[];

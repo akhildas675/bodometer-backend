@@ -66,9 +66,10 @@ export class TrainerSlotController {
   ): Promise<void> => {
     try {
       const { trainerId } = req.params;
+      const userId = req.user?.id; // may be undefined for non-auth visitors
 
       const slots =
-        await this._trainerSlotService.getTrainerAvailableSlots(trainerId);
+        await this._trainerSlotService.getTrainerAvailableSlots(trainerId, userId);
 
       new SuccessResponse(STATUS.OK, MESSAGES.SLOT.SLOT_CREATED, slots).send(
         res

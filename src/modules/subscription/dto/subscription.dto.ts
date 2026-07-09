@@ -93,7 +93,7 @@ export interface SubscriptionPlanDto {
   durationInDays: number;
   isPopular: boolean;
   isActive: boolean;
-  features: Array<{ featureId: string; limit?: number; limitType?: string }>;
+  features: Array<{ featureId: string; title?: string; limit?: number; limitType?: string }>;
 }
 
 export interface GetAllSubscriptionPlansResponseDto {
@@ -113,7 +113,7 @@ export interface GetSubscriptionPlanByIdResponseDto {
   durationInDays: number;
   isPopular: boolean;
   isActive: boolean;
-  features: Array<{ featureId: string; limit?: number; limitType?: string }>;
+  features: Array<{ featureId: string; title?: string; limit?: number; limitType?: string }>;
 }
 
 export interface UpdateSubscriptionPlanDto {

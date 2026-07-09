@@ -96,7 +96,7 @@ export class TrainerSlotService implements ITrainerSlotService {
   // Only returns AVAILABLE slots with startTime in the future.
 
 
-  async getTrainerAvailableSlots(trainerIdOrProfileId: string): Promise<TrainerSlot[]> {
+  async getTrainerAvailableSlots(trainerIdOrProfileId: string, userId?: string): Promise<TrainerSlot[]> {
     let resolvedTrainerId = trainerIdOrProfileId;
     
     // Resolve profileId to userId if necessary
@@ -108,10 +108,14 @@ export class TrainerSlotService implements ITrainerSlotService {
       }
     }
 
-    return this._trainerSlotRepository.findSlotsByTrainerId(resolvedTrainerId, {
-      status: SLOT_STATUS.AVAILABLE,
-      from: new Date(),
-    });
+    return this._trainerSlotRepository.findSlotsByTrainerId(
+      resolvedTrainerId,
+      {
+        status: SLOT_STATUS.AVAILABLE,
+        from: new Date(),
+      },
+      userId  // pass through so repository can exclude rejected-for-this-user slots
+    );
   }
 
   async blockSlot(trainerId: string, slotId: string): Promise<void> {

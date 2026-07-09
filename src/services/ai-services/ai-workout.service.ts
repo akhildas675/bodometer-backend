@@ -186,13 +186,7 @@ function cleanJsonString(input: string): string {
   return input.trim();
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// NOTE: No answer keys or answer values are manually parsed here in TypeScript.
-// The entire answers array is passed raw to the AI.
-// The AI is responsible for reading and interpreting every answer by its
-// questionKey label and answer value. This makes the prompt resilient to any
-// admin-side changes to question keys or answer value strings.
-// ─────────────────────────────────────────────────────────────────────────────
+
 
 export const buildWorkoutPrompt = (payload: WorkoutGenerationPayload): string => {
   const { previousPlansCount, completedWorkoutDaysTotal, planType } = payload;
@@ -200,7 +194,7 @@ export const buildWorkoutPrompt = (payload: WorkoutGenerationPayload): string =>
   const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const currentDayOfWeek = daysOfWeek[new Date().getDay()];
 
-  // ─── FREE PLAN ─────────────────────────────────────────────────────────────
+  // free plan
   if (planType === "FREE") {
     return `You are an expert AI fitness coach.
 Your task is to generate a basic, beginner-friendly 7-day workout plan.

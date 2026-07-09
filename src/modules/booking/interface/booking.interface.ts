@@ -1,7 +1,7 @@
 import { BookingStatus, SlotStatus } from "@/constants/constant.values.ts/booking.constant";
 import { Role } from "@/constants/constant.values.ts/roles";
 
-// ── Raw domain object (IDs only) ──────────────────────────────────────────────
+
 
 export interface Booking {
   id: string;
@@ -29,7 +29,6 @@ export interface UpdateBookingData {
   note?: string;
 }
 
-// ── Populated views returned to controllers ──────────────────────────────────
 
 export interface BookingUserInfo {
   id: string;
@@ -53,9 +52,7 @@ export interface BookingSlotInfo {
   status: SlotStatus;
 }
 
-/**
- * User perspective: booking with trainer info derived from the slot.
- */
+
 export interface UserBookingView {
   id: string;
   trainer: BookingTrainerInfo;
@@ -68,9 +65,7 @@ export interface UserBookingView {
   createdAt: Date;
 }
 
-/**
- * Trainer perspective: booking with user info + slot time.
- */
+
 export interface TrainerBookingView {
   id: string;
   user: BookingUserInfo;
@@ -83,7 +78,7 @@ export interface TrainerBookingView {
   createdAt: Date;
 }
 
-// ── Pagination ─────────────────────────────────────────────────────────────────
+
 
 export interface PaginationMeta {
   currentPage: number;
