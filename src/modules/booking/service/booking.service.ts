@@ -121,4 +121,8 @@ export class BookingService implements IBookingService {
   ): Promise<PaginatedResult<UserBookingView>> {
     return this._bookingRepository.getUserBookings(userId, filter);
   }
+
+
+
+
 }

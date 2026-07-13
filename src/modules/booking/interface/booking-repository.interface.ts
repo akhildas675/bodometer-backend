@@ -15,4 +15,5 @@ export interface IBookingRepository {
   updateBookingById(bookingId: string, data: UpdateBookingData): Promise<Booking | null>;
   getUserBookings(userId: string, filter: GetBookingsFilter): Promise<PaginatedResult<UserBookingView>>;
   getTrainerBookings(trainerId: string, filter: GetBookingsFilter): Promise<PaginatedResult<TrainerBookingView>>;
+
 }

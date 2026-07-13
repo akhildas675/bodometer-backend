@@ -85,8 +85,7 @@ function buildPaginationMeta(
 @injectable()
 export default class BookingRepository
   extends BaseRepository<Booking, IBooking>
-  implements IBookingRepository
-{
+  implements IBookingRepository {
   constructor() {
     super(BookingModel);
   }
@@ -286,4 +285,6 @@ export default class BookingRepository
 
     return { data, pagination: buildPaginationMeta(total, page, limit) };
   }
+
+
 }

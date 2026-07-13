@@ -99,3 +99,5 @@ export interface GetBookingsFilter {
   limit?: number;
   status?: BookingStatus;
 }
+
+
