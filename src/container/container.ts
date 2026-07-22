@@ -14,6 +14,7 @@ import { loadAuthBindings } from "@/modules/auth/auth.bindings";
 import { loadUserBindings } from "@/modules/user/user.bindings";
 import { loadTrainerBindings } from "@/modules/trainer/trainer.bindings";
 import { loadBookingBindings } from "@/modules/booking/booking.bindings";
+import { loadCoachingBindings } from "@/modules/coaching/coaching.bindings";
 
 const container = new Container();
 
@@ -31,7 +32,8 @@ loadMealBindings(container);
 loadHealthLogBindings(container);
 loadWorkoutPlanBindings(container);
 loadDietPlanBindings(container);
-loadBookingBindings(container)
+loadBookingBindings(container);
+loadCoachingBindings(container)
 
 
 export default container;

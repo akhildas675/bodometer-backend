@@ -14,6 +14,7 @@ import trainerRoute from "@/modules/trainer/routes/trainer.route";
 import { dietPlanRoutes } from "@/modules/diet-plan/routes/diet-plan.routes";
 import { API_MOUNTS } from "@/constants/routes.constant/api.mounts";
 import bookingRoute from "@/modules/booking/routes/booking.routes";
+import coachingRoute from "@/modules/coaching/routes/coaching.routes";
 
 
 const routes = (app: Application) => {
@@ -31,6 +32,7 @@ const routes = (app: Application) => {
   app.use("/api/user/health-log", healthLogRoute);
   app.use("/api/user/diet-plan", dietPlanRoutes);
   app.use(API_MOUNTS.BOOKING,bookingRoute)
+  app.use(API_MOUNTS.COACHING,coachingRoute);
 };
 
 export default routes;

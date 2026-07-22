@@ -28,6 +28,8 @@ export const API_MOUNTS = {
 
     WORKOUT_PLAN: "/api/user/workout-plan",
 
+    COACHING: "/api/coaching",
+
     BOOKING: "/api/booking"
 
 } as const;

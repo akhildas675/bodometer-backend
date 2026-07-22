@@ -25,3 +25,9 @@ export const BOOKING_PATHS = {
   COMPLETE: "/:bookingId/complete",
   NOT_ATTENDED: "/:bookingId/not-attended",
 } as const;
+
+export const COACHING_PATHS = {
+  ROOT: "/",
+  BY_ID: "/:serviceId",
+  TOGGLE_STATUS: "/:serviceId/toggle",
+} as const;

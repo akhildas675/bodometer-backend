@@ -70,4 +70,24 @@ export const BOOKING_MESSAGES = {
     SLOT_EXPIRED: "This slot has expired.",
     SLOT_NOT_AVAILABLE: "This slot is no longer available.",
   },
-} as const;
+
+  COACHING:{
+    COACHING_NOT_FOUND: "Coaching not found.",
+    COACHING_CREATED: "Coaching created successfully.",
+    COACHING_CREATION_FAILED: "Failed to create coaching.",
+    COACHING_UPDATED: "Coaching updated successfully.",
+    COACHING_UPDATE_FAILED: "Failed to update coaching.",
+    COACHING_DELETED: "Coaching deleted successfully.",
+    COACHING_DELETION_FAILED: "Failed to delete coaching.",
+    COACHING_ALREADY_EXISTS: "You have already booked this coaching.",
+    COACHING_ALREADY_CANCELLED: "Coaching has already been cancelled.",
+    COACHING_ALREADY_COMPLETED: "Coaching has already been completed.",
+    COACHING_ALREADY_PROCESSED:"This coaching has already been accepted or rejected.",
+    COACHING_UNAUTHORIZED:"You are not authorised to perform this action on this coaching.",
+    COACHING_FETCH_FAILED:"Failed to fetch coaching.",
+    COACHING_FETCHED:"Coaching fetched successfully.",
+    COACHING_STATUS_TOGGLED:"Coaching status toggled successfully.",
+    COACHING_STATUS_TOGGLE_FAILED:"Failed to toggle coaching status.",
+    
+  }
+} as const;

@@ -3,7 +3,8 @@ import { Request, Response, NextFunction } from "express";
 import { STATUS } from "@/constants/constant.values.ts/statuscode";
 
 export const validate =
-  (schema: ZodSchema) => (req: Request, res: Response, next: NextFunction) => {
+  <Output, Def>(schema: ZodSchema<Output, Def>) =>
+  (req: Request, res: Response, next: NextFunction) => {
     try {
       const parsed = schema.parse({
         body: req.body as unknown,
