@@ -9,12 +9,13 @@ import { loadMealBindings } from "@/modules/meal/meal.bindings";
 import { loadHealthLogBindings } from "@/modules/health-log/health-log.bindings";
 import { loadWorkoutPlanBindings } from "@/modules/workout-plan/workout-plan.bindings";
 import { loadDietPlanBindings } from "@/modules/diet-plan/diet-plan.bindings";
-import {Container} from "inversify";
+import { Container } from "inversify";
 import { loadAuthBindings } from "@/modules/auth/auth.bindings";
 import { loadUserBindings } from "@/modules/user/user.bindings";
 import { loadTrainerBindings } from "@/modules/trainer/trainer.bindings";
-import { loadBookingBindings } from "@/modules/booking/booking.bindings";
 import { loadCoachingBindings } from "@/modules/coaching/coaching.bindings";
+import { loadBookingBindings } from "@/modules/booking/booking.bindings";
+import { loadWalletBindings } from "@/modules/wallet/wallet.bindings";
 
 const container = new Container();
 
@@ -32,8 +33,8 @@ loadMealBindings(container);
 loadHealthLogBindings(container);
 loadWorkoutPlanBindings(container);
 loadDietPlanBindings(container);
+loadCoachingBindings(container);
 loadBookingBindings(container);
-loadCoachingBindings(container)
-
+loadWalletBindings(container);
 
 export default container;

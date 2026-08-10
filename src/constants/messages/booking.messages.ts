@@ -22,43 +22,54 @@ export const BOOKING_MESSAGES = {
       "Only pending or accepted bookings can be cancelled.",
     BOOKING_NOT_PENDING:
       "Only pending bookings can be accepted or rejected.",
+    BOOKING_SETTINGS_CREATED: "Booking settings created successfully.",
+    BOOKING_SETTINGS_UPDATED: "Booking settings updated successfully.",
+    BOOKING_SETTINGS_CREATE_FAILED: "Failed to create booking settings.",
+    BOOKING_SETTINGS_ALREADY_EXISTS: "Booking settings already exist for this trainer.",
+    SLOT_UNAVAILABLE: "The selected time slot is no longer available or conflicts with an existing booking.",
+    COACHING_SERVICE_NOT_FOUND: "Coaching service not found.",
+    PAYMENT_CHECKOUT_FAILED: "Failed to initialize secure payment checkout. Please verify payment configuration and try again.",
+    FAILED_TO_CONFIRM: "Failed to confirm booking.",
+    FAILED_TO_CANCEL: "Failed to cancel booking.",
+    BOOKING_RECORD_NOT_FOUND: "Booking record not found.",
   },
 
   AVAILABILITY: {
     AVAILABILITY_CREATED: "Availability created successfully.",
+    AVAILABILITY_UPDATED: "Trainer availability schedule updated successfully.",
+    AVAILABILITY_DELETED: "Availability schedule deleted successfully.",
+    AVAILABILITY_FETCHED: "Trainer availability fetched successfully.",
+    AVAILABILITY_FETCH_FAILED: "Failed to fetch trainer availability.",
     AVAILABILITY_CREATE_FAILED: "Failed to create availability.",
+    AVAILABILITY_NOT_FOUND: "Availability record not found.",
+    UNAUTHORIZED_DELETE: "Only the owner trainer can delete this schedule.",
+    AVAILABILITY_ALREADY_EXISTS: "Availability already exists for this trainer.",
 
-    AVAILABILITY_NOT_FOUND: "Availability not found.",
+    ONE_WORKING_DAY_REQUIRED: "At least one working day is required.",
+    NO_AVAILABILITY_SET: "No availability set for this trainer.",
 
     PAST_DATE_NOT_ALLOWED: "Past dates cannot be selected.",
-
-    DATE_OUT_OF_RANGE:
-      "Availability can only be created for the next 7 days.",
-
-    PAST_TIME_NOT_ALLOWED:
-      "Past time cannot be selected for today's availability.",
-
+    DATE_OUT_OF_RANGE: "Availability can only be created for the next 7 days.",
+    PAST_TIME_NOT_ALLOWED: "Past time cannot be selected for today's availability.",
     INVALID_TIME_RANGE: "Start time must be earlier than end time.",
-
-    SAME_START_AND_END_TIME:
-      "Start time and end time cannot be the same.",
-
-    INVALID_SHIFT_DURATION:
-      "Shift duration is shorter than the selected slot duration.",
-
+    SAME_START_AND_END_TIME: "Start time and end time cannot be the same.",
+    INVALID_SHIFT_DURATION: "Shift duration is shorter than the selected slot duration.",
+    INVALID_TIMEZONE: "Invalid timezone provided.",
     INVALID_SLOT_DURATION: "Slot duration must be 30, 45, or 60 minutes.",
-
     SHIFT_OVERLAP: "Shifts cannot overlap.",
-
     DUPLICATE_SHIFT: "Duplicate shifts are not allowed.",
-
-    EXISTING_AVAILABILITY_OVERLAP:
-      "This shift overlaps with your existing availability.",
-
+    EXISTING_AVAILABILITY_OVERLAP: "This shift overlaps with your existing availability.",
     CROSS_MIDNIGHT_NOT_ALLOWED: "A shift cannot span multiple days.",
-
     EMPTY_SHIFT: "At least one shift is required.",
     MAXIMUM_SHIFT_LIMIT: "A maximum of 4 shifts can be created per day.",
+  },
+
+  OVERRIDE: {
+    OVERRIDE_CREATED: "Trainer schedule override created successfully.",
+    OVERRIDE_FETCHED: "Overrides fetched successfully.",
+    OVERRIDE_CANCELLED: "Schedule override cancelled successfully.",
+    OVERRIDE_NOT_FOUND: "Override record not found.",
+    UNAUTHORIZED_OVERRIDE: "Only the owner trainer can override their availability.",
   },
 
   SLOT: {
@@ -69,9 +80,14 @@ export const BOOKING_MESSAGES = {
     SLOT_ALREADY_BOOKED: "This slot has already been booked.",
     SLOT_EXPIRED: "This slot has expired.",
     SLOT_NOT_AVAILABLE: "This slot is no longer available.",
+    REQUIRED_PARAMS: "trainerId, serviceId, and date query parameters are required.",
+    REQUIRED_DATES_PARAMS: "trainerId, serviceId, and month query parameters are required.",
+    SLOTS_CALCULATED: "Available booking slots calculated successfully.",
+    DATES_OVERVIEW_FETCHED: "Available dates overview fetched successfully.",
+    SLOT_IS_REQUIRED: "At least one slot must be selected for booking.",
   },
 
-  COACHING:{
+  COACHING: {
     COACHING_NOT_FOUND: "Coaching not found.",
     COACHING_CREATED: "Coaching created successfully.",
     COACHING_CREATION_FAILED: "Failed to create coaching.",
@@ -82,12 +98,45 @@ export const BOOKING_MESSAGES = {
     COACHING_ALREADY_EXISTS: "You have already booked this coaching.",
     COACHING_ALREADY_CANCELLED: "Coaching has already been cancelled.",
     COACHING_ALREADY_COMPLETED: "Coaching has already been completed.",
-    COACHING_ALREADY_PROCESSED:"This coaching has already been accepted or rejected.",
-    COACHING_UNAUTHORIZED:"You are not authorised to perform this action on this coaching.",
-    COACHING_FETCH_FAILED:"Failed to fetch coaching.",
-    COACHING_FETCHED:"Coaching fetched successfully.",
-    COACHING_STATUS_TOGGLED:"Coaching status toggled successfully.",
-    COACHING_STATUS_TOGGLE_FAILED:"Failed to toggle coaching status.",
-    
-  }
+    COACHING_ALREADY_PROCESSED: "This coaching has already been accepted or rejected.",
+    COACHING_UNAUTHORIZED: "You are not authorised to perform this action on this coaching.",
+    COACHING_FETCH_FAILED: "Failed to fetch coaching.",
+    COACHING_FETCHED: "Coaching fetched successfully.",
+    COACHING_STATUS_TOGGLED: "Coaching status toggled successfully.",
+    COACHING_STATUS_TOGGLE_FAILED: "Failed to toggle coaching status.",
+    ONE_COACHING_SERVICE_REQUIRED: "At least one coaching service must be selected.",
+    INVALID_SERVICE_IDS: "One or more provided service is required",
+    DUPLICATE_SERVICE_IDS: "Duplicate coaching services are not allowed",
+  },
+
+  RESCHEDULE: {
+    RESCHEDULE_PROPOSED: "Reschedule proposal sent to client successfully.",
+    RESCHEDULE_ACCEPTED: "Reschedule request accepted.",
+    RESCHEDULE_DECLINED: "Reschedule request declined.",
+    RESCHEDULE_WITHDRAWN: "Reschedule proposal withdrawn.",
+    RESCHEDULE_FETCHED: "Pending reschedule requests retrieved successfully.",
+    RESCHEDULE_NOT_PENDING: "Reschedule request is no longer pending.",
+    RESCHEDULE_EXPIRED: "This reschedule proposal has expired (24 hours window elapsed). The original booking session remains confirmed.",
+    RESCHEDULE_CONFLICT: "The proposed time slot conflicts with another booking. Please ask trainer for another slot.",
+    UNAUTHORIZED_PROPOSE: "You are not authorized to propose rescheduling for this booking.",
+    UNAUTHORIZED_RESPOND: "You are not authorized to respond to this request.",
+    UNAUTHORIZED_WITHDRAW: "You can only withdraw your own reschedule requests.",
+    CANNOT_RESCHEDULE_CANCELLED_OR_COMPLETED: "Cannot reschedule a cancelled or completed booking.",
+    DEFAULT_PROPOSE_REASON: "Trainer schedule update",
+    PROPOSAL_EXPIRED_REASON: "Proposal expired after 24 hours",
+    WITHDRAWN_REASON: "Withdrawn by trainer",
+  },
+
+  CANCELLATION: {
+    CANCELLED_BY_TRAINER_SUCCESS: "Session cancelled by trainer successfully. 100% refund initiated.",
+    CANCELLED_BY_USER_SUCCESS: "Booking session cancelled successfully.",
+    CANCELLATION_REASON_REQUIRED: "Reason is mandatory for trainer cancellations.",
+    SESSION_NOT_FOUND: "Booking session not found.",
+    UNAUTHORIZED_CANCEL: "You are not authorized to cancel this booking.",
+    ALREADY_CANCELLED: "Booking is already cancelled.",
+    CANNOT_CANCEL_COMPLETED: "Cannot cancel a completed session.",
+    DEFAULT_TRAINER_REASON: "Trainer schedule conflict",
+    DEFAULT_USER_REASON: "Cancelled by user",
+    DEFAULT_USER_REQUEST_REASON: "User requested cancellation",
+  },
 } as const;

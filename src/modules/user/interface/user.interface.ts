@@ -32,6 +32,7 @@ export interface UserInterface {
   role: Role;
   isVerified: boolean;
   isBlocked: boolean;
+  onboardingComplete?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

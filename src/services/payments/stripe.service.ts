@@ -23,7 +23,7 @@ export class PaymentService implements IPaymentService {
               name: params.planName,
               description: params.description,
             },
-            unit_amount: params.amount,
+            unit_amount: Math.round(params.amount * 100),
           },
           quantity: 1,
         },

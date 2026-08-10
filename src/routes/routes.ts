@@ -13,11 +13,11 @@ import workoutPlanRoute from "@/modules/workout-plan/routes/workout-plan.routes"
 import trainerRoute from "@/modules/trainer/routes/trainer.route";
 import { dietPlanRoutes } from "@/modules/diet-plan/routes/diet-plan.routes";
 import { API_MOUNTS } from "@/constants/routes.constant/api.mounts";
-import bookingRoute from "@/modules/booking/routes/booking.routes";
 import coachingRoute from "@/modules/coaching/routes/coaching.routes";
+import bookingRoute from "@/modules/booking/routes/booking.routes";
+import walletRoute from "@/modules/wallet/routes/wallet.routes";
 
-
-const routes = (app: Application) => {
+const routes = (app: Application): void => {
   app.use(API_MOUNTS.AUTH, authRoute);
   app.use(API_MOUNTS.USER, userRoute);
   app.use(API_MOUNTS.TRAINER, trainerRoute);
@@ -31,8 +31,9 @@ const routes = (app: Application) => {
   app.use("/api/meal-categories", mealCategoryRoute);
   app.use("/api/user/health-log", healthLogRoute);
   app.use("/api/user/diet-plan", dietPlanRoutes);
-  app.use(API_MOUNTS.BOOKING,bookingRoute)
-  app.use(API_MOUNTS.COACHING,coachingRoute);
+  app.use(API_MOUNTS.COACHING, coachingRoute);
+  app.use(API_MOUNTS.BOOKING, bookingRoute);
+  app.use(API_MOUNTS.WALLET, walletRoute);
 };
 
 export default routes;

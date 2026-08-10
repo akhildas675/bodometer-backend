@@ -2,7 +2,7 @@ import container from "@/container/container";
 import { CoachingController } from "../controller/coaching.controller";
 import { COACHING_TYPES } from "../coaching.types";
 import { Router } from "express";
-import { COACHING_PATHS } from "@/constants/routes.constant/booking.paths";
+import { COACHING_PATHS } from "@/constants/routes.constant/coaching.paths";
 import { ROLE_GUARD } from "@/constants/constant.values.ts/role.guard";
 import { validate } from "@/middleware/validate";
 import {

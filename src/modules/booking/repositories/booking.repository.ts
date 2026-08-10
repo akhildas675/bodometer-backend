@@ -1,290 +1,225 @@
 import { injectable } from "inversify";
-import { Types } from "mongoose";
+import mongoose, { ClientSession } from "mongoose";
 import { BaseRepository } from "@/modules/base/repository/base.repository";
-import { IBooking, BookingModel } from "../models/booking.model";
-import { TrainerSlotModel } from "../models/trainer-slot.model";
-import { TrainerProfileModel } from "../../trainer/model/trainer-profile.model";
-import { IBookingRepository } from "../interface/booking-repository.interface";
+import { IBooking, BookingModel } from "../model/booking.model";
 import {
-  Booking,
-  BookingTrainerInfo,
-  BookingUserInfo,
   CreateBookingData,
-  GetBookingsFilter,
-  PaginatedResult,
-  PaginationMeta,
-  TrainerBookingView,
-  UpdateBookingData,
-  UserBookingView,
-} from "../interface/booking.interface";
-
-// ── Populated document types returned from Mongoose ──────────────────────────
-
-interface PopulatedSlot {
-  _id: Types.ObjectId;
-  startTime: Date;
-  endTime: Date;
-  trainerId: {
-    _id: Types.ObjectId;
-    name: string;
-    profilePic?: string;
-  };
-}
-
-interface UserBookingDocument {
-  _id: Types.ObjectId;
-  status: Booking["status"];
-  cancelReason?: string;
-  cancelledBy?: Booking["cancelledBy"];
-  note?: string;
-  createdAt: Date;
-  slotId: PopulatedSlot;
-}
-
-interface PopulatedUser {
-  _id: Types.ObjectId;
-  name: string;
-  email: string;
-  profilePic?: string;
-}
-
-interface TrainerBookingDocument {
-  _id: Types.ObjectId;
-  status: Booking["status"];
-  cancelReason?: string;
-  cancelledBy?: Booking["cancelledBy"];
-  note?: string;
-  createdAt: Date;
-  userId: PopulatedUser;
-  slotId: {
-    _id: Types.ObjectId;
-    startTime: Date;
-    endTime: Date;
-    trainerId: Types.ObjectId;
-  };
-}
-
-// ── Helper: build standard pagination metadata ─────────────────────────────
-
-function buildPaginationMeta(
-  total: number,
-  page: number,
-  limit: number
-): PaginationMeta {
-  const totalPages = Math.ceil(total / limit);
-  return {
-    currentPage: page,
-    totalPages,
-    totalItems: total,
-    itemsPerPage: limit,
-    hasNextPage: page < totalPages,
-    hasPreviousPage: page > 1,
-  };
-}
+  IBookingRepository,
+} from "../interface/repository.interface/booking-repository.interface";
+import { Booking, BookingStatus } from "../interface/domain/booking.interface";
 
 @injectable()
-export default class BookingRepository
+export class BookingRepository
   extends BaseRepository<Booking, IBooking>
-  implements IBookingRepository {
+  implements IBookingRepository
+{
   constructor() {
     super(BookingModel);
   }
 
-  // ── toInterface: maps raw IBooking doc → Booking domain object ────────────
-
   protected toInterface(doc: IBooking): Booking {
     return {
       id: doc._id.toString(),
+      bookingNumber: doc.bookingNumber,
+      trainerId: doc.trainerId.toString(),
       userId: doc.userId.toString(),
-      slotId: doc.slotId.toString(),
-      status: doc.status,
-      cancelReason: doc.cancelReason,
-      cancelledBy: doc.cancelledBy,
-      note: doc.note,
+      availabilityId: doc.availabilityId ? doc.availabilityId.toString() : undefined,
+      serviceId: doc.serviceId.toString(),
+      serviceSnapshot: doc.serviceSnapshot
+        ? {
+            name: doc.serviceSnapshot.name,
+            durationMinutes: doc.serviceSnapshot.durationMinutes,
+            bookingMode: doc.serviceSnapshot.bookingMode,
+          }
+        : undefined,
+      pricing: doc.pricing
+        ? {
+            baseAmount: doc.pricing.baseAmount,
+            discountAmount: doc.pricing.discountAmount,
+            serviceFee: doc.pricing.serviceFee,
+            totalAmount: doc.pricing.totalAmount,
+            currency: doc.pricing.currency,
+          }
+        : undefined,
+      bookingDate: doc.bookingDate,
+      startTime: doc.startTime,
+      endTime: doc.endTime,
+      bufferEndTime: doc.bufferEndTime,
+      status: doc.status as BookingStatus,
+      paymentId: doc.paymentId,
+      price: doc.price,
+      attendance: {
+        status: doc.attendance?.status || "PENDING",
+        markedAt: doc.attendance?.markedAt,
+        markedBy: doc.attendance?.markedBy?.toString(),
+      },
+      cancellation: doc.cancellation
+        ? {
+            cancelledBy: doc.cancellation.cancelledBy?.toString(),
+            reason: doc.cancellation.reason,
+            cancelledAt: doc.cancellation.cancelledAt,
+          }
+        : undefined,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     };
   }
 
-  // ── Create a new booking ──────────────────────────────────────────────────
-
-  async createBooking(data: CreateBookingData): Promise<Booking> {
-    return this.create(data);
-  }
-
-  // ── Find a booking by ID (raw, IDs only) ─────────────────────────────────
-
-  async findBookingById(bookingId: string): Promise<Booking | null> {
-    return this.findById(bookingId);
-  }
-
-  // ── Check if user already has a pending/accepted booking for a slot ───────
-  //
-  // Business rule: A user cannot book the same slot twice.
-  // We check only PENDING status because once a slot is BOOKED, no one else
-  // can book it anyway (slot.status guard in BookingValidation handles that).
-
-  async findUserActiveBookingForSlot(
-    userId: string,
-    slotId: string
-  ): Promise<Booking | null> {
-    const doc = await this.model
-      .findOne({
-        userId: new Types.ObjectId(userId),
-        slotId: new Types.ObjectId(slotId),
-        status: "pending",
-      })
-      .exec();
-    return doc ? this.toInterface(doc) : null;
-  }
-
-  // ── Update booking status (accept / reject / cancel) ─────────────────────
-
-  async updateBookingById(
-    bookingId: string,
-    data: UpdateBookingData
-  ): Promise<Booking | null> {
-    const doc = await this.model
-      .findByIdAndUpdate(
-        bookingId,
-        { $set: data },
-        { new: true, runValidators: true }
-      )
-      .exec();
-    return doc ? this.toInterface(doc) : null;
-  }
-
-  // ── Paginated list of bookings for a user ─────────────────────────────────
-  //
-  // Deep populate: slotId → trainerId (name, profilePic)
-  // This flattens the nested structure into a UserBookingView.
-
-  async getUserBookings(
-    userId: string,
-    filter: GetBookingsFilter
-  ): Promise<PaginatedResult<UserBookingView>> {
-    const { page = 1, limit = 10, status } = filter;
-    const skip = (page - 1) * limit;
-
-    const matchQuery: Record<string, unknown> = {
-      userId: new Types.ObjectId(userId),
-    };
-    if (status) matchQuery.status = status;
-
-    const [total, docs] = await Promise.all([
-      this.model.countDocuments(matchQuery),
-      this.model
-        .find(matchQuery)
-        .populate<{ slotId: PopulatedSlot }>({
-          path: "slotId",
-          populate: {
-            path: "trainerId",
-            select: "name profilePic",
-          },
-        })
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .exec(),
-    ]);
-
-    const trainerIds = docs.map((doc) => doc.slotId.trainerId._id);
-    const profiles = await TrainerProfileModel.find({ userId: { $in: trainerIds } }).select("_id userId").exec();
-    const profileMap = new Map<string, string>(profiles.map((p: { userId: { toString(): string }; _id: { toString(): string } }) => [p.userId.toString(), p._id.toString()]));
-
-    const data: UserBookingView[] = (
-      docs as unknown as UserBookingDocument[]
-    ).map((doc) => {
-      const trainerInfo: BookingTrainerInfo = {
-        id: doc.slotId.trainerId._id.toString(),
-        name: doc.slotId.trainerId.name,
-        profilePic: doc.slotId.trainerId.profilePic,
-        profileId: profileMap.get(doc.slotId.trainerId._id.toString()),
-      };
-      return {
-        id: doc._id.toString(),
-        trainer: trainerInfo,
-        startTime: doc.slotId.startTime,
-        endTime: doc.slotId.endTime,
-        status: doc.status,
-        cancelReason: doc.cancelReason,
-        cancelledBy: doc.cancelledBy,
-        note: doc.note,
-        createdAt: doc.createdAt,
-      };
+  async createOne(data: CreateBookingData, session?: ClientSession): Promise<Booking> {
+    const doc = new BookingModel({
+      bookingNumber: data.bookingNumber,
+      trainerId: new mongoose.Types.ObjectId(data.trainerId),
+      userId: new mongoose.Types.ObjectId(data.userId),
+      availabilityId: data.availabilityId
+        ? new mongoose.Types.ObjectId(data.availabilityId)
+        : undefined,
+      serviceId: new mongoose.Types.ObjectId(data.serviceId),
+      serviceSnapshot: data.serviceSnapshot || {
+        name: "Coaching Session",
+        durationMinutes: 60,
+        bookingMode: "ONLINE",
+      },
+      pricing: data.pricing || {
+        baseAmount: data.price,
+        discountAmount: 0,
+        serviceFee: 0,
+        totalAmount: data.price,
+        currency: "inr",
+      },
+      bookingDate: data.bookingDate,
+      startTime: data.startTime,
+      endTime: data.endTime,
+      bufferEndTime: data.bufferEndTime,
+      status: data.status || "PENDING_PAYMENT",
+      paymentId: data.paymentId || "",
+      price: data.price,
+      attendance: data.attendance || { status: "PENDING" },
+      cancellation: data.cancellation,
     });
 
-    return { data, pagination: buildPaginationMeta(total, page, limit) };
+    await doc.save({ session });
+    return this.toInterface(doc);
   }
 
-  // ── Paginated list of bookings for a trainer ──────────────────────────────
-  //
-  // Algorithm:
-  //  1. Fetch all slotIds belonging to this trainer from TrainerSlot collection
-  //  2. Query bookings where slotId is in that set
-  //  3. Populate userId for user info
-  //
-  // WHY not a single aggregate? Keeping it simple and readable; the slot
-  // ID pre-fetch is a single indexed query.
+  async findById(id: string): Promise<Booking | null> {
+    const doc = await BookingModel.findById(id).exec();
+    return doc ? this.toInterface(doc) : null;
+  }
 
-  async getTrainerBookings(
+  async findByBookingNumber(bookingNumber: string): Promise<Booking | null> {
+    const doc = await BookingModel.findOne({ bookingNumber }).exec();
+    return doc ? this.toInterface(doc) : null;
+  }
+
+  async findByTrainerAndDate(trainerId: string, date: Date): Promise<Booking[]> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const docs = await BookingModel.find({
+      trainerId: new mongoose.Types.ObjectId(trainerId),
+      bookingDate: { $gte: startOfDay, $lte: endOfDay },
+      status: { $ne: "CANCELLED" },
+    }).exec();
+
+    return docs.map((doc) => this.toInterface(doc));
+  }
+
+  async findConflictingBookings(
     trainerId: string,
-    filter: GetBookingsFilter
-  ): Promise<PaginatedResult<TrainerBookingView>> {
-    const { page = 1, limit = 10, status } = filter;
-    const skip = (page - 1) * limit;
-
-    // Step 1: resolve all slotIds for this trainer
-    const slots = await TrainerSlotModel.find({
-      trainerId: new Types.ObjectId(trainerId),
-    })
-      .select("_id")
-      .lean()
-      .exec();
-
-    const slotIds = slots.map((s: { _id: Types.ObjectId }) => s._id);
-
-    const matchQuery: Record<string, unknown> = {
-      slotId: { $in: slotIds },
+    startTime: Date,
+    bufferEndTime: Date,
+    excludeBookingId?: string,
+  ): Promise<Booking[]> {
+    const filter: Record<string, unknown> = {
+      trainerId: new mongoose.Types.ObjectId(trainerId),
+      status: { $in: ["PENDING", "PENDING_PAYMENT", "CONFIRMED", "RESCHEDULE_PENDING"] },
+      startTime: { $lt: bufferEndTime },
+      bufferEndTime: { $gt: startTime },
     };
-    if (status) matchQuery.status = status;
 
-    const [total, docs] = await Promise.all([
-      this.model.countDocuments(matchQuery),
-      this.model
-        .find(matchQuery)
-        .populate<{ userId: PopulatedUser }>("userId", "name email profilePic")
-        .populate("slotId", "startTime endTime")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .exec(),
-    ]);
+    if (excludeBookingId) {
+      filter._id = { $ne: new mongoose.Types.ObjectId(excludeBookingId) };
+    }
 
-    const data: TrainerBookingView[] = (
-      docs as unknown as TrainerBookingDocument[]
-    ).map((doc) => {
-      const userInfo: BookingUserInfo = {
-        id: doc.userId._id.toString(),
-        name: doc.userId.name,
-        email: doc.userId.email,
-        profilePic: doc.userId.profilePic,
-      };
-      return {
-        id: doc._id.toString(),
-        user: userInfo,
-        startTime: doc.slotId.startTime,
-        endTime: doc.slotId.endTime,
-        status: doc.status,
-        cancelReason: doc.cancelReason,
-        cancelledBy: doc.cancelledBy,
-        note: doc.note,
-        createdAt: doc.createdAt,
-      };
-    });
-
-    return { data, pagination: buildPaginationMeta(total, page, limit) };
+    const docs = await BookingModel.find(filter).exec();
+    return docs.map((doc) => this.toInterface(doc));
   }
 
+  async findByUserId(userId: string): Promise<Booking[]> {
+    const docs = await BookingModel.find({
+      userId: new mongoose.Types.ObjectId(userId),
+    })
+      .sort({ startTime: -1 })
+      .exec();
+    return docs.map((doc) => this.toInterface(doc));
+  }
 
+  async findByTrainerId(trainerId: string): Promise<Booking[]> {
+    const docs = await BookingModel.find({
+      trainerId: new mongoose.Types.ObjectId(trainerId),
+    })
+      .sort({ startTime: -1 })
+      .exec();
+    return docs.map((doc) => this.toInterface(doc));
+  }
+
+  async updateStatus(
+    id: string,
+    status: BookingStatus,
+    paymentId?: string,
+    session?: ClientSession,
+  ): Promise<Booking | null> {
+    const updatePayload: Record<string, unknown> = { status };
+    if (paymentId) updatePayload.paymentId = paymentId;
+
+    const doc = await BookingModel.findByIdAndUpdate(
+      id,
+      { $set: updatePayload },
+      { new: true, runValidators: true, session },
+    ).exec();
+
+    return doc ? this.toInterface(doc) : null;
+  }
+
+  async updateById(
+    id: string,
+    data: Partial<IBooking>,
+    session?: ClientSession,
+  ): Promise<Booking | null> {
+    const doc = await BookingModel.findByIdAndUpdate(
+      id,
+      { $set: data },
+      { new: true, runValidators: true, session },
+    ).exec();
+
+    return doc ? this.toInterface(doc) : null;
+  }
+
+  async updateTimes(
+    id: string,
+    startTime: Date,
+    endTime: Date,
+    bufferEndTime: Date,
+    bookingDate: Date,
+    status?: BookingStatus,
+    session?: ClientSession,
+  ): Promise<Booking | null> {
+    const updatePayload: Record<string, unknown> = {
+      startTime,
+      endTime,
+      bufferEndTime,
+      bookingDate,
+    };
+    if (status) updatePayload.status = status;
+
+    const doc = await BookingModel.findByIdAndUpdate(
+      id,
+      { $set: updatePayload },
+      { new: true, runValidators: true, session },
+    ).exec();
+
+    return doc ? this.toInterface(doc) : null;
+  }
 }

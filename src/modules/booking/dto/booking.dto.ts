@@ -1,46 +1,35 @@
-import { SlotDuration, SlotStatus } from "@/constants/constant.values.ts/booking.constant";
-
-// ── Availability ──────────────────────────────────────────────────────────────
-
-export interface CreateAvailabilityDto {
-  date: Date;
-  shifts: {
-    startTime: Date;
-    endTime: Date;
-    duration: SlotDuration;
-  }[];
-}
-
-// ── Slot ──────────────────────────────────────────────────────────────────────
-
-export interface CreateSlotDto {
-  availabilityId: string;
-  trainerId: string;
-  startTime: Date;
-  endTime: Date;
-  status?: SlotStatus;
-}
-
-// ── Booking ───────────────────────────────────────────────────────────────────
-
-/**
- * Payload from the user when creating a booking.
- */
 export interface CreateBookingDto {
-  slotId: string;
-  note?: string;
+  trainerId: string;
+  serviceId: string;
+  bookingDate: string;
+  startTime: string;
+  endTime: string;
+  bufferEndTime: string;
+  paymentMethod?: "WALLET" | "ONLINE" | "SPLIT";
 }
 
-/**
- * Payload for rejecting a booking (trainer → requires a reason).
- */
-export interface RejectBookingDto {
-  reason: string;
+export interface VerifyPaymentDto {
+  bookingId: string;
+  sessionId: string;
 }
 
-/**
- * Payload for cancelling a booking (user or trainer → reason is mandatory).
- */
 export interface CancelBookingDto {
-  reason: string;
-}
+  reason?: string;
+  reasonCode?: string;
+}
+
+export interface ProposeRescheduleDto {
+  proposedStartTime: string;
+  proposedEndTime: string;
+  proposedBufferEndTime: string;
+  reason?: string;
+}
+
+export interface RespondRescheduleDto {
+  accept: boolean;
+  reason?: string;
+}
+
+export interface WithdrawRescheduleDto {
+  reason?: string;
+}

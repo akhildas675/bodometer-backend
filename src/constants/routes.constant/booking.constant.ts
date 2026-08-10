@@ -1,0 +1,15 @@
+export const BOOKING_PATHS = {
+  SETUP: "/setup",
+  AVAILABILITY: "/availability",
+  SETTINGS: "/settings",
+  UNAVAILABILITY: "/unavailability",
+  UNAVAILABILITY_BY_ID: "/unavailability/:id",
+  OVERRIDES: "/availability/overrides",
+  OVERRIDE_BY_ID: "/availability/overrides/:id",
+  SLOTS: "/slots",
+  AVAILABLE_DATES: "/available-dates",
+  CREATE: "/create",
+  VERIFY_PAYMENT: "/verify-payment",
+  USER_BOOKINGS: "/user/list",
+  TRAINER_BOOKINGS: "/trainer/list",
+} as const;

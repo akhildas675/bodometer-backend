@@ -1,20 +1,26 @@
 export const BOOKING_TYPES = {
-  // ── Repositories ────────────────────────────────────────────────────────────
+  // Repositories
   TrainerAvailabilityRepository: Symbol.for("TrainerAvailabilityRepository"),
-  TrainerSlotRepository: Symbol.for("TrainerSlotRepository"),
+  TrainerBookingSettingsRepository: Symbol.for("TrainerBookingSettingsRepository"),
+  TrainerUnavailabilityRepository: Symbol.for("TrainerUnavailabilityRepository"),
+  TrainerAvailabilityOverrideRepository: Symbol.for("TrainerAvailabilityOverrideRepository"),
   BookingRepository: Symbol.for("BookingRepository"),
+  BookingAuditLogRepository: Symbol.for("BookingAuditLogRepository"),
+  BookingCancellationRepository: Symbol.for("BookingCancellationRepository"),
+  BookingRescheduleRequestRepository: Symbol.for("BookingRescheduleRequestRepository"),
+  BookingRefundRepository: Symbol.for("BookingRefundRepository"),
 
-  // ── Services ────────────────────────────────────────────────────────────────
-  TrainerSlotService: Symbol.for("TrainerSlotService"),
-  TrainerAvailabilityService: Symbol.for("TrainerAvailability"),
+  // Services
+  TrainerSchedulingService: Symbol.for("TrainerSchedulingService"),
+  BookingSlotEngineService: Symbol.for("BookingSlotEngineService"),
   BookingService: Symbol.for("BookingService"),
+  BookingCancellationService: Symbol.for("BookingCancellationService"),
+  BookingRescheduleService: Symbol.for("BookingRescheduleService"),
+  BookingRefundService: Symbol.for("BookingRefundService"),
 
-  // ── Validation ──────────────────────────────────────────────────────────────
-  TrainerAvailabilityValidation: Symbol.for("TrainerAvailabilityValidation"),
-  BookingValidation: Symbol.for("BookingValidation"),
-
-  // ── Controllers ─────────────────────────────────────────────────────────────
-  TrainerSlotController: Symbol.for("TrainerSlotController"),
-  TrainerAvailabilityController: Symbol.for("TrainerAvailabilityController"),
-  BookingController: Symbol.for("BookingController"),
-};
+  // Controllers
+  TrainerSchedulingController: Symbol.for("TrainerSchedulingController"),
+  BookingCancellationController: Symbol.for("BookingCancellationController"),
+  BookingRescheduleController: Symbol.for("BookingRescheduleController"),
+  BookingSlotController: Symbol.for("BookingSlotController"),
+} as const;

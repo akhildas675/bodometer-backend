@@ -290,7 +290,7 @@ export class SubscriptionService implements ISubscriptionService {
     const result = await this._paymentService.createCheckoutSession({
       planName: plan.name,
       description: plan.description ?? "Bodometer Premium Access",
-      amount: Math.round(plan.price * 100),
+      amount: Number(plan.price),
       currency: "inr",
       successUrl: `${process.env.CLIENT_URL}/subscription-success?session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${process.env.CLIENT_URL}/subscription-cancel`,

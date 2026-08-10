@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { AppError } from "../../../utils/appError";
 import { STATUS } from "../../../constants/constant.values.ts/statuscode";
-import { MESSAGES } from "../../../constants/messages";
+
 import { inject, injectable } from "inversify";
 import { DIET_PLAN_TYPES } from "../diet-plan.types";
 import { IDietPlanService } from "../interface/diet-plan-service.interface";

@@ -1,76 +1,119 @@
 import { Container } from "inversify";
 import { BOOKING_TYPES } from "./booking.types";
-import { ITrainerAvailabilityRepository } from "./interface/trainer.availability-repository.interface";
-import { ITrainerAvailabilityService } from "./interface/trainer-availability-service.interface";
-import { ITrainerSlotRepository } from "./interface/trainer.slot-repository.interface";
-import { ITrainerSlotService } from "./interface/trainer.slot-service.interface";
-import { IBookingRepository } from "./interface/booking-repository.interface";
-import { IBookingService } from "./interface/booking-service.interface";
 
+import { ITrainerAvailabilityRepository } from "./interface/repository.interface/trainer.availability-repository.interface";
+import { ITrainerBookingSettingsRepository } from "./interface/repository.interface/trainer-booking.setting-repository.interface";
+import { ITrainerUnavailabilityRepository } from "./interface/repository.interface/trainer-unavailability-repository.interface";
+import { ITrainerAvailabilityOverrideRepository } from "./interface/repository.interface/trainer-availability-override-repository.interface";
+import { IBookingRepository } from "./interface/repository.interface/booking-repository.interface";
+import { IBookingAuditLogRepository } from "./interface/repository.interface/booking-audit-log-repository.interface";
+import { IBookingCancellationRepository, BookingCancellationRepository } from "./repositories/booking-cancellation.repository";
+import { IBookingRescheduleRequestRepository, BookingRescheduleRequestRepository } from "./repositories/booking-reschedule-request.repository";
+import { IBookingRefundRepository, BookingRefundRepository } from "./repositories/booking-refund.repository";
 
-import TrainerAvailabilityRepository from "./repositories/trainer-availability.repository";
-import TrainerSlotRepository from "./repositories/trainer-slot.repository";
-import BookingRepository from "./repositories/booking.repository";
+import { ITrainerSchedulingService } from "./interface/service.interface/trainer-scheduling-service.interface";
+import { IBookingSlotEngineService } from "./interface/service.interface/booking-slot-engine-service.interface";
+import { IBookingService } from "./interface/service.interface/booking-service.interface";
+import { IBookingCancellationService } from "./interface/service.interface/booking-cancellation-service.interface";
+import { IBookingRescheduleService } from "./interface/service.interface/booking-reschedule-service.interface";
+import { IBookingRefundService } from "./interface/service.interface/booking-refund-service.interface";
 
+import { TrainerAvailabilityRepository } from "./repositories/trainer-availability.repository";
+import { TrainerBookingSettingsRepository } from "./repositories/trainer.booking-setting.repository";
+import { TrainerUnavailabilityRepository } from "./repositories/trainer-unavailability.repository";
+import { TrainerAvailabilityOverrideRepository } from "./repositories/trainer-availability-override.repository";
+import { BookingRepository } from "./repositories/booking.repository";
+import { BookingAuditLogRepository } from "./repositories/booking-audit-log.repository";
 
-import TrainerAvailabilityService from "./service/trainer-availability.service";
-import { TrainerSlotService } from "./service/trainer-slot.service";
-import { BookingService } from "./service/booking.service";
+import { TrainerSchedulingService } from "./services/trainer-scheduling.service";
+import { BookingSlotEngineService } from "./services/booking-slot-engine.service";
+import { BookingService } from "./services/booking.service";
+import { BookingCancellationService } from "./services/booking-cancellation.service";
+import { BookingRescheduleService } from "./services/booking-reschedule.service";
+import { BookingRefundService } from "./services/booking-refund.service";
 
+import { TrainerSchedulingController } from "./controller/trainer-scheduling.controller";
+import { BookingCancellationController } from "./controller/booking-cancellation.controller";
+import { BookingRescheduleController } from "./controller/booking-reschedule.controller";
+import { BookingSlotController } from "./controller/booking-slot.controller";
 
-import { TrainerAvailabilityValidation } from "./validation/trainer-availability.validation";
-import { BookingValidation } from "./validation/booking.validation";
-
-import { TrainerAvailabilityController } from "./controller/trainer-availability.controller";
-import { TrainerSlotController } from "./controller/trainer-slot.controller";
-import { BookingController } from "./controller/booking.controller";
-
-export const loadBookingBindings = (container: Container): void => {
-  // repositories 
+export const loadBookingBindings = (container: Container) => {
+  // Repositories
   container
     .bind<ITrainerAvailabilityRepository>(BOOKING_TYPES.TrainerAvailabilityRepository)
     .to(TrainerAvailabilityRepository);
 
   container
-    .bind<ITrainerSlotRepository>(BOOKING_TYPES.TrainerSlotRepository)
-    .to(TrainerSlotRepository);
+    .bind<ITrainerBookingSettingsRepository>(BOOKING_TYPES.TrainerBookingSettingsRepository)
+    .to(TrainerBookingSettingsRepository);
+
+  container
+    .bind<ITrainerUnavailabilityRepository>(BOOKING_TYPES.TrainerUnavailabilityRepository)
+    .to(TrainerUnavailabilityRepository);
+
+  container
+    .bind<ITrainerAvailabilityOverrideRepository>(BOOKING_TYPES.TrainerAvailabilityOverrideRepository)
+    .to(TrainerAvailabilityOverrideRepository);
 
   container
     .bind<IBookingRepository>(BOOKING_TYPES.BookingRepository)
     .to(BookingRepository);
 
-  // service
   container
-    .bind<ITrainerAvailabilityService>(BOOKING_TYPES.TrainerAvailabilityService)
-    .to(TrainerAvailabilityService);
+    .bind<IBookingAuditLogRepository>(BOOKING_TYPES.BookingAuditLogRepository)
+    .to(BookingAuditLogRepository);
 
   container
-    .bind<ITrainerSlotService>(BOOKING_TYPES.TrainerSlotService)
-    .to(TrainerSlotService);
+    .bind<IBookingCancellationRepository>(BOOKING_TYPES.BookingCancellationRepository)
+    .to(BookingCancellationRepository);
+
+  container
+    .bind<IBookingRescheduleRequestRepository>(BOOKING_TYPES.BookingRescheduleRequestRepository)
+    .to(BookingRescheduleRequestRepository);
+
+  container
+    .bind<IBookingRefundRepository>(BOOKING_TYPES.BookingRefundRepository)
+    .to(BookingRefundRepository);
+
+  // Services
+  container
+    .bind<ITrainerSchedulingService>(BOOKING_TYPES.TrainerSchedulingService)
+    .to(TrainerSchedulingService);
+
+  container
+    .bind<IBookingSlotEngineService>(BOOKING_TYPES.BookingSlotEngineService)
+    .to(BookingSlotEngineService);
 
   container
     .bind<IBookingService>(BOOKING_TYPES.BookingService)
     .to(BookingService);
 
-  // Validation 
   container
-    .bind(BOOKING_TYPES.TrainerAvailabilityValidation)
-    .to(TrainerAvailabilityValidation);
+    .bind<IBookingCancellationService>(BOOKING_TYPES.BookingCancellationService)
+    .to(BookingCancellationService);
 
   container
-    .bind(BOOKING_TYPES.BookingValidation)
-    .to(BookingValidation);
-
-  // Controllers 
-  container
-    .bind(BOOKING_TYPES.TrainerAvailabilityController)
-    .to(TrainerAvailabilityController);
+    .bind<IBookingRescheduleService>(BOOKING_TYPES.BookingRescheduleService)
+    .to(BookingRescheduleService);
 
   container
-    .bind(BOOKING_TYPES.TrainerSlotController)
-    .to(TrainerSlotController);
+    .bind<IBookingRefundService>(BOOKING_TYPES.BookingRefundService)
+    .to(BookingRefundService);
+
+  // Controllers
+  container
+    .bind<TrainerSchedulingController>(BOOKING_TYPES.TrainerSchedulingController)
+    .to(TrainerSchedulingController);
 
   container
-    .bind(BOOKING_TYPES.BookingController)
-    .to(BookingController);
+    .bind<BookingCancellationController>(BOOKING_TYPES.BookingCancellationController)
+    .to(BookingCancellationController);
+
+  container
+    .bind<BookingRescheduleController>(BOOKING_TYPES.BookingRescheduleController)
+    .to(BookingRescheduleController);
+
+  container
+    .bind<BookingSlotController>(BOOKING_TYPES.BookingSlotController)
+    .to(BookingSlotController);
 };

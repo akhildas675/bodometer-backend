@@ -1,5 +1,5 @@
 import { BookingMode, CoachingDuration } from "@/constants/constant.values.ts/booking.constant";
-import { PaginationMeta } from "@/modules/booking/interface/booking.interface";
+import { PaginationMeta } from "@/modules/base/interface/common.interface";
 
 export interface Coaching{
     serviceId:string,
