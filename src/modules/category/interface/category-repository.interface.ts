@@ -5,7 +5,7 @@ import {
 } from "@/modules/category/interface/category.interface";
 
 export interface ICategoryRepository {
-  createCategory(data: Category): Promise<void>;
+  createCategory(data: Category): Promise<Category>;
   getCategoryById(categoryId: string): Promise<Category | null>;
   updateCategory(categoryId: string, data: Category): Promise<void>;
   getAllCategories(query: CategoryQuery): Promise<GetAllCategoriesResponse>;

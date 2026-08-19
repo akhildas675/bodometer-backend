@@ -28,6 +28,10 @@ import {
   RESCHEDULE_STATUS,
 } from "@/constants/constant.values.ts/booking.constant";
 
+import { NOTIFICATION_TYPES } from "@/modules/notification/notification.types";
+import { INotificationService } from "@/modules/notification/interface/notification-service.interface";
+import { NOTIFICATION_ENTITY_TYPE, NOTIFICATION_TYPE } from "@/modules/notification/constant/notification.constant";
+
 export interface CancelBookingInput {
   bookingId: string;
   cancelledByUserId: string;
@@ -107,6 +111,9 @@ export class BookingLifecycleService implements IBookingLifecycleService {
 
     @inject(COACHING_TYPES.CoachingRepository)
     private _coachingRepository: ICoachingRepository,
+
+    @inject(NOTIFICATION_TYPES.NotificationService)
+    private _notificationService: INotificationService,
   ) {}
 
   private async resolveUserId(id: string): Promise<string> {
@@ -211,6 +218,37 @@ export class BookingLifecycleService implements IBookingLifecycleService {
       newValue: { status: BOOKING_STATUS.CANCELLED, refundPercentage, refundAmount },
     });
 
+    const userDoc = await this._userRepository.findById(booking.userId);
+    const trainerUserDoc = await this._userRepository.findById(booking.trainerId);
+    const scheduledDateStr = new Date(booking.startTime).toLocaleDateString();
+    const scheduledTimeStr = new Date(booking.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    this._notificationService.createNotification({
+      recipientId: booking.userId,
+      type: NOTIFICATION_TYPE.BOOKING_CANCELLED,
+      entityType: NOTIFICATION_ENTITY_TYPE.BOOKING,
+      entityId: booking.id,
+      variables: {
+        userName: userDoc?.name || "Client",
+        trainerName: trainerUserDoc?.name || "Trainer",
+        scheduledDate: scheduledDateStr,
+        scheduledTime: scheduledTimeStr,
+      },
+    }).catch((err) => console.error("Notification error:", err));
+
+    this._notificationService.createNotification({
+      recipientId: booking.trainerId,
+      type: NOTIFICATION_TYPE.BOOKING_CANCELLED,
+      entityType: NOTIFICATION_ENTITY_TYPE.BOOKING,
+      entityId: booking.id,
+      variables: {
+        userName: userDoc?.name || "Client",
+        trainerName: trainerUserDoc?.name || "Trainer",
+        scheduledDate: scheduledDateStr,
+        scheduledTime: scheduledTimeStr,
+      },
+    }).catch((err) => console.error("Notification error:", err));
+
     return {
       booking: updatedBooking || booking,
       cancellation,
@@ -259,6 +297,24 @@ export class BookingLifecycleService implements IBookingLifecycleService {
       newValue: { startTime: newStartTime, endTime: newEndTime },
     });
 
+    const userDoc = await this._userRepository.findById(booking.userId);
+    const trainerUserDoc = await this._userRepository.findById(booking.trainerId);
+
+    this._notificationService.createNotification({
+      recipientId: booking.trainerId,
+      type: NOTIFICATION_TYPE.RESCHEDULE_REQUEST_RECEIVED,
+      entityType: NOTIFICATION_ENTITY_TYPE.BOOKING,
+      entityId: booking.id,
+      variables: {
+        userName: userDoc?.name || "Client",
+        trainerName: trainerUserDoc?.name || "Trainer",
+        oldDate: new Date(booking.startTime).toLocaleDateString(),
+        oldTime: new Date(booking.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        newDate: new Date(newStartTime).toLocaleDateString(),
+        newTime: new Date(newStartTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      },
+    }).catch((err) => console.error("Notification error:", err));
+
     return updatedBooking || booking;
   }
 
@@ -302,6 +358,24 @@ export class BookingLifecycleService implements IBookingLifecycleService {
       newValue: { status: BOOKING_STATUS.RESCHEDULE_PENDING, requestId: request.id },
     });
 
+    const userDoc = await this._userRepository.findById(booking.userId);
+    const trainerUserDoc = await this._userRepository.findById(booking.trainerId);
+
+    this._notificationService.createNotification({
+      recipientId: booking.userId,
+      type: NOTIFICATION_TYPE.RESCHEDULE_PROPOSED,
+      entityType: NOTIFICATION_ENTITY_TYPE.RESCHEDULE_REQUEST,
+      entityId: request.id,
+      variables: {
+        userName: userDoc?.name || "Client",
+        trainerName: trainerUserDoc?.name || "Trainer",
+        oldDate: new Date(booking.startTime).toLocaleDateString(),
+        oldTime: new Date(booking.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        newDate: new Date(proposedStartTime).toLocaleDateString(),
+        newTime: new Date(proposedStartTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      },
+    }).catch((err) => console.error("Notification error:", err));
+
     return request;
   }
 
@@ -323,6 +397,9 @@ export class BookingLifecycleService implements IBookingLifecycleService {
     if (booking.userId !== userId) {
       throw new AppError(STATUS.FORBIDDEN, MESSAGES.RESCHEDULE.UNAUTHORIZED_RESPOND);
     }
+
+    const userDoc = await this._userRepository.findById(booking.userId);
+    const trainerUserDoc = await this._userRepository.findById(booking.trainerId);
 
     if (accept) {
       const availableSlots = await this._slotEngineService.calculateAvailableSlots({
@@ -349,10 +426,34 @@ export class BookingLifecycleService implements IBookingLifecycleService {
 
       const updatedRequest = await this._rescheduleRepository.updateStatus(request.id, RESCHEDULE_STATUS.ACCEPTED, reason);
 
+      this._notificationService.createNotification({
+        recipientId: booking.trainerId,
+        type: NOTIFICATION_TYPE.RESCHEDULE_ACCEPTED,
+        entityType: NOTIFICATION_ENTITY_TYPE.RESCHEDULE_REQUEST,
+        entityId: request.id,
+        variables: {
+          userName: userDoc?.name || "Client",
+          trainerName: trainerUserDoc?.name || "Trainer",
+          scheduledDate: new Date(request.proposedStartTime).toLocaleDateString(),
+          scheduledTime: new Date(request.proposedStartTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      }).catch((err) => console.error("Notification error:", err));
+
       return { request: updatedRequest || request, booking: updatedBooking || booking };
     } else {
       const updatedBooking = await this._bookingRepository.updateStatus(booking.id, BOOKING_STATUS.CONFIRMED);
       const updatedRequest = await this._rescheduleRepository.updateStatus(request.id, RESCHEDULE_STATUS.REJECTED, reason);
+
+      this._notificationService.createNotification({
+        recipientId: booking.trainerId,
+        type: NOTIFICATION_TYPE.RESCHEDULE_REJECTED,
+        entityType: NOTIFICATION_ENTITY_TYPE.RESCHEDULE_REQUEST,
+        entityId: request.id,
+        variables: {
+          userName: userDoc?.name || "Client",
+          trainerName: trainerUserDoc?.name || "Trainer",
+        },
+      }).catch((err) => console.error("Notification error:", err));
 
       return { request: updatedRequest || request, booking: updatedBooking || booking };
     }

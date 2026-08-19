@@ -307,14 +307,13 @@ export class AuthService implements IAuthService {
         MESSAGES.TOKEN.REFRESH_TOKEN_INVALID,
       );
 
-    const sessionData = await this._sessionService.getUserSessionData(userId);
-    if (!sessionData || sessionData.isBlocked) {
-      throw new AppError(STATUS.FORBIDDEN, MESSAGES.LOGIN.SESSION_EXPIRED);
-    }
-
     const user = await this._userRepository.findById(userId);
     if (!user)
       throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+
+    if (user.isBlocked) {
+      throw new AppError(STATUS.FORBIDDEN, MESSAGES.LOGIN.ACCOUNT_BLOCKED);
+    }
 
     let onboardingComplete: boolean | undefined;
     let hasActiveSubscription: boolean | undefined;

@@ -20,13 +20,20 @@ import { inject, injectable } from "inversify";
 import { HEALTH_LOG_TYPES } from "../health-log.types";
 import { MEAL_TYPES } from "../../meal/meal.types";
 import { SUBSCRIPTION_TYPES } from "../../subscription/subscription.types";
+import { USER_TYPES } from "@/modules/user/user.types";
+import { IUserRepository } from "@/modules/user/interface/user-repository.interface";
+import { NOTIFICATION_TYPES } from "@/modules/notification/notification.types";
+import { INotificationService } from "@/modules/notification/interface/notification-service.interface";
+import { NOTIFICATION_ENTITY_TYPE, NOTIFICATION_TYPE } from "@/modules/notification/constant/notification.constant";
 
 @injectable()
 export class HealthLogService implements IHealthLogService {
   constructor(
     @inject(HEALTH_LOG_TYPES.HealthLogRepository) private _healthLogRepo: IHealthLogRepository,
     @inject(MEAL_TYPES.IMealService) private _mealService: IMealService,
-    @inject(SUBSCRIPTION_TYPES.UserSubscriptionRepository) private _userSubscriptionRepo: IUserSubscriptionRepository
+    @inject(SUBSCRIPTION_TYPES.UserSubscriptionRepository) private _userSubscriptionRepo: IUserSubscriptionRepository,
+    @inject(NOTIFICATION_TYPES.NotificationService) private _notificationService: INotificationService,
+    @inject(USER_TYPES.UserRepository) private _userRepository: IUserRepository
   ) { }
 
   async getHealthLog(userId: string, dateStr: string): Promise<HealthLogDto> {
@@ -145,6 +152,18 @@ export class HealthLogService implements IHealthLogService {
       steps: data.steps,
       meals: processedMeals,
     });
+
+    const userDoc = await this._userRepository.findById(userId);
+
+    this._notificationService.createNotification({
+      recipientId: userId,
+      type: NOTIFICATION_TYPE.HEALTH_LOG_REMINDER,
+      entityType: NOTIFICATION_ENTITY_TYPE.HEALTH_LOG,
+      entityId: savedLog._id.toString(),
+      variables: {
+        userName: userDoc?.name || "User",
+      },
+    }).catch((err) => console.error("Notification error:", err));
 
     return this.mapToDto(savedLog, data.date);
   }

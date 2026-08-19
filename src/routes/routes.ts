@@ -16,6 +16,7 @@ import { API_MOUNTS } from "@/constants/routes.constant/api.mounts";
 import coachingRoute from "@/modules/coaching/routes/coaching.routes";
 import bookingRoute from "@/modules/booking/routes/booking.routes";
 import walletRoute from "@/modules/wallet/routes/wallet.routes";
+import notificationRoute from "@/modules/notification/routes/notification.routes";
 
 const routes = (app: Application): void => {
   app.use(API_MOUNTS.AUTH, authRoute);
@@ -34,6 +35,7 @@ const routes = (app: Application): void => {
   app.use(API_MOUNTS.COACHING, coachingRoute);
   app.use(API_MOUNTS.BOOKING, bookingRoute);
   app.use(API_MOUNTS.WALLET, walletRoute);
+  app.use(API_MOUNTS.NOTIFICATION, notificationRoute);
 };
 
 export default routes;

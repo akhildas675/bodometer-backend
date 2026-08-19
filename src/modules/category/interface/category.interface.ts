@@ -1,5 +1,6 @@
 import { PaginationMeta } from '@/modules/base/interface/common.interface';
 
+
 export interface Category {
   categoryId?: string;
   name: string;
@@ -23,3 +24,7 @@ export interface GetAllCategoriesResponse {
   data: Category[];
   pagination: PaginationMeta;
 }
+export type CreateCategoryData = Omit<
+  Category,
+  "categoryId"
+>;

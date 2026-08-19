@@ -1,7 +1,5 @@
 import { generateOtp } from "@/utils/generateOtp";
-import { redis } from "../../config/redis";
 import { MESSAGES } from "../../constants/messages";
-import { OtpPurpose } from "../../constants/constant.values.ts/otp.constants";
 import { STATUS } from "../../constants/constant.values.ts/statuscode";
 import { IMailService } from '@/modules/otp/interface/mail-service.interface';
 import { IOtpService } from '@/modules/otp/interface/otp-service.interface';
@@ -9,7 +7,7 @@ import { GenerateOtpPayload, VerifyOtpPayload } from '@/modules/otp/interface/ot
 import { AppError } from "../../utils/appError";
 import { inject, injectable } from "inversify";
 import { AUTH_TYPES } from "@/modules/auth/auth.types";
-
+import { OtpModel } from "@/modules/otp/model/otp.model";
 
 @injectable()
 export class OtpService implements IOtpService {
@@ -17,16 +15,7 @@ export class OtpService implements IOtpService {
     @inject(AUTH_TYPES.MailService)
     private _mailService: IMailService) {}
 
-  private OTP_TTL = 300;
   private MAX_ATTEMPTS = 5;
-
-  private otpKey(email: string, purpose: OtpPurpose) {
-    return `otp:${purpose}:${email}`;
-  }
-
-  private attemptsKey(email: string, purpose: OtpPurpose) {
-    return `otp_attempts:${purpose}:${email}`;
-  }
 
   async generateAndSendOtp({
     email,
@@ -35,42 +24,47 @@ export class OtpService implements IOtpService {
     const otp = generateOtp(6);
     console.log("Otp....", otp);
 
-    await redis.set(this.otpKey(email, purpose), otp, "EX", this.OTP_TTL);
-    await redis.del(this.attemptsKey(email, purpose));
+    const normalizedEmail = email.toLowerCase().trim();
 
-    await this._mailService.sendOtpEmail(email, otp);
+    await OtpModel.deleteMany({ email: normalizedEmail, purpose });
+
+    await OtpModel.create({
+      email: normalizedEmail,
+      purpose,
+      otp,
+      attempts: 0,
+      isVerified: false,
+      createdAt: new Date(),
+    });
+
+    await this._mailService.sendMail({
+      to: normalizedEmail,
+      subject: "Your OTP Verification Code",
+      html: `<h2>Your OTP is ${otp}</h2>`,
+    });
   }
 
   async verifyOtp({ email, otp, purpose }: VerifyOtpPayload): Promise<void> {
-    const otpKey = this.otpKey(email, purpose);
-    const attemptsKey = this.attemptsKey(email, purpose);
-    const verifiedKey = `otp_verified:${purpose}:${email}`;
+    const normalizedEmail = email.toLowerCase().trim();
+    const otpRecord = await OtpModel.findOne({ email: normalizedEmail, purpose });
 
-    const storedOtp = await redis.get(otpKey);
-
-    console.log("Stored Otp", storedOtp);
-
-    if (!storedOtp) {
+    if (!otpRecord) {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.OTP.INVALID_OTP);
     }
 
-    const attempts = await redis.incr(attemptsKey);
+    otpRecord.attempts += 1;
 
-    if (attempts > this.MAX_ATTEMPTS) {
-      await redis.del(otpKey);
-      await redis.del(attemptsKey);
+    if (otpRecord.attempts > this.MAX_ATTEMPTS) {
+      await OtpModel.deleteOne({ _id: otpRecord._id });
       throw new AppError(STATUS.TOO_MANY_REQUESTS, MESSAGES.OTP.TOO_MANY_OTP_REQUESTS);
     }
 
-    if (storedOtp !== otp) {
+    if (otpRecord.otp !== otp) {
+      await otpRecord.save();
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.OTP.INVALID_OTP);
     }
 
-    await redis.set(verifiedKey, "true", "EX", 10 * 60);
-
-    // cleanup OTP
-    await redis.del(otpKey);
-    await redis.del(attemptsKey);
+    otpRecord.isVerified = true;
+    await otpRecord.save();
   }
 }
-

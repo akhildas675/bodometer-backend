@@ -41,6 +41,13 @@ import { PaginationMeta } from '@/modules/base/interface/common.interface';
 import { inject, injectable } from "inversify";
 import { SUBSCRIPTION_TYPES } from "../subscription.types";
 
+import { USER_TYPES } from "@/modules/user/user.types";
+import { IUserRepository } from "@/modules/user/interface/user-repository.interface";
+
+import { NOTIFICATION_TYPES } from "@/modules/notification/notification.types";
+import { INotificationService } from "@/modules/notification/interface/notification-service.interface";
+import { NOTIFICATION_ENTITY_TYPE, NOTIFICATION_TYPE } from "@/modules/notification/constant/notification.constant";
+
 @injectable()
 export class SubscriptionService implements ISubscriptionService {
   constructor(
@@ -58,6 +65,10 @@ export class SubscriptionService implements ISubscriptionService {
     private _paymentService: IPaymentService,
     @inject(SUBSCRIPTION_TYPES.WorkoutPlanService)
     private _workoutPlanService: IWorkoutPlanService,
+    @inject(NOTIFICATION_TYPES.NotificationService)
+    private _notificationService: INotificationService,
+    @inject(USER_TYPES.UserRepository)
+    private _userRepository: IUserRepository,
   ) {}
 
 
@@ -402,6 +413,20 @@ export class SubscriptionService implements ISubscriptionService {
         );
       }
     }
+
+    const userDoc = await this._userRepository.findById(userId);
+
+    this._notificationService.createNotification({
+      recipientId: userId,
+      type: NOTIFICATION_TYPE.SUBSCRIPTION_PURCHASED,
+      entityType: NOTIFICATION_ENTITY_TYPE.SUBSCRIPTION,
+      entityId: String(userSubscription._id),
+      variables: {
+        userName: userDoc?.name || "User",
+        planName: plan.name,
+        endDate: endDate.toLocaleDateString(),
+      },
+    }).catch((err) => console.error("Notification error:", err));
 
     return {
       subscriptionId: String(userSubscription._id),

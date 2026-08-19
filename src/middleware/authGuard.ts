@@ -4,7 +4,6 @@ import { UserModel } from "@/modules/auth/model/user.model";
 import { AppError } from "../utils/appError";
 import { STATUS } from "../constants/constant.values.ts/statuscode";
 import { MESSAGES } from "../constants/messages";
-import { redis } from "../config/redis";
 import { Jwt } from "../utils/jwt.utils";
 
 export interface AuthRequest extends Request {
@@ -37,8 +36,6 @@ export const authGuard = (allowedRoles: Role[] = []) => {
           }
 
           if (user.isBlocked) {
-            await redis.del(`refresh:${payload.sub}`);
-
             res.clearCookie("refreshToken");
 
             return next(
@@ -84,11 +81,14 @@ async function handleRefresh(
   try {
     const payload = Jwt.verifyRefresh(refreshToken);
 
-    const storedToken = await redis.get(`refresh:${payload.sub}`);
-    if (!storedToken || storedToken !== refreshToken) {
-      return next(
-        new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.REFRESH_TOKEN_EXPIRED),
-      );
+    const user = await UserModel.findById(payload.sub).select("isBlocked role");
+    if (!user) {
+      return next(new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND));
+    }
+
+    if (user.isBlocked) {
+      res.clearCookie("refreshToken");
+      return next(new AppError(STATUS.FORBIDDEN, MESSAGES.LOGIN.ACCOUNT_BLOCKED));
     }
 
     if (allowedRoles.length && !allowedRoles.includes(payload.role)) {
@@ -143,8 +143,8 @@ export const optionalAuth = async (
     if (refreshToken) {
       try {
         const payload = Jwt.verifyRefresh(refreshToken);
-        const storedToken = await redis.get(`refresh:${payload.sub}`);
-        if (storedToken && storedToken === refreshToken) {
+        const user = await UserModel.findById(payload.sub).select("isBlocked role");
+        if (user && !user.isBlocked) {
           const newAccessToken = Jwt.signAccess({
             sub: payload.sub,
             role: payload.role,

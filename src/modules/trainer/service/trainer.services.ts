@@ -30,6 +30,9 @@ import { VERIFICATION_STATUS } from "../../../constants/constant.values.ts/verif
 import { inject, injectable } from "inversify";
 import { USER_TYPES } from "@/modules/user/user.types";
 import { TRAINER_TYPES } from "../trainer.types";
+import { NOTIFICATION_TYPES } from "@/modules/notification/notification.types";
+import { INotificationService } from "@/modules/notification/interface/notification-service.interface";
+import { NOTIFICATION_ENTITY_TYPE, NOTIFICATION_TYPE } from "@/modules/notification/constant/notification.constant";
 
 @injectable()
 export class TrainerService implements ITrainerService {
@@ -40,8 +43,8 @@ export class TrainerService implements ITrainerService {
     private _trainerProfileRepository: ITrainerProfileRepository,
     @inject(USER_TYPES.S3Service)
     private _s3Service: IS3Service,
-
-
+    @inject(NOTIFICATION_TYPES.NotificationService)
+    private _notificationService: INotificationService,
   ) { }
 
   //Profile
@@ -284,6 +287,17 @@ export class TrainerService implements ITrainerService {
       rejectionReason: null,
       applyCount: 1,
     });
+
+    const userDoc = await this._userRepository.findById(userId);
+    this._notificationService.createNotification({
+      recipientId: userId,
+      type: NOTIFICATION_TYPE.TRAINER_APPLICATION_SUBMITTED,
+      entityType: NOTIFICATION_ENTITY_TYPE.TRAINER,
+      entityId: userId,
+      variables: {
+        userName: userDoc?.name || "Applicant",
+      },
+    }).catch((err) => console.error("Notification error:", err));
   }
 
   async getTrainerStatus(userId: string): Promise<TrainerStatusResponseDto> {
@@ -426,6 +440,17 @@ export class TrainerService implements ITrainerService {
         MESSAGES.ADMIN.VERIFICATION_APPROVED_FAILED,
       );
 
+    const userDoc = await this._userRepository.findById(profile.userId.toString());
+    this._notificationService.createNotification({
+      recipientId: profile.userId.toString(),
+      type: NOTIFICATION_TYPE.TRAINER_APPROVED,
+      entityType: NOTIFICATION_ENTITY_TYPE.TRAINER,
+      entityId: profileId,
+      variables: {
+        userName: userDoc?.name || "Trainer",
+      },
+    }).catch((err) => console.error("Notification error:", err));
+
     return TrainerMapper.toApproveTrainerResponse(updated);
   }
 
@@ -459,6 +484,17 @@ export class TrainerService implements ITrainerService {
         STATUS.INTERNAL_ERROR,
         MESSAGES.ADMIN.TRAINER_FAILED_TO_REJECTED,
       );
+
+    const userDoc = await this._userRepository.findById(profile.userId.toString());
+    this._notificationService.createNotification({
+      recipientId: profile.userId.toString(),
+      type: NOTIFICATION_TYPE.TRAINER_REJECTED,
+      entityType: NOTIFICATION_ENTITY_TYPE.TRAINER,
+      entityId: profileId,
+      variables: {
+        userName: userDoc?.name || "Trainer",
+      },
+    }).catch((err) => console.error("Notification error:", err));
 
     return TrainerMapper.toRejectTrainerResponse(updated);
   }

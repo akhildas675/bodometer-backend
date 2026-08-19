@@ -6,6 +6,7 @@ export * from "./workout.messages";
 export * from "@/modules/subscription/constants/subscription.messages";
 export * from "./common.messages";
 export * from "./health-log.messages";
+export * from "./notification.messages";
 
 import { AUTH_MESSAGES } from "./auth.messages";
 import { USER_MESSAGES } from "./user.messages";
@@ -17,6 +18,7 @@ import { COMMON_MESSAGES } from "./common.messages";
 import { HEALTH_LOG_MESSAGES } from "./health-log.messages";
 import { CATEGORY_MESSAGES } from "./category.message";
 import { BOOKING_MESSAGES } from "./booking.messages";
+import { NOTIFICATION_MESSAGES } from "./notification.messages";
 
 export const MESSAGES = {
   ...AUTH_MESSAGES,
@@ -28,5 +30,6 @@ export const MESSAGES = {
   ...COMMON_MESSAGES,
   ...HEALTH_LOG_MESSAGES,
   ...CATEGORY_MESSAGES,
-  ...BOOKING_MESSAGES
+  ...BOOKING_MESSAGES,
+  ...NOTIFICATION_MESSAGES,
 };

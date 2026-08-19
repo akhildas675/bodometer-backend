@@ -1,11 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import { Logger } from "../../../utils/logger";
 import { IAuthService } from "../interface/auth-service.interface";
+import { ISessionService } from "../interface/session-service.interface";
 import { ForgotPasswordDto, GoogleLoginDto, LoginDto, OtpVerifyDto, RegisterDto, ResetPasswordDto } from "../dto/auth.dto";
 import { STATUS } from "../../../constants/constant.values.ts/statuscode";
 import { MESSAGES } from "../../../constants/messages";
 import { ResendOtpDto } from "../../../dto/otp/otp.dto";
-import { redis } from "../../../config/redis";
 import { AppError } from "../../../utils/appError";
 import { SuccessResponse } from "../../../utils/success.response";
 import { inject, injectable } from "inversify";
@@ -16,7 +16,9 @@ const logger = new Logger("AuthController");
 export class AuthController {
   constructor(
     @inject(AUTH_TYPES.AuthService)
-    private _authService: IAuthService
+    private _authService: IAuthService,
+    @inject(AUTH_TYPES.SessionService)
+    private _sessionService: ISessionService,
   ) {}
 
   //send OTP
@@ -111,11 +113,7 @@ export class AuthController {
       const purpose =
         body.role === "trainer" ? "TRAINER_REGISTER" : "USER_REGISTER";
 
-      const redisKey = `otp_verified:${purpose}:${body.email}`;
-
-      logger.debug("controller complete register redis key", { redisKey });
-
-      const verified = await redis.get(redisKey);
+      const verified = await this._sessionService.isOtpVerified(purpose, body.email);
 
       logger.debug("controller complete register otp verified", {
         verified: Boolean(verified),
@@ -127,7 +125,7 @@ export class AuthController {
 
       const user = await this._authService.completeRegistration(body);
 
-      await redis.del(redisKey);
+      await this._sessionService.clearOtpVerification(purpose, body.email);
 
       new SuccessResponse(
         STATUS.CREATED,

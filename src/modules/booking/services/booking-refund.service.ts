@@ -14,6 +14,13 @@ import { AppError } from "@/utils/appError";
 import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { MESSAGES } from "@/constants/messages";
 
+import { USER_TYPES } from "@/modules/user/user.types";
+import { IUserRepository } from "@/modules/user/interface/user-repository.interface";
+
+import { NOTIFICATION_TYPES } from "@/modules/notification/notification.types";
+import { INotificationService } from "@/modules/notification/interface/notification-service.interface";
+import { NOTIFICATION_ENTITY_TYPE, NOTIFICATION_TYPE } from "@/modules/notification/constant/notification.constant";
+
 @injectable()
 export class BookingRefundService implements IBookingRefundService {
   constructor(
@@ -22,6 +29,12 @@ export class BookingRefundService implements IBookingRefundService {
 
     @inject(SUBSCRIPTION_TYPES.PaymentService)
     private _paymentService: IPaymentService,
+
+    @inject(NOTIFICATION_TYPES.NotificationService)
+    private _notificationService: INotificationService,
+
+    @inject(USER_TYPES.UserRepository)
+    private _userRepository: IUserRepository,
   ) {}
 
   async createRefundRecord(params: CreateRefundParams): Promise<BookingRefund> {
@@ -63,6 +76,21 @@ export class BookingRefundService implements IBookingRefundService {
       }
 
       const updated = await this._refundRepository.updateStatus(refund.id, "COMPLETED", gatewayRefundId);
+
+      const userDoc = await this._userRepository.findById(refund.userId);
+
+      this._notificationService.createNotification({
+        recipientId: refund.userId,
+        type: NOTIFICATION_TYPE.REFUND_PROCESSED,
+        entityType: NOTIFICATION_ENTITY_TYPE.REFUND,
+        entityId: refund.id,
+        variables: {
+          userName: userDoc?.name || "User",
+          amount: refund.amount,
+          currency: refund.currency || "INR",
+        },
+      }).catch((err) => console.error("Notification error:", err));
+
       return updated || refund;
     } catch (err: unknown) {
       const errorMsg = (err as Error).message || "Gateway refund processing failed.";

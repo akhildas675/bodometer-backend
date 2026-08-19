@@ -2,5 +2,17 @@
     "cSpell.words": [
         "bodometer",
         "unavailabilities"
-    ]
+    ],
+    "github.copilot.enable": true,
+    "github.copilot.inlineSuggest.enable": true,
+    "github.copilot.logLevel": "debug",
+    "editor.inlineSuggest.enabled": true,
+    "editor.inlineSuggest.suppressSuggestions": false,
+    "editor.quickSuggestions": {
+        "other": true,
+        "comments": false,
+        "strings": false
+    },
+    "editor.suggestOnTriggerCharacters": true,
+    "editor.inlineSuggest.edits.showCollapsed": true
 }

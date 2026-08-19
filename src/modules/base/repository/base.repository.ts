@@ -1,10 +1,18 @@
-import { Document, Model, UpdateQuery } from "mongoose";
-import { IBaseRepository } from "@/modules/base/interface/base-repository.interface";
+import {
+  Document,
+  Model,
+  UpdateQuery,
+} from "mongoose";
+
 import { injectable } from "inversify";
 
+import { IBaseRepository } from "@/modules/base/interface/base-repository.interface";
+
 @injectable()
-export abstract class BaseRepository<T, D extends Document>
-  implements IBaseRepository<T, D>
+export abstract class BaseRepository<
+  T,
+  D extends Document,
+> implements IBaseRepository<T, D>
 {
   protected model: Model<D>;
 
@@ -15,53 +23,115 @@ export abstract class BaseRepository<T, D extends Document>
   protected abstract toInterface(doc: D): T;
 
   async findById(id: string): Promise<T | null> {
-    const doc = await this.model.findById(id).exec();
-    return doc ? this.toInterface(doc) : null;
+    const doc = await this.model
+      .findById(id)
+      .exec();
+
+    return doc
+      ? this.toInterface(doc)
+      : null;
   }
 
-  async create(data: Partial<T>): Promise<T> {
+  async create(data: Partial<D>): Promise<T> {
     const doc = new this.model(data);
+
     const saved = await doc.save();
+
     return this.toInterface(saved);
   }
 
-  async upsert(filter: Record<string, unknown>, data: Partial<T>): Promise<T> {
+  async upsert(
+    filter: Record<string, unknown>,
+    data: UpdateQuery<D>,
+  ): Promise<T> {
     const doc = await this.model
-      .findOneAndUpdate(filter, { $set: data } as UpdateQuery<D>, { new: true, upsert: true, runValidators: true })
+      .findOneAndUpdate(
+        filter,
+        data,
+        {
+          new: true,
+          upsert: true,
+          runValidators: true,
+        },
+      )
       .exec();
-    return this.toInterface(doc as unknown as D);
+
+    if (!doc) {
+      throw new Error(
+        "Failed to create or update document.",
+      );
+    }
+
+    return this.toInterface(doc);
   }
 
-  async findOne(filter: Record<string, unknown>): Promise<T | null> {
-    const doc = await this.model.findOne(filter).exec();
-    return doc ? this.toInterface(doc) : null;
-  }
-
-  async findAll(filter: Record<string, unknown> = {}): Promise<T[]> {
-    const docs = await this.model.find(filter).exec();
-    return docs.map((doc) => this.toInterface(doc));
-  }
-
-async updateById(id: string, data: Partial<D>): Promise<T | null> {
+  async findOne(
+    filter: Record<string, unknown>,
+  ): Promise<T | null> {
     const doc = await this.model
-      .findByIdAndUpdate(id, { $set: data } as UpdateQuery<D>, { new: true, runValidators: true })
+      .findOne(filter)
       .exec();
-    return doc ? this.toInterface(doc as unknown as D) : null;
-}
+
+    return doc
+      ? this.toInterface(doc)
+      : null;
+  }
+
+  async findAll(
+    filter: Record<string, unknown> = {},
+  ): Promise<T[]> {
+    const docs = await this.model
+      .find(filter)
+      .exec();
+
+    return docs.map((doc) =>
+      this.toInterface(doc),
+    );
+  }
+
+  async updateById(
+    id: string,
+    data: UpdateQuery<D>,
+  ): Promise<T | null> {
+    const doc = await this.model
+      .findByIdAndUpdate(
+        id,
+        data,
+        {
+          new: true,
+          runValidators: true,
+        },
+      )
+      .exec();
+
+    return doc
+      ? this.toInterface(doc)
+      : null;
+  }
 
   async deleteById(id: string): Promise<boolean> {
-    const result = await this.model.findByIdAndDelete(id).exec();
+    const result = await this.model
+      .findByIdAndDelete(id)
+      .exec();
+
     return result !== null;
   }
 
-  async countDocuments(filter: Record<string, unknown> = {}): Promise<number> {
-    return this.model.countDocuments(filter).exec();
+  async countDocuments(
+    filter: Record<string, unknown> = {},
+  ): Promise<number> {
+    return this.model
+      .countDocuments(filter)
+      .exec();
   }
 
-  async exists(filter: Record<string, unknown>): Promise<boolean> {
-    const count = await this.model.countDocuments(filter).exec();
-    return count > 0;
+  async exists(
+    filter: Record<string, unknown>,
+  ): Promise<boolean> {
+    const result = await this.model
+      .exists(filter)
+      .exec();
+
+    return result !== null;
   }
-
-
 }

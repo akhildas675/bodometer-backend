@@ -34,6 +34,9 @@ import { ITrainerProfileRepository } from "@/modules/trainer/interface/trainer.p
 import { TRAINER_TYPES } from "@/modules/trainer/trainer.types";
 import { WALLET_TYPES } from "@/modules/wallet/wallet.types";
 import { IWalletService } from "@/modules/wallet/services/wallet.service";
+import { NOTIFICATION_TYPES } from "@/modules/notification/notification.types";
+import { INotificationService } from "@/modules/notification/interface/notification-service.interface";
+import { NOTIFICATION_ENTITY_TYPE, NOTIFICATION_TYPE } from "@/modules/notification/constant/notification.constant";
 
 @injectable()
 export class BookingService implements IBookingService {
@@ -61,6 +64,9 @@ export class BookingService implements IBookingService {
 
     @inject(WALLET_TYPES.WalletService)
     private _walletService: IWalletService,
+
+    @inject(NOTIFICATION_TYPES.NotificationService)
+    private _notificationService: INotificationService,
   ) {}
 
   async createBooking(input: CreateBookingInput): Promise<CreateBookingResponse> {
@@ -277,6 +283,38 @@ export class BookingService implements IBookingService {
       newValue: { status: BOOKING_STATUS.CONFIRMED, paymentId: sessionId },
       reason: "Stripe payment verification successful",
     });
+
+    const userDoc = await this._userRepository.findById(booking.userId);
+    const trainerUserDoc = await this._userRepository.findById(booking.trainerId);
+    const dateStr = new Date(booking.startTime).toLocaleDateString();
+    const timeStr = new Date(booking.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+    this._notificationService.createNotification({
+      recipientId: booking.userId,
+      type: NOTIFICATION_TYPE.BOOKING_CONFIRMED,
+      entityType: NOTIFICATION_ENTITY_TYPE.BOOKING,
+      entityId: booking.id,
+      variables: {
+        userName: userDoc?.name || "Client",
+        trainerName: trainerUserDoc?.name || "Trainer",
+        scheduledDate: dateStr,
+        scheduledTime: timeStr,
+      },
+    }).catch((err) => console.error("Notification error:", err));
+
+    this._notificationService.createNotification({
+      recipientId: booking.trainerId,
+      type: NOTIFICATION_TYPE.NEW_BOOKING_RECEIVED,
+      entityType: NOTIFICATION_ENTITY_TYPE.BOOKING,
+      entityId: booking.id,
+      variables: {
+        userName: userDoc?.name || "Client",
+        trainerName: trainerUserDoc?.name || "Trainer",
+        serviceName: "Coaching Session",
+        scheduledDate: dateStr,
+        scheduledTime: timeStr,
+      },
+    }).catch((err) => console.error("Notification error:", err));
 
     return updated;
   }

@@ -10,6 +10,13 @@ import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { SUBSCRIPTION_TYPES } from "@/modules/subscription/subscription.types";
 import { IPaymentService } from "@/modules/payment/interface/stripe-service.interface";
 
+import { USER_TYPES } from "@/modules/user/user.types";
+import { IUserRepository } from "@/modules/user/interface/user-repository.interface";
+
+import { NOTIFICATION_TYPES } from "@/modules/notification/notification.types";
+import { INotificationService } from "@/modules/notification/interface/notification-service.interface";
+import { NOTIFICATION_ENTITY_TYPE, NOTIFICATION_TYPE } from "@/modules/notification/constant/notification.constant";
+
 export interface CreditWalletParams {
   userId: string;
   amount: number;
@@ -49,6 +56,12 @@ export class WalletService implements IWalletService {
 
     @inject(SUBSCRIPTION_TYPES.PaymentService)
     private _paymentService: IPaymentService,
+
+    @inject(NOTIFICATION_TYPES.NotificationService)
+    private _notificationService: INotificationService,
+
+    @inject(USER_TYPES.UserRepository)
+    private _userRepository: IUserRepository,
   ) {}
 
   async getOrCreateWallet(userId: string, session?: ClientSession): Promise<UserWallet> {
@@ -95,6 +108,20 @@ export class WalletService implements IWalletService {
       },
       session,
     );
+
+    const userDoc = await this._userRepository.findById(userId);
+
+    this._notificationService.createNotification({
+      recipientId: userId,
+      type: NOTIFICATION_TYPE.WALLET_CREDITED,
+      entityType: NOTIFICATION_ENTITY_TYPE.WALLET,
+      entityId: transaction.id,
+      variables: {
+        userName: userDoc?.name || "User",
+        amount,
+        currency: "INR",
+      },
+    }).catch((err) => console.error("Notification error:", err));
 
     return { wallet: updatedWallet, transaction };
   }
@@ -202,6 +229,21 @@ export class WalletService implements IWalletService {
       },
       session,
     );
+
+    const userDoc = await this._userRepository.findById(userId);
+
+    this._notificationService.createNotification({
+      recipientId: userId,
+      type: NOTIFICATION_TYPE.WALLET_PAYMENT_SUCCESSFUL,
+      entityType: NOTIFICATION_ENTITY_TYPE.WALLET,
+      entityId: transaction.id,
+      variables: {
+        userName: userDoc?.name || "User",
+        amount,
+        currency: "INR",
+        purpose: description || "Coaching Service",
+      },
+    }).catch((err) => console.error("Notification error:", err));
 
     return { wallet: updatedWallet, transaction };
   }

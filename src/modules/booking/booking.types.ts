@@ -17,6 +17,7 @@ export const BOOKING_TYPES = {
   BookingCancellationService: Symbol.for("BookingCancellationService"),
   BookingRescheduleService: Symbol.for("BookingRescheduleService"),
   BookingRefundService: Symbol.for("BookingRefundService"),
+  BookingLifecycleService: Symbol.for("BookingLifecycleService"),
 
   // Controllers
   TrainerSchedulingController: Symbol.for("TrainerSchedulingController"),

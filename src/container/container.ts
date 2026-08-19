@@ -16,6 +16,7 @@ import { loadTrainerBindings } from "@/modules/trainer/trainer.bindings";
 import { loadCoachingBindings } from "@/modules/coaching/coaching.bindings";
 import { loadBookingBindings } from "@/modules/booking/booking.bindings";
 import { loadWalletBindings } from "@/modules/wallet/wallet.bindings";
+import { loadNotificationBindings } from "@/modules/notification/notification.bindings";
 
 const container = new Container();
 
@@ -36,5 +37,6 @@ loadDietPlanBindings(container);
 loadCoachingBindings(container);
 loadBookingBindings(container);
 loadWalletBindings(container);
+loadNotificationBindings(container);
 
 export default container;

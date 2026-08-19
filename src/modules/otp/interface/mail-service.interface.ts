@@ -1,3 +1,10 @@
 export interface IMailService {
-  sendOtpEmail(email: string, otp: string): Promise<void>;
+  sendMail(data: SendMailData): Promise<void>;
+}
+
+export interface SendMailData {
+  to: string;
+  subject: string;
+  html: string;
+  text?: string;
 }

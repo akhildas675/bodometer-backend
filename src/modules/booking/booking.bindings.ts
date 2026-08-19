@@ -37,6 +37,8 @@ import { BookingCancellationController } from "./controller/booking-cancellation
 import { BookingRescheduleController } from "./controller/booking-reschedule.controller";
 import { BookingSlotController } from "./controller/booking-slot.controller";
 
+import { IBookingLifecycleService, BookingLifecycleService } from "./services/booking-lifecycle.service";
+
 export const loadBookingBindings = (container: Container) => {
   // Repositories
   container
@@ -99,6 +101,10 @@ export const loadBookingBindings = (container: Container) => {
   container
     .bind<IBookingRefundService>(BOOKING_TYPES.BookingRefundService)
     .to(BookingRefundService);
+
+  container
+    .bind<IBookingLifecycleService>(BOOKING_TYPES.BookingLifecycleService)
+    .to(BookingLifecycleService);
 
   // Controllers
   container

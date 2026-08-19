@@ -34,6 +34,13 @@ import { inject, injectable } from "inversify";
 import { WORKOUT_PLAN_TYPES } from "../workout-plan.types";
 import { IWorkoutPlanService } from "../interface/workout-plan-service.interface";
 
+import { USER_TYPES } from "@/modules/user/user.types";
+import { IUserRepository } from "@/modules/user/interface/user-repository.interface";
+
+import { NOTIFICATION_TYPES } from "@/modules/notification/notification.types";
+import { INotificationService } from "@/modules/notification/interface/notification-service.interface";
+import { NOTIFICATION_ENTITY_TYPE, NOTIFICATION_TYPE } from "@/modules/notification/constant/notification.constant";
+
 const generationLocks = new Set<string>();
 @injectable()
 export class WorkoutPlanService implements IWorkoutPlanService {
@@ -41,7 +48,9 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     @inject(WORKOUT_PLAN_TYPES.UserWorkoutPlanRepository) private _userWorkoutPlanRepo: IUserWorkoutPlanRepository,
     @inject(Symbol.for("ExerciseRepository")) private _exerciseRepo: IExerciseRepository,
     @inject(Symbol.for("AnswerRepository")) private _answerRepo: IAnswerRepository,
-    @inject(SUBSCRIPTION_TYPES.UserSubscriptionRepository) private _userSubscriptionRepo: IUserSubscriptionRepository
+    @inject(SUBSCRIPTION_TYPES.UserSubscriptionRepository) private _userSubscriptionRepo: IUserSubscriptionRepository,
+    @inject(NOTIFICATION_TYPES.NotificationService) private _notificationService: INotificationService,
+    @inject(USER_TYPES.UserRepository) private _userRepository: IUserRepository,
   ) {}
 
   private async getActiveSubscription(userId: string) {
@@ -196,7 +205,19 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       workoutDays: embeddedDays,
     });
 
-      return WorkoutMapper.toWorkoutPlanDetailDto(updatedDoc, exerciseDataMap);
+      const userDoc = await this._userRepository.findById(userId);
+      const result = WorkoutMapper.toWorkoutPlanDetailDto(updatedDoc, exerciseDataMap);
+      this._notificationService.createNotification({
+        recipientId: userId,
+        type: NOTIFICATION_TYPE.WORKOUT_PLAN_GENERATED,
+        entityType: NOTIFICATION_ENTITY_TYPE.WORKOUT,
+        entityId: updatedDoc._id.toString(),
+        variables: {
+          userName: userDoc?.name || "User",
+          workoutType: planType === PLAN_TYPE.PREMIUM ? "Premium" : "Free",
+        },
+      }).catch((err) => console.error("Notification error:", err));
+      return result;
     } finally {
       generationLocks.delete(userId);
     }
@@ -349,6 +370,20 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     }
 
     await this._userWorkoutPlanRepo.saveWeek(activeWeek);
+
+    if (completed) {
+      const userDoc = await this._userRepository.findById(userId);
+      this._notificationService.createNotification({
+        recipientId: userId,
+        type: NOTIFICATION_TYPE.WORKOUT_COMPLETED,
+        entityType: NOTIFICATION_ENTITY_TYPE.WORKOUT,
+        entityId: activeWeek._id.toString(),
+        variables: {
+          userName: userDoc?.name || "User",
+          workoutName: day.dayName || `Day ${dayNumber}`,
+        },
+      }).catch((err) => console.error("Notification error:", err));
+    }
 
     const plansResponse = await this.getWorkoutPlans(userId);
     const updatedPlan = plansResponse.plans.find((p) => p.workoutPlanId === activeWeek._id.toString());

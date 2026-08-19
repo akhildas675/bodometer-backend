@@ -2,6 +2,7 @@ import { injectable } from "inversify";
 import {
   Category,
   CategoryQuery,
+  CreateCategoryData,
   GetAllCategoriesResponse,
 } from "@/modules/category/interface/category.interface";
 import { BaseRepository } from '@/modules/base/repository/base.repository';
@@ -19,7 +20,7 @@ export default class CategoryRepository
 
   protected toInterface(doc: ICategory): Category {
     return {
-      categoryId: doc._id.toString(),
+      categoryId: doc.categoryId.toString(),
       name: doc.name,
       description: doc.description,
       media: {
@@ -30,9 +31,11 @@ export default class CategoryRepository
       isActive: doc.isActive,
     };
   }
-  async createCategory(data: Category): Promise<void> {
-    await this.create(data)
-  }
+ async createCategory(
+  data: CreateCategoryData,
+): Promise<Category> {
+  return this.create(data);
+}
 
   async getCategoryById(categoryId: string): Promise<Category | null> {
     const doc = await CategoryModel.findById(categoryId);
