@@ -24,7 +24,8 @@ export default class CoachingRepository extends BaseRepository<Coaching, ICoachi
         }
     }
     async createCoaching(data: Coaching): Promise<void> {
-        await this.create(data)
+        const { serviceId, ...rest } = data;
+        await this.create(rest as unknown as Partial<ICoaching>);
     }
 
     async getCoaching(query: CoachingQuery): Promise<GetAllCoachingResponse> {

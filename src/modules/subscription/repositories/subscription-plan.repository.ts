@@ -46,7 +46,8 @@ export default class SubscriptionPlanRepository
   async createSubscriptionPlan(
     data: SubscriptionPlan,
   ): Promise<SubscriptionPlan> {
-    return await this.create(data);
+    const { subscriptionPlanId, ...rest } = data;
+    return await this.create(rest as unknown as Partial<ISubscriptionPlan>);
   }
 
   async getSubscriptionPlans(

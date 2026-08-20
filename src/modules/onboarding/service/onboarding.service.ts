@@ -142,6 +142,7 @@ export class OnboardingService implements IOnboardingService {
         question: q.question,
         description: q.description,
         groupId: q.groupId,
+        groupTitle: q.groupTitle,
         order: q.order,
         isActive: q.isActive ?? true,
         type: q.type,

@@ -38,6 +38,6 @@ export interface RefreshTokenPayload {
 export interface SessionData {
   id: string;
   email: string;
-  role: string;
+  role: Role;
   isBlocked: boolean;
 }

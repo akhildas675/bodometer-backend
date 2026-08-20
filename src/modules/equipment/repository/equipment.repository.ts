@@ -24,9 +24,8 @@ export default class EquipmentRepository extends BaseRepository<Equipment, IEqui
     }
 
     async createEquipment(data: Equipment): Promise<Equipment> {
-        return await this.create({
-            ...data
-        })
+        const { _id, ...rest } = data;
+        return await this.create(rest as unknown as Partial<IEquipment>);
     }
 
     async getAllEquipment(query: EquipmentQueryDto): Promise<PaginatedResult<Equipment>> {

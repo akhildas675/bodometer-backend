@@ -2,3 +2,4 @@ node_modules
 demo.txt
 .env
 z.equipment.js
+dist

@@ -25,9 +25,8 @@ export default class TargetMuscleRepository extends BaseRepository<TargetMuscle,
     }
 
     async createTargetMuscle(data: TargetMuscle): Promise<TargetMuscle> {
-        return await this.create({
-            ...data
-        })
+        const { _id, ...rest } = data;
+        return await this.create(rest as unknown as Partial<ITargetMuscle>);
     }
 
     async getAllTargetMuscles(query: TargetMuscleQueryDto): Promise<PaginatedResult<TargetMuscle>> {

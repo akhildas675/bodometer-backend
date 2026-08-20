@@ -12,7 +12,7 @@ export class SessionService implements ISessionService {
   ): Promise<string> {
     return Jwt.signRefresh({
       sub: userId,
-      role: userData.role as any,
+      role: userData.role,
     });
   }
 

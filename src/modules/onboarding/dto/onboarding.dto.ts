@@ -31,6 +31,7 @@ export interface OnboardingQuestionResponseDto {
   question: string;
   description?: string;
   groupId: string;
+  groupTitle?: string;
   order: number;
   isActive: boolean;
   type: string;

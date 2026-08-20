@@ -38,6 +38,8 @@ import { NOTIFICATION_TYPES } from "@/modules/notification/notification.types";
 import { INotificationService } from "@/modules/notification/interface/notification-service.interface";
 import { NOTIFICATION_ENTITY_TYPE, NOTIFICATION_TYPE } from "@/modules/notification/constant/notification.constant";
 
+import { IUserSubscriptionRepository } from "@/modules/subscription/interface/repository.interface/user.subscription.repository.interface";
+
 @injectable()
 export class BookingService implements IBookingService {
   constructor(
@@ -67,10 +69,22 @@ export class BookingService implements IBookingService {
 
     @inject(NOTIFICATION_TYPES.NotificationService)
     private _notificationService: INotificationService,
+
+    @inject(SUBSCRIPTION_TYPES.UserSubscriptionRepository)
+    private _userSubscriptionRepository: IUserSubscriptionRepository,
   ) {}
 
   async createBooking(input: CreateBookingInput): Promise<CreateBookingResponse> {
     const { userId, trainerId, serviceId, bookingDate, startTime, endTime, bufferEndTime } = input;
+
+    // 0. Verify active subscription
+    const activeSub = await this._userSubscriptionRepository.findActiveByUserId(userId);
+    if (!activeSub) {
+      throw new AppError(
+        STATUS.FORBIDDEN,
+        "Active subscription required to book a session. Please subscribe to a plan.",
+      );
+    }
 
     let actualTrainerUserId = trainerId;
     const userDoc = await this._userRepository.findById(trainerId);

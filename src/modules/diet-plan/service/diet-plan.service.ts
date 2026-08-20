@@ -11,7 +11,7 @@ import { SUBSCRIPTION_TYPES } from "../../subscription/subscription.types";
 import { IAnswerRepository } from "../../../modules/onboarding/interface/repository.interface/answer-repository.interface";
 import { IAiDietService } from '@/modules/ai/interface/ai.diet-service.interface';
 import { DietPlanResponseDto, GetDietPlansResponseDto } from "../dto/diet-plan.dto";
-import { AiDietService } from "../../../services/ai-services/ai-diet.service";
+import { AI_TYPES } from "@/modules/ai/ai.types";
 
 import { USER_TYPES } from "@/modules/user/user.types";
 import { IUserRepository } from "@/modules/user/interface/user-repository.interface";
@@ -24,17 +24,14 @@ const generationLocks = new Set<string>();
 
 @injectable()
 export class DietPlanService implements IDietPlanService {
-  private _aiDietService: IAiDietService;
-
   constructor(
     @inject(DIET_PLAN_TYPES.UserDietPlanRepository) private _userDietPlanRepo: IUserDietPlanRepository,
     @inject(Symbol.for("AnswerRepository")) private _answerRepo: IAnswerRepository,
     @inject(SUBSCRIPTION_TYPES.UserSubscriptionRepository) private _userSubscriptionRepo: IUserSubscriptionRepository,
     @inject(NOTIFICATION_TYPES.NotificationService) private _notificationService: INotificationService,
     @inject(USER_TYPES.UserRepository) private _userRepository: IUserRepository,
-  ) {
-    this._aiDietService = new AiDietService();
-  }
+    @inject(AI_TYPES.AiDietService) private _aiDietService: IAiDietService,
+  ) {}
 
   private async getActiveSubscription(userId: string) {
     const subscription = await this._userSubscriptionRepo.findActiveByUserId(userId);
@@ -130,7 +127,7 @@ export class DietPlanService implements IDietPlanService {
         variables: {
           userName: userDoc?.name || "User",
         },
-      }).catch((err) => console.error("Notification error:", err));
+      }).catch((err: unknown) => console.error("Notification error:", err));
 
       return result;
     } finally {

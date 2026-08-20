@@ -36,7 +36,8 @@ export default class ExerciseRepository extends BaseRepository<Exercise, IExerci
   }
 
   async createExercise(data: Exercise): Promise<Exercise> {
-    return await this.create({ ...data });
+    const { _id, ...rest } = data;
+    return await this.create(rest as unknown as Partial<IExercise>);
   }
 
   async getAllExercises(query: ExerciseQueryDto): Promise<PaginatedResult<Exercise>> {

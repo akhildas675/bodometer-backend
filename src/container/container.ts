@@ -17,6 +17,8 @@ import { loadCoachingBindings } from "@/modules/coaching/coaching.bindings";
 import { loadBookingBindings } from "@/modules/booking/booking.bindings";
 import { loadWalletBindings } from "@/modules/wallet/wallet.bindings";
 import { loadNotificationBindings } from "@/modules/notification/notification.bindings";
+import { loadAiBindings } from "@/modules/ai/ai.bindings";
+import { loadHealthMetricsBindings } from "@/modules/health-metrics/health-metrics.bindings";
 
 const container = new Container();
 
@@ -38,5 +40,7 @@ loadCoachingBindings(container);
 loadBookingBindings(container);
 loadWalletBindings(container);
 loadNotificationBindings(container);
+loadAiBindings(container);
+loadHealthMetricsBindings(container);
 
 export default container;

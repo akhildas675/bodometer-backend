@@ -112,6 +112,9 @@ async function makeAiRequestWithFallback(payload: unknown): Promise<{ data: Gemi
   throw lastError || new Error("AI request failed after exhausting all fallback models");
 }
 
+import { injectable } from "inversify";
+
+@injectable()
 export class AiWorkoutService implements IAiWorkoutService {
   async generateWorkoutPlan(payload: WorkoutGenerationPayload): Promise<WeekPlanResponse> {
     const prompt = buildWorkoutPrompt(payload);

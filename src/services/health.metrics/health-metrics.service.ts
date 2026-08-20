@@ -5,6 +5,9 @@ import { UpdateBmiDto, UpdateBmiResponseDto } from "@/modules/user/dto/user.dto"
 import { AppError } from "@/utils/appError";
 import { IHealthMetrics } from '@/modules/health-metrics/interface/health.metrics-service.interface';
 
+import { injectable } from "inversify";
+
+@injectable()
 export class HealthMetricsService implements IHealthMetrics {
   bmiCalculator(data: UpdateBmiDto): Promise<UpdateBmiResponseDto> {
     const { height, weight, unit, heightFt, heightIn, gender } = data;

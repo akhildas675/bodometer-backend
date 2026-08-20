@@ -208,8 +208,11 @@ export class OnboardingController {
     next: NextFunction,
   ) => {
     try {
-      const query = parsePaginationQuery(req) as QuestionQueryDto;
-      const isAdmin = req.user?.role === ROLES.ADMIN
+      const query = {
+        ...parsePaginationQuery(req),
+        ...(req.query.groupId && { groupId: String(req.query.groupId) }),
+      } as QuestionQueryDto;
+      const isAdmin = req.user?.role === ROLES.ADMIN;
 
       if (!isAdmin) {
         query.isActive = true;

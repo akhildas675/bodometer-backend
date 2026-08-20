@@ -20,7 +20,7 @@ export default class CategoryRepository
 
   protected toInterface(doc: ICategory): Category {
     return {
-      categoryId: doc.categoryId.toString(),
+      categoryId: (doc.categoryId || doc._id)?.toString() || "",
       name: doc.name,
       description: doc.description,
       media: {

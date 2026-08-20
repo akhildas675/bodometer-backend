@@ -188,7 +188,7 @@ export default class TrainerProfileRepository
   async findByIdWithUser(
     profileId: string,
   ): Promise<ITrainerWithProfile | null> {
-    const trainerProfile = await TrainerProfileModel.findById(profileId)
+    let trainerProfile = await TrainerProfileModel.findById(profileId)
       .populate<{ userId: IUserDocument }>({
         path: "userId",
         select:
@@ -196,6 +196,17 @@ export default class TrainerProfileRepository
       })
       .populate("specializations", "_id name")
       .lean<PopulatedTrainerProfile>();
+
+    if (!trainerProfile) {
+      trainerProfile = await TrainerProfileModel.findOne({ userId: profileId })
+        .populate<{ userId: IUserDocument }>({
+          path: "userId",
+          select:
+            "_id name userName email phoneNumber profilePic gender role isVerified dateOfBirth isBlocked createdAt updatedAt",
+        })
+        .populate("specializations", "_id name")
+        .lean<PopulatedTrainerProfile>();
+    }
 
     if (!trainerProfile) return null;
 

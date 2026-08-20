@@ -41,6 +41,9 @@ import { NOTIFICATION_TYPES } from "@/modules/notification/notification.types";
 import { INotificationService } from "@/modules/notification/interface/notification-service.interface";
 import { NOTIFICATION_ENTITY_TYPE, NOTIFICATION_TYPE } from "@/modules/notification/constant/notification.constant";
 
+import { AI_TYPES } from "@/modules/ai/ai.types";
+import { IAiWorkoutService } from "@/modules/ai/interface/ai.workout-service.interface";
+
 const generationLocks = new Set<string>();
 @injectable()
 export class WorkoutPlanService implements IWorkoutPlanService {
@@ -51,6 +54,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     @inject(SUBSCRIPTION_TYPES.UserSubscriptionRepository) private _userSubscriptionRepo: IUserSubscriptionRepository,
     @inject(NOTIFICATION_TYPES.NotificationService) private _notificationService: INotificationService,
     @inject(USER_TYPES.UserRepository) private _userRepository: IUserRepository,
+    @inject(AI_TYPES.AiWorkoutService) private _aiWorkoutService: IAiWorkoutService,
   ) {}
 
   private async getActiveSubscription(userId: string) {
@@ -145,8 +149,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       }))
     }));
 
-    const aiWorkoutService = new AiWorkoutService();
-    const aiResponse = await aiWorkoutService.generateWorkoutPlan({
+    const aiResponse = await this._aiWorkoutService.generateWorkoutPlan({
       planType,
       answers: answersMap,
       availableExercises,

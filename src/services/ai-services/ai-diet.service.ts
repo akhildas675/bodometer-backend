@@ -124,7 +124,11 @@ async function makeAiRequestWithFallback(payload: unknown): Promise<{ data: Gemi
   throw lastError || new Error("All models failed or quota exceeded");
 }
 
-export class AiDietService {
+import { injectable } from "inversify";
+import { IAiDietService } from "@/modules/ai/interface/ai.diet-service.interface";
+
+@injectable()
+export class AiDietService implements IAiDietService {
   async generateDietPlan(userAnswers: Record<string, unknown>): Promise<DietWeekPlanResponse> {
     const promptText = `
       You are an expert nutritionist and fitness coach. Based on the following user profile answers, generate a personalized 7-day diet plan.

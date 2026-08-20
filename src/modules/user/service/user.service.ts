@@ -24,6 +24,8 @@ import { PaginatedResponseDto } from "@/dto/common.dto";
 import { inject, injectable } from "inversify";
 import { USER_TYPES } from "../user.types";
 import { TRAINER_TYPES } from "../../trainer/trainer.types";
+import { HEALTH_METRICS_TYPES } from "@/modules/health-metrics/health-metrics.types";
+import { IHealthMetrics } from "@/modules/health-metrics/interface/health.metrics-service.interface";
 
 @injectable()
 export class UserService implements IUserService {
@@ -31,6 +33,7 @@ export class UserService implements IUserService {
     @inject(USER_TYPES.UserRepository) private _userRepository: IUserRepository,
     @inject(USER_TYPES.S3Service) private _s3Service: IS3Service,
     @inject(TRAINER_TYPES.TrainerProfileRepository) private _trainerProfileRepo: ITrainerProfileRepository,
+    @inject(HEALTH_METRICS_TYPES.HealthMetricsService) private _healthMetricsService: IHealthMetrics,
   ) { }
 
   // Fetch user details
@@ -186,7 +189,6 @@ export class UserService implements IUserService {
   }
 
   async calculateBmi(data: UpdateBmiDto): Promise<UpdateBmiResponseDto> {
-    const healthMetricsService = new HealthMetricsService();
-    return healthMetricsService.bmiCalculator(data);
+    return this._healthMetricsService.bmiCalculator(data);
   }
 }

@@ -27,6 +27,10 @@ export default class QuestionRepository
 
   protected toInterface(doc: IQuestion): OnboardingQuestion {
     const isStepper = doc.type === "number" && doc.numberConfig;
+    const groupObj = doc.groupId as unknown as { _id?: mongoose.Types.ObjectId; title?: string };
+    const groupIdStr = groupObj?._id ? groupObj._id.toString() : doc.groupId?.toString() || "";
+    const groupTitle = groupObj?.title || "";
+
     return {
       questionId: doc._id.toString(),
       id: doc._id.toString(),
@@ -35,7 +39,8 @@ export default class QuestionRepository
       isCoreLocked: false,
       question: doc.question,
       description: doc.description,
-      groupId: doc.groupId.toString(),
+      groupId: groupIdStr,
+      groupTitle: groupTitle,
       section: "",
       order: doc.order,
       isActive: doc.isActive,
@@ -169,7 +174,9 @@ export default class QuestionRepository
       ];
     }
     if (query.groupId) {
-      filter.groupId = new mongoose.Types.ObjectId(query.groupId);
+      filter.groupId = mongoose.Types.ObjectId.isValid(query.groupId)
+        ? { $in: [query.groupId, new mongoose.Types.ObjectId(query.groupId)] }
+        : query.groupId;
     }
     if (query.isActive !== undefined) {
       filter.isActive = query.isActive === true ? { $ne: false } : false;
@@ -192,18 +199,38 @@ export default class QuestionRepository
 
     const sort: Record<string, 1 | -1> = {};
     if (query.sortBy) {
-      sort[query.sortBy] = query.sortOrder === "asc" ? 1 : -1;
+      const sortField = ["category", "group", "groupTitle"].includes(query.sortBy)
+        ? "groupId"
+        : query.sortBy;
+      sort[sortField] = query.sortOrder === "asc" ? 1 : -1;
+      if (sortField === "groupId") {
+        sort.order = query.sortOrder === "asc" ? 1 : -1;
+      }
     } else {
       sort.createdAt = -1;
     }
 
-    const [docs, totalItems] = await Promise.all([
-      QuestionModel.find(filter).sort(sort).skip(skip).limit(limit).exec(),
+    const [docs, totalItems, allGroups] = await Promise.all([
+      QuestionModel.find(filter).populate("groupId", "_id title key").sort(sort).skip(skip).limit(limit).exec(),
       QuestionModel.countDocuments(filter).exec(),
+      GroupModel.find().lean().exec(),
     ]);
 
+    const groupMap = new Map<string, string>();
+    allGroups.forEach((g) => {
+      groupMap.set(g._id.toString(), g.title);
+    });
+
+    const data = docs.map((doc) => {
+      const item = this.toInterface(doc);
+      if (!item.groupTitle && item.groupId) {
+        item.groupTitle = groupMap.get(item.groupId.toString()) || "";
+      }
+      return item;
+    });
+
     return {
-      data: docs.map((doc) => this.toInterface(doc)),
+      data,
       pagination: {
         currentPage: page,
         totalPages: Math.ceil(totalItems / limit),

@@ -32,6 +32,7 @@ export interface OnboardingQuestion {
   question: string;
   description?: string;
   groupId: string;
+  groupTitle?: string;
   section?: string;
   order: number;
   isActive?: boolean;
