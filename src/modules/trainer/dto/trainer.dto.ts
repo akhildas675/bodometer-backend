@@ -98,7 +98,7 @@ export interface FindTrainerResponseDto extends BaseUserProfileDto {
 
 export interface TrainerStatusResponseDto {
   name: string;
-  verificationStatus: VerificationStatus;
+  verificationStatus: VerificationStatus | null;
   rejectionReason?: string | null;
 }
 

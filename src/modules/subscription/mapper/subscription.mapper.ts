@@ -22,6 +22,13 @@ export interface PopulatedSubscriptionTransaction {
     _id: mongoose.Types.ObjectId;
     name: string;
   } | null;
+  type?: string;
+  oldPlanId?: {
+    _id: mongoose.Types.ObjectId;
+    name: string;
+  } | null;
+  oldPlanUnusedValue?: number;
+  upgradeAmount?: number;
   amount: number;
   currency: string;
   paymentMethod: string;
@@ -127,6 +134,15 @@ export class SubscriptionMapper {
             name: tx.subscriptionPlanId.name,
           }
         : null,
+      type: tx.type || "PURCHASE",
+      oldPlanId: tx.oldPlanId
+        ? {
+            _id: tx.oldPlanId._id.toString(),
+            name: tx.oldPlanId.name,
+          }
+        : null,
+      oldPlanUnusedValue: tx.oldPlanUnusedValue ?? 0,
+      upgradeAmount: tx.upgradeAmount ?? 0,
       amount: tx.amount,
       currency: tx.currency,
       paymentMethod: tx.paymentMethod,

@@ -96,6 +96,7 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
     const docs = await SubscriptionTransactionModel.find(filter)
       .populate("userId", "name email")
       .populate("subscriptionPlanId", "name")
+      .populate("oldPlanId", "name")
       .sort(sort)
       .skip(skip)
       .limit(limitNum)
@@ -172,6 +173,7 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
     const total = await SubscriptionTransactionModel.countDocuments(filter);
     const docs = await SubscriptionTransactionModel.find(filter)
       .populate("subscriptionPlanId", "name")
+      .populate("oldPlanId", "name")
       .sort(sort)
       .skip(skip)
       .limit(limitNum)

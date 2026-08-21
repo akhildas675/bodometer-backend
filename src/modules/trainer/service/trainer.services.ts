@@ -15,7 +15,7 @@ import {
   ApproveTrainerResponseDto,
   RejectTrainerResponseDto,
   TrainerListItemDto,
-  TrainerDetailDto,
+  GetTrainerByIdResponseDto,
 } from "../dto/trainer.dto";
 import { ROLES } from "@/constants/constant.values.ts/roles";
 import { PaginatedResponseDto } from "../../../dto/common.dto";
@@ -307,10 +307,15 @@ export class TrainerService implements ITrainerService {
 
     const response = await this._trainerProfileRepository.fetchTrainerStatus(userId);
     if (!response) {
-      throw new AppError(
-        STATUS.BAD_REQUEST,
-        MESSAGES.TRAINER.TRAINERS_FETCHED_FAILED,
-      );
+      const userDoc = await this._userRepository.findById(userId);
+      if (!userDoc) {
+        throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND);
+      }
+      return {
+        name: userDoc.name,
+        verificationStatus: null,
+        rejectionReason: null,
+      };
     }
 
     return response;
@@ -404,12 +409,12 @@ export class TrainerService implements ITrainerService {
 
   async getTrainerProfileById(
     profileId: string,
-  ): Promise<TrainerDetailDto> {
+  ): Promise<GetTrainerByIdResponseDto> {
     const trainer =
       await this._trainerProfileRepository.findByIdWithUser(profileId);
     if (!trainer)
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND);
-    return UserMappers.toTrainerDetailDto(trainer);
+    return TrainerMapper.toDetailDto(trainer);
   }
 
   async approveTrainer(profileId: string): Promise<ApproveTrainerResponseDto> {

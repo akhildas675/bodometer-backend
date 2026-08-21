@@ -30,6 +30,7 @@ import {
   SubscriptionFeature,
   SubscriptionPlan,
   SubscriptionPlanQuery,
+  UpgradePreviewDto,
 } from "@/modules/subscription/interface/subscription.interface";
 import { AppError } from "@/utils/appError";
 import { STATUS } from "@/constants/constant.values.ts/statuscode";
@@ -369,6 +370,91 @@ export class SubscriptionService implements ISubscriptionService {
       );
     }
 
+    const action = session.metadata?.action;
+    if (action === "UPGRADE") {
+      const oldPlanId = session.metadata?.oldPlanId;
+      const userSubscriptionId = session.metadata?.userSubscriptionId;
+      const oldPlanUnusedValue = Number(session.metadata?.oldPlanUnusedValue ?? 0);
+      const upgradeAmount = Number(session.metadata?.upgradeAmount ?? 0);
+
+      const activeSub =
+        await this._userSubscriptionTransactionRepository.findActiveByUserId(
+          userId,
+        );
+      const subIdToUpdate =
+        userSubscriptionId || (activeSub ? String(activeSub._id) : null);
+
+      if (!subIdToUpdate) {
+        throw new AppError(
+          STATUS.NOT_FOUND,
+          "Active subscription to upgrade not found",
+        );
+      }
+
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + (plan.durationInDays ?? 30));
+
+      await this._userSubscriptionTransactionRepository.update(subIdToUpdate, {
+        subscriptionPlanId,
+        startDate,
+        endDate,
+        status: "active",
+      });
+
+      await this._subscriptionTransactionRepository.create({
+        userId,
+        subscriptionPlanId,
+        userSubscriptionId: subIdToUpdate,
+        type: "UPGRADE",
+        oldPlanId,
+        oldPeriodStart: activeSub?.startDate,
+        oldPeriodEnd: activeSub?.endDate,
+        newPeriodStart: startDate,
+        newPeriodEnd: endDate,
+        oldPlanUnusedValue,
+        upgradeAmount,
+        amount: (session.amount_total ?? 0) / 100,
+        currency: (session.currency ?? "inr").toUpperCase(),
+        paymentMethod: "card",
+        paymentGateway: "stripe",
+        transactionId: sessionId,
+        paymentStatus: "success",
+        paidAt: new Date(),
+        meta: {
+          stripeSessionId: sessionId,
+          customerEmail: session.customer_details?.email,
+          action: "UPGRADE",
+        },
+      });
+
+      const userDoc = await this._userRepository.findById(userId);
+
+      this._notificationService
+        .createNotification({
+          recipientId: userId,
+          type: NOTIFICATION_TYPE.SUBSCRIPTION_PURCHASED,
+          entityType: NOTIFICATION_ENTITY_TYPE.SUBSCRIPTION,
+          entityId: subIdToUpdate,
+          variables: {
+            userName: userDoc?.name || "User",
+            planName: plan.name,
+            endDate: endDate.toLocaleDateString(),
+          },
+        })
+        .catch((err) => console.error("Notification error:", err));
+
+      return {
+        subscriptionId: subIdToUpdate,
+        subscriptionPlanId,
+        planName: plan.name,
+        startDate,
+        endDate,
+        status: "active",
+        daysRemaining: plan.durationInDays ?? 30,
+      };
+    }
+
     const startDate = new Date();
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + (plan.durationInDays ?? 30));
@@ -382,21 +468,22 @@ export class SubscriptionService implements ISubscriptionService {
       });
 
     await this._subscriptionTransactionRepository.create({
-      userId,
-      subscriptionPlanId,
-      userSubscriptionId: String(userSubscription._id),
-      amount: (session.amount_total ?? 0) / 100,
-      currency: (session.currency ?? "inr").toUpperCase(),
-      paymentMethod: "card",
-      paymentGateway: "stripe",
-      transactionId: sessionId,
-      paymentStatus: "success",
-      paidAt: new Date(),
-      meta: {
-        stripeSessionId: sessionId,
-        customerEmail: session.customer_details?.email,
-      },
-    });
+        userId,
+        subscriptionPlanId,
+        userSubscriptionId: String(userSubscription._id),
+        type: "PURCHASE",
+        amount: (session.amount_total ?? 0) / 100,
+        currency: (session.currency ?? "inr").toUpperCase(),
+        paymentMethod: "card",
+        paymentGateway: "stripe",
+        transactionId: sessionId,
+        paymentStatus: "success",
+        paidAt: new Date(),
+        meta: {
+          stripeSessionId: sessionId,
+          customerEmail: session.customer_details?.email,
+        },
+      });
 
     const userAnswers = await this._answerRepository.getUserAnswers(userId);
 
@@ -488,5 +575,217 @@ export class SubscriptionService implements ISubscriptionService {
       data: SubscriptionMapper.toTransactionDtoList(data),
       pagination,
     };
+  }
+
+  private async calculateUpgradeProration(
+    userId: string,
+    targetPlanId: string,
+  ) {
+    const activeSub =
+      await this._userSubscriptionTransactionRepository.findActiveByUserId(
+        userId,
+      );
+    if (!activeSub) {
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        "No active subscription found to upgrade",
+      );
+    }
+
+    const currentPlanId =
+      typeof activeSub.subscriptionPlanId === "object" &&
+      activeSub.subscriptionPlanId !== null &&
+      "_id" in activeSub.subscriptionPlanId
+        ? String((activeSub.subscriptionPlanId as { _id: unknown })._id)
+        : String(activeSub.subscriptionPlanId);
+
+    if (currentPlanId === targetPlanId) {
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        "You are already subscribed to this plan",
+      );
+    }
+
+    const currentPlan =
+      await this._subscriptionPlanRepository.getSubscriptionPlanById(
+        currentPlanId,
+      );
+    const targetPlan =
+      await this._subscriptionPlanRepository.getSubscriptionPlanById(
+        targetPlanId,
+      );
+
+    if (!currentPlan || !targetPlan) {
+      throw new AppError(
+        STATUS.NOT_FOUND,
+        MESSAGES.SUBSCRIPTION_PLAN.NOT_FOUND,
+      );
+    }
+
+    if (!targetPlan.isActive) {
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        "Target subscription plan is currently inactive",
+      );
+    }
+
+    if (Number(targetPlan.price) <= Number(currentPlan.price)) {
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        "Target plan must be higher price/tier to upgrade",
+      );
+    }
+
+    const now = new Date();
+    const endDate = new Date(activeSub.endDate);
+    const remainingMs = Math.max(0, endDate.getTime() - now.getTime());
+    const remainingDays = Math.max(
+      0,
+      Math.ceil(remainingMs / (1000 * 60 * 60 * 24)),
+    );
+
+    const currentDurationDays = currentPlan.durationInDays || 30;
+    const dailyRate = Number(currentPlan.price) / currentDurationDays;
+
+    const oldPlanUnusedValue = Math.min(
+      Number(currentPlan.price),
+      Math.max(0, Math.round(dailyRate * remainingDays * 100) / 100),
+    );
+
+    const upgradeAmount = Math.max(
+      0,
+      Math.round((Number(targetPlan.price) - oldPlanUnusedValue) * 100) / 100,
+    );
+
+    return {
+      activeSub,
+      currentPlan,
+      targetPlan,
+      remainingDays,
+      oldPlanUnusedValue,
+      upgradeAmount,
+    };
+  }
+
+  async getUpgradePreview(
+    userId: string,
+    targetPlanId: string,
+  ): Promise<UpgradePreviewDto> {
+    const {
+      currentPlan,
+      targetPlan,
+      remainingDays,
+      oldPlanUnusedValue,
+      upgradeAmount,
+    } = await this.calculateUpgradeProration(userId, targetPlanId);
+
+    const currentPlanIdStr = String(
+      currentPlan.subscriptionPlanId || (currentPlan as { _id?: unknown })._id,
+    );
+    const targetPlanIdStr = String(
+      targetPlan.subscriptionPlanId || (targetPlan as { _id?: unknown })._id,
+    );
+
+    return {
+      currentPlan: {
+        id: currentPlanIdStr,
+        name: currentPlan.name,
+        price: Number(currentPlan.price),
+        durationInDays: currentPlan.durationInDays || 30,
+      },
+      targetPlan: {
+        id: targetPlanIdStr,
+        name: targetPlan.name,
+        price: Number(targetPlan.price),
+        durationInDays: targetPlan.durationInDays || 30,
+      },
+      daysRemaining: remainingDays,
+      oldPlanUnusedValue,
+      upgradeAmount,
+    };
+  }
+
+  async createUpgradeCheckoutSession(
+    userId: string,
+    targetPlanId: string,
+  ): Promise<{ checkoutUrl: string | null; directSuccess?: boolean }> {
+    const {
+      activeSub,
+      currentPlan,
+      targetPlan,
+      oldPlanUnusedValue,
+      upgradeAmount,
+    } = await this.calculateUpgradeProration(userId, targetPlanId);
+
+    const targetPlanIdStr = String(
+      targetPlan.subscriptionPlanId || (targetPlan as { _id?: unknown })._id,
+    );
+    const oldPlanIdStr = String(
+      currentPlan.subscriptionPlanId || (currentPlan as { _id?: unknown })._id,
+    );
+
+    if (upgradeAmount <= 0) {
+      const now = new Date();
+      const newEndDate = new Date();
+      newEndDate.setDate(
+        newEndDate.getDate() + (targetPlan.durationInDays || 30),
+      );
+
+      await this._userSubscriptionTransactionRepository.update(
+        String(activeSub._id),
+        {
+          subscriptionPlanId: targetPlanIdStr,
+          startDate: now,
+          endDate: newEndDate,
+          status: "active",
+        },
+      );
+
+      await this._subscriptionTransactionRepository.create({
+        userId,
+        subscriptionPlanId: targetPlanIdStr,
+        userSubscriptionId: String(activeSub._id),
+        type: "UPGRADE",
+        oldPlanId: oldPlanIdStr,
+        oldPeriodStart: activeSub.startDate,
+        oldPeriodEnd: activeSub.endDate,
+        newPeriodStart: now,
+        newPeriodEnd: newEndDate,
+        oldPlanUnusedValue,
+        upgradeAmount: 0,
+        amount: 0,
+        currency: "INR",
+        paymentMethod: "credit_balance",
+        paymentGateway: "manual",
+        transactionId: `UPGRADE_CREDIT_${Date.now()}`,
+        paymentStatus: "success",
+        paidAt: now,
+        meta: {
+          note: "Upgraded via 100% unused plan credit",
+        },
+      });
+
+      return { checkoutUrl: null, directSuccess: true };
+    }
+
+    const result = await this._paymentService.createCheckoutSession({
+      planName: `Upgrade to ${targetPlan.name}`,
+      description: `Prorated upgrade from ${currentPlan.name} to ${targetPlan.name}`,
+      amount: upgradeAmount,
+      currency: "inr",
+      successUrl: `${process.env.CLIENT_URL}/subscription-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancelUrl: `${process.env.CLIENT_URL}/subscription-cancel`,
+      metadata: {
+        action: "UPGRADE",
+        userId,
+        subscriptionPlanId: targetPlanIdStr,
+        oldPlanId: oldPlanIdStr,
+        userSubscriptionId: String(activeSub._id),
+        oldPlanUnusedValue: String(oldPlanUnusedValue),
+        upgradeAmount: String(upgradeAmount),
+      },
+    });
+
+    return { checkoutUrl: result.url };
   }
 }

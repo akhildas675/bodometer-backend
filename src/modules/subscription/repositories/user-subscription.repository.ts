@@ -26,4 +26,19 @@ export class UserSubscriptionRepository implements IUserSubscriptionRepository {
       .populate("subscriptionPlanId", "name description price durationInDays")
       .lean() as Promise<IUserSubscription | null>;
   }
+
+  async update(
+    id: string,
+    updateData: Partial<{
+      subscriptionPlanId: string;
+      startDate: Date;
+      endDate: Date;
+      status: string;
+      autoRenew: boolean;
+    }>,
+  ): Promise<IUserSubscription | null> {
+    return UserSubscriptionModel.findByIdAndUpdate(id, updateData, {
+      new: true,
+    }).lean() as Promise<IUserSubscription | null>;
+  }
 }

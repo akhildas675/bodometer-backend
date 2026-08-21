@@ -25,19 +25,29 @@ export const createTrainerProfileSchema = z.object({
             certificate: z.unknown().optional(),
             coverImage: z.unknown().optional(),
         })
-        .refine((files) => {
-            const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+        .optional()
+        .superRefine((files, ctx) => {
+            if (!files) return;
+            const allowedImageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+            const allowedDocTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
             const maxSize = 10 * 1024 * 1024;
 
             const profileImage = files.profileImage as Express.Multer.File | Express.Multer.File[] | undefined;
             if (profileImage) {
                 const file = Array.isArray(profileImage) ? profileImage[0] : profileImage;
                 if (file) {
-                    if (!allowedTypes.includes(file.mimetype)) {
-                        throw new Error("Only PDF, jpeg, and png files are allowed for profile image");
-                    }
-                    if (file.size > maxSize) {
-                        throw new Error("Profile image size must not exceed 10MB");
+                    if (!allowedImageTypes.includes(file.mimetype)) {
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: "Only JPEG, PNG, and WebP image formats are allowed for profile picture",
+                            path: ["profileImage"],
+                        });
+                    } else if (file.size > maxSize) {
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: "Profile image size must not exceed 10MB",
+                            path: ["profileImage"],
+                        });
                     }
                 }
             }
@@ -46,11 +56,18 @@ export const createTrainerProfileSchema = z.object({
             if (certificate) {
                 const file = Array.isArray(certificate) ? certificate[0] : certificate;
                 if (file) {
-                    if (!allowedTypes.includes(file.mimetype)) {
-                        throw new Error("Only PDF, jpeg, and png files are allowed for certificate");
-                    }
-                    if (file.size > maxSize) {
-                        throw new Error("Certificate file size must not exceed 10MB");
+                    if (!allowedDocTypes.includes(file.mimetype)) {
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: "Only PDF, JPEG, PNG, and WebP files are allowed for certificate",
+                            path: ["certificate"],
+                        });
+                    } else if (file.size > maxSize) {
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: "Certificate file size must not exceed 10MB",
+                            path: ["certificate"],
+                        });
                     }
                 }
             }
@@ -59,16 +76,22 @@ export const createTrainerProfileSchema = z.object({
             if (coverImage) {
                 const file = Array.isArray(coverImage) ? coverImage[0] : coverImage;
                 if (file) {
-                    if (!allowedTypes.includes(file.mimetype)) {
-                        throw new Error("Only PDF, jpeg, and png files are allowed for cover image");
-                    }
-                    if (file.size > maxSize) {
-                        throw new Error("Cover image size must not exceed 10MB");
+                    if (!allowedImageTypes.includes(file.mimetype)) {
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: "Only JPEG, PNG, and WebP image formats are allowed for cover photo",
+                            path: ["coverImage"],
+                        });
+                    } else if (file.size > maxSize) {
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: "Cover photo size must not exceed 10MB",
+                            path: ["coverImage"],
+                        });
                     }
                 }
             }
-            return true;
-        }, "File validation failed"),
+        }),
 });
 
 export const updateTrainerProfileSchema = z.object({
@@ -110,8 +133,8 @@ export const uploadProfilePictureSchema = z.object({
     file: z
         .object({
             mimetype: z.string().refine(
-                (val) => ["image/jpeg", "image/png", "image/webp"].includes(val),
-                { message: "Only jpeg, png, and webp images are allowed" }
+                (val) => ["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(val),
+                { message: "Only JPEG, PNG, and WebP images are allowed" }
             ),
             size: z
                 .number()

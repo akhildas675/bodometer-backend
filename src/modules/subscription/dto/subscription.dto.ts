@@ -142,6 +142,13 @@ export interface SubscriptionTransactionDto {
     _id: string;
     name: string;
   } | null;
+  type?: string;
+  oldPlanId?: {
+    _id: string;
+    name: string;
+  } | null;
+  oldPlanUnusedValue?: number;
+  upgradeAmount?: number;
   amount: number;
   currency: string;
   paymentMethod: string;

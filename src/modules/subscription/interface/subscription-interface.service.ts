@@ -16,6 +16,7 @@ import {
   ToggleSubscriptionPlanStatusResponseDto,
   UpdateSubscriptionPlanDto,
 } from "../dto/subscription.dto";
+import { UpgradePreviewDto } from "../interface/subscription.interface";
 
 export interface ISubscriptionService {
   // Features
@@ -68,4 +69,12 @@ export interface ISubscriptionService {
     userId: string,
     query: SubscriptionTransactionQueryDto,
   ): Promise<GetAllSubscriptionTransactionsResponseDto>;
+  getUpgradePreview(
+    userId: string,
+    targetPlanId: string,
+  ): Promise<UpgradePreviewDto>;
+  createUpgradeCheckoutSession(
+    userId: string,
+    targetPlanId: string,
+  ): Promise<{ checkoutUrl: string | null; directSuccess?: boolean }>;
 }

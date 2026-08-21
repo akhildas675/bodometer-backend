@@ -9,4 +9,15 @@ export interface IUserSubscriptionRepository {
   }): Promise<IUserSubscription>;
 
   findActiveByUserId(userId: string): Promise<IUserSubscription | null>;
+
+  update(
+    id: string,
+    updateData: Partial<{
+      subscriptionPlanId: string;
+      startDate: Date;
+      endDate: Date;
+      status: string;
+      autoRenew: boolean;
+    }>,
+  ): Promise<IUserSubscription | null>;
 }

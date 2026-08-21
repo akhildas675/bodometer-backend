@@ -3,6 +3,8 @@ import {
   PaymentGateway,
   TRANSACTION_STATUSES,
   TransactionStatus,
+  TRANSACTION_TYPES,
+  TransactionType,
 } from "../constants/subscription.constant";
 import mongoose, { Document, Schema } from "mongoose";
 
@@ -12,6 +14,22 @@ export interface ISubscriptionTransaction extends Document {
   subscriptionPlanId: mongoose.Types.ObjectId;
 
   userSubscriptionId?: mongoose.Types.ObjectId;
+
+  type: TransactionType;
+
+  oldPlanId?: mongoose.Types.ObjectId;
+
+  oldPeriodStart?: Date;
+  oldPeriodEnd?: Date;
+
+  newPeriodStart?: Date;
+  newPeriodEnd?: Date;
+
+  oldPlanUnusedValue?: number;
+
+  upgradeAmount?: number;
+
+  discountAmount?: number;
 
   amount: number;
 
@@ -51,6 +69,49 @@ const SubscriptionTransactionSchema = new Schema<ISubscriptionTransaction>(
     userSubscriptionId: {
       type: Schema.Types.ObjectId,
       ref: "UserSubscription",
+    },
+
+    type: {
+      type: String,
+      enum: TRANSACTION_TYPES,
+      default: "PURCHASE",
+      index: true,
+    },
+
+    oldPlanId: {
+      type: Schema.Types.ObjectId,
+      ref: "SubscriptionPlan",
+    },
+
+    oldPeriodStart: {
+      type: Date,
+    },
+
+    oldPeriodEnd: {
+      type: Date,
+    },
+
+    newPeriodStart: {
+      type: Date,
+    },
+
+    newPeriodEnd: {
+      type: Date,
+    },
+
+    oldPlanUnusedValue: {
+      type: Number,
+      default: 0,
+    },
+
+    upgradeAmount: {
+      type: Number,
+      default: 0,
+    },
+
+    discountAmount: {
+      type: Number,
+      default: 0,
     },
 
     amount: {

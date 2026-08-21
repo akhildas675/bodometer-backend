@@ -91,3 +91,15 @@ export const verifyPaymentSchema = z.object({
     session_id: z.string().min(1, "Session ID is required"),
   })
 });
+
+export const upgradePreviewParamSchema = z.object({
+  params: z.object({
+    targetPlanId: z.string().min(1, "Target Plan ID is required"),
+  }),
+});
+
+export const upgradeCheckoutSchema = z.object({
+  body: z.object({
+    targetPlanId: z.string().min(1, "Target Plan ID is required"),
+  }),
+});

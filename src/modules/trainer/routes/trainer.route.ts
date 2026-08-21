@@ -14,7 +14,7 @@ import {
   uploadProfilePictureSchema,
   uploadTrainerDocumentSchema,
   getTrainerAppointmentsSchema,
-
+  rejectTrainerSchema,
 } from "@/modules/trainer/validation/trainer.validator";
 import { userIdParamSchema } from "@/modules/user/validation/user.validator";
 
@@ -35,22 +35,15 @@ trainerRoute.post(
 );
 
 trainerRoute.get(
-  TRAINER_PATHS.PROFILE,
+  TRAINER_PATHS.PROFILE_STATUS,
   ROLE_GUARD.TRAINER_GUARD,
-  trainerController.getTrainerProfile,
+  trainerController.getTrainerProfileStatus,
 );
 
 trainerRoute.get(
-  TRAINER_PATHS.TRAINERS,
-  ROLE_GUARD.OPTIONAL_AUTH,
-  validate(getTrainersSchema),
-  trainerController.getTrainers,
-);
-trainerRoute.get(
-  TRAINER_PATHS.TRAINER_BY_ID,
-  ROLE_GUARD.ALL_GUARDS,
-  validate(profileIdParamSchema),
-  trainerController.getTrainerById,
+  TRAINER_PATHS.PROFILE,
+  ROLE_GUARD.TRAINER_GUARD,
+  trainerController.getTrainerProfile,
 );
 
 trainerRoute.put(
@@ -85,9 +78,10 @@ trainerRoute.post(
 );
 
 trainerRoute.get(
-  TRAINER_PATHS.PROFILE_STATUS,
-  ROLE_GUARD.TRAINER_GUARD,
-  trainerController.getTrainerProfileStatus,
+  TRAINER_PATHS.TRAINERS,
+  ROLE_GUARD.OPTIONAL_AUTH,
+  validate(getTrainersSchema),
+  trainerController.getTrainers,
 );
 
 trainerRoute.get(
@@ -95,6 +89,35 @@ trainerRoute.get(
   ROLE_GUARD.ADMIN_GUARD,
   validate(getTrainerAppointmentsSchema),
   trainerController.getTrainerAppointments,
+);
+
+/* Parameterized / Dynamic routes (must be registered after static routes) */
+trainerRoute.get(
+  TRAINER_PATHS.PROFILE_BY_ID,
+  ROLE_GUARD.ADMIN_GUARD,
+  validate(profileIdParamSchema),
+  trainerController.getTrainerById,
+);
+
+trainerRoute.patch(
+  TRAINER_PATHS.APPROVE_PROFILE,
+  ROLE_GUARD.ADMIN_GUARD,
+  validate(profileIdParamSchema),
+  trainerController.approveTrainer,
+);
+
+trainerRoute.patch(
+  TRAINER_PATHS.REJECT_PROFILE,
+  ROLE_GUARD.ADMIN_GUARD,
+  validate(rejectTrainerSchema),
+  trainerController.rejectTrainer,
+);
+
+trainerRoute.get(
+  TRAINER_PATHS.TRAINER_BY_ID,
+  ROLE_GUARD.ALL_GUARDS,
+  validate(profileIdParamSchema),
+  trainerController.getTrainerById,
 );
 
 trainerRoute.patch(

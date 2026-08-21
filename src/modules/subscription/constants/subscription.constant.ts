@@ -48,3 +48,16 @@ export const LIMIT_TYPES = [
 
 export type LimitType =
   typeof LIMIT_TYPES[number];
+
+export const TRANSACTION_TYPES = [
+  "PURCHASE",
+  "RENEWAL",
+  "UPGRADE",
+  "DOWNGRADE",
+  "REFUND",
+  "CANCELLATION",
+] as const;
+
+export type TransactionType =
+  typeof TRANSACTION_TYPES[number];
+

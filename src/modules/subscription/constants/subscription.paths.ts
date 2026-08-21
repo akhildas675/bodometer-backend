@@ -15,5 +15,7 @@ export const SUBSCRIPTION_PLAN_PATHS = {
 
   CHECKOUT_SESSION: "/checkout-session",
   VERIFY_PAYMENT: "/verify-payment",
- 
+
+  UPGRADE_PREVIEW: "/upgrade-preview/:targetPlanId",
+  UPGRADE_CHECKOUT: "/upgrade-checkout",
 } as const;

@@ -1,5 +1,5 @@
 import { PopulatedSubscriptionTransaction } from "../mapper/subscription.mapper";
-import { FeatureType, PaymentGateway, TransactionStatus } from "../constants/subscription.constant";
+import { FeatureType, PaymentGateway, TransactionStatus, TransactionType } from "../constants/subscription.constant";
 import { PaginationMeta } from '@/modules/base/interface/common.interface';
 
 export interface SubscriptionFeature {
@@ -65,10 +65,20 @@ export interface UserSubscriptions {
   isPopular: boolean;
   isActive?: boolean;
 }
+
 export interface CreateSubscriptionTransactionData {
   userId: string;
   subscriptionPlanId: string;
   userSubscriptionId: string;
+  type?: TransactionType;
+  oldPlanId?: string;
+  oldPeriodStart?: Date;
+  oldPeriodEnd?: Date;
+  newPeriodStart?: Date;
+  newPeriodEnd?: Date;
+  oldPlanUnusedValue?: number;
+  upgradeAmount?: number;
+  discountAmount?: number;
   amount: number;
   currency: string;
   paymentMethod: string;
@@ -77,6 +87,24 @@ export interface CreateSubscriptionTransactionData {
   paymentStatus: TransactionStatus;
   paidAt: Date;
   meta?: Record<string, unknown>;
+}
+
+export interface UpgradePreviewDto {
+  currentPlan: {
+    id: string;
+    name: string;
+    price: number;
+    durationInDays: number;
+  };
+  targetPlan: {
+    id: string;
+    name: string;
+    price: number;
+    durationInDays: number;
+  };
+  daysRemaining: number;
+  oldPlanUnusedValue: number;
+  upgradeAmount: number;
 }
 
 export interface SubscriptionTransactionQuery {

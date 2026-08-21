@@ -465,6 +465,76 @@ export class SubscriptionController {
           }
         }
       };
-    
-  
+
+  getUpgradePreview = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      if (!req.user?.id) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      }
+
+      const { targetPlanId } = req.params;
+      if (!targetPlanId) {
+        throw new AppError(
+          STATUS.BAD_REQUEST,
+          MESSAGES.VALIDATION.ID_REQUIRED,
+        );
+      }
+
+      const result = await this._subscriptionService.getUpgradePreview(
+        req.user.id,
+        targetPlanId,
+      );
+
+      new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, result).send(
+        res,
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
+
+  createUpgradeCheckoutSession = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      if (!req.user?.id) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
+      }
+
+      const body = req.body as { targetPlanId?: string };
+      const targetPlanId = body.targetPlanId;
+      if (!targetPlanId) {
+        throw new AppError(
+          STATUS.BAD_REQUEST,
+          MESSAGES.VALIDATION.ID_REQUIRED,
+        );
+      }
+
+      const result =
+        await this._subscriptionService.createUpgradeCheckoutSession(
+          req.user.id,
+          targetPlanId,
+        );
+
+      new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, result).send(
+        res,
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
 }

@@ -3,7 +3,18 @@ import { SubscriptionController } from "../controller/subscription.controller";
 import { SUBSCRIPTION_TYPES } from "../subscription.types";
 import container from "@/container/container";
 import { validate } from "@/middleware/validate";
-import { featureIdParamSchema, featureUpdateSchema, featureValidationSchema, subscriptionPlanIdParamSchema, subscriptionPlanUpdateSchema, subscriptionPlanValidationSchema, checkoutSessionSchema, verifyPaymentSchema } from "../validation/subscription.validation";
+import {
+  featureIdParamSchema,
+  featureUpdateSchema,
+  featureValidationSchema,
+  subscriptionPlanIdParamSchema,
+  subscriptionPlanUpdateSchema,
+  subscriptionPlanValidationSchema,
+  checkoutSessionSchema,
+  verifyPaymentSchema,
+  upgradePreviewParamSchema,
+  upgradeCheckoutSchema,
+} from "../validation/subscription.validation";
 import { ROLE_GUARD } from "@/constants/constant.values.ts/role.guard";
 import { SUBSCRIPTION_FEATURE_PATHS, SUBSCRIPTION_PLAN_PATHS } from "../constants/subscription.paths";
 
@@ -105,6 +116,20 @@ subscriptionRoute.get(
   SUBSCRIPTION_PLAN_PATHS.USER_TRANSACTIONS,
   ROLE_GUARD.USER_GUARD,
   subscriptionController.getUserTransactions,
+);
+
+subscriptionRoute.get(
+  SUBSCRIPTION_PLAN_PATHS.UPGRADE_PREVIEW,
+  validate(upgradePreviewParamSchema),
+  ROLE_GUARD.USER_GUARD,
+  subscriptionController.getUpgradePreview,
+);
+
+subscriptionRoute.post(
+  SUBSCRIPTION_PLAN_PATHS.UPGRADE_CHECKOUT,
+  validate(upgradeCheckoutSchema),
+  ROLE_GUARD.USER_GUARD,
+  subscriptionController.createUpgradeCheckoutSession,
 );
 
 export default subscriptionRoute
