@@ -88,10 +88,12 @@ export const ADVANCE_NOTICE_HOURS = {
 export type AdvanceNoticeHours = typeof ADVANCE_NOTICE_HOURS[keyof typeof ADVANCE_NOTICE_HOURS];
 
 export const BUFFER_TIME_MINUTES = {
-  TEN: 10,
-  FIFTEEN: 15,
   TWENTY: 20,
   THIRTY: 30,
+  FORTY: 40,
+  FORTY_FIVE: 45,
+  FIFTY: 50,
+  SIXTY: 60,
 } as const;
 
 export type BufferTimeMinutes = typeof BUFFER_TIME_MINUTES[keyof typeof BUFFER_TIME_MINUTES];
@@ -108,7 +110,7 @@ export type MaxBookingLimits = typeof MAX_BOOKING_LIMITS[keyof typeof MAX_BOOKIN
 export const MAX_AVAILABILITY_DAYS = 90;
 export const MINUTES_PER_DAY = 1440;
 export const MIN_SHIFT_DURATION_MINUTES = 30;
-export const MAX_BUFFER_MINUTES = 120;
+export const MAX_BUFFER_MINUTES = 60;
 
 export const RESCHEDULE_STATUS = {
   PENDING: "PENDING",
