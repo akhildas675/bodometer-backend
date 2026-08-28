@@ -17,4 +17,8 @@ export interface IVideoSessionRepository {
     videoSessionId: string,
     data: Record<string, unknown>,
   ): Promise<VideoSession | null>;
+
+  findSessions(
+    filter: Record<string, unknown>,
+  ): Promise<VideoSession[]>;
 }

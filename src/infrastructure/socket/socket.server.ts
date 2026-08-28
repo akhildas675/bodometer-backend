@@ -11,7 +11,7 @@ export const initializeSocket = (
 ): Server => {
   io = new Server(httpServer, {
     cors: {
-      origin: process.env.CLIENT_URL,
+      origin: process.env.CLIENT_URL || true,
       credentials: true,
     },
   });
@@ -28,6 +28,36 @@ export const initializeSocket = (
     );
 
     void socket.join(`user:${userId}`);
+
+    
+    socket.on("video:join-room", (bookingId: string) => {
+      const room = `video:${bookingId}`;
+      void socket.join(room);
+      console.log(`User ${userId} (${role}) joined video room: ${room}`);
+      socket.to(room).emit("video:participant-joined", { participantId: userId, role });
+    });
+
+    socket.on("video:leave-room", (bookingId: string) => {
+      const room = `video:${bookingId}`;
+      void socket.leave(room);
+      console.log(`User ${userId} left video room: ${room}`);
+      socket.to(room).emit("video:participant-left", { participantId: userId, role });
+    });
+
+    socket.on("video:offer", ({ bookingId, offer }: { bookingId: string; offer: unknown }) => {
+      const room = `video:${bookingId}`;
+      socket.to(room).emit("video:offer", { senderId: userId, offer });
+    });
+
+    socket.on("video:answer", ({ bookingId, answer }: { bookingId: string; answer: unknown }) => {
+      const room = `video:${bookingId}`;
+      socket.to(room).emit("video:answer", { senderId: userId, answer });
+    });
+
+    socket.on("video:ice-candidate", ({ bookingId, candidate }: { bookingId: string; candidate: unknown }) => {
+      const room = `video:${bookingId}`;
+      socket.to(room).emit("video:ice-candidate", { senderId: userId, candidate });
+    });
 
     socket.on("disconnect", (reason) => {
       console.log(

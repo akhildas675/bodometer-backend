@@ -36,21 +36,43 @@ export class NotificationService implements INotificationService {
     template: string,
     variables?: Record<string, string | number>,
   ): string {
-    if (!variables) return template;
     return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key: string) => {
-      return variables[key] !== undefined ? String(variables[key]) : "";
+      if (variables && variables[key] !== undefined && variables[key] !== null) {
+        return String(variables[key]);
+      }
+      return "";
     });
   }
 
   async createNotification(
     data: CreateNotificationTriggerDto,
   ): Promise<NotificationResponseDto> {
+    // 1. Fetch recipient user name to prevent "Hi ," or missing {{userName}}
+    let userName = "User";
+    try {
+      const recipientUser = await this._userRepository.findById(data.recipientId);
+      if (recipientUser) {
+        userName = recipientUser.name || recipientUser.email?.split("@")[0] || "User";
+      }
+    } catch {
+      // Fallback if user lookup fails
+    }
+
+    const mergedVariables: Record<string, string | number> = {
+      userName,
+      trainerName: "Trainer",
+      scheduledDate: "today",
+      scheduledTime: "session time",
+      currency: "INR",
+      ...(data.variables || {}),
+    };
+
     const template = NOTIFICATION_TEMPLATES[data.type];
     const title = template
-      ? this.renderTemplate(template.title, data.variables)
+      ? this.renderTemplate(template.title, mergedVariables)
       : data.type.replace(/_/g, " ");
     const message = template
-      ? this.renderTemplate(template.message, data.variables)
+      ? this.renderTemplate(template.message, mergedVariables)
       : MESSAGES.NOTIFICATION.DEFAULT_MESSAGE;
 
     const created = await this._notificationRepository.createNotification({
@@ -105,7 +127,19 @@ export class NotificationService implements INotificationService {
     recipientId: string,
     options: NotificationPaginationQueryDto,
   ): Promise<NotificationPaginationResponseDto> {
-    return this._notificationRepository.getByRecipientId(recipientId, options);
+    const page = options.page || 1;
+    const limit = options.limit || 10;
+
+    const { data, totalItems } =
+      await this._notificationRepository.getByRecipientId(
+        recipientId,
+        { page, limit },
+      );
+
+    return {
+      data,
+      totalItems,
+    };
   }
 
   async getUnreadCount(recipientId: string): Promise<number> {
@@ -116,13 +150,19 @@ export class NotificationService implements INotificationService {
     recipientId: string,
     notificationId: string,
   ): Promise<NotificationResponseDto> {
-    const updated = await this._notificationRepository.markAsRead(
-      notificationId,
-      recipientId,
-    );
+    const updated =
+      await this._notificationRepository.markAsRead(
+        notificationId,
+        recipientId,
+      );
+
     if (!updated) {
-      throw new AppError(STATUS.NOT_FOUND, MESSAGES.NOTIFICATION.NOT_FOUND);
+      throw new AppError(
+        STATUS.NOT_FOUND,
+        MESSAGES.NOTIFICATION.NOT_FOUND,
+      );
     }
+
     return updated;
   }
 

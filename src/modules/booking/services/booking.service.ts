@@ -86,6 +86,20 @@ export class BookingService implements IBookingService {
       );
     }
 
+    // 0.1 Verify user has no conflicting overlapping booking at the same time
+    const userConflicts = await this._bookingRepository.findUserConflictingBookings(
+      userId,
+      new Date(startTime),
+      new Date(bufferEndTime),
+    );
+
+    if (userConflicts.length > 0) {
+      throw new AppError(
+        STATUS.CONFLICT,
+        "You already have another active booking during this time slot. You cannot book multiple trainers at the same time.",
+      );
+    }
+
     let actualTrainerUserId = trainerId;
     const userDoc = await this._userRepository.findById(trainerId);
     if (!userDoc) {

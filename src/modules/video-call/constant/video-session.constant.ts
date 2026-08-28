@@ -24,6 +24,7 @@ export type VideoSessionTerminationReason =
 
   export const VIDEO_SESSION_STATUS = {
   WAITING: "WAITING",
+  ACCEPTED: "ACCEPTED",
   ACTIVE: "ACTIVE",
   COMPLETED: "COMPLETED",
   CANCELLED: "CANCELLED",

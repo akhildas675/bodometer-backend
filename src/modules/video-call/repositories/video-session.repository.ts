@@ -115,4 +115,10 @@ export class VideoSessionRepository
       },
     );
   }
+
+  async findSessions(
+    filter: Record<string, unknown>,
+  ): Promise<VideoSession[]> {
+    return this.findAll(filter);
+  }
 }
