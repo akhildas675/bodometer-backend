@@ -12,8 +12,6 @@ import { STATUS } from "./constants/constant.values.ts/statuscode";
 import { initializeSocket } from "./infrastructure/socket/socket.server";
 
 import container from "./container/container";
-import { VIDEO_CALL_TYPES } from "./modules/video-call/video-call.types";
-import { VideoSessionSchedulerService } from "./modules/video-call/service/video-session-scheduler.service";
 import type { ServiceIdentifier } from "inversify";
 
 const PORT = process.env.PORT || 5000;
@@ -31,11 +29,6 @@ const mongoUri: string = MONGO_URI;
 async function start() {
   try {
     await connectDB(mongoUri);
-
-    const scheduler = container.get<VideoSessionSchedulerService>(
-      VIDEO_CALL_TYPES.SchedulerService as ServiceIdentifier<VideoSessionSchedulerService>,
-    );
-    scheduler.startScheduler();
 
     const httpServer = http.createServer(app);
 

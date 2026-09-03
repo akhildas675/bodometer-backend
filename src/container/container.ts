@@ -19,7 +19,7 @@ import { loadWalletBindings } from "@/modules/wallet/wallet.bindings";
 import { loadNotificationBindings } from "@/modules/notification/notification.bindings";
 import { loadAiBindings } from "@/modules/ai/ai.bindings";
 import { loadHealthMetricsBindings } from "@/modules/health-metrics/health-metrics.bindings";
-import { loadVideoCallBindings } from "@/modules/video-call/video-call.bindings";
+
 
 const container = new Container();
 
@@ -43,6 +43,6 @@ loadWalletBindings(container);
 loadNotificationBindings(container);
 loadAiBindings(container);
 loadHealthMetricsBindings(container);
-loadVideoCallBindings(container);
+
 
 export default container;
