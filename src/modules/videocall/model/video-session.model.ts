@@ -1,5 +1,5 @@
 import mongoose, { Document } from "mongoose";
-import { VIDEO_CALL_STATUS, VIDEO_SESSION_TERMINATION_REASON, VideoCallSessionStatus, VideoSessionTerminationReason } from "../constant/video-call.constant";
+import { VIDEO_SESSION_STATUS, VIDEO_SESSION_TERMINATION_REASON, VideoSessionStatus, VideoSessionTerminationReason } from "../constant/video-session.constant";
 
 
 export interface IVideoSession extends Document{
@@ -16,7 +16,7 @@ export interface IVideoSession extends Document{
     actualEndTime:Date,
     trainerLeftAt:Date,
     userLeftAt:Date,
-    status:VideoCallSessionStatus,
+    status:VideoSessionStatus,
     terminationReason?:VideoSessionTerminationReason,
     createdAt?:Date,
     updatedAt?:Date,
@@ -87,8 +87,8 @@ const VideoSessionSchema = new mongoose.Schema<IVideoSession>({
     },
     status:{
         type:String,
-        enum:Object.values(VIDEO_CALL_STATUS),
-        default:VIDEO_CALL_STATUS.WAITING,
+        enum:Object.values(VIDEO_SESSION_STATUS),
+        default:VIDEO_SESSION_STATUS.WAITING,
         required:true,
         index:true,
 

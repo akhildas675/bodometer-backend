@@ -1,6 +1,6 @@
 
 
-export const VIDEO_CALL_STATUS = {
+export const VIDEO_SESSION_STATUS = {
     WAITING: "WAITING",
     ACCEPTED: "ACCEPTED",
     ACTIVE: "ACTIVE",
@@ -8,7 +8,7 @@ export const VIDEO_CALL_STATUS = {
     EXPIRED: "EXPIRED",
 } as const;
 
-export type VideoCallSessionStatus = (typeof VIDEO_CALL_STATUS)[keyof typeof VIDEO_CALL_STATUS];    
+export type VideoSessionStatus = (typeof VIDEO_SESSION_STATUS)[keyof typeof VIDEO_SESSION_STATUS];    
 
 
 export const VIDEO_SESSION_TERMINATION_REASON = {

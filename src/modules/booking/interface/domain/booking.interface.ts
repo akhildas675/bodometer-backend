@@ -35,7 +35,6 @@ export interface BookingCancellationSummary {
 }
 
 export interface Booking {
-  paymentStatus: string;
   id: string;
   bookingNumber: string;
   trainerId: string;
