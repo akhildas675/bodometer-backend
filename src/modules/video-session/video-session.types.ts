@@ -1,0 +1,3 @@
+export const VIDEO_SESSION_TYPES = {
+  VideoSessionRepository: Symbol.for("VideoSessionRepository")
+}
