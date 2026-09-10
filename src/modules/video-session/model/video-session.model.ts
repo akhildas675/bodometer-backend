@@ -6,10 +6,10 @@ export interface IVideoSession extends Document{
     bookingId:mongoose.Types.ObjectId;
     trainerId:mongoose.Types.ObjectId;
     userId:mongoose.Types.ObjectId;
-    scheduleStartTime:Date;
-    scheduleEndTime:Date;
-    trainerStartRequestAt:Date,
-    userAcceptAt:Date,
+    scheduledStartTime:Date;
+    scheduledEndTime:Date;
+    trainerStartRequestedAt:Date,
+    userAcceptedAt:Date,
     trainerJoinedAt:Date,
     userJoinedAt:Date,
     actualStartTime:Date,
@@ -48,23 +48,23 @@ const VideoSessionSchema = new mongoose.Schema<IVideoSession>({
 
     },
 
-    scheduleStartTime:{
+    scheduledStartTime:{
         type:Date,
         required:true,
         index:true,
     },
-    scheduleEndTime:{
+    scheduledEndTime:{
         type:Date,
         required:true,
         index:true,
     },
 
-    trainerStartRequestAt:{
+    trainerStartRequestedAt:{
         type:Date,
         
     },
 
-    userAcceptAt:{
+    userAcceptedAt:{
         type:Date,
     },
     trainerJoinedAt:{

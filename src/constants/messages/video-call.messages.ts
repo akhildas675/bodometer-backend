@@ -19,7 +19,14 @@ export const VIDEO_CALL_MESSAGES = {
 
     CANNOT_REJECT_STATE: "This video call cannot be rejected in its current state",
     CANNOT_JOIN_STATE: "This video session cannot be joined",
+    CANNOT_START_BEFORE:"Video call cannot be started before the scheduled start time",
     NOT_ACTIVE: "Video session is not active",
+
+    FAILED_TO_EXPIRED:"Failed to expire video session",
+    FAILED_TO_ACCEPT:"Failed to Accept video call",
+    FAILED_TO_UPDATE_LEAVE:"Failed to update participant leave state",
+    
+  
 
     UNABLE_TO_ACCEPT: "Unable to accept video session",
     UNABLE_TO_REJECT: "Unable to reject video session",
@@ -27,6 +34,13 @@ export const VIDEO_CALL_MESSAGES = {
     UNABLE_TO_UPDATE: "Unable to update video session",
     UNABLE_TO_END: "Unable to end video session",
 
+    WINDOW_EXPIRED:"Video call request window has expired",
+    VIDEO_SESSION_EXISTS:"A video session already exists for this booking",
+
+    BOOKING_HAS_COMPLETED:"This booking already has a completed video session",
+
+
+   
     FETCHED_SUCCESS: "Video session fetched successfully",
     REQUEST_SUCCESS: "Video call requested successfully",
     ACCEPT_SUCCESS: "Video call accepted successfully",

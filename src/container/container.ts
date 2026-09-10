@@ -44,7 +44,7 @@ loadWalletBindings(container);
 loadNotificationBindings(container);
 loadAiBindings(container);
 loadHealthMetricsBindings(container);
-loadVideoSessionBindings(container)
+loadVideoSessionBindings(container);
 
 
 export default container;

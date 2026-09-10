@@ -1,0 +1,305 @@
+[1mdiff --git a/src/constants/messages/video-call.messages.ts b/src/constants/messages/video-call.messages.ts[m
+[1mindex dadcbd7..6f83af5 100644[m
+[1m--- a/src/constants/messages/video-call.messages.ts[m
+[1m+++ b/src/constants/messages/video-call.messages.ts[m
+[36m@@ -19,14 +19,28 @@[m [mexport const VIDEO_CALL_MESSAGES = {[m
+ [m
+     CANNOT_REJECT_STATE: "This video call cannot be rejected in its current state",[m
+     CANNOT_JOIN_STATE: "This video session cannot be joined",[m
+[32m+[m[32m    CANNOT_START_BEFORE:"Video call cannot be started before the scheduled start time",[m
+     NOT_ACTIVE: "Video session is not active",[m
+ [m
+[32m+[m[32m    FAILED_TO_EXPIRED:"Failed to expire video session",[m
+[32m+[m[32m    FAILED_TO_ACCEPT:"Failed to Accept video call",[m
+[32m+[m[32m    FAILED_TO_UPDATE_LEAVE:"Failed to update participant leave state",[m
+[32m+[m[41m    [m
+[32m+[m[41m  [m
+[32m+[m
+     UNABLE_TO_ACCEPT: "Unable to accept video session",[m
+     UNABLE_TO_REJECT: "Unable to reject video session",[m
+     UNABLE_TO_JOIN: "Unable to join video session",[m
+     UNABLE_TO_UPDATE: "Unable to update video session",[m
+     UNABLE_TO_END: "Unable to end video session",[m
+ [m
+[32m+[m[32m    WINDOW_EXPIRED:"Video call request window has expired",[m
+[32m+[m[32m    VIDEO_SESSION_EXISTS:"A video session already exists for this booking",[m
+[32m+[m
+[32m+[m[32m    BOOKING_HAS_COMPLETED:"This booking already has a completed video session",[m
+[32m+[m
+[32m+[m
+[32m+[m[41m   [m
+     FETCHED_SUCCESS: "Video session fetched successfully",[m
+     REQUEST_SUCCESS: "Video call requested successfully",[m
+     ACCEPT_SUCCESS: "Video call accepted successfully",[m
+[1mdiff --git a/src/container/container.ts b/src/container/container.ts[m
+[1mindex 0b4b889..81b9110 100644[m
+[1m--- a/src/container/container.ts[m
+[1m+++ b/src/container/container.ts[m
+[36m@@ -44,7 +44,7 @@[m [mloadWalletBindings(container);[m
+ loadNotificationBindings(container);[m
+ loadAiBindings(container);[m
+ loadHealthMetricsBindings(container);[m
+[31m-loadVideoSessionBindings(container)[m
+[32m+[m[32mloadVideoSessionBindings(container);[m
+ [m
+ [m
+ export default container;[m
+\ No newline at end of file[m
+[1mdiff --git a/src/modules/video-session/constant/video-session.constant.ts b/src/modules/video-session/constant/video-session.constant.ts[m
+[1mindex e4ecf0e..cd7dbbf 100644[m
+[1m--- a/src/modules/video-session/constant/video-session.constant.ts[m
+[1m+++ b/src/modules/video-session/constant/video-session.constant.ts[m
+[36m@@ -1,23 +1,25 @@[m
+ [m
+ [m
+[32m+[m[41m[m
+ export const VIDEO_SESSION_STATUS = {[m
+     WAITING: "WAITING",[m
+     ACCEPTED: "ACCEPTED",[m
+     ACTIVE: "ACTIVE",[m
+     COMPLETED: "COMPLETED",[m
+     EXPIRED: "EXPIRED",[m
+[32m+[m[32m    CANCELLED:"CANCELLED"[m[41m[m
+ } as const;[m
+ [m
+ export type VideoSessionStatus = (typeof VIDEO_SESSION_STATUS)[keyof typeof VIDEO_SESSION_STATUS];    [m
+ [m
+ [m
+ export const VIDEO_SESSION_TERMINATION_REASON = {[m
+[31m-    SCHEDULE_ENDED: "SCHEDULE_ENDED",[m
+[32m+[m[32m    SCHEDULED_END: "SCHEDULED_END",[m[41m[m
+     USER_NO_SHOW: "USER_NO_SHOW",[m
+     TRAINER_NO_SHOW: "TRAINER_NO_SHOW",[m
+     USER_REJECTED: "USER_REJECTED",[m
+[31m-    TRAINER_CANCELED: "TRAINER_CANCELED",[m
+[31m-    USER_CANCELED: "USER_CANCELED",[m
+[32m+[m[32m    TRAINER_CANCELLED: "TRAINER_CANCELLED",[m[41m[m
+[32m+[m[32m    USER_CANCELLED: "USER_CANCELLED",[m[41m[m
+     USER_DISCONNECTED: "USER_DISCONNECTED",[m
+     TRAINER_DISCONNECTED: "TRAINER_DISCONNECTED",[m
+     SYSTEM_ERROR: "SYSTEM_ERROR",[m
+[1mdiff --git a/src/modules/video-session/interface/video-session.interface.ts b/src/modules/video-session/interface/video-session.interface.ts[m
+[1mindex e3cbb84..07df33f 100644[m
+[1m--- a/src/modules/video-session/interface/video-session.interface.ts[m
+[1m+++ b/src/modules/video-session/interface/video-session.interface.ts[m
+[36m@@ -1,25 +1,33 @@[m
+[31m-import { VideoSessionStatus } from "../constant/video-session.constant"[m
+[32m+[m[32mimport { VideoSessionStatus, VideoSessionTerminationReason } from "../constant/video-session.constant";[m[41m[m
+ [m
+[31m-export interface VideoSession{[m
+[31m-  id:string,[m
+[32m+[m[32mexport interface VideoSession {[m[41m[m
+[32m+[m[32m  id?: string;[m[41m[m
+[32m+[m[32m  bookingId: string;[m[41m[m
+[32m+[m[32m  trainerId: string;[m[41m[m
+[32m+[m[32m  userId: string;[m[41m[m
+[32m+[m[32m  scheduledStartTime: Date;[m[41m[m
+[32m+[m[32m  scheduledEndTime: Date;[m[41m[m
+[32m+[m[32m  trainerStartRequestedAt: Date;[m[41m[m
+[32m+[m[32m  userAcceptedAt?: Date;[m[41m[m
+[32m+[m[32m  trainerJoinedAt?: Date;[m[41m[m
+[32m+[m[32m  userJoinedAt?: Date;[m[41m[m
+[32m+[m[32m  actualStartTime?: Date;[m[41m[m
+[32m+[m[32m  actualEndTime?: Date;[m[41m[m
+[32m+[m[32m  trainerLeftAt?: Date;[m[41m[m
+[32m+[m[32m  userLeftAt?: Date;[m[41m[m
+[32m+[m[32m  status: VideoSessionStatus;[m[41m[m
+[32m+[m[32m  terminationReason?: VideoSessionTerminationReason;[m[41m[m
+[32m+[m[32m  createdAt?: Date;[m[41m[m
+[32m+[m[32m  updatedAt?: Date;[m[41m[m
+[32m+[m[32m}[m[41m[m
+[32m+[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mexport interface CreateVideoSessionData{[m[41m[m
+   bookingId:string,[m
+   trainerId:string,[m
+   userId:string,[m
+[31m-  scheduleStartTime:Date,[m
+[31m-  scheduleEndTime:Date,[m
+[31m-  trainerStartsRequestedAt?:Date,[m
+[31m-  userAcceptedAt?:Date,[m
+[31m-  trainerJoinedAt:Date,[m
+[31m-  userJoinedAt?:Date,[m
+[31m-  actualStartTime?:Date[m
+[31m-  actualEndTime?:Date,[m
+[31m-[m
+[31m-  trainerLeftAt?:Date,[m
+[31m-  userLeftAt?:Date,[m
+[31m-[m
+[31m-  status:VideoSessionStatus,[m
+[31m-  terminationReason?:string,[m
+[31m-  createdAt?:Date,[m
+[31m-  updatedAt?:Date,[m
+[31m-[m
+[32m+[m[32m  scheduledStartTime:Date,[m[41m[m
+[32m+[m[32m  scheduledEndTime:Date,[m[41m[m
+[32m+[m[32m  trainerStartRequestedAt:Date,[m[41m[m
+[32m+[m[32m  status:VideoSessionStatus[m[41m[m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/src/modules/video-session/interface/video.session-repository.interface.ts b/src/modules/video-session/interface/video.session-repository.interface.ts[m
+[1mindex e335af8..a86958f 100644[m
+[1m--- a/src/modules/video-session/interface/video.session-repository.interface.ts[m
+[1m+++ b/src/modules/video-session/interface/video.session-repository.interface.ts[m
+[36m@@ -1,10 +1,12 @@[m
+[31m-import { IVideoSession } from "../model/video-session.model";[m
+[31m-import { VideoSession } from "./video-session.interface";[m
+[32m+[m[32mimport { CreateVideoSessionData, VideoSession } from "./video-session.interface";[m[41m[m
+ [m
+ export interface IVideoSessionRepository{[m
+[31m-  createVideoSession(data:Partial<IVideoSession>):Promise<VideoSession>;[m
+[32m+[m[32m  createVideoSession(data:CreateVideoSessionData):Promise<VideoSession>;[m[41m[m
+   getVideoSessionById(id:string):Promise<VideoSession | null>;[m
+   getVideoSessionByBookingId(bookingId:string):Promise<VideoSession | null>;[m
+[31m-  updateVideoSession(id:string, data:Partial<IVideoSession>):Promise<VideoSession | null>;[m
+[32m+[m[32m updateVideoSession([m[41m[m
+[32m+[m[32m    id: string,[m[41m[m
+[32m+[m[32m    data: Partial<VideoSession>[m[41m[m
+[32m+[m[32m): Promise<VideoSession | null>;[m[41m[m
+   getActiveSessionParticipant(participantId:string):Promise<VideoSession | null>[m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/src/modules/video-session/model/video-session.model.ts b/src/modules/video-session/model/video-session.model.ts[m
+[1mindex 4307c04..9061117 100644[m
+[1m--- a/src/modules/video-session/model/video-session.model.ts[m
+[1m+++ b/src/modules/video-session/model/video-session.model.ts[m
+[36m@@ -6,10 +6,10 @@[m [mexport interface IVideoSession extends Document{[m
+     bookingId:mongoose.Types.ObjectId;[m
+     trainerId:mongoose.Types.ObjectId;[m
+     userId:mongoose.Types.ObjectId;[m
+[31m-    scheduleStartTime:Date;[m
+[31m-    scheduleEndTime:Date;[m
+[31m-    trainerStartRequestAt:Date,[m
+[31m-    userAcceptAt:Date,[m
+[32m+[m[32m    scheduledStartTime:Date;[m[41m[m
+[32m+[m[32m    scheduledEndTime:Date;[m[41m[m
+[32m+[m[32m    trainerStartRequestedAt:Date,[m[41m[m
+[32m+[m[32m    userAcceptedAt:Date,[m[41m[m
+     trainerJoinedAt:Date,[m
+     userJoinedAt:Date,[m
+     actualStartTime:Date,[m
+[36m@@ -48,23 +48,23 @@[m [mconst VideoSessionSchema = new mongoose.Schema<IVideoSession>({[m
+ [m
+     },[m
+ [m
+[31m-    scheduleStartTime:{[m
+[32m+[m[32m    scheduledStartTime:{[m[41m[m
+         type:Date,[m
+         required:true,[m
+         index:true,[m
+     },[m
+[31m-    scheduleEndTime:{[m
+[32m+[m[32m    scheduledEndTime:{[m[41m[m
+         type:Date,[m
+         required:true,[m
+         index:true,[m
+     },[m
+ [m
+[31m-    trainerStartRequestAt:{[m
+[32m+[m[32m    trainerStartRequestedAt:{[m[41m[m
+         type:Date,[m
+         [m
+     },[m
+ [m
+[31m-    userAcceptAt:{[m
+[32m+[m[32m    userAcceptedAt:{[m[41m[m
+         type:Date,[m
+     },[m
+     trainerJoinedAt:{[m
+[1mdiff --git a/src/modules/video-session/repositories/video-session.repository.ts b/src/modules/video-session/repositories/video-session.repository.ts[m
+[1mindex 47ebcd8..bf053cd 100644[m
+[1m--- a/src/modules/video-session/repositories/video-session.repository.ts[m
+[1m+++ b/src/modules/video-session/repositories/video-session.repository.ts[m
+[36m@@ -1,9 +1,10 @@[m
+ import { BaseRepository } from "@/modules/base/repository/base.repository";[m
+[31m-import { VideoSession } from "../interface/video-session.interface";[m
+[32m+[m[32mimport { CreateVideoSessionData, VideoSession } from "../interface/video-session.interface";[m[41m[m
+ import { IVideoSession, VideoSessionModel } from "../model/video-session.model";[m
+ import { IVideoSessionRepository } from "../interface/video.session-repository.interface";[m
+ import { VIDEO_SESSION_STATUS } from "../constant/video-session.constant";[m
+ import { injectable } from "inversify";[m
+[32m+[m[32mimport mongoose from "mongoose";[m[41m[m
+ [m
+ [m
+ @injectable()[m
+[36m@@ -18,10 +19,10 @@[m [mexport default class VideoSessionRepository extends BaseRepository<VideoSession,[m
+       bookingId:doc.bookingId.toString(),[m
+       trainerId:doc.trainerId.toString(),[m
+       userId:doc.userId.toString(),[m
+[31m-      scheduleStartTime:doc.scheduleStartTime,[m
+[31m-      scheduleEndTime:doc.scheduleEndTime,[m
+[31m-      trainerStartsRequestedAt:doc.trainerStartRequestAt,[m
+[31m-      userAcceptedAt:doc.userAcceptAt,[m
+[32m+[m[32m      scheduledStartTime:doc.scheduledStartTime,[m[41m[m
+[32m+[m[32m      scheduledEndTime:doc.scheduledEndTime,[m[41m[m
+[32m+[m[32m      trainerStartRequestedAt:doc.trainerStartRequestedAt,[m[41m[m
+[32m+[m[32m      userAcceptedAt:doc.userAcceptedAt,[m[41m[m
+       trainerJoinedAt:doc.trainerJoinedAt,[m
+       userJoinedAt:doc.userJoinedAt,[m
+       actualStartTime:doc.actualStartTime,[m
+[36m@@ -41,9 +42,21 @@[m [mexport default class VideoSessionRepository extends BaseRepository<VideoSession,[m
+   }[m
+ [m
+ [m
+[31m-  async createVideoSession(data: Partial<IVideoSession>): Promise<VideoSession> {[m
+[31m-    return this.create(data)[m
+[31m-  }[m
+[32m+[m[32masync createVideoSession([m[41m[m
+[32m+[m[32m    data: CreateVideoSessionData,[m[41m[m
+[32m+[m[32m): Promise<VideoSession> {[m[41m[m
+[32m+[m[32m    const document = await this.create({[m[41m[m
+[32m+[m[32m        bookingId: new mongoose.Types.ObjectId(data.bookingId),[m[41m[m
+[32m+[m[32m        trainerId: new mongoose.Types.ObjectId(data.trainerId),[m[41m[m
+[32m+[m[32m        userId: new mongoose.Types.ObjectId(data.userId),[m[41m[m
+[32m+[m[32m        scheduledStartTime: data.scheduledStartTime,[m[41m[m
+[32m+[m[32m        scheduledEndTime: data.scheduledEndTime,[m[41m[m
+[32m+[m[32m        trainerStartRequestedAt: data.trainerStartRequestedAt,[m[41m[m
+[32m+[m[32m        status: data.status,[m[41m[m
+[32m+[m[32m    });[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m    return document;[m[41m[m
+[32m+[m[32m}[m[41m[m
+ [m
+   async getVideoSessionById(id: string): Promise<VideoSession | null> {[m
+     return this.findById(id)[m
+[36m@@ -53,7 +66,7 @@[m [mexport default class VideoSessionRepository extends BaseRepository<VideoSession,[m
+     return this.findOne({bookingId})[m
+   }[m
+ [m
+[31m-  async updateVideoSession(videoSessionId: string, data: Partial<IVideoSession>): Promise<VideoSession | null> {[m
+[32m+[m[32m  async updateVideoSession(videoSessionId: string, data: Partial<VideoSession>): Promise<VideoSession | null> {[m[41m[m
+     return this.updateById(videoSessionId,{$set:data})[m
+   }[m
+ [m
+[1mdiff --git a/src/modules/video-session/video-session.bindings.ts b/src/modules/video-session/video-session.bindings.ts[m
+[1mindex 2bacd47..0ad1a46 100644[m
+[1m--- a/src/modules/video-session/video-session.bindings.ts[m
+[1m+++ b/src/modules/video-session/video-session.bindings.ts[m
+[36m@@ -1,9 +1,15 @@[m
+ import { Container } from "inversify";[m
+ import { IVideoSessionRepository } from "./interface/video.session-repository.interface";[m
+ import { VIDEO_SESSION_TYPES } from "./video-session.types";[m
+[32m+[m[41m[m
+[32m+[m[32mimport { IVideoSessionService } from "./interface/video.session-service.interface";[m[41m[m
+[32m+[m[32mimport { VideoSessionService } from "./service/video-session.service";[m[41m[m
+ import VideoSessionRepository from "./repositories/video-session.repository";[m
+ [m
+ export const loadVideoSessionBindings = (container:Container)=>{[m
+   container.bind<IVideoSessionRepository>(VIDEO_SESSION_TYPES.VideoSessionRepository)[m
+   .to(VideoSessionRepository)[m
+[32m+[m[41m[m
+[32m+[m[32m  container.bind<IVideoSessionService>(VIDEO_SESSION_TYPES.VideoSessionService)[m[41m[m
+[32m+[m[32m  .to(VideoSessionService)[m[41m[m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/src/modules/video-session/video-session.types.ts b/src/modules/video-session/video-session.types.ts[m
+[1mindex c35a989..e57cdc6 100644[m
+[1m--- a/src/modules/video-session/video-session.types.ts[m
+[1m+++ b/src/modules/video-session/video-session.types.ts[m
+[36m@@ -1,3 +1,4 @@[m
+ export const VIDEO_SESSION_TYPES = {[m
+[31m-  VideoSessionRepository: Symbol.for("VideoSessionRepository")[m
+[32m+[m[32m  VideoSessionRepository: Symbol.for("VideoSessionRepository"),[m[41m[m
+[32m+[m[32m  VideoSessionService: Symbol.for("VideoSessionService")[m[41m[m
+ }[m
+\ No newline at end of file[m
