@@ -19,5 +19,5 @@ export const API_MOUNTS = {
     NOTIFICATION: "/api/notifications",
     TRAINER_AVAILABILITY: "/api/availability",
     TRAINER_BOOKING_SETTINGS: "/api/booking-settings",
-    VIDEO_CALL: "/api/video-sessions",
+    VIDEO_SESSION: "/api/video-session",
 } as const;

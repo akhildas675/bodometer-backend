@@ -21,4 +21,9 @@ export interface IVideoSessionService{
   endVideoSession(videoSessionId:string,
     participantId:string
   ):Promise<VideoSessionResponseDto>
+
+  rejectCall(
+  videoSessionId: string,
+  userId: string,
+): Promise<VideoSessionResponseDto>;
 }
