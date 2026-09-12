@@ -14,6 +14,6 @@ export class TargetMuscleMapper {
     }
 
     static toTargetMuscleDtoList(targetMuscles: TargetMuscle[]): TargetMuscleDto[] {
-        return targetMuscles.map(this.toTargetMuscleDto);
+        return targetMuscles.map((tm) => TargetMuscleMapper.toTargetMuscleDto(tm));
     }
 }

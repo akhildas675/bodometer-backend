@@ -5,8 +5,6 @@ import { Request, NextFunction, Response } from "express";
 import {
   CreateSubscriptionFeatureDto,
   CreateSubscriptionPlanDto,
-  SubscriptionFeatureQueryDto,
-  SubscriptionTransactionQueryDto,
   UpdateSubscriptionFeatureDto,
   UpdateSubscriptionPlanDto,
 } from "../dto/subscription.dto";
@@ -14,7 +12,6 @@ import { SuccessResponse } from "@/utils/success.response";
 import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { MESSAGES } from "@/constants/messages";
 import { parsePaginationQuery } from "@/utils/query";
-import { SubscriptionPlanQuery } from "@/modules/subscription/interface/subscription.interface";
 import { Role } from "@/constants/constant.values.ts/roles";
 import { AppError } from "@/utils/appError";
 import { SUBSCRIPTION_TYPES } from "../subscription.types";
@@ -55,7 +52,7 @@ export class SubscriptionController {
     next: NextFunction,
   ) => {
     try {
-      const query = parsePaginationQuery(req) as SubscriptionFeatureQueryDto;
+      const query = parsePaginationQuery(req);
 
       const { data, pagination } =
         await this._subscriptionService.getAllSubscriptionFeatures(
@@ -258,7 +255,7 @@ export class SubscriptionController {
     next: NextFunction,
   ) => {
     try {
-      const query = parsePaginationQuery(req) as SubscriptionPlanQuery;
+      const query = parsePaginationQuery(req);
 
       const role = req.user?.role as Role;
 
@@ -314,7 +311,7 @@ export class SubscriptionController {
     try {
       const query = parsePaginationQuery(
         req,
-      ) as SubscriptionTransactionQueryDto;
+      );
 
       const { data, pagination } =
         await this._subscriptionService.getAllSubscriptionTransactions(
@@ -444,7 +441,7 @@ export class SubscriptionController {
           if (!req.user?.id) {
             throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND);
           }
-          const query = parsePaginationQuery(req) as SubscriptionTransactionQueryDto
+          const query = parsePaginationQuery(req)
 
           const userId = req.user.id
           const result = await this._subscriptionService.getUserTransactions(

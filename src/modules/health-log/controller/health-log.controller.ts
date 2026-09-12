@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import { inject, injectable } from "inversify";
 import { HEALTH_LOG_TYPES } from "../health-log.types";
 import { IHealthLogService } from "../interface/health-log-service.interface";

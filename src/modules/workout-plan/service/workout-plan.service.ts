@@ -3,7 +3,6 @@ import { AppError } from "../../../utils/appError";
 import { STATUS } from "../../../constants/constant.values.ts/statuscode";
 import { MESSAGES } from "../../../constants/messages";
 import { WorkoutMapper } from "../mapper/workout-plan.mapper";
-import { AiWorkoutService } from "../../../services/ai-services/ai-workout.service";
 import { IUserWorkoutPlanRepository } from "../interface/user-workout-plan-repository.interface";
 import { IAnswerRepository } from "../../../modules/onboarding/interface/repository.interface/answer-repository.interface";
 import { IExerciseRepository } from '@/modules/exercise/interface/exercise-repository.interface';
@@ -229,13 +228,10 @@ export class WorkoutPlanService implements IWorkoutPlanService {
   async getWorkoutPlans(userId: string, preventAutoGenerate: boolean = false): Promise<GetWorkoutPlansResponseDto> {
     const hasActiveSub = await this.getActiveSubscription(userId);
     const planType = hasActiveSub ? PLAN_TYPE.PREMIUM : PLAN_TYPE.FREE;
-    const isPremium = hasActiveSub;
     let userDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
     
-  
     if (userDocs) {
-      const targetPlanType = isPremium ? PLAN_TYPE.PREMIUM : PLAN_TYPE.FREE;
-      userDocs = userDocs.filter(doc => doc.planType === targetPlanType);
+      userDocs = userDocs.filter(doc => doc.planType === planType);
     }
 
     if (userDocs && userDocs.length > 0) {
@@ -245,8 +241,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
    
         await this.generateWorkout(userId);
         const allDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
-        const targetPlanType = isPremium ? PLAN_TYPE.PREMIUM : PLAN_TYPE.FREE;
-        userDocs = allDocs.filter(doc => doc.planType === targetPlanType);
+        userDocs = allDocs.filter(doc => doc.planType === planType);
       }
     }
     if (!userDocs || userDocs.length === 0) {
@@ -259,7 +254,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
           hasCompletedWorkoutToday: false,
           firstPendingDayNumber: -1
         },
-        isPremium: isPremium || false,
+        isPremium: hasActiveSub,
         completedHistory: []
       };
     }
@@ -341,7 +336,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
         hasCompletedWorkoutToday,
         firstPendingDayNumber
       },
-      isPremium: isPremium || false,
+      isPremium: hasActiveSub,
       completedHistory
     };
   }
@@ -450,8 +445,6 @@ export class WorkoutPlanService implements IWorkoutPlanService {
   }
 
   async getWorkoutProgress(userId: string, timeframe?: Timeframe): Promise<WorkoutProgressResponseDto> {
-    const isPremium = await this.getActiveSubscription(userId);
-  
     const plansResponse = await this.getWorkoutPlans(userId);
     return this.calculateWorkoutProgress(plansResponse.plans, timeframe);
   }

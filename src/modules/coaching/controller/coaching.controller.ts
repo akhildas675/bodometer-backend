@@ -7,7 +7,6 @@ import { MESSAGES } from "@/constants/messages";
 import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { SuccessResponse } from "@/utils/success.response";
 import {
-  CoachingQueryDto,
   CreateCoachingDto,
   UpdateCoachingDto,
 } from "../dto/coaching.dto";
@@ -46,7 +45,7 @@ export class CoachingController {
 
   getCoaching = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const query = parsePaginationQuery(req) as CoachingQueryDto;
+      const query = parsePaginationQuery(req);
       const role = req.user?.role as Role;
       const { data, pagination } = await this._coachingService.getCoaching(
         query,

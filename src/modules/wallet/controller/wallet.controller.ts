@@ -45,7 +45,8 @@ export class WalletController {
   addFunds = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const userId = req.user?.id;
-      const { amount } = req.body;
+      const body = req.body as { amount?: unknown };
+      const amount = body.amount;
 
       if (!userId) {
         throw new AppError(STATUS.UNAUTHORIZED, "User authentication required.");
@@ -66,7 +67,8 @@ export class WalletController {
   createTopupCheckout = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const userId = req.user?.id;
-      const { amount } = req.body;
+      const body = req.body as { amount?: unknown };
+      const amount = body.amount;
 
       if (!userId) {
         throw new AppError(STATUS.UNAUTHORIZED, "User authentication required.");
@@ -87,7 +89,8 @@ export class WalletController {
   verifyTopupPayment = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const userId = req.user?.id;
-      const { amount, sessionId } = req.body;
+      const body = req.body as { amount?: unknown; sessionId?: string };
+      const { amount, sessionId } = body;
 
       if (!userId) {
         throw new AppError(STATUS.UNAUTHORIZED, "User authentication required.");
@@ -96,6 +99,10 @@ export class WalletController {
       const numAmount = Number(amount);
       if (!numAmount || isNaN(numAmount) || numAmount <= 0) {
         throw new AppError(STATUS.BAD_REQUEST, "Invalid top-up amount.");
+      }
+
+      if (!sessionId || typeof sessionId !== "string") {
+        throw new AppError(STATUS.BAD_REQUEST, "Valid sessionId is required.");
       }
 
       const result = await this._walletService.verifyTopupPayment(userId, numAmount, sessionId);

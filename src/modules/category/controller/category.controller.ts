@@ -7,7 +7,6 @@ import { parsePaginationQuery } from "@/utils/query";
 import { SuccessResponse } from "@/utils/success.response";
 import { NextFunction, Response } from "express";
 import {
-  CategoryQueryDto,
   CreateCategoryDto,
   UpdateCategoryDto,
 } from "../dto/category.dto";
@@ -97,7 +96,7 @@ export class CategoryController {
     next: NextFunction,
   ) => {
     try {
-      const query = parsePaginationQuery(req) as CategoryQueryDto;
+      const query = parsePaginationQuery(req);
       const role = req.user?.role as Role;
 
       const { data, pagination } = await this._categoryService.getAllCategories(

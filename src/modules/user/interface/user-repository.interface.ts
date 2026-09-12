@@ -1,4 +1,4 @@
-import { PaginationMeta, PaginatedResult } from "@/modules/base/interface/common.interface";
+import { PaginationMeta } from "@/modules/base/interface/common.interface";
 import {
   UpdateUserProfileInterface,
   UserInterface,

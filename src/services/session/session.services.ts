@@ -6,43 +6,46 @@ import { OtpModel } from "../../modules/otp/model/otp.model";
 
 @injectable()
 export class SessionService implements ISessionService {
-  async createRefreshToken(
+  createRefreshToken(
     userId: string,
     userData: SessionData,
   ): Promise<string> {
-    return Jwt.signRefresh({
-      sub: userId,
-      role: userData.role,
-    });
+    return Promise.resolve(
+      Jwt.signRefresh({
+        sub: userId,
+        role: userData.role,
+      }),
+    );
   }
 
-  async findUserByRefreshToken(refreshToken: string): Promise<string | null> {
+  findUserByRefreshToken(refreshToken: string): Promise<string | null> {
     try {
       const payload = Jwt.verifyRefresh(refreshToken);
-      return payload.sub;
+      return Promise.resolve(payload.sub);
     } catch {
-      return null;
+      return Promise.resolve(null);
     }
   }
 
-  async validateRefreshToken(
+  validateRefreshToken(
     userId: string,
     refreshToken: string,
   ): Promise<boolean> {
     try {
       const payload = Jwt.verifyRefresh(refreshToken);
-      return payload.sub === userId;
+      return Promise.resolve(payload.sub === userId);
     } catch {
-      return false;
+      return Promise.resolve(false);
     }
   }
 
-  async getUserSessionData(_userId: string): Promise<SessionData | null> {
-    return null;
+  getUserSessionData(_userId: string): Promise<SessionData | null> {
+    return Promise.resolve(null);
   }
 
-  async deleteSession(_refreshToken: string): Promise<void> {
+  deleteSession(_refreshToken: string): Promise<void> {
     // Stateless JWT tokens do not require server-side deletion
+    return Promise.resolve();
   }
 
   async markOtpAsVerified(purpose: string, email: string): Promise<void> {

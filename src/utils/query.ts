@@ -7,8 +7,8 @@ export const parsePaginationQuery = <T extends PaginationQueryDto = PaginationQu
   const query: Record<string, unknown> = { ...req.query };
   if (req.query.page) query.page = Number(req.query.page);
   if (req.query.limit) query.limit = Number(req.query.limit);
-  if (req.query.search) query.search = String(req.query.search);
-  if (req.query.sortBy) query.sortBy = String(req.query.sortBy);
+  if (typeof req.query.search === "string") query.search = req.query.search;
+  if (typeof req.query.sortBy === "string") query.sortBy = req.query.sortBy;
   if (req.query.sortOrder) {
     query.sortOrder = req.query.sortOrder as "asc" | "desc";
   }

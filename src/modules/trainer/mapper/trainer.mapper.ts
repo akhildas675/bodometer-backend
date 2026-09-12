@@ -88,7 +88,7 @@ export class TrainerMapper {
               createdAt: item.profile.createdAt?.toISOString() || "",
               updatedAt: item.profile.updatedAt?.toISOString() || "",
               specializations: (item.profile.specializations as unknown as Record<string, unknown>[] || []).map(s => ({
-                  _id: (s._id as string | undefined)?.toString() || String(s),
+                  _id: (s._id as { toString(): string } | undefined)?.toString() || (typeof s === "string" ? s : ""),
                   name: (s.name as string | undefined) || "Unknown",
               }))
           }
@@ -125,7 +125,7 @@ export class TrainerMapper {
               createdAt: data.profile.createdAt?.toISOString() || "",
               updatedAt: data.profile.updatedAt?.toISOString() || "",
               specializations: (data.profile.specializations as unknown as Record<string, unknown>[] || []).map(s => ({
-                  _id: (s._id as string | undefined)?.toString() || String(s),
+                  _id: (s._id as { toString(): string } | undefined)?.toString() || (typeof s === "string" ? s : ""),
                   name: (s.name as string | undefined) || "Unknown",
               }))
           }

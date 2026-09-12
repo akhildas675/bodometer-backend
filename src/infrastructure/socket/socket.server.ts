@@ -2,7 +2,7 @@ import { Server as HttpServer } from "http";
 import { Server } from "socket.io";
 
 import { authenticateSocket } from "./socket.auth";
-import { SocketUser } from "./socket.types";
+import { AuthenticatedSocket } from "./socket.types";
 
 import { registerVideoSessionSocketHandlers } from "@/modules/video-session/socket/video-session.socket";
 
@@ -20,8 +20,9 @@ export const initializeSocket = (
 
   io.use(authenticateSocket);
 
-  io.on("connection", (socket) => {
-  const user = socket.data.user as SocketUser;
+  io.on("connection", (rawSocket) => {
+    const socket = rawSocket as AuthenticatedSocket;
+    const user = socket.data?.user;
 
   if (!user) return;
 

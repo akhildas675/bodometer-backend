@@ -1,5 +1,5 @@
 import { UserAnswerSubmission } from "../interface/onboarding.interface";
-import { AnswerModel, IAnswer } from "../models/answer.model";
+import { AnswerModel } from "../models/answer.model";
 import { IAnswerRepository } from "../interface/repository.interface/answer-repository.interface";
 import mongoose from "mongoose";
 import { injectable } from "inversify";

@@ -1,7 +1,5 @@
-import { Socket } from "socket.io";
-
 import container from "@/container/container";
-import { SocketUser } from "@/infrastructure/socket/socket.types";
+import { AuthenticatedSocket } from "@/infrastructure/socket/socket.types";
 
 import { IVideoSessionService } from "../interface/video.session-service.interface";
 import { VIDEO_SESSION_TYPES } from "../video-session.types";
@@ -17,8 +15,8 @@ import {
   videoSessionIdSocketSchema,
 } from "../validation/video-session.socket.validation";
 
-export const registerVideoSessionSocketHandlers = (socket: Socket): void => {
-  const user = socket.data.user as SocketUser | undefined;
+export const registerVideoSessionSocketHandlers = (socket: AuthenticatedSocket): void => {
+  const user = socket.data?.user;
 
   if (!user) {
     return;
@@ -50,7 +48,7 @@ export const registerVideoSessionSocketHandlers = (socket: Socket): void => {
 
         const validVideoSessionId = parsedSessionId.data;
 
-        const session = await videoSessionService.getVideoSessionById(
+        await videoSessionService.getVideoSessionById(
           validVideoSessionId,
           userId,
         );
@@ -107,7 +105,7 @@ export const registerVideoSessionSocketHandlers = (socket: Socket): void => {
 
         const validVideoSessionId = parsedSessionId.data;
 
-        const session = await videoSessionService.getVideoSessionById(
+        await videoSessionService.getVideoSessionById(
           validVideoSessionId,
           userId,
         );

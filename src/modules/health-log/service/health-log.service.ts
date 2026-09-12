@@ -302,7 +302,7 @@ export class HealthLogService implements IHealthLogService {
     const todayMidnight = new Date();
     todayMidnight.setUTCHours(0, 0, 0, 0);
 
-    let checkDate = new Date(todayMidnight);
+    const checkDate = new Date(todayMidnight);
     const hasLog = (d: Date) =>
       logs.some(l => new Date(l.date).getTime() === d.getTime());
 

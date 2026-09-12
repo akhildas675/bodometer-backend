@@ -10,8 +10,6 @@ import {
   QuestionQueryDto,
 } from "../dto/onboarding.dto";
 import {
-  GetAllQuestionGroupsResponse,
-  GetAllQuestionsResponse,
   UserAnswerSubmission,
   OnboardingValue,
 } from "./onboarding.interface";

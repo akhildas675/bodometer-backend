@@ -1,5 +1,5 @@
 import { BodyRegion } from "@/constants/constant.values.ts/fitness.constant";
-import { PaginatedResponseDto, PaginationMetaDto, PaginationQueryDto } from "@/dto/common.dto";
+import { PaginationMetaDto, PaginationQueryDto } from "@/dto/common.dto";
 
 export interface CreateTargetMuscleDto {
     title: string;

@@ -229,8 +229,8 @@ EXPECTED FORMAT:
   }
 
   private cleanJsonString(input: string): string {
-    // 1. Try to find content within markdown code blocks: \`\`\`json ... \`\`\` or \`\`\` ... \`\`\`
-    const codeBlockRegex = /\`\`\`(?:json)?\s*([\s\S]*?)\s*\`\`\`/i;
+    // 1. Try to find content within markdown code blocks: ```json ... ``` or ``` ... ```
+    const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)\s*```/i;
     const match = input.match(codeBlockRegex);
     if (match && match[1]) {
       return match[1].trim();

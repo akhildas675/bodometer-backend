@@ -1,4 +1,4 @@
-import { Booking, BookingStatus } from "../domain/booking.interface";
+import { Booking } from "../domain/booking.interface";
 
 export interface CreateBookingInput {
   userId: string;

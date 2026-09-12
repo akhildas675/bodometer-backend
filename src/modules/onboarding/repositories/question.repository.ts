@@ -185,8 +185,8 @@ export default class QuestionRepository
         const activeGroups = await GroupModel.find({ isActive: { $ne: false } }).select("_id").exec();
         const activeGroupIds = activeGroups.map((g) => g._id);
 
-        if (filter.groupId) {
-          const targetGroupIdStr = String(filter.groupId);
+        if (query.groupId) {
+          const targetGroupIdStr = String(query.groupId);
           const isActiveGroup = activeGroupIds.some((id) => id.toString() === targetGroupIdStr);
           if (!isActiveGroup) {
             filter.groupId = new mongoose.Types.ObjectId();

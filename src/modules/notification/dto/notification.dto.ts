@@ -2,7 +2,6 @@ import {
   NotificationEntityType,
   NotificationType,
 } from "../constant/notification.constant";
-import { NotificationTemplate } from "../constant/notification.template";
 
 
 export interface CreateNotificationTriggerDto {

@@ -12,9 +12,9 @@ interface MongooseValidationError extends Error {
 }
 export const errorHandler = (
   err: unknown,
-  req: Request,
+  _req: Request,
   res: Response,
-  next:NextFunction,
+  _next: NextFunction,
 ) => {
   console.error("Global Error Handler Catch:", err);
 

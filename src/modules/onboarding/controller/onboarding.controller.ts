@@ -210,7 +210,7 @@ export class OnboardingController {
     try {
       const query = {
         ...parsePaginationQuery(req),
-        ...(req.query.groupId && { groupId: String(req.query.groupId) }),
+        ...(typeof req.query.groupId === "string" ? { groupId: req.query.groupId } : {}),
       } as QuestionQueryDto;
       const isAdmin = req.user?.role === ROLES.ADMIN;
 

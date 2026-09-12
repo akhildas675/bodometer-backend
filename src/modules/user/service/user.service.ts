@@ -17,7 +17,6 @@ import {
   UpdateBmiDto,
   UpdateBmiResponseDto,
 } from "../dto/user.dto";
-import { HealthMetricsService } from "@/services/health.metrics/health-metrics.service";
 import { ROLES } from "@/constants/constant.values.ts/roles";
 import { PaginatedResponseDto } from "@/dto/common.dto";
 

@@ -536,7 +536,7 @@ export class SubscriptionService implements ISubscriptionService {
     if (!sub) return null;
 
     const plan = sub.subscriptionPlanId as unknown as {
-      _id: unknown;
+      _id: { toString(): string } | string;
       name: string;
     };
 
@@ -548,8 +548,8 @@ export class SubscriptionService implements ISubscriptionService {
     );
 
     return {
-      subscriptionId: String(sub._id),
-      subscriptionPlanId: plan?._id ? String(plan._id) : "",
+      subscriptionId: sub._id?.toString() ?? "",
+      subscriptionPlanId: plan?._id ? plan._id.toString() : "",
       planName: plan?.name ?? "Unknown",
       startDate: sub.startDate,
       endDate: sub.endDate,
