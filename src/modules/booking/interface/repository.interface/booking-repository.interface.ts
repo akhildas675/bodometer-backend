@@ -15,6 +15,12 @@ export interface IBookingRepository {
     bufferEndTime: Date,
     excludeBookingId?: string
   ): Promise<Booking[]>;
+  findUserConflictingBookings(
+    userId: string,
+    startTime: Date,
+    bufferEndTime: Date,
+    excludeBookingId?: string
+  ): Promise<Booking[]>;
   findByUserId(userId: string): Promise<Booking[]>;
   findByTrainerId(trainerId: string): Promise<Booking[]>;
   updateStatus(

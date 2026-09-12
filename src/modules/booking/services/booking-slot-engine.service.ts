@@ -211,7 +211,7 @@ export class BookingSlotEngineService implements IBookingSlotEngineService {
 
     //  Duration, Buffer, Advance Notice, Max Bookings
     const durationMinutes = Number(coachingService.durationMinutes) || 60;
-    const bufferMinutes = Number(settings.bufferMinutes) || 15;
+    const bufferMinutes = Number(settings.bufferMinutes) || 20;
     const advanceNoticeHours = Number(settings.advanceNoticeHours) || 2;
     const maxBookingsPerDay = Number(settings.maximumBookingPerDay) || 8;
 

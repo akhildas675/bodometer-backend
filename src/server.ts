@@ -11,6 +11,9 @@ import logger from "./config/logger.config";
 import { STATUS } from "./constants/constant.values.ts/statuscode";
 import { initializeSocket } from "./infrastructure/socket/socket.server";
 
+import container from "./container/container";
+import type { ServiceIdentifier } from "inversify";
+
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 

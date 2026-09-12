@@ -40,7 +40,7 @@ export const createSetupSchema = z.object({
     settings: z.object({
       serviceIds: z.array(z.string()),
       advanceNoticeHours: z.number().min(0),
-      bufferMinutes: z.number().min(0),
+      bufferMinutes: z.number().min(20).max(60),
       maximumBookingPerDay: z.number().min(1),
     }),
     unavailabilities: z
@@ -70,7 +70,7 @@ export const updateBookingSettingsSchema = z.object({
   body: z.object({
     serviceIds: z.array(z.string()).optional(),
     advanceNoticeHours: z.number().min(0).optional(),
-    bufferMinutes: z.number().min(0).optional(),
+    bufferMinutes: z.number().min(20).max(60).optional(),
     maximumBookingPerDay: z.number().min(1).optional(),
   }),
 });
@@ -152,6 +152,7 @@ export const createBookingSchema = z.object({
     startTime: z.string().min(1, "startTime is required"),
     endTime: z.string().min(1, "endTime is required"),
     bufferEndTime: z.string().min(1, "bufferEndTime is required"),
+    paymentMethod: z.enum(["WALLET", "ONLINE", "SPLIT"]).optional(),
   }),
 });
 

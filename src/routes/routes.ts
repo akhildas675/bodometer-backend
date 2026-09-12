@@ -17,6 +17,8 @@ import coachingRoute from "@/modules/coaching/routes/coaching.routes";
 import bookingRoute from "@/modules/booking/routes/booking.routes";
 import walletRoute from "@/modules/wallet/routes/wallet.routes";
 import notificationRoute from "@/modules/notification/routes/notification.routes";
+import videoSessionRoute from "@/modules/video-session/routes/video-session.routes";
+
 
 const routes = (app: Application): void => {
   app.use(API_MOUNTS.AUTH, authRoute);
@@ -36,6 +38,9 @@ const routes = (app: Application): void => {
   app.use(API_MOUNTS.BOOKING, bookingRoute);
   app.use(API_MOUNTS.WALLET, walletRoute);
   app.use(API_MOUNTS.NOTIFICATION, notificationRoute);
+  app.use(API_MOUNTS.VIDEO_SESSION, videoSessionRoute);
+  
+  
 };
 
 export default routes;

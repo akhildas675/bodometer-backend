@@ -1,0 +1,143 @@
+import mongoose, { Document } from "mongoose";
+import {
+    VIDEO_SESSION_REFUND_STATUS,
+    VIDEO_SESSION_STATUS,
+    VIDEO_SESSION_TERMINATION_REASON,
+    VideoSessionRefundStatus,
+    VideoSessionStatus,
+    VideoSessionTerminationReason,
+} from "../constant/video-session.constant";
+
+export interface IVideoSession extends Document {
+    bookingId: mongoose.Types.ObjectId;
+    trainerId: mongoose.Types.ObjectId;
+    userId: mongoose.Types.ObjectId;
+    scheduledStartTime: Date;
+    scheduledEndTime: Date;
+    trainerStartRequestedAt?: Date;
+    userAcceptedAt?: Date;
+    trainerJoinedAt?: Date;
+    userJoinedAt?: Date;
+    actualStartTime?: Date;
+    actualEndTime?: Date;
+    actualDurationMinutes?: number;
+    trainerLeftAt?: Date;
+    userLeftAt?: Date;
+    status: VideoSessionStatus;
+    terminationReason?: VideoSessionTerminationReason;
+    refundEligible?: boolean;
+    refundStatus?: VideoSessionRefundStatus;
+    refundId?: string;
+    refundRequestedAt?: Date;
+    refundProcessedAt?: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+const VideoSessionSchema = new mongoose.Schema<IVideoSession>({
+    bookingId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Booking",
+        required: true,
+        unique: true,
+        index: true,
+    },
+
+    trainerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+        index: true,
+    },
+
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+        index: true,
+    },
+
+    scheduledStartTime: {
+        type: Date,
+        required: true,
+        index: true,
+    },
+    scheduledEndTime: {
+        type: Date,
+        required: true,
+        index: true,
+    },
+
+    trainerStartRequestedAt: {
+        type: Date,
+    },
+
+    userAcceptedAt: {
+        type: Date,
+    },
+    trainerJoinedAt: {
+        type: Date,
+    },
+    userJoinedAt: {
+        type: Date,
+    },
+    actualStartTime: {
+        type: Date,
+    },
+    actualEndTime: {
+        type: Date,
+    },
+    actualDurationMinutes: {
+        type: Number,
+    },
+    trainerLeftAt: {
+        type: Date,
+    },  
+    userLeftAt: {
+        type: Date,
+    },
+    status: {
+        type: String,
+        enum: Object.values(VIDEO_SESSION_STATUS),
+        default: VIDEO_SESSION_STATUS.WAITING,
+        required: true,
+        index: true,
+    },
+    terminationReason: {
+        type: String,
+        enum: Object.values(VIDEO_SESSION_TERMINATION_REASON),
+    },
+    refundEligible: {
+        type: Boolean,
+        default: false,
+    },
+    refundStatus: {
+        type: String,
+        enum: Object.values(VIDEO_SESSION_REFUND_STATUS),
+        default: VIDEO_SESSION_REFUND_STATUS.NOT_ELIGIBLE,
+    },
+    refundId: {
+        type: String,
+    },
+    refundRequestedAt: {
+        type: Date,
+    },
+    refundProcessedAt: {
+        type: Date,
+    },
+}, {
+    timestamps: true,
+});
+
+VideoSessionSchema.index({
+    trainerId: 1,
+    scheduledStartTime: -1,
+});
+
+VideoSessionSchema.index({
+    userId: 1,
+    scheduledStartTime: -1,
+});
+
+export const VideoSessionModel = mongoose.model<IVideoSession>("VideoSession", VideoSessionSchema);
+

@@ -38,7 +38,7 @@ export interface IBooking extends Document {
   startTime: Date;
   endTime: Date;
   bufferEndTime: Date;
-  status: "PENDING_PAYMENT" | "CONFIRMED" | "RESCHEDULE_PENDING" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
+  status: "PENDING_PAYMENT" | "CONFIRMED" | "RESCHEDULE_PENDING" | "CANCELLED" | "COMPLETED" | "NO_SHOW" | "EXPIRED";
   paymentId?: string;
   price: number;
   attendance: IBookingAttendance;
@@ -72,7 +72,7 @@ const BookingSchema = new Schema<IBooking>(
     bufferEndTime: { type: Date, required: true, index: true },
     status: {
       type: String,
-      enum: ["PENDING_PAYMENT", "CONFIRMED", "RESCHEDULE_PENDING", "CANCELLED", "COMPLETED", "NO_SHOW"],
+      enum: ["PENDING_PAYMENT", "CONFIRMED", "RESCHEDULE_PENDING", "CANCELLED", "COMPLETED", "NO_SHOW", "EXPIRED"],
       default: "PENDING_PAYMENT",
       index: true,
     },

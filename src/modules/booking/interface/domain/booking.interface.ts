@@ -4,7 +4,8 @@ export type BookingStatus =
   | "RESCHEDULE_PENDING"
   | "CANCELLED"
   | "COMPLETED"
-  | "NO_SHOW";
+  | "NO_SHOW"
+  | "EXPIRED";
 
 export type AttendanceStatus = "PENDING" | "ATTENDED" | "MISSED";
 
@@ -54,6 +55,8 @@ export interface Booking {
   cancellation?: BookingCancellationSummary;
   userName?: string;
   userEmail?: string;
+  trainerName?: string;
+  trainerEmail?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

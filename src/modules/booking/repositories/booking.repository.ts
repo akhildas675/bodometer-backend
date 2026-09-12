@@ -147,6 +147,27 @@ export class BookingRepository
     return docs.map((doc) => this.toInterface(doc));
   }
 
+  async findUserConflictingBookings(
+    userId: string,
+    startTime: Date,
+    bufferEndTime: Date,
+    excludeBookingId?: string,
+  ): Promise<Booking[]> {
+    const filter: Record<string, unknown> = {
+      userId: new mongoose.Types.ObjectId(userId),
+      status: { $in: ["PENDING", "PENDING_PAYMENT", "CONFIRMED", "RESCHEDULE_PENDING"] },
+      startTime: { $lt: bufferEndTime },
+      bufferEndTime: { $gt: startTime },
+    };
+
+    if (excludeBookingId) {
+      filter._id = { $ne: new mongoose.Types.ObjectId(excludeBookingId) };
+    }
+
+    const docs = await BookingModel.find(filter).exec();
+    return docs.map((doc) => this.toInterface(doc));
+  }
+
   async findByUserId(userId: string): Promise<Booking[]> {
     const docs = await BookingModel.find({
       userId: new mongoose.Types.ObjectId(userId),

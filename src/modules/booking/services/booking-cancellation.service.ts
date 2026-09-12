@@ -86,8 +86,20 @@ export class BookingCancellationService implements IBookingCancellationService {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.CANCELLATION.CANNOT_CANCEL_COMPLETED);
     }
 
-    // Policy calculation
-    const policyResult = calculateUserCancellationPolicy(new Date(booking.startTime));
+    // Policy calculation: check if session start window (10 min) has passed without trainer taking session
+    const nowMs = Date.now();
+    const startMs = new Date(booking.startTime).getTime();
+    const isTrainerNoShow = nowMs > startMs + 10 * 60 * 1000;
+
+    let policyResult = calculateUserCancellationPolicy(new Date(booking.startTime));
+    if (isTrainerNoShow) {
+      policyResult = {
+        refundEligible: true,
+        refundPercentage: 100,
+        policyName: "TRAINER_NO_SHOW_EXPIRED_WINDOW",
+        hoursNotice: 0,
+      };
+    }
     const refundAmount = (booking.price * policyResult.refundPercentage) / CANCELLATION_REFUND_PERCENT.FULL;
     const refundEligible = refundAmount > 0;
 

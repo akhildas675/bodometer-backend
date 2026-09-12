@@ -4,6 +4,8 @@ import { Server } from "socket.io";
 import { authenticateSocket } from "./socket.auth";
 import { SocketUser } from "./socket.types";
 
+import { registerVideoSessionSocketHandlers } from "@/modules/video-session/socket/video-session.socket";
+
 let io: Server;
 
 export const initializeSocket = (
@@ -11,7 +13,7 @@ export const initializeSocket = (
 ): Server => {
   io = new Server(httpServer, {
     cors: {
-      origin: process.env.CLIENT_URL,
+      origin: process.env.CLIENT_URL || true,
       credentials: true,
     },
   });
@@ -19,22 +21,20 @@ export const initializeSocket = (
   io.use(authenticateSocket);
 
   io.on("connection", (socket) => {
-    const user = socket.data.user as SocketUser;
-    if (!user) return;
-    const { userId, role } = user;
+  const user = socket.data.user as SocketUser;
 
-    console.log(
-      `Socket connected: ${socket.id} | User: ${userId} | Role: ${role}`,
-    );
+  if (!user) return;
 
-    void socket.join(`user:${userId}`);
+  const { userId, role } = user;
 
-    socket.on("disconnect", (reason) => {
-      console.log(
-        `Socket disconnected: ${socket.id} | User: ${userId} | Reason: ${reason}`,
-      );
-    });
-  });
+  console.log(
+    `Socket connected: ${socket.id} | User: ${userId} | Role: ${role}`,
+  );
+
+  void socket.join(`user:${userId}`);
+
+  registerVideoSessionSocketHandlers(socket);
+});
 
   return io;
 };
