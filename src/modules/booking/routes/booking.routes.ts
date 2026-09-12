@@ -172,6 +172,12 @@ bookingRoute.get(
   trainerSchedulingController.getTrainerBookings,
 );
 
+bookingRoute.get(
+  "/:id",
+  ROLE_GUARD.USER_GUARD,
+  trainerSchedulingController.getBookingById,
+);
+
 // Cancellation Routes
 bookingRoute.post(
   "/:id/cancel",

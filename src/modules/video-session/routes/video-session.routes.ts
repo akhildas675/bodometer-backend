@@ -7,9 +7,19 @@ import { VideoSessionController } from "../controller/video-session.controller";
 import { VIDEO_SESSION_TYPES } from "../video-session.types";
 import { VIDEO_SESSION_PATHS } from "../constant/routes.constant/video-session.constant";
 import { ROLE_GUARD } from "@/constants/constant.values.ts/role.guard";
-import { acceptVideoCallSchema, endVideoSessionSchema, getVideoSessionSchema, joinVideoSessionSchema, leaveVideoSessionSchema, rejectVideoCallSchema, requestVideoCallSchema } from "../validation/video-session.validation";
-
-
+import {
+  acceptVideoCallSchema,
+  endVideoSessionSchema,
+  getVideoSessionByBookingIdSchema,
+  getVideoSessionHistorySchema,
+  getVideoSessionSchema,
+  joinVideoSessionSchema,
+  leaveVideoSessionSchema,
+  rejectVideoCallSchema,
+  requestRefundSchema,
+  requestVideoCallSchema,
+  claimExpiredRefundSchema,
+} from "../validation/video-session.validation";
 
 const videoSessionController =
   container.get<VideoSessionController>(
@@ -53,6 +63,29 @@ videoSessionRoute.post(
   videoSessionController.markParticipantLeft,
 );
 
+// HISTORY and GET_BY_BOOKING_ID must come before GET_BY_ID so Express doesn't treat
+// literal paths as :videoSessionId
+videoSessionRoute.get(
+  VIDEO_SESSION_PATHS.HISTORY,
+  ROLE_GUARD.USER_TRAINER_GUARD,
+  validate(getVideoSessionHistorySchema),
+  videoSessionController.getVideoSessionHistory,
+);
+
+videoSessionRoute.get(
+  VIDEO_SESSION_PATHS.GET_BY_BOOKING_ID,
+  ROLE_GUARD.USER_TRAINER_GUARD,
+  validate(getVideoSessionByBookingIdSchema),
+  videoSessionController.getVideoSessionByBookingId,
+);
+
+videoSessionRoute.post(
+  VIDEO_SESSION_PATHS.CLAIM_EXPIRED_REFUND,
+  ROLE_GUARD.USER_GUARD,
+  validate(claimExpiredRefundSchema),
+  videoSessionController.claimExpiredSessionRefund,
+);
+
 videoSessionRoute.get(
   VIDEO_SESSION_PATHS.GET_BY_ID,
   ROLE_GUARD.USER_TRAINER_GUARD,
@@ -65,6 +98,13 @@ videoSessionRoute.post(
   ROLE_GUARD.USER_TRAINER_GUARD,
   validate(endVideoSessionSchema),
   videoSessionController.endVideoSession,
+);
+
+videoSessionRoute.post(
+  VIDEO_SESSION_PATHS.REFUND_REQUEST,
+  ROLE_GUARD.USER_GUARD,
+  validate(requestRefundSchema),
+  videoSessionController.requestRefund,
 );
 
 export default videoSessionRoute;

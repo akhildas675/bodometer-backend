@@ -152,6 +152,7 @@ export const createBookingSchema = z.object({
     startTime: z.string().min(1, "startTime is required"),
     endTime: z.string().min(1, "endTime is required"),
     bufferEndTime: z.string().min(1, "bufferEndTime is required"),
+    paymentMethod: z.enum(["WALLET", "ONLINE", "SPLIT"]).optional(),
   }),
 });
 

@@ -390,12 +390,34 @@ export class TrainerSchedulingController {
         startTime: data.startTime,
         endTime: data.endTime,
         bufferEndTime: data.bufferEndTime,
+        paymentMethod: data.paymentMethod,
       });
 
       new SuccessResponse(
         STATUS.CREATED,
         "Booking created successfully.",
         result,
+      ).send(res);
+    } catch (error: unknown) {
+      next(error);
+    }
+  };
+
+  getBookingById = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const bookingId = req.params.id;
+      const booking = await this._bookingService.getBookingById(bookingId);
+      if (!booking) {
+        throw new AppError(STATUS.NOT_FOUND, MESSAGES.BOOKING.BOOKING_RECORD_NOT_FOUND);
+      }
+      new SuccessResponse(
+        STATUS.OK,
+        "Booking retrieved successfully.",
+        booking,
       ).send(res);
     } catch (error: unknown) {
       next(error);

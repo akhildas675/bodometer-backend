@@ -35,3 +35,26 @@ export const getVideoSessionSchema = z.object({
 export const endVideoSessionSchema = z.object({
   params: videoSessionIdSchema,
 });
+
+export const getVideoSessionByBookingIdSchema = z.object({
+  params: bookingIdSchema,
+});
+
+export const requestRefundSchema = z.object({
+  params: videoSessionIdSchema,
+});
+
+export const claimExpiredRefundSchema = z.object({
+  params: bookingIdSchema,
+});
+
+export const getVideoSessionHistorySchema = z.object({
+  query: z
+    .object({
+      page: z.string().optional(),
+      limit: z.string().optional(),
+      status: z.string().optional(),
+      refundStatus: z.string().optional(),
+    })
+    .optional(),
+});

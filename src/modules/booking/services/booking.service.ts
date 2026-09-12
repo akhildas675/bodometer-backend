@@ -358,7 +358,28 @@ export class BookingService implements IBookingService {
   }
 
   async getUserBookings(userId: string): Promise<Booking[]> {
-    return this._bookingRepository.findByUserId(userId);
+    const bookings = await this._bookingRepository.findByUserId(userId);
+    const trainerMap = new Map<string, { name?: string; email?: string }>();
+    for (const b of bookings) {
+      if (!trainerMap.has(b.trainerId)) {
+        let trainerUser = await this._userRepository.findById(b.trainerId);
+        if (!trainerUser) {
+          const profile = await this._trainerProfileRepository.findById(b.trainerId);
+          if (profile && profile.userId) {
+            trainerUser = await this._userRepository.findById(profile.userId.toString());
+          }
+        }
+        if (trainerUser) {
+          trainerMap.set(b.trainerId, { name: trainerUser.name, email: trainerUser.email });
+        }
+      }
+      const tInfo = trainerMap.get(b.trainerId);
+      if (tInfo) {
+        b.trainerName = tInfo.name;
+        b.trainerEmail = tInfo.email;
+      }
+    }
+    return bookings;
   }
 
   async getTrainerBookings(trainerId: string): Promise<Booking[]> {

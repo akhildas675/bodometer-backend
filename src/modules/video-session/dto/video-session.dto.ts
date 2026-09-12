@@ -1,4 +1,5 @@
 import {
+    VideoSessionRefundStatus,
     VideoSessionStatus,
     VideoSessionTerminationReason,
 } from "../constant/video-session.constant";
@@ -16,10 +17,22 @@ export interface VideoSessionResponseDto {
     userJoinedAt?: Date;
     actualStartTime?: Date;
     actualEndTime?: Date;
+    actualDurationMinutes?: number;
     trainerLeftAt?: Date;
     userLeftAt?: Date;
     status: VideoSessionStatus;
     terminationReason?: VideoSessionTerminationReason;
+    refundEligible?: boolean;
+    refundStatus?: VideoSessionRefundStatus;
+    refundId?: string;
+    refundRequestedAt?: Date;
+    refundProcessedAt?: Date;
     createdAt?: Date;
     updatedAt?: Date;
+    // Populated fields for history view
+    bookingNumber?: string;
+    otherParticipantName?: string;
+    otherParticipantEmail?: string;
+    serviceName?: string;
+    sessionPrice?: number;
 }

@@ -26,4 +26,39 @@ export interface IVideoSessionService{
   videoSessionId: string,
   userId: string,
 ): Promise<VideoSessionResponseDto>;
-}
+
+  getVideoSessionByBookingId(
+    bookingId: string,
+    participantId: string,
+  ): Promise<VideoSessionResponseDto | null>;
+
+  requestRefund(
+    videoSessionId: string,
+    userId: string,
+  ): Promise<VideoSessionResponseDto>;
+
+  claimExpiredBookingRefund(
+    bookingId: string,
+    userId: string,
+  ): Promise<{
+    booking: unknown;
+    refund: unknown;
+    videoSession?: VideoSessionResponseDto;
+  }>;
+
+  getVideoSessionHistory(
+    participantId: string,
+    role: string,
+    query: {
+      page?: number;
+      limit?: number;
+      status?: string;
+      refundStatus?: string;
+    },
+  ): Promise<{
+    sessions: VideoSessionResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+  }>;
+}
