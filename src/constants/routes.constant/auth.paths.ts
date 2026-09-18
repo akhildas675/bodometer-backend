@@ -10,7 +10,7 @@ export const AUTH_PATHS = {
 
     COMPLETE_REGISTER:"/register/complete",
 
-    FORGOT_PASSWORD:"/forgot-password",
+    FORGOT_PASSWORD:"/forget-password",
 
     RESET_PASSWORD:"/reset-password",
 

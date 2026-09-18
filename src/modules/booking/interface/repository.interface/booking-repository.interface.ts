@@ -1,6 +1,5 @@
 import { ClientSession } from "mongoose";
 import { Booking, BookingStatus } from "../domain/booking.interface";
-import { IBooking } from "../../model/booking.model";
 
 export type CreateBookingData = Omit<Booking, "id" | "createdAt" | "updatedAt">;
 
@@ -31,7 +30,7 @@ export interface IBookingRepository {
   ): Promise<Booking | null>;
   updateById(
     id: string,
-    data: Partial<IBooking>,
+    data: Partial<Booking>,
     session?: ClientSession
   ): Promise<Booking | null>;
   updateTimes(

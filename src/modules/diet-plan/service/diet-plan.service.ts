@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { AppError } from "../../../utils/appError";
 import { STATUS } from "../../../constants/constant.values.ts/statuscode";
 
@@ -86,7 +85,7 @@ export class DietPlanService implements IDietPlanService {
       endDate.setDate(endDate.getDate() + 7);
 
       const dietPlan = await this._userDietPlanRepo.create({
-        userId: new mongoose.Types.ObjectId(userId),
+        userId,
         startDate,
         endDate,
         status: "active",

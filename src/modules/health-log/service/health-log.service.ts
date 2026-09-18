@@ -13,7 +13,6 @@ import {
 import { MESSAGES } from "../../../constants/messages";
 import { TIMEFRAME, Timeframe } from "../../../constants/constant.values.ts/fitness.constant";
 import { IHealthLogModel, IEmbeddedMeal } from "../models/health-log.model";
-import mongoose from "mongoose";
 import { AppError } from "../../../utils/appError";
 import { STATUS } from "../../../constants/constant.values.ts/statuscode";
 import { inject, injectable } from "inversify";
@@ -136,7 +135,7 @@ export class HealthLogService implements IHealthLogService {
       }
 
       processedMeals.push({
-        mealCategoryId: new mongoose.Types.ObjectId(mealDto.mealCategoryId),
+        mealCategoryId: mealDto.mealCategoryId,
         description: mealDto.description,
         correctedMeal,
         estimatedCalories,

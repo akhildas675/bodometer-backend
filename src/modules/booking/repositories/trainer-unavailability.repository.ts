@@ -1,5 +1,5 @@
 import { injectable } from "inversify";
-import mongoose, { ClientSession } from "mongoose";
+import { ClientSession } from "mongoose";
 
 import { BaseRepository } from "@/modules/base/repository/base.repository";
 
@@ -70,10 +70,7 @@ export class TrainerUnavailabilityRepository
     }
 
     const documents = data.map((item) => ({
-      trainerId:
-        new mongoose.Types.ObjectId(
-          item.trainerId,
-        ),
+      trainerId: item.trainerId,
 
       type:
         item.type,
@@ -108,7 +105,7 @@ export class TrainerUnavailabilityRepository
     trainerId: string
   ): Promise<TrainerUnavailability[]> {
     const docs = await TrainerUnavailabilityModel.find({
-      trainerId: new mongoose.Types.ObjectId(trainerId),
+      trainerId,
     }).exec();
 
     return docs.map((doc) => this.toInterface(doc));
@@ -119,7 +116,7 @@ export class TrainerUnavailabilityRepository
     session?: ClientSession
   ): Promise<TrainerUnavailability> {
     const doc = new TrainerUnavailabilityModel({
-      trainerId: new mongoose.Types.ObjectId(data.trainerId),
+      trainerId: data.trainerId,
       type: data.type,
       startDate: data.startDate,
       endDate: data.endDate,

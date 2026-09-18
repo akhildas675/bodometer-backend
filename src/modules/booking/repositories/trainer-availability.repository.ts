@@ -1,5 +1,5 @@
 import { injectable } from "inversify";
-import mongoose, { ClientSession } from "mongoose";
+import { ClientSession } from "mongoose";
 
 import { BaseRepository } from "@/modules/base/repository/base.repository";
 
@@ -45,6 +45,7 @@ export class TrainerAvailabilityRepository
 
         shifts: day.shifts.map((shift) => ({
           startMinute: shift.startMinute,
+
           endMinute: shift.endMinute,
         })),
       })),
@@ -61,12 +62,10 @@ export class TrainerAvailabilityRepository
     session?: ClientSession,
   ): Promise<TrainerAvailability> {
 
-    const [doc] = await this.model.create(
+    const [doc] = await TrainerAvailabilityModel.create(
       [
         {
-          trainerId: new mongoose.Types.ObjectId(
-            data.trainerId,
-          ),
+          trainerId: data.trainerId,
 
           effectiveFrom: data.effectiveFrom,
           effectiveUntil: data.effectiveUntil,
@@ -90,9 +89,7 @@ export class TrainerAvailabilityRepository
 
     const doc = await this.model
       .findOne({
-        trainerId: new mongoose.Types.ObjectId(
-          trainerId,
-        ),
+        trainerId,
       })
       .exec();
 
@@ -111,7 +108,7 @@ export class TrainerAvailabilityRepository
   const doc = await TrainerAvailabilityModel
     .findOneAndUpdate(
       {
-        trainerId: new mongoose.Types.ObjectId(trainerId),
+        trainerId,
       },
       {
         $set: {

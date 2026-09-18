@@ -16,7 +16,7 @@ import {
 
 export interface IEmbeddedWorkoutExercise {
   instanceId: string;
-  exerciseId: mongoose.Types.ObjectId;
+  exerciseId: string | mongoose.Types.ObjectId;
   order: number;
   sets: number;
   reps?: number;

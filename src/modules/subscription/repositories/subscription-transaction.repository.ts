@@ -11,7 +11,6 @@ import { SubscriptionPlanModel } from "../models/subscription-plan.model";
 import { ISubscriptionTransactionRepository } from "../interface/repository.interface/subscription.transaction-repository.interface";
 import { SubscriptionTransactionPaginatedResult, SubscriptionTransactionQuery } from "../interface/subscription.interface";
 import { injectable } from "inversify";
-import mongoose from "mongoose";
 import { UserModel } from "@/modules/auth/model/user.model";
 
 @injectable()
@@ -136,7 +135,7 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
     status,
   } = query;
 
-    const filter: Record<string, unknown> = { userId: new mongoose.Types.ObjectId(userId) };
+    const filter: Record<string, unknown> = { userId };
 
     if (status) {
       filter.paymentStatus = status;
@@ -149,7 +148,7 @@ export class SubscriptionTransactionRepository implements ISubscriptionTransacti
       const planIds = plans.map((p) => p._id);
 
       filter.$and = [
-        { userId: new mongoose.Types.ObjectId(userId) },
+        { userId },
         {
           $or: [
             { transactionId: { $regex: search, $options: "i" } },

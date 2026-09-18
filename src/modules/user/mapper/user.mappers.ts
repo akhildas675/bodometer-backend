@@ -83,6 +83,15 @@ export class UserMappers {
       profilePic: data.user.profilePic ?? null,
       experienceInYears: data.profile.experienceInYears,
       bio: data.profile.bio,
+      specializations: (
+        (data.profile.specializations as unknown as {
+          _id: string | mongoose.Types.ObjectId;
+          name?: string;
+        }[]) || []
+      ).map((spec) => ({
+        _id: String(spec._id),
+        name: spec.name || "",
+      })),
     };
   }
 

@@ -1,4 +1,4 @@
-import { FindTrainerResponseDto, TrainerProfileDto, TrainerStatusResponseDto, UpdateTrainerProfileDto, GetAllTrainersDto, GetAllTrainersResponseDto, GetTrainerAppointmentsQueryDto, GetTrainerAppointmentsResponseDto, ApproveTrainerResponseDto, RejectTrainerResponseDto, TrainerListItemDto, GetTrainerByIdResponseDto } from "../../../modules/trainer/dto/trainer.dto";
+import { FindTrainerResponseDto, TrainerProfileDto, TrainerStatusResponseDto, UpdateTrainerProfileDto, GetAllTrainersDto, GetAllTrainersResponseDto, GetTrainerAppointmentsQueryDto, GetTrainerAppointmentsResponseDto, ApproveTrainerResponseDto, RejectTrainerResponseDto, TrainerListItemDto, GetTrainerByIdResponseDto, TrainerDetailDto } from "../../../modules/trainer/dto/trainer.dto";
 import { PaginatedResponseDto } from "../../../dto/common.dto";
 import { PaginatedResult } from '@/modules/base/interface/common.interface';
 
@@ -12,6 +12,9 @@ export interface ITrainerService {
   uploadTrainerDocument(file: Express.Multer.File): Promise<string>;
   submitTrainerProfile(userId: string, data: TrainerProfileDto): Promise<void>;
   getTrainerStatus(userId: string): Promise<TrainerStatusResponseDto>;
+
+  // User Methods
+  getTrainerDetail(profileId: string): Promise<TrainerDetailDto>;
 
   // Admin Methods
   getTrainers(query: GetAllTrainersDto, role?: string): Promise<PaginatedResponseDto<TrainerListItemDto | GetAllTrainersResponseDto>>;

@@ -174,9 +174,7 @@ export default class QuestionRepository
       ];
     }
     if (query.groupId) {
-      filter.groupId = mongoose.Types.ObjectId.isValid(query.groupId)
-        ? { $in: [query.groupId, new mongoose.Types.ObjectId(query.groupId)] }
-        : query.groupId;
+      filter.groupId = query.groupId;
     }
     if (query.isActive !== undefined) {
       filter.isActive = query.isActive === true ? { $ne: false } : false;
@@ -245,7 +243,7 @@ export default class QuestionRepository
     activeOnly: boolean = true,
   ): Promise<OnboardingQuestion[]> {
     const filter: Record<string, unknown> = {
-      groupId: new mongoose.Types.ObjectId(groupId),
+      groupId,
     };
     if (activeOnly) filter.isActive = true;
 

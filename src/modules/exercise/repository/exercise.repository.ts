@@ -4,7 +4,6 @@ import { Exercise } from '@/modules/exercise/interface/exercise.interface';
 import { IExercise, ExerciseModel } from "@/modules/exercise/models/exercise.model";
 import { PaginatedResult } from '@/modules/base/interface/common.interface';
 import { ExerciseQueryDto } from "@/modules/exercise/dto/exercise.dto";
-import mongoose from "mongoose";
 
 export default class ExerciseRepository extends BaseRepository<Exercise, IExercise> implements IExerciseRepository {
 
@@ -17,17 +16,21 @@ export default class ExerciseRepository extends BaseRepository<Exercise, IExerci
       _id: doc._id.toString(),
       key: doc.key,
       title: doc.title,
-      description: doc.description || "",
-      instructions: doc.instructions ?? [],
+      description: doc.description,
       media: {
         image: doc.media?.image || "",
         videoUrl: doc.media?.videoUrl,
       },
-      categoryIds: doc.categoryIds?.map((id) => id.toString()) ?? [],
-      targetMuscleIds: doc.targetMuscleIds?.map((id) => id.toString()) ?? [],
-      equipmentIds: doc.equipmentIds?.map((id) => id.toString()) ?? [],
-      targetMuscles: doc.targetMuscleIds?.map((m) => (m as unknown as { title?: string }).title || m.toString()) ?? [],
-      equipment: doc.equipmentIds?.map((e) => (e as unknown as { title?: string }).title || e.toString()) ?? [],
+      instructions: doc.instructions,
+      equipmentIds: (doc.equipmentIds || []).map((id) =>
+        id.toString()
+      ),
+      categoryIds: (doc.categoryIds || []).map((id) =>
+        id.toString()
+      ),
+      targetMuscleIds: (doc.targetMuscleIds || []).map((id) =>
+        id.toString()
+      ),
       difficulty: doc.difficulty,
       workoutEnvironments: doc.workoutEnvironments ?? [],
       isCompound: doc.isCompound ?? false,
@@ -53,10 +56,10 @@ export default class ExerciseRepository extends BaseRepository<Exercise, IExerci
       filter.difficulty = query.difficulty;
     }
     if (query.targetMuscleId) {
-      filter.targetMuscleIds = new mongoose.Types.ObjectId(query.targetMuscleId);
+      filter.targetMuscleIds = query.targetMuscleId;
     }
     if (query.categoryId) {
-      filter.categoryIds = new mongoose.Types.ObjectId(query.categoryId);
+      filter.categoryIds = query.categoryId;
     }
     if (query.status) {
       filter.isActive = query.status === "true";

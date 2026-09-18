@@ -1,5 +1,5 @@
 import { injectable } from "inversify";
-import mongoose, { ClientSession } from "mongoose";
+import { ClientSession } from "mongoose";
 
 import { BaseRepository } from "@/modules/base/repository/base.repository";
 import { ITrainerBookingSettings, TrainerBookingSettingsModel } from "../model/trainer.booking-settings.model";
@@ -29,15 +29,13 @@ export class TrainerBookingSettingsRepository
 
       trainerId: doc.trainerId.toString(),
 
-      serviceIds: doc.serviceIds.map(
-        (serviceId) => serviceId.toString(),
+      serviceIds: doc.serviceIds.map((s) =>
+        s.toString(),
       ),
 
-      advanceNoticeHours:
-        doc.advanceNoticeHours,
+      advanceNoticeHours: doc.advanceNoticeHours,
 
-      bufferMinutes:
-        doc.bufferMinutes,
+      bufferMinutes: doc.bufferMinutes,
 
       maximumBookingPerDay:
         doc.maximumBookingPerDay,
@@ -52,35 +50,15 @@ export class TrainerBookingSettingsRepository
     session?: ClientSession,
   ): Promise<TrainerBookingSettings> {
 
-    const [doc] =
-      await TrainerBookingSettingsModel.create(
-        [
-          {
-            trainerId:
-              new mongoose.Types.ObjectId(
-                data.trainerId,
-              ),
+    const doc = new TrainerBookingSettingsModel({
+      trainerId: data.trainerId,
+      serviceIds: data.serviceIds,
+      advanceNoticeHours: data.advanceNoticeHours,
+      bufferMinutes: data.bufferMinutes,
+      maximumBookingPerDay: data.maximumBookingPerDay,
+    });
 
-            serviceIds: data.serviceIds.map(
-              (serviceId) =>
-                new mongoose.Types.ObjectId(
-                  serviceId,
-                ),
-            ),
-
-            advanceNoticeHours:
-              data.advanceNoticeHours,
-
-            bufferMinutes:
-              data.bufferMinutes,
-
-            maximumBookingPerDay:
-              data.maximumBookingPerDay,
-          },
-        ],
-        { session },
-      );
-
+    await doc.save({ session });
     return this.toInterface(doc);
   }
 
@@ -91,10 +69,7 @@ export class TrainerBookingSettingsRepository
     const doc =
       await TrainerBookingSettingsModel
         .findOne({
-          trainerId:
-            new mongoose.Types.ObjectId(
-              trainerId,
-            ),
+          trainerId,
         })
         .exec();
 
@@ -109,7 +84,7 @@ export class TrainerBookingSettingsRepository
     session?: ClientSession,
   ): Promise<TrainerBookingSettings | null> {
     const doc = await TrainerBookingSettingsModel.findOneAndUpdate(
-      { trainerId: new mongoose.Types.ObjectId(trainerId) },
+      { trainerId },
       { $set: data },
       { new: true, runValidators: true, session }
     ).exec();

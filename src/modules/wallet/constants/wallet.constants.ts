@@ -1,0 +1,1 @@
+export const MAX_WALLET_BALANCE = 10000;

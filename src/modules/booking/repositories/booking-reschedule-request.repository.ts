@@ -1,5 +1,5 @@
 import { injectable } from "inversify";
-import mongoose, { ClientSession } from "mongoose";
+import { ClientSession } from "mongoose";
 import { BookingRescheduleRequest } from "../interface/domain/booking-reschedule-request.interface";
 import { BookingRescheduleRequestModel, IBookingRescheduleRequestDocument } from "../model/booking-reschedule-request.model";
 import { BookingModel } from "../model/booking.model";
@@ -62,7 +62,7 @@ export class BookingRescheduleRequestRepository implements IBookingRescheduleReq
   }
 
   async findPendingByUserId(userId: string): Promise<BookingRescheduleRequest[]> {
-    const userBookings = await BookingModel.find({ userId: new mongoose.Types.ObjectId(userId) }).select("_id");
+    const userBookings = await BookingModel.find({ userId }).select("_id");
     const bookingIds = userBookings.map((b) => b._id.toString());
     const docs = await BookingRescheduleRequestModel.find({
       bookingId: { $in: bookingIds },

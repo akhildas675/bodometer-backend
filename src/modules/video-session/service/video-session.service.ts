@@ -7,7 +7,7 @@ import { BOOKING_TYPES } from "@/modules/booking/booking.types";
 import { IBookingRepository } from "@/modules/booking/interface/repository.interface/booking-repository.interface";
 import { IBookingRefundRepository } from "@/modules/booking/repositories/booking-refund.repository";
 import { WALLET_TYPES } from "@/modules/wallet/wallet.types";
-import { IWalletService } from "@/modules/wallet/services/wallet.service";
+import { IWalletService } from "@/modules/wallet/interface/service.interface/wallet-service.interface";
 import { USER_TYPES } from "@/modules/user/user.types";
 import { IUserRepository } from "@/modules/user/interface/user-repository.interface";
 import { TRAINER_TYPES } from "@/modules/trainer/trainer.types";
@@ -859,26 +859,15 @@ async markParticipantJoined(
 
     const filter: Record<string, unknown> = {};
     if (role === "TRAINER") {
-      const trainerIds: (string | mongoose.Types.ObjectId)[] = [participantId];
-      if (mongoose.Types.ObjectId.isValid(participantId)) {
-        trainerIds.push(new mongoose.Types.ObjectId(participantId));
-      }
+      const trainerIds: string[] = [participantId];
       const profile =
         await this._trainerProfileRepository.findByUserId(participantId);
       if (profile && profile.userId) {
-        const profileUserId = profile.userId.toString();
-        trainerIds.push(profileUserId);
-        if (mongoose.Types.ObjectId.isValid(profileUserId)) {
-          trainerIds.push(new mongoose.Types.ObjectId(profileUserId));
-        }
+        trainerIds.push(profile.userId.toString());
       }
       filter.trainerId = { $in: trainerIds };
     } else {
-      const userIds: (string | mongoose.Types.ObjectId)[] = [participantId];
-      if (mongoose.Types.ObjectId.isValid(participantId)) {
-        userIds.push(new mongoose.Types.ObjectId(participantId));
-      }
-      filter.userId = { $in: userIds };
+      filter.userId = participantId;
     }
 
     if (query.status) {

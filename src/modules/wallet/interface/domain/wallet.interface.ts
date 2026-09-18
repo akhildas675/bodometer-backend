@@ -1,5 +1,9 @@
 export type WalletTransactionType = "CREDIT" | "DEBIT";
-export type WalletTransactionSource = "BOOKING_REFUND" | "BOOKING_PAYMENT" | "MANUAL_ADJUSTMENT" | "WALLET_TOPUP";
+export type WalletTransactionSource =
+  | "BOOKING_REFUND"
+  | "BOOKING_PAYMENT"
+  | "MANUAL_ADJUSTMENT"
+  | "WALLET_TOPUP";
 
 export interface UserWallet {
   id: string;

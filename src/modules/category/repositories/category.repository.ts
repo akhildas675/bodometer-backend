@@ -68,6 +68,9 @@ export default class CategoryRepository
     if (query.isActive !== undefined) {
       filter.isActive = query.isActive === true ? { $ne: false } : false;
     }
+    if (query.excludeId) {
+      filter._id = { $ne: query.excludeId };
+    }
 
     const [docs, totalItems] = await Promise.all([
       CategoryModel.find(filter).skip(skip).limit(limit).exec(),

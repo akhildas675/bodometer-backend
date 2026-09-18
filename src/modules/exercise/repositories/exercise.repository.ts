@@ -5,7 +5,6 @@ import { Exercise } from '@/modules/exercise/interface/exercise.interface';
 import { IExercise, ExerciseModel } from "@/modules/exercise/models/exercise.model";
 import { PaginatedResult } from '@/modules/base/interface/common.interface';
 import { ExerciseQueryDto } from "../dto/exercise.dto";
-import mongoose from "mongoose";
 
 @injectable()
 export default class ExerciseRepository extends BaseRepository<Exercise, IExercise> implements IExerciseRepository {
@@ -26,15 +25,15 @@ export default class ExerciseRepository extends BaseRepository<Exercise, IExerci
                 videoUrl: doc.media?.videoUrl,
             },
             categoryIds: doc.categoryIds?.map((id: unknown) => {
-                const ref = id as { _id?: mongoose.Types.ObjectId };
+                const ref = id as { _id?: { toString(): string } };
                 return ref._id ? ref._id.toString() : String(id);
             }) ?? [],
             targetMuscleIds: doc.targetMuscleIds?.map((id: unknown) => {
-                const ref = id as { _id?: mongoose.Types.ObjectId };
+                const ref = id as { _id?: { toString(): string } };
                 return ref._id ? ref._id.toString() : String(id);
             }) ?? [],
             equipmentIds: doc.equipmentIds?.map((id: unknown) => {
-                const ref = id as { _id?: mongoose.Types.ObjectId };
+                const ref = id as { _id?: { toString(): string } };
                 return ref._id ? ref._id.toString() : String(id);
             }) ?? [],
             targetMuscles: doc.targetMuscleIds?.map((m: unknown) => {
@@ -70,10 +69,10 @@ export default class ExerciseRepository extends BaseRepository<Exercise, IExerci
             filter.difficulty = query.difficulty;
         }
         if (query.targetMuscleId) {
-            filter.targetMuscleIds = new mongoose.Types.ObjectId(query.targetMuscleId);
+            filter.targetMuscleIds = query.targetMuscleId;
         }
         if (query.categoryId) {
-            filter.categoryIds = new mongoose.Types.ObjectId(query.categoryId);
+            filter.categoryIds = query.categoryId;
         }
         if (query.status) {
             filter.isActive = query.status === "true";

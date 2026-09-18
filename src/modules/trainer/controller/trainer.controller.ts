@@ -365,6 +365,33 @@ export class TrainerController {
     }
   };
 
+  getTrainerDetail = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { profileId } = req.params;
+
+      if (!profileId) {
+        throw new AppError(
+          STATUS.BAD_REQUEST,
+          MESSAGES.ADMIN.PROFILE_ID_REQUIRED,
+        );
+      }
+
+      const trainer = await this._trainerService.getTrainerDetail(profileId);
+
+      new SuccessResponse(
+        STATUS.OK,
+        MESSAGES.TRAINER.PROFILE_FETCHED,
+        trainer,
+      ).send(res);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error("Unknown error occurred"));
+      }
+    }
+  };
+
 
 
   approveTrainer = async (req: Request, res: Response, next: NextFunction) => {

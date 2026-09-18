@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from "mongoose";
 // Embedded Meal
 
 export interface IEmbeddedMeal {
-    mealCategoryId: mongoose.Types.ObjectId;
+    mealCategoryId: string | mongoose.Types.ObjectId;
 
     description: string;
 

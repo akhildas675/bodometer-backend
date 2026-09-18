@@ -5,7 +5,8 @@ import { SuccessResponse } from "@/utils/success.response";
 import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { AppError } from "@/utils/appError";
 import { WALLET_TYPES } from "../wallet.types";
-import { IWalletService } from "../services/wallet.service";
+import { IWalletService } from "../interface/service.interface/wallet-service.interface";
+import { WalletTransactionType } from "../interface/domain/wallet.interface";
 
 @injectable()
 export class WalletController {
@@ -35,8 +36,17 @@ export class WalletController {
         throw new AppError(STATUS.UNAUTHORIZED, "User authentication required.");
       }
 
-      const transactions = await this._walletService.getTransactions(userId);
-      new SuccessResponse(STATUS.OK, "Wallet transactions retrieved successfully.", transactions).send(res);
+      const query = {
+        page: req.query.page ? Number(req.query.page) : undefined,
+        limit: req.query.limit ? Number(req.query.limit) : undefined,
+        type: req.query.type as WalletTransactionType | "ALL" | undefined,
+        search: req.query.search as string | undefined,
+        sortBy: req.query.sortBy as "createdAt" | "amount" | undefined,
+        sortOrder: req.query.sortOrder as "asc" | "desc" | undefined,
+      };
+
+      const result = await this._walletService.getTransactionsPaginated(userId, query);
+      new SuccessResponse(STATUS.OK, "Wallet transactions retrieved successfully.", result).send(res);
     } catch (error) {
       next(error);
     }

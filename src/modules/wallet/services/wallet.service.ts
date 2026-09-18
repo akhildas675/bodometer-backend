@@ -1,9 +1,22 @@
 import { inject, injectable } from "inversify";
 import { ClientSession } from "mongoose";
 import { WALLET_TYPES } from "../wallet.types";
-import { UserWallet, WalletTransaction, WalletTransactionSource } from "../interface/domain/wallet.interface";
-import { IWalletRepository } from "../repositories/wallet.repository";
-import { WalletTransactionModel } from "../model/wallet.model";
+import {
+  UserWallet,
+  WalletTransaction,
+} from "../interface/domain/wallet.interface";
+import {
+  PaginatedWalletTransactionsResponseDto,
+  WalletTransactionsQueryDto,
+} from "../dto/wallet.dto";
+import { IWalletRepository } from "../interface/repository.interface/wallet-repository.interface";
+import {
+  CreditWalletParams,
+  DebitWalletParams,
+  IWalletService,
+} from "../interface/service.interface/wallet-service.interface";
+import { MAX_WALLET_BALANCE } from "../constants/wallet.constants";
+import { WalletMapper } from "../mapper/wallet.mapper";
 import { AppError } from "@/utils/appError";
 import { STATUS } from "@/constants/constant.values.ts/statuscode";
 
@@ -16,37 +29,6 @@ import { IUserRepository } from "@/modules/user/interface/user-repository.interf
 import { NOTIFICATION_TYPES } from "@/modules/notification/notification.types";
 import { INotificationService } from "@/modules/notification/interface/notification-service.interface";
 import { NOTIFICATION_ENTITY_TYPE, NOTIFICATION_TYPE } from "@/modules/notification/constant/notification.constant";
-
-export interface CreditWalletParams {
-  userId: string;
-  amount: number;
-  source: WalletTransactionSource;
-  bookingId?: string;
-  refundId?: string;
-  reference?: string;
-  description?: string;
-}
-
-export interface DebitWalletParams {
-  userId: string;
-  amount: number;
-  source: WalletTransactionSource;
-  bookingId?: string;
-  reference?: string;
-  description?: string;
-}
-
-export const MAX_WALLET_BALANCE = 10000;
-
-export interface IWalletService {
-  getOrCreateWallet(userId: string, session?: ClientSession): Promise<UserWallet>;
-  creditWallet(params: CreditWalletParams, session?: ClientSession): Promise<{ wallet: UserWallet; transaction: WalletTransaction }>;
-  debitWallet(params: DebitWalletParams, session?: ClientSession): Promise<{ wallet: UserWallet; transaction: WalletTransaction }>;
-  topUpWallet(userId: string, amount: number): Promise<{ wallet: UserWallet; transaction: WalletTransaction }>;
-  createTopupCheckoutSession(userId: string, amount: number): Promise<{ checkoutUrl: string; sessionId: string }>;
-  verifyTopupPayment(userId: string, amount: number, sessionId: string): Promise<{ wallet: UserWallet; transaction: WalletTransaction }>;
-  getTransactions(userId: string): Promise<WalletTransaction[]>;
-}
 
 @injectable()
 export class WalletService implements IWalletService {
@@ -173,21 +155,10 @@ export class WalletService implements IWalletService {
     }
 
     // Check if session transaction was already processed by reference ID
-    const existingTxDoc = await WalletTransactionModel.findOne({ reference: sessionId });
-    if (existingTxDoc) {
+    const existingTx = await this._walletRepository.findTransactionByReference(sessionId);
+    if (existingTx) {
       const wallet = await this.getOrCreateWallet(userId);
-      const transaction: WalletTransaction = {
-        id: existingTxDoc._id.toString(),
-        userId: existingTxDoc.userId,
-        type: existingTxDoc.type,
-        source: existingTxDoc.source,
-        amount: existingTxDoc.amount,
-        currency: existingTxDoc.currency,
-        reference: existingTxDoc.reference,
-        description: existingTxDoc.description,
-        createdAt: existingTxDoc.createdAt,
-      };
-      return { wallet, transaction };
+      return { wallet, transaction: existingTx };
     }
 
     return this.creditWallet({
@@ -250,5 +221,18 @@ export class WalletService implements IWalletService {
 
   async getTransactions(userId: string): Promise<WalletTransaction[]> {
     return this._walletRepository.findTransactionsByUserId(userId);
+  }
+
+  async getTransactionsPaginated(
+    userId: string,
+    query?: WalletTransactionsQueryDto,
+  ): Promise<PaginatedWalletTransactionsResponseDto> {
+    const result = await this._walletRepository.findTransactionsPaginated(userId, query);
+    return WalletMapper.toPaginatedTransactionsResponseDto(
+      result.transactions,
+      result.pagination,
+      result.totalCredits,
+      result.totalDebits,
+    );
   }
 }

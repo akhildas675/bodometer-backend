@@ -11,7 +11,7 @@ export interface IEmbeddedDietDay {
 }
 
 export interface IUserDietPlan extends Document {
-  userId: mongoose.Types.ObjectId;
+  userId: string | mongoose.Types.ObjectId;
   startDate: Date;
   endDate: Date;
   status: string; // 'active', 'completed', 'cancelled'

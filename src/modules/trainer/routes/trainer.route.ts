@@ -115,9 +115,9 @@ trainerRoute.patch(
 
 trainerRoute.get(
   TRAINER_PATHS.TRAINER_BY_ID,
-  ROLE_GUARD.ALL_GUARDS,
+  ROLE_GUARD.OPTIONAL_AUTH,
   validate(profileIdParamSchema),
-  trainerController.getTrainerById,
+  trainerController.getTrainerDetail,
 );
 
 trainerRoute.patch(

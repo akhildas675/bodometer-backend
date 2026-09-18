@@ -7,7 +7,6 @@ import {
 } from "../interface/notification.interface";
 import { INotification, NotificationModel } from "../model/notification.model";
 import { INotificationRepository } from "../interface/notification-repository.interface";
-import mongoose from "mongoose";
 
 export class NotificationRepository
   extends BaseRepository<Notification, INotification>
@@ -38,7 +37,7 @@ export class NotificationRepository
   ): Promise<Notification> {
     if (data.entityId) {
       const existing = await NotificationModel.findOne({
-        recipientId: new mongoose.Types.ObjectId(data.recipientId),
+        recipientId: data.recipientId,
         type: data.type,
         entityId: data.entityId,
       });
@@ -49,7 +48,7 @@ export class NotificationRepository
     }
 
     const persistenceData: Partial<INotification> = {
-      recipientId: new mongoose.Types.ObjectId(data.recipientId),
+      recipientId: data.recipientId as unknown as import("mongoose").Types.ObjectId,
       type: data.type,
       title: data.title,
       message: data.message,
@@ -72,7 +71,7 @@ export class NotificationRepository
     const skip = (page - 1) * limit;
 
     const filter = {
-      recipientId: new mongoose.Types.ObjectId(recipientId),
+      recipientId,
     };
 
     const [documents, totalItems] = await Promise.all([
@@ -93,7 +92,7 @@ export class NotificationRepository
 
   async getUnreadCount(recipientId: string): Promise<number> {
     return NotificationModel.countDocuments({
-      recipientId: new mongoose.Types.ObjectId(recipientId),
+      recipientId,
       isRead: false,
     }).exec();
   }
@@ -102,10 +101,10 @@ export class NotificationRepository
     notificationId: string,
     recipientId: string,
   ): Promise<Notification | null> {
-    const document = await NotificationModel.findByIdAndUpdate(
+    const document = await NotificationModel.findOneAndUpdate(
       {
-        _id: new mongoose.Types.ObjectId(notificationId),
-        recipientId: new mongoose.Types.ObjectId(recipientId),
+        _id: notificationId,
+        recipientId,
         isRead: false,
       },
       {
@@ -127,7 +126,7 @@ export class NotificationRepository
   async markAllAsRead(recipientId: string): Promise<void> {
     await NotificationModel.updateMany(
       {
-        recipientId: new mongoose.Types.ObjectId(recipientId),
+        recipientId,
         isRead: false,
       },
       {

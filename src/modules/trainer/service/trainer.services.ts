@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { ITrainerService } from '@/modules/trainer/interface/trainer-service.interface';
 import { IUserRepository } from '@/modules/user/interface/user-repository.interface';
 import { ITrainerProfileRepository } from '@/modules/trainer/interface/trainer.profile-repository.interface';
@@ -16,6 +15,7 @@ import {
   RejectTrainerResponseDto,
   TrainerListItemDto,
   GetTrainerByIdResponseDto,
+  TrainerDetailDto,
 } from "../dto/trainer.dto";
 import { ROLES } from "@/constants/constant.values.ts/roles";
 import { PaginatedResponseDto } from "../../../dto/common.dto";
@@ -108,9 +108,7 @@ export class TrainerService implements ITrainerService {
       profileFields.dateOfBirth = new Date(updateData.dateOfBirth);
     }
     if (updateData.specializations !== undefined) {
-      profileFields.specializations = updateData.specializations.map(
-        (id) => new mongoose.Types.ObjectId(id)
-      );
+      profileFields.specializations = updateData.specializations;
     }
 
     if (Object.keys(profileFields).length > 0) {
@@ -273,16 +271,14 @@ export class TrainerService implements ITrainerService {
     }
 
     await this._trainerProfileRepository.createProfile({
-      userId: new mongoose.Types.ObjectId(userId),
+      userId,
       experienceInYears: data.experienceInYears,
       coverPhoto,
       certifications,
       bio: data.bio,
       gender: data.gender,
       dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
-      specializations: data.specializationIds.map(
-        (id) => new mongoose.Types.ObjectId(id),
-      ),
+      specializations: data.specializationIds,
       verificationStatus: VERIFICATION_STATUS.PENDING,
       rejectionReason: null,
       applyCount: 1,
@@ -331,13 +327,27 @@ export class TrainerService implements ITrainerService {
       const page = query.page || 1;
       const limit = query.limit || 10;
 
-      const { data, total } = await this._trainerProfileRepository.getApprovedTrainersPaginated(
+      let { data, total } = await this._trainerProfileRepository.getApprovedTrainersPaginated(
         page,
         limit,
         query.search,
         query.sortBy,
         query.sortOrder,
+        query.specializationId,
       );
+
+      // Fallback: If filtered by specialization and no results found, fallback to top approved trainers
+      if (data.length === 0 && query.specializationId) {
+        const fallback = await this._trainerProfileRepository.getApprovedTrainersPaginated(
+          1,
+          limit,
+          query.search,
+          query.sortBy,
+          query.sortOrder,
+        );
+        data = fallback.data;
+        total = fallback.total;
+      }
 
       return {
         data: UserMappers.toListItemDtoArray(data),
@@ -415,6 +425,30 @@ export class TrainerService implements ITrainerService {
     if (!trainer)
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND);
     return TrainerMapper.toDetailDto(trainer);
+  }
+
+  async getTrainerDetail(profileId: string): Promise<TrainerDetailDto> {
+    const trainer =
+      await this._trainerProfileRepository.findByIdWithUser(profileId);
+    if (!trainer)
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.NOT_FOUND);
+
+    const specializationIds = (trainer.profile.specializations || []).map((s: unknown) => {
+      if (typeof s === "string") return s;
+      if (s && typeof s === "object" && "_id" in s) {
+        const idObj = (s as { _id: { toString(): string } })._id;
+        return idObj?.toString() || "";
+      }
+      return "";
+    }).filter(Boolean);
+
+    const relatedTrainers = await this._trainerProfileRepository.findRelatedTrainers(
+      specializationIds,
+      trainer.profile._id.toString(),
+      6,
+    );
+
+    return UserMappers.toTrainerDetailDto(trainer, relatedTrainers);
   }
 
   async approveTrainer(profileId: string): Promise<ApproveTrainerResponseDto> {

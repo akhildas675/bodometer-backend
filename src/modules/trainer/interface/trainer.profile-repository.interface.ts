@@ -14,7 +14,7 @@ export interface ITrainerProfileRepository extends IBaseRepository<
 > {
   // Trainer
   findByUserId(userId: string): Promise<TrainerProfile | null>;
-  createProfile(data: Partial<ITrainerProfileDocument>): Promise<void>;
+  createProfile(data: Partial<TrainerProfile>): Promise<void>;
   updateToReapply(userId: string, data: ReapplyTrainerData): Promise<void>;
   fetchTrainerStatus(userId: string): Promise<TrainerStatusResponse | null>;
 

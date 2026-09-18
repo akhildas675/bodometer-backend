@@ -3,7 +3,6 @@ import {
   UserSubscriptionModel,
   IUserSubscription,
 } from "../models/user-subscription.model";
-import mongoose from "mongoose";
 import { injectable } from "inversify";
 
 @injectable()
@@ -19,7 +18,7 @@ export class UserSubscriptionRepository implements IUserSubscriptionRepository {
 
   async findActiveByUserId(userId: string): Promise<IUserSubscription | null> {
     return UserSubscriptionModel.findOne({
-      userId: new mongoose.Types.ObjectId(userId),
+      userId,
       status: "active",
       endDate: { $gte: new Date() },
     })

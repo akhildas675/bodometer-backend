@@ -4,14 +4,13 @@ import {
   UserWorkoutPlanModel,
   IUserWorkoutPlanModel,
 } from "../models/user.workout-plan.model";
-import mongoose from "mongoose";
 import { WORKOUT_PLAN_STATUS, WORKOUT_DAY_STATUS } from "@/constants/constant.values.ts/fitness.constant";
 
 export class UserWorkoutPlanRepository implements IUserWorkoutPlanRepository {
 
   async createWeek(userId: string, week: CreateWeekInput): Promise<IUserWorkoutPlanModel> {
     const doc = new UserWorkoutPlanModel({
-      userId: new mongoose.Types.ObjectId(userId),
+      userId,
       ...week
     });
     return doc.save();
@@ -19,20 +18,20 @@ export class UserWorkoutPlanRepository implements IUserWorkoutPlanRepository {
 
   async findAllByUserId(userId: string): Promise<IUserWorkoutPlanModel[]> {
     return UserWorkoutPlanModel.find({
-      userId: new mongoose.Types.ObjectId(userId),
+      userId,
     }).sort({ weekNumber: 1 });
   }
 
   async findActiveWeekByUserId(userId: string): Promise<IUserWorkoutPlanModel | null> {
     return UserWorkoutPlanModel.findOne({
-      userId: new mongoose.Types.ObjectId(userId),
+      userId,
       status: WORKOUT_PLAN_STATUS.ACTIVE,
     });
   }
 
   async expireActiveWeeks(userId: string): Promise<void> {
     const activePlans = await UserWorkoutPlanModel.find({
-      userId: new mongoose.Types.ObjectId(userId),
+      userId,
       status: WORKOUT_PLAN_STATUS.ACTIVE
     });
 

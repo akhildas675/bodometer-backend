@@ -1,5 +1,5 @@
 import { injectable } from "inversify";
-import mongoose, { ClientSession } from "mongoose";
+import { ClientSession } from "mongoose";
 import { BaseRepository } from "@/modules/base/repository/base.repository";
 import {
   ITrainerAvailabilityOverride,
@@ -13,27 +13,27 @@ import { TrainerAvailabilityOverride } from "../interface/domain/trainer-availab
 
 @injectable()
 export class TrainerAvailabilityOverrideRepository
-  extends BaseRepository<TrainerAvailabilityOverride, ITrainerAvailabilityOverride>
+  extends BaseRepository<
+    TrainerAvailabilityOverride,
+    ITrainerAvailabilityOverride
+  >
   implements ITrainerAvailabilityOverrideRepository
 {
   constructor() {
     super(TrainerAvailabilityOverrideModel);
   }
 
-  protected toInterface(doc: ITrainerAvailabilityOverride): TrainerAvailabilityOverride {
+  protected toInterface(
+    doc: ITrainerAvailabilityOverride,
+  ): TrainerAvailabilityOverride {
     return {
       id: doc._id.toString(),
       trainerId: doc.trainerId.toString(),
-      availabilityId: doc.availabilityId ? doc.availabilityId.toString() : undefined,
+      availabilityId: doc.availabilityId?.toString(),
       date: doc.date,
-      shifts: doc.shifts.map((s) => ({
-        startMinute: s.startMinute,
-        endMinute: s.endMinute,
-      })),
+      shifts: doc.shifts,
       reason: doc.reason,
       status: doc.status,
-      createdAt: doc.createdAt,
-      updatedAt: doc.updatedAt,
     };
   }
 
@@ -42,10 +42,8 @@ export class TrainerAvailabilityOverrideRepository
     session?: ClientSession,
   ): Promise<TrainerAvailabilityOverride> {
     const doc = new TrainerAvailabilityOverrideModel({
-      trainerId: new mongoose.Types.ObjectId(data.trainerId),
-      availabilityId: data.availabilityId
-        ? new mongoose.Types.ObjectId(data.availabilityId)
-        : undefined,
+      trainerId: data.trainerId,
+      availabilityId: data.availabilityId,
       date: data.date,
       shifts: data.shifts,
       reason: data.reason ?? "",
@@ -58,7 +56,7 @@ export class TrainerAvailabilityOverrideRepository
 
   async getByTrainerId(trainerId: string): Promise<TrainerAvailabilityOverride[]> {
     const docs = await TrainerAvailabilityOverrideModel.find({
-      trainerId: new mongoose.Types.ObjectId(trainerId),
+      trainerId,
     }).exec();
 
     return docs.map((doc) => this.toInterface(doc));

@@ -18,6 +18,7 @@ export interface CategoryQuery {
   limit?: number;
   page?: number;
   isActive?: boolean;
+  excludeId?: string;
 }
 
 export interface GetAllCategoriesResponse {

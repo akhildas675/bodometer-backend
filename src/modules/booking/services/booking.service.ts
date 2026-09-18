@@ -1,5 +1,4 @@
 import { inject, injectable } from "inversify";
-import mongoose from "mongoose";
 import { BOOKING_TYPES } from "../booking.types";
 import { SUBSCRIPTION_TYPES } from "@/modules/subscription/subscription.types";
 import { COACHING_TYPES } from "@/modules/coaching/coaching.types";
@@ -33,7 +32,7 @@ function generateBookingNumber(): string {
 import { ITrainerProfileRepository } from "@/modules/trainer/interface/trainer.profile-repository.interface";
 import { TRAINER_TYPES } from "@/modules/trainer/trainer.types";
 import { WALLET_TYPES } from "@/modules/wallet/wallet.types";
-import { IWalletService } from "@/modules/wallet/services/wallet.service";
+import { IWalletService } from "@/modules/wallet/interface/service.interface/wallet-service.interface";
 import { NOTIFICATION_TYPES } from "@/modules/notification/notification.types";
 import { INotificationService } from "@/modules/notification/interface/notification-service.interface";
 import { NOTIFICATION_ENTITY_TYPE, NOTIFICATION_TYPE } from "@/modules/notification/constant/notification.constant";
@@ -419,7 +418,7 @@ export class BookingService implements IBookingService {
     const updated = await this._bookingRepository.updateById(bookingId, {
       status: BOOKING_STATUS.CANCELLED,
       cancellation: {
-        cancelledBy: new mongoose.Types.ObjectId(userId),
+        cancelledBy: userId,
         reason: reason || MESSAGES.CANCELLATION.DEFAULT_USER_REASON,
         cancelledAt: new Date(),
       },

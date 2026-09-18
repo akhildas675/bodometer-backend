@@ -136,6 +136,7 @@ export interface RelatedTrainerDto {
   profilePic: string | null;
   experienceInYears: number;
   bio: string;
+  specializations?: { _id: string; name: string }[];
 }
 
 export interface TrainerDetailDto {
@@ -151,6 +152,7 @@ export interface TrainerDetailDto {
 
 export interface GetAllTrainersDto extends PaginationQueryDto {
   isBlocked?: boolean;
+  specializationId?: string;
 }
 
 export type GetAllTrainersResponseDto = BaseUserResponseDto;

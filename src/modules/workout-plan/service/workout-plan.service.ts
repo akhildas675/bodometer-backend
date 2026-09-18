@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { AppError } from "../../../utils/appError";
 import { STATUS } from "../../../constants/constant.values.ts/statuscode";
 import { MESSAGES } from "../../../constants/messages";
@@ -164,7 +163,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       const embeddedExercises: IEmbeddedWorkoutExercise[] = dayData.exercises.map((ex: AiWorkoutExerciseDto) => {
         return {
           instanceId: ex.instanceId!,
-          exerciseId: new mongoose.Types.ObjectId(ex.exerciseId),
+          exerciseId: ex.exerciseId,
           order: ex.order,
           targetMuscles: ex.targetMuscles || [],
           sets: ex.sets,

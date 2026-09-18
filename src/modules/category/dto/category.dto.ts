@@ -31,6 +31,7 @@ export interface CategoryResponseDto {
 
 export interface CategoryQueryDto extends PaginationQueryDto {
   search?: string;
+  excludeId?: string;
 }
 
 export interface GetAllCategoriesResponseDto {

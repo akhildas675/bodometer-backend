@@ -49,8 +49,9 @@ export default class TrainerProfileRepository
     return this.findOne({ userId });
   }
 
-  async createProfile(data: Partial<ITrainerProfileDocument>): Promise<void> {
-    await TrainerProfileModel.create(data);
+  async createProfile(data: Partial<TrainerProfile>): Promise<void> {
+    const doc = new TrainerProfileModel(data);
+    await doc.save();
   }
 
   async updateToReapply(
@@ -67,10 +68,7 @@ export default class TrainerProfileRepository
           bio: data.bio,
           gender: data.gender,
           dateOfBirth: data.dateOfBirth,
-          specializations:
-            data.specializations?.map(
-              (id: string) => new mongoose.Types.ObjectId(id),
-            ) ?? [],
+          specializations: data.specializations ?? [],
           verificationStatus: VERIFICATION_STATUS.PENDING,
           rejectionReason: null,
         },
@@ -253,7 +251,7 @@ export default class TrainerProfileRepository
     const matchStage: Record<string, string | mongoose.Types.ObjectId> = {
       verificationStatus: VERIFICATION_STATUS.APPROVED,
     };
-    if (specializationId) {
+    if (specializationId && mongoose.Types.ObjectId.isValid(specializationId)) {
       matchStage.specializations = new mongoose.Types.ObjectId(
         specializationId,
       );
@@ -328,7 +326,7 @@ export default class TrainerProfileRepository
     trainerId: string,
   ): Promise<ITrainerWithProfile | null> {
     const profile = await TrainerProfileModel.findOne({
-      _id: new mongoose.Types.ObjectId(trainerId),
+      _id: trainerId,
       verificationStatus: VERIFICATION_STATUS.APPROVED,
     })
       .populate<{ userId: IUserDocument }>({
@@ -356,19 +354,40 @@ export default class TrainerProfileRepository
     excludeProfileId: string,
     limit: number,
   ): Promise<ITrainerWithProfile[]> {
-    const objectIds = specializationIds.map(id => new mongoose.Types.ObjectId(id));
-    
-    const profiles = await TrainerProfileModel.find({
-      _id: { $ne: new mongoose.Types.ObjectId(excludeProfileId) },
-      verificationStatus: VERIFICATION_STATUS.APPROVED,
-      specializations: { $in: objectIds }
-    })
-      .populate<{ userId: IUserDocument }>({
-        path: "userId",
-        select: "_id name profilePic",
+    let profiles: PopulatedTrainerProfile[] = [];
+
+    if (specializationIds.length > 0) {
+      const filter: Record<string, unknown> = {
+        verificationStatus: VERIFICATION_STATUS.APPROVED,
+        specializations: { $in: specializationIds },
+      };
+      if (excludeProfileId) {
+        filter._id = { $ne: excludeProfileId };
+      }
+
+      profiles = await TrainerProfileModel.find(filter)
+        .populate<{ userId: IUserDocument }>({
+          path: "userId",
+          select: "_id name profilePic",
+        })
+        .populate("specializations", "_id name")
+        .limit(limit)
+        .lean<PopulatedTrainerProfile[]>();
+    }
+
+    if (profiles.length === 0) {
+      profiles = await TrainerProfileModel.find({
+        ...(excludeProfileId ? { _id: { $ne: excludeProfileId } } : {}),
+        verificationStatus: VERIFICATION_STATUS.APPROVED,
       })
-      .limit(limit)
-      .lean<PopulatedTrainerProfile[]>();
+        .populate<{ userId: IUserDocument }>({
+          path: "userId",
+          select: "_id name profilePic",
+        })
+        .populate("specializations", "_id name")
+        .limit(limit)
+        .lean<PopulatedTrainerProfile[]>();
+    }
 
     return profiles.map((profile) => {
       const { userId, ...profileData } = profile;

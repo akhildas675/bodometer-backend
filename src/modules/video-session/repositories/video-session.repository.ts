@@ -4,7 +4,6 @@ import { IVideoSession, VideoSessionModel } from "../model/video-session.model";
 import { IVideoSessionRepository } from "../interface/video.session-repository.interface";
 import { VIDEO_SESSION_STATUS } from "../constant/video-session.constant";
 import { injectable } from "inversify";
-import mongoose from "mongoose";
 
 
 @injectable()
@@ -45,17 +44,17 @@ export default class VideoSessionRepository extends BaseRepository<VideoSession,
   async createVideoSession(
     data: CreateVideoSessionData,
   ): Promise<VideoSession> {
-    const document = await this.create({
-      bookingId: new mongoose.Types.ObjectId(data.bookingId),
-      trainerId: new mongoose.Types.ObjectId(data.trainerId),
-      userId: new mongoose.Types.ObjectId(data.userId),
+    const doc = new VideoSessionModel({
+      bookingId: data.bookingId,
+      trainerId: data.trainerId,
+      userId: data.userId,
       scheduledStartTime: data.scheduledStartTime,
       scheduledEndTime: data.scheduledEndTime,
       trainerStartRequestedAt: data.trainerStartRequestedAt,
       status: data.status,
     });
-
-    return document;
+    await doc.save();
+    return this.toInterface(doc);
   }
 
   async getVideoSessionById(id: string): Promise<VideoSession | null> {
@@ -63,7 +62,7 @@ export default class VideoSessionRepository extends BaseRepository<VideoSession,
   }
 
   async getVideoSessionByBookingId(bookingId: string): Promise<VideoSession | null> {
-    return this.findOne({ bookingId: new mongoose.Types.ObjectId(bookingId) });
+    return this.findOne({ bookingId });
   }
 
   async updateVideoSession(videoSessionId: string, data: Partial<VideoSession>): Promise<VideoSession | null> {
@@ -71,12 +70,11 @@ export default class VideoSessionRepository extends BaseRepository<VideoSession,
   }
 
   async getActiveSessionParticipant(participantId: string): Promise<VideoSession | null> {
-    const participantObjId = new mongoose.Types.ObjectId(participantId);
     return this.findOne({
       status: VIDEO_SESSION_STATUS.ACTIVE,
       $or: [
-        { trainerId: participantObjId },
-        { userId: participantObjId },
+        { trainerId: participantId },
+        { userId: participantId },
       ],
     });
   }

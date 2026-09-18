@@ -1,5 +1,5 @@
 import { injectable } from "inversify";
-import mongoose, { ClientSession } from "mongoose";
+import { ClientSession } from "mongoose";
 import { BaseRepository } from "@/modules/base/repository/base.repository";
 import { IBookingAuditLog, BookingAuditLogModel } from "../model/booking-audit-log.model";
 import {
@@ -32,9 +32,9 @@ export class BookingAuditLogRepository
 
   async createOne(data: CreateBookingAuditLogData, session?: ClientSession): Promise<BookingAuditLog> {
     const doc = new BookingAuditLogModel({
-      bookingId: new mongoose.Types.ObjectId(data.bookingId),
+      bookingId: data.bookingId,
       action: data.action,
-      performedBy: new mongoose.Types.ObjectId(data.performedBy),
+      performedBy: data.performedBy,
       oldValue: data.oldValue || {},
       newValue: data.newValue || {},
       reason: data.reason || "",
@@ -46,7 +46,7 @@ export class BookingAuditLogRepository
 
   async findByBookingId(bookingId: string): Promise<BookingAuditLog[]> {
     const docs = await BookingAuditLogModel.find({
-      bookingId: new mongoose.Types.ObjectId(bookingId),
+      bookingId,
     })
       .sort({ createdAt: -1 })
       .exec();
@@ -56,7 +56,7 @@ export class BookingAuditLogRepository
 
   async updateById(
     id: string,
-    data: Partial<IBookingAuditLog>,
+    data: Partial<BookingAuditLog>,
     session?: ClientSession,
   ): Promise<BookingAuditLog | null> {
     const doc = await BookingAuditLogModel.findByIdAndUpdate(

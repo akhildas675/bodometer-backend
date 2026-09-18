@@ -1,5 +1,5 @@
 import { injectable } from "inversify";
-import mongoose, { ClientSession } from "mongoose";
+import { ClientSession } from "mongoose";
 import { BaseRepository } from "@/modules/base/repository/base.repository";
 import { IBooking, BookingModel } from "../model/booking.model";
 import {
@@ -68,12 +68,10 @@ export class BookingRepository
   async createOne(data: CreateBookingData, session?: ClientSession): Promise<Booking> {
     const doc = new BookingModel({
       bookingNumber: data.bookingNumber,
-      trainerId: new mongoose.Types.ObjectId(data.trainerId),
-      userId: new mongoose.Types.ObjectId(data.userId),
-      availabilityId: data.availabilityId
-        ? new mongoose.Types.ObjectId(data.availabilityId)
-        : undefined,
-      serviceId: new mongoose.Types.ObjectId(data.serviceId),
+      trainerId: data.trainerId,
+      userId: data.userId,
+      availabilityId: data.availabilityId,
+      serviceId: data.serviceId,
       serviceSnapshot: data.serviceSnapshot || {
         name: "Coaching Session",
         durationMinutes: 60,
@@ -118,7 +116,7 @@ export class BookingRepository
     endOfDay.setHours(23, 59, 59, 999);
 
     const docs = await BookingModel.find({
-      trainerId: new mongoose.Types.ObjectId(trainerId),
+      trainerId,
       bookingDate: { $gte: startOfDay, $lte: endOfDay },
       status: { $ne: "CANCELLED" },
     }).exec();
@@ -133,14 +131,14 @@ export class BookingRepository
     excludeBookingId?: string,
   ): Promise<Booking[]> {
     const filter: Record<string, unknown> = {
-      trainerId: new mongoose.Types.ObjectId(trainerId),
+      trainerId,
       status: { $in: ["PENDING", "PENDING_PAYMENT", "CONFIRMED", "RESCHEDULE_PENDING"] },
       startTime: { $lt: bufferEndTime },
       bufferEndTime: { $gt: startTime },
     };
 
     if (excludeBookingId) {
-      filter._id = { $ne: new mongoose.Types.ObjectId(excludeBookingId) };
+      filter._id = { $ne: excludeBookingId };
     }
 
     const docs = await BookingModel.find(filter).exec();
@@ -154,14 +152,14 @@ export class BookingRepository
     excludeBookingId?: string,
   ): Promise<Booking[]> {
     const filter: Record<string, unknown> = {
-      userId: new mongoose.Types.ObjectId(userId),
+      userId,
       status: { $in: ["PENDING", "PENDING_PAYMENT", "CONFIRMED", "RESCHEDULE_PENDING"] },
       startTime: { $lt: bufferEndTime },
       bufferEndTime: { $gt: startTime },
     };
 
     if (excludeBookingId) {
-      filter._id = { $ne: new mongoose.Types.ObjectId(excludeBookingId) };
+      filter._id = { $ne: excludeBookingId };
     }
 
     const docs = await BookingModel.find(filter).exec();
@@ -170,7 +168,7 @@ export class BookingRepository
 
   async findByUserId(userId: string): Promise<Booking[]> {
     const docs = await BookingModel.find({
-      userId: new mongoose.Types.ObjectId(userId),
+      userId,
     })
       .sort({ startTime: -1 })
       .exec();
@@ -179,7 +177,7 @@ export class BookingRepository
 
   async findByTrainerId(trainerId: string): Promise<Booking[]> {
     const docs = await BookingModel.find({
-      trainerId: new mongoose.Types.ObjectId(trainerId),
+      trainerId,
     })
       .sort({ startTime: -1 })
       .exec();
@@ -206,7 +204,7 @@ export class BookingRepository
 
   async updateById(
     id: string,
-    data: Partial<IBooking>,
+    data: Partial<Booking>,
     session?: ClientSession,
   ): Promise<Booking | null> {
     const doc = await BookingModel.findByIdAndUpdate(

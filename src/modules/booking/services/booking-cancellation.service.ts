@@ -11,7 +11,7 @@ import { IBookingRefundRepository } from "../repositories/booking-refund.reposit
 import { IUserRepository } from "@/modules/user/interface/user-repository.interface";
 import { ITrainerProfileRepository } from "@/modules/trainer/interface/trainer.profile-repository.interface";
 import { WALLET_TYPES } from "@/modules/wallet/wallet.types";
-import { IWalletService } from "@/modules/wallet/services/wallet.service";
+import { IWalletService } from "@/modules/wallet/interface/service.interface/wallet-service.interface";
 
 import {
   CancelBookingByTrainerParams,
