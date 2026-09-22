@@ -14,11 +14,11 @@ export interface AuthRequest extends Request {
   };
 }
 
-export const authGuard = (allowedRoles: Role[] = []) => {
+function createAuthMiddleware(allowedRoles: Role[] = []) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authReq = req as AuthRequest;
-      const authHeader = authReq.headers.authorization;
+      const authHeader = authReq.headers?.authorization;
       const accessToken = authHeader?.startsWith("Bearer ")
         ? authHeader.split(" ")[1]
         : null;
@@ -50,7 +50,7 @@ export const authGuard = (allowedRoles: Role[] = []) => {
           authReq.user = { id: payload.sub, role: payload.role };
           return next();
         } catch {
-          // Access token invalid/expired, fall through to refresh token validation
+          // Access token invalid/expired
         }
       }
 
@@ -63,6 +63,24 @@ export const authGuard = (allowedRoles: Role[] = []) => {
       }
     }
   };
+}
+
+export const authGuard = (
+  allowedRolesOrReq?: Role[] | Request,
+  res?: Response,
+  next?: NextFunction
+) => {
+  if (
+    allowedRolesOrReq &&
+    typeof allowedRolesOrReq === "object" &&
+    !Array.isArray(allowedRolesOrReq) &&
+    "headers" in (allowedRolesOrReq as object) &&
+    res &&
+    next
+  ) {
+    return createAuthMiddleware([])(allowedRolesOrReq as Request, res, next);
+  }
+  return createAuthMiddleware((Array.isArray(allowedRolesOrReq) ? allowedRolesOrReq : []) as Role[]);
 };
 
 async function handleRefresh(
