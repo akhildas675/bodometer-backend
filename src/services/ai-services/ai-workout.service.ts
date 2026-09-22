@@ -34,11 +34,11 @@ interface GeminiErrorResponse {
 const FALLBACK_MODELS = [
   "gemini-2.5-flash",
   "gemini-2.5-flash-lite",
-  "gemini-3.5-flash",
-  "gemini-2.0-flash",
-  "gemini-flash-latest",
   "gemini-flash-lite-latest",
-  "gemini-2.5-pro",
+  "gemini-flash-latest",
+  "gemini-3.1-flash-lite",
+  "gemini-3.6-flash",
+  "gemini-3.8-flash",
 ];
 
 async function makeAiRequestWithFallback(payload: unknown): Promise<{ data: GeminiResponse }> {
@@ -68,8 +68,13 @@ async function makeAiRequestWithFallback(payload: unknown): Promise<{ data: Gemi
 
           console.warn(`[AI] Model ${model} failed (status=${status}): ${errMsg}`);
 
-          if (status && status !== 429 && status < 500) {
+          if (status === 401 || status === 403) {
             throw error;
+          }
+
+          if (status === 404 || status === 410) {
+            console.warn(`[AI] Model ${model} unavailable (status=${status}). Skipping to next fallback model.`);
+            break;
           }
 
           if (status === 429 || status === 503) {

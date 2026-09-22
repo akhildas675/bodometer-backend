@@ -24,14 +24,14 @@ mealCategoryRoute.post(
 
 mealCategoryRoute.get(
   MEAL_CATEGORY_PATHS.ROOT,
-  ROLE_GUARD.ADMIN_GUARD,
+  ROLE_GUARD.ALL_GUARDS,
   validate(getAllMealCategoriesSchema),
   controller.getAllMealCategories,
 );
 
 mealCategoryRoute.get(
   MEAL_CATEGORY_PATHS.BY_ID,
-  ROLE_GUARD.ADMIN_GUARD,
+  ROLE_GUARD.ALL_GUARDS,
   validate(mealCategoryIdParamSchema),
   controller.getMealCategoryById,
 );

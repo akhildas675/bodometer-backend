@@ -33,6 +33,7 @@ export class MealCategoryService implements IMealCategoryService {
       limit: query.limit,
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
+      status: query.status,
     });
     return {
       data: data as MealCategoryDto[], 

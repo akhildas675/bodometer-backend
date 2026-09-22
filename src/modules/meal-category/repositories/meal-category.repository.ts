@@ -30,8 +30,10 @@ export default class MealCategoryRepository extends BaseRepository<MealCategory,
         if (query.search) {
             filter.title = { $regex: query.search, $options: "i" };
         }
-        if (query.status !== undefined) {
-            filter.isActive = query.status === "active";
+        if (query.status === "active") {
+            filter.isActive = true;
+        } else if (query.status === "blocked") {
+            filter.isActive = false;
         }
         
         const page = query.page || 1;

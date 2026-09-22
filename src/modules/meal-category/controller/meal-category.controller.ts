@@ -40,7 +40,13 @@ export class MealCategoryController {
         sortOrder: req.query.sortOrder as "asc" | "desc",
         status: req.query.status as string,
       };
+
+      if (req.user?.role !== "admin" && !query.status) {
+        query.status = "active";
+      }
+
       const { data, pagination } = await this._mealCategoryService.getAllMealCategories(query);
+
       new SuccessResponse(
         STATUS.OK, 
         "Meal Categories fetched successfully", 
