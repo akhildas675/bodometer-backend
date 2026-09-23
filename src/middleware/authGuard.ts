@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import { Role } from "../constants/constant.values.ts/roles";
 import { UserModel } from "@/modules/auth/model/user.model";
 import { AppError } from "../utils/appError";
@@ -14,8 +14,8 @@ export interface AuthRequest extends Request {
   };
 }
 
-function createAuthMiddleware(allowedRoles: Role[] = []) {
-  return async (req: Request, res: Response, next: NextFunction) => {
+function createAuthMiddleware(allowedRoles: readonly Role[] = []): RequestHandler {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const authReq = req as AuthRequest;
       const authHeader = authReq.headers?.authorization;
@@ -65,29 +65,40 @@ function createAuthMiddleware(allowedRoles: Role[] = []) {
   };
 }
 
-export const authGuard = (
-  allowedRolesOrReq?: Role[] | Request,
+export function authGuard(
+  allowedRoles?: readonly Role[],
+): RequestHandler;
+export function authGuard(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void | Promise<void>;
+export function authGuard(
+  allowedRolesOrReq?: readonly Role[] | Request,
   res?: Response,
-  next?: NextFunction
-) => {
+  next?: NextFunction,
+): RequestHandler | void | Promise<void> {
   if (
     allowedRolesOrReq &&
     typeof allowedRolesOrReq === "object" &&
     !Array.isArray(allowedRolesOrReq) &&
-    "headers" in (allowedRolesOrReq as object) &&
+    "headers" in allowedRolesOrReq &&
     res &&
     next
   ) {
-    return createAuthMiddleware([])(allowedRolesOrReq as Request, res, next);
+    void createAuthMiddleware([])(allowedRolesOrReq, res, next);
+    return;
   }
-  return createAuthMiddleware((Array.isArray(allowedRolesOrReq) ? allowedRolesOrReq : []) as Role[]);
-};
+  return createAuthMiddleware(
+    Array.isArray(allowedRolesOrReq) ? allowedRolesOrReq : [],
+  );
+}
 
 async function handleRefresh(
   req: AuthRequest,
   res: Response,
   next: NextFunction,
-  allowedRoles: Role[],
+  allowedRoles: readonly Role[],
 ) {
   const cookies = req.cookies as Record<string, string | undefined> | undefined;
   const refreshToken = cookies?.refreshToken;
