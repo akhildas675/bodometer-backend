@@ -14,8 +14,8 @@ export interface AuthRequest extends Request {
   };
 }
 
-function createAuthMiddleware(allowedRoles: Role[] = []): RequestHandler {
-  return async (req: Request, res: Response, next: NextFunction) => {
+function createAuthMiddleware(allowedRoles: readonly Role[] = []): RequestHandler {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const authReq = req as AuthRequest;
       const authHeader = authReq.headers?.authorization;
@@ -65,29 +65,32 @@ function createAuthMiddleware(allowedRoles: Role[] = []): RequestHandler {
   };
 }
 
-export function authGuard(allowedRoles?: Role[]): RequestHandler;
-export function authGuard(req: Request, res: Response, next: NextFunction): Promise<void>;
 export function authGuard(
-  allowedRolesOrReq?: Role[] | Request,
+  allowedRoles?: readonly Role[],
+): RequestHandler;
+export function authGuard(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void | Promise<void>;
+export function authGuard(
+  allowedRolesOrReq?: readonly Role[] | Request,
   res?: Response,
-  next?: NextFunction
-): RequestHandler | Promise<void> {
+  next?: NextFunction,
+): RequestHandler | void | Promise<void> {
   if (
     allowedRolesOrReq &&
     typeof allowedRolesOrReq === "object" &&
     !Array.isArray(allowedRolesOrReq) &&
-    "headers" in (allowedRolesOrReq as object) &&
+    "headers" in allowedRolesOrReq &&
     res &&
     next
   ) {
-    return createAuthMiddleware([])(
-      allowedRolesOrReq,
-      res,
-      next
-    ) as Promise<void>;
+    void createAuthMiddleware([])(allowedRolesOrReq, res, next);
+    return;
   }
   return createAuthMiddleware(
-    Array.isArray(allowedRolesOrReq) ? allowedRolesOrReq : []
+    Array.isArray(allowedRolesOrReq) ? allowedRolesOrReq : [],
   );
 }
 
@@ -95,7 +98,7 @@ async function handleRefresh(
   req: AuthRequest,
   res: Response,
   next: NextFunction,
-  allowedRoles: Role[],
+  allowedRoles: readonly Role[],
 ) {
   const cookies = req.cookies as Record<string, string | undefined> | undefined;
   const refreshToken = cookies?.refreshToken;
