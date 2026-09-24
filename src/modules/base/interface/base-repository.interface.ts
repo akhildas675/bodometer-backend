@@ -1,9 +1,9 @@
 import { Document, UpdateQuery } from "mongoose";
 
-export interface IBaseRepository<T, D extends Document> {
+export interface IBaseRepository<T, D extends Document, C= Partial<D>> {
   findById(id: string): Promise<T | null>;
 
-  create(data: Partial<D>): Promise<T>;
+  create(data: C): Promise<T>;
 
   upsert(
     filter: Record<string, unknown>,

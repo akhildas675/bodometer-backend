@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import { Role } from "../constants/constant.values.ts/roles";
 import { UserModel } from "@/modules/auth/model/user.model";
 import { AppError } from "../utils/appError";
@@ -14,7 +14,7 @@ export interface AuthRequest extends Request {
   };
 }
 
-function createAuthMiddleware(allowedRoles: Role[] = []) {
+function createAuthMiddleware(allowedRoles: Role[] = []): RequestHandler {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authReq = req as AuthRequest;
@@ -65,11 +65,13 @@ function createAuthMiddleware(allowedRoles: Role[] = []) {
   };
 }
 
-export const authGuard = (
+export function authGuard(allowedRoles?: Role[]): RequestHandler;
+export function authGuard(req: Request, res: Response, next: NextFunction): Promise<void>;
+export function authGuard(
   allowedRolesOrReq?: Role[] | Request,
   res?: Response,
   next?: NextFunction
-) => {
+): RequestHandler | Promise<void> {
   if (
     allowedRolesOrReq &&
     typeof allowedRolesOrReq === "object" &&
@@ -78,10 +80,16 @@ export const authGuard = (
     res &&
     next
   ) {
-    return createAuthMiddleware([])(allowedRolesOrReq as Request, res, next);
+    return createAuthMiddleware([])(
+      allowedRolesOrReq,
+      res,
+      next
+    ) as Promise<void>;
   }
-  return createAuthMiddleware((Array.isArray(allowedRolesOrReq) ? allowedRolesOrReq : []) as Role[]);
-};
+  return createAuthMiddleware(
+    Array.isArray(allowedRolesOrReq) ? allowedRolesOrReq : []
+  );
+}
 
 async function handleRefresh(
   req: AuthRequest,

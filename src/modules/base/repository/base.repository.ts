@@ -12,7 +12,8 @@ import { IBaseRepository } from "@/modules/base/interface/base-repository.interf
 export abstract class BaseRepository<
   T,
   D extends Document,
-> implements IBaseRepository<T, D>
+  C=Partial<D>
+> implements IBaseRepository<T, D, C>
 {
   protected model: Model<D>;
 
@@ -32,7 +33,7 @@ export abstract class BaseRepository<
       : null;
   }
 
-  async create(data: Partial<D>): Promise<T> {
+  async create(data: C): Promise<T> {
     const doc = new this.model(data);
 
     const saved = await doc.save();

@@ -101,6 +101,7 @@ export class UserMappers {
   ): TrainerDetailDto {
     return {
       _id: data.profile._id.toString(),
+      userId: data.user._id.toString(),
       name: data.user.name,
       profilePic: data.user.profilePic ?? null,
       coverPhoto: data.profile.coverPhoto ?? "",

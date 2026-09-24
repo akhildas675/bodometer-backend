@@ -18,6 +18,7 @@ import bookingRoute from "@/modules/booking/routes/booking.routes";
 import walletRoute from "@/modules/wallet/routes/wallet.routes";
 import notificationRoute from "@/modules/notification/routes/notification.routes";
 import videoSessionRoute from "@/modules/video-session/routes/video-session.routes";
+import chatRoute from "@/modules/chat/routes/chat.routes";
 
 
 const routes = (app: Application): void => {
@@ -39,8 +40,7 @@ const routes = (app: Application): void => {
   app.use(API_MOUNTS.WALLET, walletRoute);
   app.use(API_MOUNTS.NOTIFICATION, notificationRoute);
   app.use(API_MOUNTS.VIDEO_SESSION, videoSessionRoute);
-  
-  
+  app.use(API_MOUNTS.CHAT, chatRoute);
 };
 
 export default routes;

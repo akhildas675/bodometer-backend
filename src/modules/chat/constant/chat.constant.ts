@@ -1,7 +1,7 @@
-export const CHAT_TYPES={
+export const CHAT_TYPE={
   TEXT:"TEXT",
   IMAGE:"IMAGE",
   DOCUMENT:"DOCUMENT"
 } as const
 
-export type ChatTypes = typeof CHAT_TYPES[keyof typeof CHAT_TYPES]
+export type ChatType = typeof CHAT_TYPE[keyof typeof CHAT_TYPE]

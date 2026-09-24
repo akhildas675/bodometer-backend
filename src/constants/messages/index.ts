@@ -8,6 +8,7 @@ export * from "./common.messages";
 export * from "./health-log.messages";
 export * from "./notification.messages";
 export * from "./video-call.messages";
+export * from "./chat.messages";
 
 import { AUTH_MESSAGES } from "./auth.messages";
 import { USER_MESSAGES } from "./user.messages";
@@ -21,6 +22,7 @@ import { CATEGORY_MESSAGES } from "./category.message";
 import { BOOKING_MESSAGES } from "./booking.messages";
 import { NOTIFICATION_MESSAGES } from "./notification.messages";
 import { VIDEO_CALL_MESSAGES } from "./video-call.messages";
+import { CHAT_MESSAGES } from "./chat.messages";
 
 export const MESSAGES = {
   ...AUTH_MESSAGES,
@@ -35,4 +37,5 @@ export const MESSAGES = {
   ...BOOKING_MESSAGES,
   ...NOTIFICATION_MESSAGES,
   ...VIDEO_CALL_MESSAGES,
+  ...CHAT_MESSAGES,
 };

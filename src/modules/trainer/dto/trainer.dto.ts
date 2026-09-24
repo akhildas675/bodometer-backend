@@ -141,6 +141,7 @@ export interface RelatedTrainerDto {
 
 export interface TrainerDetailDto {
   _id: string;
+  userId?: string;
   name: string;
   profilePic: string | null;
   coverPhoto: string;

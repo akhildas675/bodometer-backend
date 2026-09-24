@@ -5,6 +5,7 @@ import { authenticateSocket } from "./socket.auth";
 import { AuthenticatedSocket } from "./socket.types";
 
 import { registerVideoSessionSocketHandlers } from "@/modules/video-session/socket/video-session.socket";
+import { registerChatSocketHandlers } from "@/modules/chat/socket/chat.socket";
 
 let io: Server;
 
@@ -35,6 +36,7 @@ export const initializeSocket = (
   void socket.join(`user:${userId}`);
 
   registerVideoSessionSocketHandlers(socket);
+  registerChatSocketHandlers(socket);
 });
 
   return io;

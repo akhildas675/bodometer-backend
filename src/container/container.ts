@@ -20,6 +20,7 @@ import { loadNotificationBindings } from "@/modules/notification/notification.bi
 import { loadAiBindings } from "@/modules/ai/ai.bindings";
 import { loadHealthMetricsBindings } from "@/modules/health-metrics/health-metrics.bindings";
 import { loadVideoSessionBindings } from "@/modules/video-session/video-session.bindings";
+import { loadChatBindings } from "@/modules/chat/chat.bindings";
 
 
 const container = new Container();
@@ -45,6 +46,7 @@ loadNotificationBindings(container);
 loadAiBindings(container);
 loadHealthMetricsBindings(container);
 loadVideoSessionBindings(container);
+loadChatBindings(container);
 
 
 export default container;

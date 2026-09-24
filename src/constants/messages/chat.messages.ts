@@ -1,0 +1,76 @@
+export const CHAT_MESSAGES = {
+  CHAT: {
+    // Conversation operations
+    CONVERSATION_CREATED: "Conversation created successfully.",
+    CONVERSATION_FETCHED: "Conversation fetched successfully.",
+    CONVERSATIONS_FETCHED: "Conversations fetched successfully.",
+    CONVERSATION_NOT_FOUND: "Conversation not found.",
+    CONVERSATION_CREATE_FAILED: "Failed to create conversation.",
+    CONVERSATION_FETCH_FAILED: "Failed to fetch conversations.",
+    CONVERSATION_ALREADY_EXISTS: "Conversation already exists.",
+
+    // Message operations
+    MESSAGE_SENT: "Message sent successfully.",
+    MESSAGE_FETCHED: "Message fetched successfully.",
+    MESSAGES_FETCHED: "Messages fetched successfully.",
+    MESSAGE_NOT_FOUND: "Message not found.",
+    MESSAGE_DELETED: "Message deleted successfully.",
+    MESSAGE_SEND_FAILED: "Failed to send message.",
+    MESSAGES_FETCH_FAILED: "Failed to fetch messages.",
+    MESSAGE_DELETE_FAILED: "Failed to delete message.",
+    MESSAGES_MARKED_AS_READ: "Messages marked as read successfully.",
+
+    // Authorization & Participation
+    NOT_PARTICIPANT: "You are not a participant in this conversation.",
+    UNAUTHORIZED_ACCESS: "You are not authorized to access this chat.",
+    CANNOT_CHAT_WITH_SELF: "You cannot start a conversation with yourself.",
+    SUBSCRIPTION_REQUIRED: "Active subscription required to use chat. Please subscribe to a plan.",
+
+    // Validations
+    MESSAGE_CONTENT_REQUIRED: "Message content cannot be empty.",
+    CONVERSATION_ID_REQUIRED: "Conversation ID is required.",
+    RECEIVER_ID_REQUIRED: "Receiver ID is required.",
+    SENDER_ID_REQUIRED: "Sender ID is required.",
+    TRAINER_ID_REQUIRED: "Trainer ID is required.",
+    USER_ID_REQUIRED: "User ID is required.",
+    INVALID_MESSAGE_TYPE: "Invalid message type.",
+    ATTACHMENT_REQUIRED: "Attachment file is required.",
+    ATTACHMENT_TOO_LARGE: "Attachment size must be less than 10MB.",
+    ATTACHMENT_UPLOAD_FAILED: "Failed to upload chat attachment.",
+    INVALID_FILE_TYPE: "Invalid file type. Only images and documents are allowed.",
+  },
+
+  CONVERSATION: {
+    CREATED: "Conversation created successfully.",
+    FETCHED: "Conversation fetched successfully.",
+    LIST_FETCHED: "Conversations fetched successfully.",
+    NOT_FOUND: "Conversation not found.",
+    CREATE_FAILED: "Failed to create conversation.",
+    FETCH_FAILED: "Failed to fetch conversation.",
+    ALREADY_EXISTS: "Conversation already exists.",
+    NOT_PARTICIPANT: "You are not a participant in this conversation.",
+    UNAUTHORIZED: "You are not authorized to access this conversation.",
+    CANNOT_CHAT_WITH_SELF: "You cannot start a conversation with yourself.",
+    PARTICIPANT_REQUIRED: "Participant ID is required.",
+    INVALID_PARTICIPANTS: "Invalid participants provided.",
+  },
+
+  MESSAGE: {
+    SENT: "Message sent successfully.",
+    FETCHED: "Message fetched successfully.",
+    LIST_FETCHED: "Messages fetched successfully.",
+    DELETED: "Message deleted successfully.",
+    NOT_FOUND: "Message not found.",
+    SEND_FAILED: "Failed to send message.",
+    FETCH_FAILED: "Failed to fetch messages.",
+    DELETE_FAILED: "Failed to delete message.",
+    UNAUTHORIZED: "You are not authorized to perform this action on this message.",
+    NOT_PARTICIPANT: "You are not authorized to send messages in this conversation.",
+    MARKED_READ: "Message marked as read successfully.",
+    CONTENT_REQUIRED: "Message content is required.",
+    INVALID_TYPE: "Invalid message type.",
+    ATTACHMENT_TOO_LARGE: "Attachment size exceeds the maximum limit.",
+    ATTACHMENT_UPLOAD_FAILED: "Failed to upload message attachment.",
+    INVALID_ATTACHMENT_TYPE: "Invalid file type for attachment.",
+  },
+} as const;
