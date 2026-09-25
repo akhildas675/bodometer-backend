@@ -13,6 +13,7 @@
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:stripe\"",
     "build": "tsc && tsc-alias",
     "typecheck": "tsc --noEmit",
+    "test": "ts-node -r tsconfig-paths/register src/modules/finance/__tests__/finance-payout.test.ts",
     "start": "node dist/server.js"
   },
   "repository": {

@@ -8,6 +8,13 @@ import { PayoutStatus } from "../constant/finance.constant";
 import { SuccessResponse } from "@/utils/success.response";
 import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { AppError } from "@/utils/appError";
+import {
+  CompletePayoutDto,
+  ProcessPayoutDto,
+  RejectPayoutDto,
+  RequestPayoutDto,
+} from "../dto/payout.dto";
+import { FinanceMapper } from "../mapper/finance.mapper";
 
 @injectable()
 export class PayoutController {
@@ -27,7 +34,7 @@ export class PayoutController {
         throw new AppError(STATUS.UNAUTHORIZED, "Authentication required.");
       }
 
-      const { amount } = req.body as { amount?: unknown };
+      const { amount, bankDetails } = req.body as RequestPayoutDto;
       if (typeof amount !== "number" || isNaN(amount) || amount <= 0) {
         throw new AppError(
           STATUS.BAD_REQUEST,
@@ -35,11 +42,15 @@ export class PayoutController {
         );
       }
 
-      const payout = await this._payoutService.requestPayout(trainerId, amount);
+      const payout = await this._payoutService.requestPayout(
+        trainerId,
+        amount,
+        bankDetails,
+      );
       new SuccessResponse(
         STATUS.CREATED,
         "Payout request submitted successfully.",
-        payout,
+        FinanceMapper.toPayoutResponse(payout),
       ).send(res);
     } catch (error) {
       next(error);
@@ -69,11 +80,10 @@ export class PayoutController {
         trainerId,
         filter,
       );
-      new SuccessResponse(
-        STATUS.OK,
-        "Trainer payouts retrieved successfully.",
-        result,
-      ).send(res);
+      new SuccessResponse(STATUS.OK, "Trainer payouts retrieved successfully.", {
+        ...result,
+        data: result.data.map((p) => FinanceMapper.toPayoutResponse(p)),
+      }).send(res);
     } catch (error) {
       next(error);
     }
@@ -95,7 +105,7 @@ export class PayoutController {
       new SuccessResponse(
         STATUS.OK,
         "Active payout request retrieved.",
-        activePayout,
+        activePayout ? FinanceMapper.toPayoutResponse(activePayout) : null,
       ).send(res);
     } catch (error) {
       next(error);
@@ -123,6 +133,38 @@ export class PayoutController {
     }
   };
 
+  getPayoutDetails = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const user = req.user;
+      if (!user) {
+        throw new AppError(STATUS.UNAUTHORIZED, "Authentication required.");
+      }
+
+      const payout = await this._payoutService.getPayoutById(id);
+
+      // If trainer, ensure they only view their own payout
+      if (user.role === "trainer" && payout.trainerId !== user.id) {
+        throw new AppError(
+          STATUS.FORBIDDEN,
+          "You are not authorized to view this payout request.",
+        );
+      }
+
+      new SuccessResponse(
+        STATUS.OK,
+        "Payout details retrieved successfully.",
+        FinanceMapper.toPayoutResponse(payout),
+      ).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getAllPayouts = async (
     req: AuthRequest,
     res: Response,
@@ -141,7 +183,10 @@ export class PayoutController {
       new SuccessResponse(
         STATUS.OK,
         "All payout requests retrieved successfully.",
-        result,
+        {
+          ...result,
+          data: result.data.map((p) => FinanceMapper.toPayoutResponse(p)),
+        },
       ).send(res);
     } catch (error) {
       next(error);
@@ -172,11 +217,12 @@ export class PayoutController {
   ): Promise<void> => {
     try {
       const { id } = req.params;
-      const payout = await this._payoutService.approvePayout(id);
+      const adminId = req.user?.id;
+      const payout = await this._payoutService.approvePayout(id, adminId);
       new SuccessResponse(
         STATUS.OK,
         "Payout request approved successfully.",
-        payout,
+        FinanceMapper.toPayoutResponse(payout),
       ).send(res);
     } catch (error) {
       next(error);
@@ -190,7 +236,8 @@ export class PayoutController {
   ): Promise<void> => {
     try {
       const { id } = req.params;
-      const { reason } = req.body as { reason?: unknown };
+      const adminId = req.user?.id;
+      const { reason } = req.body as RejectPayoutDto;
       if (typeof reason !== "string" || !reason.trim()) {
         throw new AppError(
           STATUS.BAD_REQUEST,
@@ -198,11 +245,15 @@ export class PayoutController {
         );
       }
 
-      const payout = await this._payoutService.rejectPayout(id, reason.trim());
+      const payout = await this._payoutService.rejectPayout(
+        id,
+        reason.trim(),
+        adminId,
+      );
       new SuccessResponse(
         STATUS.OK,
         "Payout request rejected successfully.",
-        payout,
+        FinanceMapper.toPayoutResponse(payout),
       ).send(res);
     } catch (error) {
       next(error);
@@ -216,15 +267,17 @@ export class PayoutController {
   ): Promise<void> => {
     try {
       const { id } = req.params;
-      const { providerPayoutId } = req.body as { providerPayoutId?: string };
+      const adminId = req.user?.id;
+      const { providerPayoutId, adminNote } = req.body as ProcessPayoutDto;
       const payout = await this._payoutService.processPayout(
         id,
-        providerPayoutId,
+        { providerPayoutId, adminNote },
+        adminId,
       );
       new SuccessResponse(
         STATUS.OK,
         "Payout marked as processing.",
-        payout,
+        FinanceMapper.toPayoutResponse(payout),
       ).send(res);
     } catch (error) {
       next(error);
@@ -238,15 +291,38 @@ export class PayoutController {
   ): Promise<void> => {
     try {
       const { id } = req.params;
-      const { providerPayoutId } = req.body as { providerPayoutId?: string };
-      const payout = await this._payoutService.completePayout(
-        id,
+      const adminId = req.user?.id;
+      const {
+        bankTransferReference,
+        transferredAt,
+        adminNote,
+        payoutMethod,
         providerPayoutId,
+      } = req.body as CompletePayoutDto;
+
+      const ref = bankTransferReference || providerPayoutId;
+      if (!ref || !ref.trim()) {
+        throw new AppError(
+          STATUS.BAD_REQUEST,
+          "Bank transfer reference / UTR is required.",
+        );
+      }
+
+      const payout = await this._payoutService.recordBankTransferAndComplete(
+        id,
+        {
+          bankTransferReference: ref.trim(),
+          transferredAt: transferredAt ? new Date(transferredAt) : new Date(),
+          adminNote: adminNote?.trim(),
+          payoutMethod,
+          providerPayoutId: ref.trim(),
+        },
+        adminId,
       );
       new SuccessResponse(
         STATUS.OK,
-        "Payout completed successfully.",
-        payout,
+        "Payout marked as paid and bank transfer recorded.",
+        FinanceMapper.toPayoutResponse(payout),
       ).send(res);
     } catch (error) {
       next(error);
@@ -260,6 +336,7 @@ export class PayoutController {
   ): Promise<void> => {
     try {
       const { id } = req.params;
+      const adminId = req.user?.id;
       const { reason } = req.body as { reason?: unknown };
       if (typeof reason !== "string" || !reason.trim()) {
         throw new AppError(
@@ -268,11 +345,38 @@ export class PayoutController {
         );
       }
 
-      const payout = await this._payoutService.failPayout(id, reason.trim());
+      const payout = await this._payoutService.failPayout(
+        id,
+        reason.trim(),
+        adminId,
+      );
       new SuccessResponse(
         STATUS.OK,
         "Payout marked as failed.",
-        payout,
+        FinanceMapper.toPayoutResponse(payout),
+      ).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Admin approves and immediately pays the trainer via Stripe in one step.
+   * Returns the payout record in PAID status with the Stripe payout ID.
+   */
+  approveAndPayViaStripe = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const adminId = req.user?.id;
+      const payout = await this._payoutService.approveAndPayViaStripe(id, adminId);
+      new SuccessResponse(
+        STATUS.OK,
+        "Payout approved and paid via Stripe successfully.",
+        FinanceMapper.toPayoutResponse(payout),
       ).send(res);
     } catch (error) {
       next(error);

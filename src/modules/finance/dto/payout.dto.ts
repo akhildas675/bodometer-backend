@@ -1,7 +1,9 @@
-import { PayoutStatus } from "../constant/finance.constant";
+import { PayoutMethod, PayoutStatus } from "../constant/finance.constant";
+import { PayoutBankDetails } from "../interface/payout-request.interface";
 
 export interface RequestPayoutDto {
   amount: number;
+  bankDetails?: PayoutBankDetails;
 }
 
 export interface RejectPayoutDto {
@@ -10,9 +12,14 @@ export interface RejectPayoutDto {
 
 export interface ProcessPayoutDto {
   providerPayoutId?: string;
+  adminNote?: string;
 }
 
 export interface CompletePayoutDto {
+  bankTransferReference: string;
+  transferredAt?: string | Date;
+  adminNote?: string;
+  payoutMethod?: PayoutMethod | string;
   providerPayoutId?: string;
 }
 

@@ -343,4 +343,40 @@ export const NOTIFICATION_TEMPLATES: Record<
     message:
       "Hi {{trainerName}}, your payout of {{amount}} {{currency}} has been processed successfully.",
   },
+
+  [NOTIFICATION_TYPE.PAYOUT_REQUESTED]: {
+    title: "Payout Request Received",
+    message:
+      "Hi {{trainerName}}, your payout request for {{amount}} {{currency}} has been submitted and is waiting for admin review.",
+  },
+
+  [NOTIFICATION_TYPE.PAYOUT_APPROVED]: {
+    title: "Payout Request Approved",
+    message:
+      "Hi {{trainerName}}, your payout request for {{amount}} {{currency}} has been approved by the administrator.",
+  },
+
+  [NOTIFICATION_TYPE.PAYOUT_PROCESSING]: {
+    title: "Payout Bank Transfer In Progress",
+    message:
+      "Hi {{trainerName}}, your payout of {{amount}} {{currency}} is currently being processed for bank transfer.",
+  },
+
+  [NOTIFICATION_TYPE.PAYOUT_PAID]: {
+    title: "Payout Transferred Successfully",
+    message:
+      "Hi {{trainerName}}, your payout of {{amount}} {{currency}} has been transferred to your bank account. Transfer Reference: {{reference}}.",
+  },
+
+  [NOTIFICATION_TYPE.PAYOUT_REJECTED]: {
+    title: "Payout Request Rejected",
+    message:
+      "Hi {{trainerName}}, your payout request for {{amount}} {{currency}} was rejected. Reason: {{reason}}.",
+  },
+
+  [NOTIFICATION_TYPE.PAYOUT_FAILED]: {
+    title: "Payout Transfer Failed",
+    message:
+      "Hi {{trainerName}}, the transfer for your payout of {{amount}} {{currency}} has failed. Reason: {{reason}}.",
+  },
 };

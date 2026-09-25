@@ -10,6 +10,8 @@ import { IPayoutService } from "./interface/payout-service.interface";
 import { PayoutService } from "./services/payout.service";
 import { FinanceController } from "./controller/finance.controller";
 import { PayoutController } from "./controller/payout.controller";
+import { IPaymentService } from "@/modules/payment/interface/stripe-service.interface";
+import { PaymentService } from "@/services/payments/stripe.service";
 
 export const loadFinanceBindings = (container: Container): void => {
   container
@@ -37,4 +39,9 @@ export const loadFinanceBindings = (container: Container): void => {
   container
     .bind<PayoutController>(FINANCE_TYPES.PayoutController)
     .to(PayoutController);
+
+  // Stripe payment service used by PayoutService for automated disbursements
+  container
+    .bind<IPaymentService>(FINANCE_TYPES.PaymentService)
+    .to(PaymentService);
 };

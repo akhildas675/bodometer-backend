@@ -5,4 +5,5 @@ export const FINANCE_TYPES = {
   PayoutService: Symbol.for("PayoutService"),
   FinanceController: Symbol.for("FinanceController"),
   PayoutController: Symbol.for("PayoutController"),
+  PaymentService: Symbol.for("Finance_PaymentService"),
 };

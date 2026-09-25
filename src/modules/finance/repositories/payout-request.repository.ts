@@ -23,7 +23,6 @@ const ACTIVE_PAYOUT_STATUSES = [
   PAYOUT_STATUS.PENDING,
   PAYOUT_STATUS.APPROVED,
   PAYOUT_STATUS.PROCESSING,
-  PAYOUT_STATUS.FAILED,
 ];
 
 @injectable()
@@ -43,6 +42,20 @@ export class PayoutRequestRepository
       reservedAmount: doc.reservedAmount,
       currency: doc.currency,
       status: doc.status,
+      payoutMethod: doc.payoutMethod ?? undefined,
+      bankTransferReference: doc.bankTransferReference ?? undefined,
+      transferredAt: doc.transferredAt ?? undefined,
+      processedBy: doc.processedBy ?? undefined,
+      adminNote: doc.adminNote ?? undefined,
+      bankDetails: doc.bankDetails
+        ? {
+            accountHolderName: doc.bankDetails.accountHolderName ?? undefined,
+            accountNumber: doc.bankDetails.accountNumber ?? undefined,
+            ifscCode: doc.bankDetails.ifscCode ?? undefined,
+            bankName: doc.bankDetails.bankName ?? undefined,
+            upiId: doc.bankDetails.upiId ?? undefined,
+          }
+        : undefined,
       providerPayoutId: doc.providerPayoutId ?? undefined,
       rejectionReason: doc.rejectionReason ?? undefined,
       failureReason: doc.failureReason ?? undefined,
@@ -50,6 +63,8 @@ export class PayoutRequestRepository
       approvedAt: doc.approvedAt ?? undefined,
       processedAt: doc.processedAt ?? undefined,
       completedAt: doc.completedAt ?? undefined,
+      rejectedAt: doc.rejectedAt ?? undefined,
+      failedAt: doc.failedAt ?? undefined,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     };
@@ -160,6 +175,29 @@ export class PayoutRequestRepository
   ): Promise<PayoutRequest | null> {
     const updateFields: Record<string, unknown> = { status: input.status };
 
+    if (
+      input.status === PAYOUT_STATUS.PAID ||
+      input.status === PAYOUT_STATUS.REJECTED ||
+      input.status === PAYOUT_STATUS.FAILED
+    ) {
+      updateFields.reservedAmount = 0;
+    }
+
+    if (input.payoutMethod !== undefined) {
+      updateFields.payoutMethod = input.payoutMethod;
+    }
+    if (input.bankTransferReference !== undefined) {
+      updateFields.bankTransferReference = input.bankTransferReference;
+    }
+    if (input.transferredAt !== undefined) {
+      updateFields.transferredAt = input.transferredAt;
+    }
+    if (input.processedBy !== undefined) {
+      updateFields.processedBy = input.processedBy;
+    }
+    if (input.adminNote !== undefined) {
+      updateFields.adminNote = input.adminNote;
+    }
     if (input.providerPayoutId !== undefined) {
       updateFields.providerPayoutId = input.providerPayoutId;
     }
@@ -177,6 +215,12 @@ export class PayoutRequestRepository
     }
     if (input.completedAt !== undefined) {
       updateFields.completedAt = input.completedAt;
+    }
+    if (input.rejectedAt !== undefined) {
+      updateFields.rejectedAt = input.rejectedAt;
+    }
+    if (input.failedAt !== undefined) {
+      updateFields.failedAt = input.failedAt;
     }
 
     const doc = await PayoutRequestModel.findByIdAndUpdate(
