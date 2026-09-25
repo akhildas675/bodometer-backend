@@ -21,4 +21,5 @@ export const API_MOUNTS = {
     TRAINER_BOOKING_SETTINGS: "/api/booking-settings",
     VIDEO_SESSION: "/api/video-session",
     CHAT: "/api/chat",
+    FINANCE: "/api/finance",
 } as const;

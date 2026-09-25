@@ -33,8 +33,9 @@ import {
 import { VideoSessionMapper } from "../mapper/video-session.mapper";
 import { IVideoSessionRepository } from "../interface/video.session-repository.interface";
 import { COACHING_TYPES } from "@/modules/coaching/coaching.types";
-
 import { ICoachingRepository } from "@/modules/coaching/interface/coaching-repository.interface";
+import { FINANCE_TYPES } from "@/modules/finance/finance.types";
+import { IFinanceService } from "@/modules/finance/interface/finance-service.interface";
 
 @injectable()
 export class VideoSessionService implements IVideoSessionService {
@@ -58,7 +59,10 @@ export class VideoSessionService implements IVideoSessionService {
     private _trainerProfileRepository: ITrainerProfileRepository,
 
     @inject(COACHING_TYPES.CoachingRepository)
-    private _coachingRepository:ICoachingRepository
+    private _coachingRepository: ICoachingRepository,
+
+    @inject(FINANCE_TYPES.FinanceService)
+    private _financeService: IFinanceService,
   ) {}
 
   async requestCall(
@@ -544,11 +548,31 @@ async markParticipantJoined(
       );
     }
 
-    if (
-      (newStatus === VIDEO_SESSION_STATUS.COMPLETED ||
-        newStatus === VIDEO_SESSION_STATUS.INCOMPLETE) &&
-      booking
-    ) {
+    if (newStatus === VIDEO_SESSION_STATUS.COMPLETED && booking) {
+      await this._bookingRepository.updateStatus(
+        booking.id,
+        BOOKING_STATUS.COMPLETED,
+      );
+      try {
+        const grossAmount =
+          booking.pricing?.totalAmount ?? booking.price ?? 0;
+        if (grossAmount > 0) {
+          await this._financeService.createSessionEarning({
+            bookingId: booking.id,
+            trainerId: booking.trainerId,
+            userId: booking.userId,
+            grossAmount,
+            currency: booking.pricing?.currency ?? "INR",
+            paymentId: booking.paymentId,
+          });
+        }
+      } catch (financeError) {
+        console.error(
+          "[VideoSessionService] Failed to record session earning:",
+          financeError,
+        );
+      }
+    } else if (newStatus === VIDEO_SESSION_STATUS.INCOMPLETE && booking) {
       await this._bookingRepository.updateStatus(
         booking.id,
         BOOKING_STATUS.COMPLETED,
