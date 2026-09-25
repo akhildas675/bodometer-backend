@@ -82,6 +82,7 @@ export class FinanceService implements IFinanceService {
         status: TRANSACTION_STATUS.COMPLETED,
         referenceKey,
         note: `Session earnings for booking ${input.bookingId}`,
+        serviceName: input.serviceName,
       });
     } catch (error: unknown) {
       // In case of concurrent insert race condition, return existing transaction

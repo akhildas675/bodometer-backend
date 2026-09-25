@@ -22,6 +22,7 @@ import { loadHealthMetricsBindings } from "@/modules/health-metrics/health-metri
 import { loadVideoSessionBindings } from "@/modules/video-session/video-session.bindings";
 import { loadChatBindings } from "@/modules/chat/chat.bindings";
 import { loadFinanceBindings } from "@/modules/finance/finance.bindings";
+import { loadReviewBindings } from "@/modules/review/review.bindings";
 
 
 const container = new Container();
@@ -49,6 +50,7 @@ loadHealthMetricsBindings(container);
 loadVideoSessionBindings(container);
 loadChatBindings(container);
 loadFinanceBindings(container);
+loadReviewBindings(container);
 
 
 export default container;

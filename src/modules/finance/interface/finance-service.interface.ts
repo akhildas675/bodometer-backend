@@ -16,6 +16,7 @@ export interface CreateSessionEarningInput {
   paymentId?: string;
   trainerPercentage?: number;
   platformPercentage?: number;
+  serviceName?: string;
 }
 
 export interface TrainerFinanceSummary {

@@ -1,5 +1,5 @@
 import { injectable } from "inversify";
-import { PipelineStage } from "mongoose";
+import mongoose, { PipelineStage } from "mongoose";
 import { BaseRepository } from "@/modules/base/repository/base.repository";
 import {
   FinancialTransactionModel,
@@ -20,6 +20,7 @@ import {
 } from "../interface/finance-query.interface";
 import { TRANSACTION_STATUS, TRANSACTION_TYPE } from "../constant/finance.constant";
 import { PaginatedResult } from "@/modules/base/interface/common.interface";
+import { BookingModel } from "@/modules/booking/model/booking.model";
 
 @injectable()
 export class FinancialTransactionRepository
@@ -30,7 +31,10 @@ export class FinancialTransactionRepository
     super(FinancialTransactionModel);
   }
 
-  protected toInterface(doc: IFinancialTransactionDocument): FinancialTransaction {
+  protected toInterface(
+    doc: IFinancialTransactionDocument,
+    fallbackServiceName?: string,
+  ): FinancialTransaction {
     return {
       id: doc._id.toString(),
       bookingId: doc.bookingId ?? undefined,
@@ -48,6 +52,7 @@ export class FinancialTransactionRepository
       referenceKey: doc.referenceKey,
       relatedTransactionId: doc.relatedTransactionId ?? undefined,
       note: doc.note ?? undefined,
+      serviceName: doc.serviceName ?? fallbackServiceName ?? undefined,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     };
@@ -105,9 +110,15 @@ export class FinancialTransactionRepository
     ]);
 
     const totalPages = Math.ceil(totalItems / limit);
+    const bookingMap = await this.getBookingServiceMap(docs);
 
     return {
-      data: docs.map((d) => this.toInterface(d)),
+      data: docs.map((d) =>
+        this.toInterface(
+          d,
+          d.bookingId ? bookingMap.get(d.bookingId) : undefined,
+        ),
+      ),
       pagination: {
         currentPage: page,
         totalPages,
@@ -150,9 +161,15 @@ export class FinancialTransactionRepository
     ]);
 
     const totalPages = Math.ceil(totalItems / limit);
+    const bookingMap = await this.getBookingServiceMap(docs);
 
     return {
-      data: docs.map((d) => this.toInterface(d)),
+      data: docs.map((d) =>
+        this.toInterface(
+          d,
+          d.bookingId ? bookingMap.get(d.bookingId) : undefined,
+        ),
+      ),
       pagination: {
         currentPage: page,
         totalPages,
@@ -162,6 +179,33 @@ export class FinancialTransactionRepository
         hasPreviousPage: page > 1,
       },
     };
+  }
+
+  private async getBookingServiceMap(
+    docs: IFinancialTransactionDocument[],
+  ): Promise<Map<string, string>> {
+    const bookingIdsToFetch = docs
+      .filter((d) => !d.serviceName && d.bookingId)
+      .map((d) => d.bookingId as string);
+
+    const bookingMap = new Map<string, string>();
+    if (bookingIdsToFetch.length > 0) {
+      const validIds = bookingIdsToFetch.filter((id) =>
+        mongoose.isValidObjectId(id),
+      );
+      if (validIds.length > 0) {
+        const bookings = await BookingModel.find(
+          { _id: { $in: validIds } },
+          { serviceSnapshot: 1 },
+        ).lean();
+        for (const b of bookings) {
+          if (b.serviceSnapshot?.name) {
+            bookingMap.set(b._id.toString(), b.serviceSnapshot.name);
+          }
+        }
+      }
+    }
+    return bookingMap;
   }
 
   async reverseTransaction(id: string): Promise<FinancialTransaction | null> {

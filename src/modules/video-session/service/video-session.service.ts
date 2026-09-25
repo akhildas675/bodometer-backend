@@ -499,29 +499,33 @@ async markParticipantJoined(
     let refundStatus: VideoSessionRefundStatus =
       VIDEO_SESSION_REFUND_STATUS.NOT_ELIGIBLE;
 
+    const isTrainer = participantId === videoSession.trainerId;
+
     if (!startTime) {
-      
       newStatus = VIDEO_SESSION_STATUS.CANCELLED;
-      terminationReason =
-        participantId === videoSession.trainerId
-          ? VIDEO_SESSION_TERMINATION_REASON.TRAINER_CANCELLED
-          : VIDEO_SESSION_TERMINATION_REASON.USER_CANCELLED;
-      refundEligible = true;
-      refundStatus = VIDEO_SESSION_REFUND_STATUS.ELIGIBLE;
+      terminationReason = isTrainer
+        ? VIDEO_SESSION_TERMINATION_REASON.TRAINER_CANCELLED
+        : VIDEO_SESSION_TERMINATION_REASON.USER_CANCELLED;
+      refundEligible = isTrainer;
+      refundStatus = isTrainer
+        ? VIDEO_SESSION_REFUND_STATUS.ELIGIBLE
+        : VIDEO_SESSION_REFUND_STATUS.NOT_ELIGIBLE;
     } else if (
       actualDurationMinutes <
       INCOMPLETE_SESSION_REFUND_POLICY.MIN_DURATION_MINUTES_FOR_COMPLETION
     ) {
-    
-      newStatus = VIDEO_SESSION_STATUS.INCOMPLETE;
-      terminationReason =
-        participantId === videoSession.trainerId
-          ? VIDEO_SESSION_TERMINATION_REASON.TRAINER_CANCELLED
-          : VIDEO_SESSION_TERMINATION_REASON.USER_CANCELLED;
-      refundEligible = true;
-      refundStatus = VIDEO_SESSION_REFUND_STATUS.ELIGIBLE;
+      if (isTrainer) {
+        newStatus = VIDEO_SESSION_STATUS.INCOMPLETE;
+        terminationReason = VIDEO_SESSION_TERMINATION_REASON.TRAINER_CANCELLED;
+        refundEligible = true;
+        refundStatus = VIDEO_SESSION_REFUND_STATUS.ELIGIBLE;
+      } else {
+        newStatus = VIDEO_SESSION_STATUS.COMPLETED;
+        terminationReason = VIDEO_SESSION_TERMINATION_REASON.USER_CANCELLED;
+        refundEligible = false;
+        refundStatus = VIDEO_SESSION_REFUND_STATUS.NOT_ELIGIBLE;
+      }
     } else {
-  
       newStatus = VIDEO_SESSION_STATUS.COMPLETED;
       terminationReason = VIDEO_SESSION_TERMINATION_REASON.SCHEDULED_END;
       refundEligible = false;
@@ -564,6 +568,7 @@ async markParticipantJoined(
             grossAmount,
             currency: booking.pricing?.currency ?? "INR",
             paymentId: booking.paymentId,
+            serviceName: booking.serviceSnapshot?.name || "Coaching Session",
           });
         }
       } catch (financeError) {

@@ -22,4 +22,5 @@ export const API_MOUNTS = {
     VIDEO_SESSION: "/api/video-session",
     CHAT: "/api/chat",
     FINANCE: "/api/finance",
+    REVIEW: "/api/reviews",
 } as const;

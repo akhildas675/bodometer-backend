@@ -19,6 +19,7 @@ export interface FinancialTransaction {
   referenceKey: string;
   relatedTransactionId?: string;
   note?: string;
+  serviceName?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -40,4 +41,5 @@ export interface CreateFinancialTransactionInput {
   referenceKey: string;
   relatedTransactionId?: string;
   note?: string;
+  serviceName?: string;
 }

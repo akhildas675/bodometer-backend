@@ -108,10 +108,14 @@ const FinancialTransactionSchema = new Schema<IFinancialTransactionDocument>(
       type: String,
       default: undefined,
     },
+
+    serviceName: {
+      type: String,
+      default: undefined,
+    },
   },
   {
     timestamps: true,
-
   },
 );
 
