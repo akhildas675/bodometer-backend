@@ -281,7 +281,7 @@ export class AuthService implements IAuthService {
     };
   }
 
-  async refreshAccessToken(refreshToken: string): Promise<LoginResponseDto> {
+  async refreshAccessToken(refreshToken: string): Promise<{ response: LoginResponseDto; newRefreshToken: string }> {
     if (!refreshToken) {
       throw new AppError(
         STATUS.UNAUTHORIZED,
@@ -341,14 +341,27 @@ export class AuthService implements IAuthService {
     }
 
     const accessToken = Jwt.signAccess({ sub: user.id, role: user.role });
-    return AuthMapper.toLoginResponse(
-      user,
-      accessToken,
-      trainerStatus,
-      onboardingComplete,
-      hasActiveSubscription,
-      profile,
+    const newRefreshToken = await this._sessionService.createRefreshToken(
+      user.id,
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        isBlocked: user.isBlocked,
+      },
     );
+
+    return {
+      response: AuthMapper.toLoginResponse(
+        user,
+        accessToken,
+        trainerStatus,
+        onboardingComplete,
+        hasActiveSubscription,
+        profile,
+      ),
+      newRefreshToken,
+    };
   }
 
   async logout(refreshToken: string): Promise<void> {

@@ -36,7 +36,13 @@ function createAuthMiddleware(allowedRoles: readonly Role[] = []): RequestHandle
           }
 
           if (user.isBlocked) {
-            res.clearCookie("refreshToken");
+            res.clearCookie("refreshToken", {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: "none",
+              domain: process.env.COOKIE_DOMAIN || ".bodometer.online",
+              path: "/",
+            });
 
             return next(
               new AppError(STATUS.FORBIDDEN, MESSAGES.LOGIN.ACCOUNT_BLOCKED),
@@ -50,11 +56,13 @@ function createAuthMiddleware(allowedRoles: readonly Role[] = []): RequestHandle
           authReq.user = { id: payload.sub, role: payload.role };
           return next();
         } catch {
-          // Access token invalid/expired
+          // Access token invalid/expired - return 401 to let frontend handle refresh
+          return next(new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED));
         }
       }
 
-      return await handleRefresh(authReq, res, next, allowedRoles);
+      // No access token provided - return 401
+      return next(new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED));
     } catch (error: unknown) {
       if (error instanceof Error) {
         return next(error);
@@ -94,52 +102,6 @@ export function authGuard(
   );
 }
 
-async function handleRefresh(
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction,
-  allowedRoles: readonly Role[],
-) {
-  const cookies = req.cookies as Record<string, string | undefined> | undefined;
-  const refreshToken = cookies?.refreshToken;
-
-  if (!refreshToken) {
-    return next(new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.AUTHENTICATION_REQUIRED));
-  }
-
-  try {
-    const payload = Jwt.verifyRefresh(refreshToken);
-
-    const user = await UserModel.findById(payload.sub).select("isBlocked role");
-    if (!user) {
-      return next(new AppError(STATUS.UNAUTHORIZED, MESSAGES.USER.USER_NOT_FOUND));
-    }
-
-    if (user.isBlocked) {
-      res.clearCookie("refreshToken");
-      return next(new AppError(STATUS.FORBIDDEN, MESSAGES.LOGIN.ACCOUNT_BLOCKED));
-    }
-
-    if (allowedRoles.length && !allowedRoles.includes(payload.role)) {
-      return next(new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED));
-    }
-
-    const newAccessToken = Jwt.signAccess({
-      sub: payload.sub,
-      role: payload.role,
-    });
-
-    res.setHeader("x-access-token", newAccessToken);
-
-    req.user = { id: payload.sub, role: payload.role };
-    return next();
-  } catch {
-    return next(
-      new AppError(STATUS.UNAUTHORIZED, MESSAGES.TOKEN.REFRESH_TOKEN_EXPIRED),
-    );
-  }
-}
-
 export const optionalAuth = async (
   req: Request,
   res: Response,
@@ -158,31 +120,9 @@ export const optionalAuth = async (
         const user = await UserModel.findById(payload.sub).select("isBlocked role");
         if (user && !user.isBlocked) {
           authReq.user = { id: payload.sub, role: payload.role };
-          next();
-          return;
         }
       } catch {
-        // Fall through to cookies validation if verification fails
-      }
-    }
-
-    const cookies = authReq.cookies as Record<string, string | undefined> | undefined;
-    const refreshToken = cookies?.refreshToken;
-
-    if (refreshToken) {
-      try {
-        const payload = Jwt.verifyRefresh(refreshToken);
-        const user = await UserModel.findById(payload.sub).select("isBlocked role");
-        if (user && !user.isBlocked) {
-          const newAccessToken = Jwt.signAccess({
-            sub: payload.sub,
-            role: payload.role,
-          });
-          res.setHeader("x-access-token", newAccessToken);
-          authReq.user = { id: payload.sub, role: payload.role };
-        }
-      } catch {
-        // Ignore invalid refresh token
+        // Invalid token - ignore
       }
     }
 

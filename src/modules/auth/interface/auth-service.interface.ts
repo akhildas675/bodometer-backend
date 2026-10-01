@@ -8,7 +8,7 @@ export interface IAuthService {
     completeRegistration(data: RegisterDto): Promise<RegisterResponseDto>
     login(data: LoginDto): Promise<{ response: LoginResponseDto; refreshToken: string }>;
     googleLogin(data:GoogleLoginDto):Promise<{ response: GoogleLoginResponseDto; refreshToken: string }>;
-    refreshAccessToken(refreshToken: string): Promise<LoginResponseDto>;
+    refreshAccessToken(refreshToken: string): Promise<{ response: LoginResponseDto; newRefreshToken: string }>;
     logout(refreshToken: string): Promise<void>; 
     requestPasswordReset(data: ForgotPasswordDto): Promise<ForgotPasswordResponseDto>;
     resetPassword(data:ResetPasswordDto): Promise<void>;

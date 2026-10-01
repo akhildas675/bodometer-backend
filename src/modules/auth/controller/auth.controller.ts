@@ -153,6 +153,8 @@ export class AuthController {
         secure: process.env.NODE_ENV === "production",
         sameSite: "none",
         maxAge: 7 * 24 * 60 * 60 * 1000,
+        domain: process.env.COOKIE_DOMAIN || ".bodometer.online",
+        path: "/",
       });
 
       return new SuccessResponse(
@@ -201,12 +203,21 @@ export class AuthController {
         );
       }
 
-      const result = await this._authService.refreshAccessToken(refreshToken);
+      const { response, newRefreshToken } = await this._authService.refreshAccessToken(refreshToken);
+
+      res.cookie("refreshToken", newRefreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "none",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        domain: process.env.COOKIE_DOMAIN || ".bodometer.online",
+        path: "/",
+      });
 
       new SuccessResponse(
         STATUS.OK,
         MESSAGES.TOKEN.REFRESH_SUCCESS,
-        result
+        response
       ).send(res);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -230,6 +241,8 @@ export class AuthController {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "none",
+        domain: process.env.COOKIE_DOMAIN || ".bodometer.online",
+        path: "/",
       });
 
       new SuccessResponse(
@@ -291,6 +304,8 @@ export class AuthController {
         secure: process.env.NODE_ENV === "production",
         sameSite: "none",
         maxAge: 7 * 24 * 60 * 60 * 1000,
+        domain: process.env.COOKIE_DOMAIN || ".bodometer.online",
+        path: "/",
       });
 
       new SuccessResponse(
