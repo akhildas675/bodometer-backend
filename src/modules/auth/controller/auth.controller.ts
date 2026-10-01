@@ -10,6 +10,7 @@ import { AppError } from "../../../utils/appError";
 import { SuccessResponse } from "../../../utils/success.response";
 import { inject, injectable } from "inversify";
 import { AUTH_TYPES } from "../auth.types";
+import { getRefreshTokenSetCookieOptions, getRefreshTokenClearCookieOptions } from "@/config/cookie.config";
 
 const logger = new Logger("AuthController");
 @injectable()
@@ -148,14 +149,7 @@ export class AuthController {
       const { response: loginResponse, refreshToken } =
         await this._authService.login(body);
 
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        domain: process.env.COOKIE_DOMAIN || ".bodometer.online",
-        path: "/",
-      });
+      res.cookie("refreshToken", refreshToken, getRefreshTokenSetCookieOptions());
 
       return new SuccessResponse(
         STATUS.OK,
@@ -205,14 +199,7 @@ export class AuthController {
 
       const { response, newRefreshToken } = await this._authService.refreshAccessToken(refreshToken);
 
-      res.cookie("refreshToken", newRefreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        domain: process.env.COOKIE_DOMAIN || ".bodometer.online",
-        path: "/",
-      });
+      res.cookie("refreshToken", newRefreshToken, getRefreshTokenSetCookieOptions());
 
       new SuccessResponse(
         STATUS.OK,
@@ -237,13 +224,7 @@ export class AuthController {
         await this._authService.logout(refreshToken);
       }
 
-      res.clearCookie("refreshToken", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
-        domain: process.env.COOKIE_DOMAIN || ".bodometer.online",
-        path: "/",
-      });
+      res.clearCookie("refreshToken", getRefreshTokenClearCookieOptions());
 
       new SuccessResponse(
         STATUS.OK,
@@ -299,14 +280,7 @@ export class AuthController {
       const { response: loginResponse, refreshToken } =
         await this._authService.googleLogin({ idToken });
 
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        domain: process.env.COOKIE_DOMAIN || ".bodometer.online",
-        path: "/",
-      });
+      res.cookie("refreshToken", refreshToken, getRefreshTokenSetCookieOptions());
 
       new SuccessResponse(
         STATUS.OK,

@@ -5,6 +5,7 @@ import { AppError } from "../utils/appError";
 import { STATUS } from "../constants/constant.values.ts/statuscode";
 import { MESSAGES } from "../constants/messages";
 import { Jwt } from "../utils/jwt.utils";
+import { getRefreshTokenClearCookieOptions } from "@/config/cookie.config";
 
 export interface AuthRequest extends Request {
   file?: Express.Multer.File | undefined;
@@ -36,13 +37,7 @@ function createAuthMiddleware(allowedRoles: readonly Role[] = []): RequestHandle
           }
 
           if (user.isBlocked) {
-            res.clearCookie("refreshToken", {
-              httpOnly: true,
-              secure: process.env.NODE_ENV === "production",
-              sameSite: "none",
-              domain: process.env.COOKIE_DOMAIN || ".bodometer.online",
-              path: "/",
-            });
+            res.clearCookie("refreshToken", getRefreshTokenClearCookieOptions());
 
             return next(
               new AppError(STATUS.FORBIDDEN, MESSAGES.LOGIN.ACCOUNT_BLOCKED),
