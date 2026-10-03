@@ -43,7 +43,7 @@ userRoute.put(
 
 userRoute.post(
   USER_PATHS.PROFILE_PICTURE,
-  ROLE_GUARD.USER_GUARD,
+  ROLE_GUARD.USER_TRAINER_GUARD,
   mediaUpload.single("file"),
   validate(uploadProfilePictureSchema),
   userController.uploadProfilePicture,
