@@ -12,6 +12,8 @@ import { IUserRepository } from "@/modules/user/interface/user-repository.interf
 import { ITrainerProfileRepository } from "@/modules/trainer/interface/trainer.profile-repository.interface";
 import { WALLET_TYPES } from "@/modules/wallet/wallet.types";
 import { IWalletService } from "@/modules/wallet/interface/service.interface/wallet-service.interface";
+import { FINANCE_TYPES } from "@/modules/finance/finance.types";
+import { IFinanceService } from "@/modules/finance/interface/finance-service.interface";
 
 import {
   CancelBookingByTrainerParams,
@@ -32,6 +34,7 @@ import {
   calculateTrainerCancellationPolicy,
   calculateUserCancellationPolicy,
 } from "../utils/cancellation-policy.util";
+import { WALLET_OWNER_TYPE, WALLET_TRANSACTION_SOURCE } from "@/modules/wallet/constants/wallet.constants";
 
 @injectable()
 export class BookingCancellationService implements IBookingCancellationService {
@@ -56,7 +59,10 @@ export class BookingCancellationService implements IBookingCancellationService {
 
     @inject(WALLET_TYPES.WalletService)
     private _walletService: IWalletService,
-  ) {}
+
+    @inject(FINANCE_TYPES.FinanceService)
+    private _financeService: IFinanceService,
+  ) { }
 
   private async resolveTrainerUserId(trainerId: string): Promise<string> {
     const userDoc = await this._userRepository.findById(trainerId);
@@ -69,29 +75,45 @@ export class BookingCancellationService implements IBookingCancellationService {
     return trainerId;
   }
 
-  async cancelByUser(params: CancelBookingByUserParams): Promise<CancelBookingResult> {
+  async cancelByUser(
+    params: CancelBookingByUserParams,
+  ): Promise<CancelBookingResult> {
     const { bookingId, userId, reason, reasonCode } = params;
 
     const booking = await this._bookingRepository.findById(bookingId);
     if (!booking) {
-      throw new AppError(STATUS.NOT_FOUND, MESSAGES.CANCELLATION.SESSION_NOT_FOUND);
+      throw new AppError(
+        STATUS.NOT_FOUND,
+        MESSAGES.CANCELLATION.SESSION_NOT_FOUND,
+      );
     }
     if (booking.userId !== userId) {
-      throw new AppError(STATUS.FORBIDDEN, MESSAGES.CANCELLATION.UNAUTHORIZED_CANCEL);
+      throw new AppError(
+        STATUS.FORBIDDEN,
+        MESSAGES.CANCELLATION.UNAUTHORIZED_CANCEL,
+      );
     }
     if (booking.status === BOOKING_STATUS.CANCELLED) {
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.CANCELLATION.ALREADY_CANCELLED);
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        MESSAGES.CANCELLATION.ALREADY_CANCELLED,
+      );
     }
     if (booking.status === BOOKING_STATUS.COMPLETED) {
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.CANCELLATION.CANNOT_CANCEL_COMPLETED);
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        MESSAGES.CANCELLATION.CANNOT_CANCEL_COMPLETED,
+      );
     }
 
-    // Policy calculation: check if session start window (10 min) has passed without trainer taking session
+    // check if session start window (10 min) has passed without trainer taking session
     const nowMs = Date.now();
     const startMs = new Date(booking.startTime).getTime();
     const isTrainerNoShow = nowMs > startMs + 10 * 60 * 1000;
 
-    let policyResult = calculateUserCancellationPolicy(new Date(booking.startTime));
+    let policyResult = calculateUserCancellationPolicy(
+      new Date(booking.startTime),
+    );
     if (isTrainerNoShow) {
       policyResult = {
         refundEligible: true,
@@ -100,14 +122,16 @@ export class BookingCancellationService implements IBookingCancellationService {
         hoursNotice: 0,
       };
     }
-    const refundAmount = (booking.price * policyResult.refundPercentage) / CANCELLATION_REFUND_PERCENT.FULL;
+    const refundAmount =
+      (booking.price * policyResult.refundPercentage) /
+      CANCELLATION_REFUND_PERCENT.FULL;
     const refundEligible = refundAmount > 0;
 
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-      // 1. Create BookingCancellation record
+      //  Create BookingCancellation record
       const cancellation = await this._cancellationRepository.createOne({
         bookingId: booking.id,
         cancelledBy: "USER",
@@ -126,7 +150,7 @@ export class BookingCancellationService implements IBookingCancellationService {
         },
       });
 
-      // 2. Create BookingRefund ONLY if refundAmount > 0 (No ₹0 refund records!)
+      //  Create BookingRefund ONLY if refundAmount > 0 
       let refund: BookingRefund | undefined;
       if (refundEligible) {
         refund = await this._refundRepository.createOne({
@@ -141,28 +165,50 @@ export class BookingCancellationService implements IBookingCancellationService {
           status: "COMPLETED",
         });
 
-        await this._walletService.creditWallet(
-          {
-            userId: booking.userId,
-            amount: refundAmount,
-            source: "BOOKING_REFUND",
+        await this._walletService.creditWallet({
+          ownerId: booking.userId,
+          ownerType: WALLET_OWNER_TYPE.USER,
+          amount: refundAmount,
+          source: WALLET_TRANSACTION_SOURCE.BOOKING_REFUND,
+          bookingId: booking.id,
+          refundId: refund.id,
+          description: `User cancellation refund (${policyResult.refundPercentage}%) for session #${booking.bookingNumber}`,
+        });
+
+
+        this._financeService
+          .createRefundTransaction({
             bookingId: booking.id,
-            refundId: refund.id,
-            description: `User cancellation refund (${policyResult.refundPercentage}%) for session #${booking.bookingNumber}`,
-          },
-          session,
-        );
+            trainerId: booking.trainerId,
+            userId: booking.userId,
+            trainerAmount: refundAmount,
+            grossAmount: refundAmount,
+            paymentId: booking.paymentId || undefined,
+          })
+          .catch((err) =>
+            console.error(
+              "[BookingCancellationService] Failed to create REFUND FinancialTransaction:",
+              err,
+            ),
+          );
       }
 
-      // 3. Update Booking Status -> CANCELLED
-      const updatedBooking = await this._bookingRepository.updateStatus(booking.id, BOOKING_STATUS.CANCELLED);
+      // Update Booking Status -> CANCELLED
+      const updatedBooking = await this._bookingRepository.updateStatus(
+        booking.id,
+        BOOKING_STATUS.CANCELLED,
+      );
 
       await this._auditLogRepository.createOne({
         bookingId: booking.id,
         action: AUDIT_LOG_ACTION.CANCELLED,
         performedBy: userId,
         oldValue: { status: booking.status },
-        newValue: { status: BOOKING_STATUS.CANCELLED, refundPercentage: policyResult.refundPercentage, refundAmount },
+        newValue: {
+          status: BOOKING_STATUS.CANCELLED,
+          refundPercentage: policyResult.refundPercentage,
+          refundAmount,
+        },
       });
 
       await session.commitTransaction();
@@ -180,31 +226,50 @@ export class BookingCancellationService implements IBookingCancellationService {
     }
   }
 
-  async cancelByTrainer(params: CancelBookingByTrainerParams): Promise<CancelBookingResult> {
+  async cancelByTrainer(
+    params: CancelBookingByTrainerParams,
+  ): Promise<CancelBookingResult> {
     const { bookingId, trainerId, reason, reasonCode } = params;
 
     if (!reason || !reason.trim()) {
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.CANCELLATION.CANCELLATION_REASON_REQUIRED);
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        MESSAGES.CANCELLATION.CANCELLATION_REASON_REQUIRED,
+      );
     }
 
     const actualTrainerId = await this.resolveTrainerUserId(trainerId);
 
     const booking = await this._bookingRepository.findById(bookingId);
     if (!booking) {
-      throw new AppError(STATUS.NOT_FOUND, MESSAGES.CANCELLATION.SESSION_NOT_FOUND);
+      throw new AppError(
+        STATUS.NOT_FOUND,
+        MESSAGES.CANCELLATION.SESSION_NOT_FOUND,
+      );
     }
     if (booking.trainerId !== actualTrainerId) {
-      throw new AppError(STATUS.FORBIDDEN, MESSAGES.CANCELLATION.UNAUTHORIZED_CANCEL);
+      throw new AppError(
+        STATUS.FORBIDDEN,
+        MESSAGES.CANCELLATION.UNAUTHORIZED_CANCEL,
+      );
     }
     if (booking.status === BOOKING_STATUS.CANCELLED) {
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.CANCELLATION.ALREADY_CANCELLED);
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        MESSAGES.CANCELLATION.ALREADY_CANCELLED,
+      );
     }
     if (booking.status === BOOKING_STATUS.COMPLETED) {
-      throw new AppError(STATUS.BAD_REQUEST, MESSAGES.CANCELLATION.CANNOT_CANCEL_COMPLETED);
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        MESSAGES.CANCELLATION.CANNOT_CANCEL_COMPLETED,
+      );
     }
 
     // Trainer cancellation policy
-    const policyResult = calculateTrainerCancellationPolicy(new Date(booking.startTime));
+    const policyResult = calculateTrainerCancellationPolicy(
+      new Date(booking.startTime),
+    );
     const refundAmount = booking.price;
     const refundEligible = refundAmount > 0;
 
@@ -244,27 +309,49 @@ export class BookingCancellationService implements IBookingCancellationService {
           status: "COMPLETED",
         });
 
-        await this._walletService.creditWallet(
-          {
-            userId: booking.userId,
-            amount: refundAmount,
-            source: "BOOKING_REFUND",
+        await this._walletService.creditWallet({
+          ownerId: booking.userId,
+          ownerType: WALLET_OWNER_TYPE.USER,
+          amount: refundAmount,
+          source: WALLET_TRANSACTION_SOURCE.BOOKING_REFUND,
+          bookingId: booking.id,
+          refundId: refund.id,
+          description: `Trainer cancellation 100% refund for session #${booking.bookingNumber}`,
+        });
+
+        // Create REFUND FinancialTransaction for audit trail (fire-and-forget, non-blocking)
+        this._financeService
+          .createRefundTransaction({
             bookingId: booking.id,
-            refundId: refund.id,
-            description: `Trainer cancellation 100% refund for session #${booking.bookingNumber}`,
-          },
-          session,
-        );
+            trainerId: booking.trainerId,
+            userId: booking.userId,
+            trainerAmount: refundAmount,
+            grossAmount: refundAmount,
+            paymentId: booking.paymentId || undefined,
+          })
+          .catch((err) =>
+            console.error(
+              "[BookingCancellationService] Failed to create REFUND FinancialTransaction:",
+              err,
+            ),
+          );
       }
 
-      const updatedBooking = await this._bookingRepository.updateStatus(booking.id, BOOKING_STATUS.CANCELLED);
+      const updatedBooking = await this._bookingRepository.updateStatus(
+        booking.id,
+        BOOKING_STATUS.CANCELLED,
+      );
 
       await this._auditLogRepository.createOne({
         bookingId: booking.id,
         action: AUDIT_LOG_ACTION.CANCELLED,
         performedBy: actualTrainerId,
         oldValue: { status: booking.status },
-        newValue: { status: BOOKING_STATUS.CANCELLED, refundPercentage: CANCELLATION_REFUND_PERCENT.FULL, refundAmount },
+        newValue: {
+          status: BOOKING_STATUS.CANCELLED,
+          refundPercentage: CANCELLATION_REFUND_PERCENT.FULL,
+          refundAmount,
+        },
       });
 
       await session.commitTransaction();

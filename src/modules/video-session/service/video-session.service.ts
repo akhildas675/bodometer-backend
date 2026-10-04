@@ -36,6 +36,7 @@ import { COACHING_TYPES } from "@/modules/coaching/coaching.types";
 import { ICoachingRepository } from "@/modules/coaching/interface/coaching-repository.interface";
 import { FINANCE_TYPES } from "@/modules/finance/finance.types";
 import { IFinanceService } from "@/modules/finance/interface/finance-service.interface";
+import { WALLET_OWNER_TYPE, WALLET_TRANSACTION_SOURCE } from "@/modules/wallet/constants/wallet.constants";
 
 @injectable()
 export class VideoSessionService implements IVideoSessionService {
@@ -93,19 +94,22 @@ export class VideoSessionService implements IVideoSessionService {
     }
 
     const now = new Date();
-
-    const requestWindowEnd = new Date(
-      booking.startTime.getTime() + 10 * 60 * 1000,
+    const CALL_WINDOW_MINUTES = 5;
+    const callAvailableAt = new Date(
+      new Date(booking.startTime).getTime() - CALL_WINDOW_MINUTES * 60 * 1000,
+    );
+    const sessionEndWithGrace = new Date(
+      new Date(booking.endTime).getTime() + 2 * 60 * 1000,
     );
 
-    if (now < booking.startTime) {
+    if (now < callAvailableAt) {
       throw new AppError(
         STATUS.BAD_REQUEST,
         MESSAGES.VIDEO_SESSION.CANNOT_START_BEFORE,
       );
     }
 
-    if (now > requestWindowEnd) {
+    if (now > sessionEndWithGrace) {
       throw new AppError(
         STATUS.BAD_REQUEST,
         MESSAGES.VIDEO_SESSION.WINDOW_EXPIRED,
@@ -123,10 +127,7 @@ export class VideoSessionService implements IVideoSessionService {
         existingSession.status === VIDEO_SESSION_STATUS.ACCEPTED ||
         existingSession.status === VIDEO_SESSION_STATUS.ACTIVE
       ) {
-        throw new AppError(
-          STATUS.CONFLICT,
-          MESSAGES.VIDEO_SESSION.VIDEO_SESSION_EXISTS,
-        );
+        return VideoSessionMapper.toVideoSessionResponseDto(existingSession);
       }
 
       throw new AppError(
@@ -561,7 +562,7 @@ async markParticipantJoined(
         const grossAmount =
           booking.pricing?.totalAmount ?? booking.price ?? 0;
         if (grossAmount > 0) {
-          await this._financeService.createSessionEarning({
+          const financialTransaction = await this._financeService.createSessionEarning({
             bookingId: booking.id,
             trainerId: booking.trainerId,
             userId: booking.userId,
@@ -570,10 +571,22 @@ async markParticipantJoined(
             paymentId: booking.paymentId,
             serviceName: booking.serviceSnapshot?.name || "Coaching Session",
           });
+
+          if (financialTransaction.trainerAmount > 0) {
+            await this._walletService.creditWallet({
+              ownerId: booking.trainerId,
+              ownerType: WALLET_OWNER_TYPE.TRAINER,
+              amount: financialTransaction.trainerAmount,
+              source: WALLET_TRANSACTION_SOURCE.TRAINER_EARNING,
+              bookingId: booking.id,
+              reference: `TRAINER_EARNING:${booking.id}`,
+              description: `Trainer earning for completed session #${booking.bookingNumber}`,
+            });
+          }
         }
       } catch (financeError) {
         console.error(
-          "[VideoSessionService] Failed to record session earning:",
+          "[VideoSessionService] Failed to record session earning or credit trainer wallet:",
           financeError,
         );
       }
@@ -675,17 +688,15 @@ async markParticipantJoined(
         status: "COMPLETED",
       });
 
-      await this._walletService.creditWallet(
-        {
-          userId: booking.userId,
+      await this._walletService.creditWallet({
+          ownerId: booking.userId,
+          ownerType:WALLET_OWNER_TYPE.USER,
           amount: refundAmount,
-          source: "BOOKING_REFUND",
+          source: WALLET_TRANSACTION_SOURCE.BOOKING_REFUND,
           bookingId: booking.id,
           refundId: refund.id,
           description: `Incomplete session refund for session #${booking.bookingNumber}`,
-        },
-        session,
-      );
+        });
 
       const updated =
         await this._videoSessionRepository.updateVideoSession(
@@ -813,17 +824,15 @@ async markParticipantJoined(
         status: "COMPLETED",
       });
 
-      await this._walletService.creditWallet(
-        {
-          userId: booking.userId,
+      await this._walletService.creditWallet({
+          ownerId: booking.userId,
+          ownerType:WALLET_OWNER_TYPE.USER,
           amount: refundAmount,
-          source: "BOOKING_REFUND",
+          source: WALLET_TRANSACTION_SOURCE.BOOKING_REFUND,
           bookingId: booking.id,
           refundId: refund.id,
           description: `Full refund for expired session #${booking.bookingNumber}`,
-        },
-        session,
-      );
+        });
 
       const updatedBooking = await this._bookingRepository.updateStatus(
         booking.id,

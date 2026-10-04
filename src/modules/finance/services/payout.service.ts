@@ -12,6 +12,9 @@ import { PaginatedResult } from "@/modules/base/interface/common.interface";
 import { PAYOUT_CONFIG, PAYOUT_STATUS } from "../constant/finance.constant";
 import { AppError } from "@/utils/appError";
 import { STATUS } from "@/constants/constant.values.ts/statuscode";
+import { WALLET_TYPES } from "@/modules/wallet/wallet.types";
+import { IWalletService } from "@/modules/wallet/interface/service.interface/wallet-service.interface";
+import { WALLET_OWNER_TYPE, WALLET_TRANSACTION_SOURCE } from "@/modules/wallet/constants/wallet.constants";
 
 @injectable()
 export class PayoutService implements IPayoutService {
@@ -21,6 +24,9 @@ export class PayoutService implements IPayoutService {
 
     @inject(FINANCE_TYPES.FinancialTransactionRepository)
     private readonly _transactionRepository: IFinancialTransactionRepository,
+
+    @inject(WALLET_TYPES.WalletService)
+    private readonly _walletService: IWalletService,
   ) {}
 
   async requestPayout(
@@ -79,19 +85,11 @@ export class PayoutService implements IPayoutService {
   }
 
   async getTrainerAvailableBalance(trainerId: string): Promise<number> {
-    const [earnings, payouts] = await Promise.all([
-      this._transactionRepository.aggregateTrainerEarnings(trainerId),
-      this._payoutRepository.getPayoutTotalsByTrainerId(trainerId),
-    ]);
-
-    const netEarnings =
-      Math.round((earnings.totalEarned - earnings.totalRefunded) * 100) / 100;
-    return Math.max(
-      0,
-      Math.round(
-        (netEarnings - payouts.totalReserved - payouts.totalPaid) * 100,
-      ) / 100,
+    const wallet = await this._walletService.getOrCreateWallet(
+      trainerId,
+      WALLET_OWNER_TYPE.TRAINER,
     );
+    return wallet.balance;
   }
 
   async getAllPayouts(
@@ -195,6 +193,8 @@ export class PayoutService implements IPayoutService {
       );
     }
 
+    const referenceKey = `TRAINER_PAYOUT:${payoutId}`;
+
     const updated = await this._payoutRepository.updatePayoutStatus(payoutId, {
       status: PAYOUT_STATUS.PAID,
       completedAt: new Date(),
@@ -203,6 +203,23 @@ export class PayoutService implements IPayoutService {
 
     if (!updated) {
       throw new AppError(STATUS.NOT_FOUND, "Failed to update payout request.");
+    }
+
+    try {
+      await this._walletService.debitWallet({
+        ownerId: payout.trainerId,
+        ownerType: WALLET_OWNER_TYPE.TRAINER,
+        amount: payout.amount,
+        source: WALLET_TRANSACTION_SOURCE.TRAINER_PAYOUT,
+        payoutRequestId: payout.id,
+        reference: referenceKey,
+        description: `Payout completed for request #${payout.id}`,
+      });
+    } catch (debitError) {
+      console.error(
+        "[PayoutService] Failed to debit trainer wallet for completed payout:",
+        debitError,
+      );
     }
 
     return updated;

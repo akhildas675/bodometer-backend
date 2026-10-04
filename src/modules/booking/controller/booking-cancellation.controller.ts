@@ -41,6 +41,8 @@ export class BookingCancellationController {
           result,
         ).send(res);
       } else {
+
+        console.log("Cancelling by user.....")
         const result = await this._cancellationService.cancelByUser({
           bookingId: id,
           userId,

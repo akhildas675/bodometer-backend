@@ -1,59 +1,83 @@
-import { ClientSession } from "mongoose";
 import {
-  UserWallet,
-  WalletTransaction,
-  WalletTransactionSource,
-} from "../domain/wallet.interface";
-import {
+  CreditWalletDto,
+  DebitWalletDto,
   PaginatedWalletTransactionsResponseDto,
+
+  WalletResponseDto,
+  WalletTransactionResponseDto,
   WalletTransactionsQueryDto,
 } from "../../dto/wallet.dto";
 
-export interface CreditWalletParams {
-  userId: string;
-  amount: number;
-  source: WalletTransactionSource;
-  bookingId?: string;
-  refundId?: string;
-  reference?: string;
-  description?: string;
-}
 
-export interface DebitWalletParams {
-  userId: string;
-  amount: number;
-  source: WalletTransactionSource;
-  bookingId?: string;
-  reference?: string;
-  description?: string;
-}
+
+import { WalletOwnerType } from "../../constants/wallet.constants";
+
 
 export interface IWalletService {
-  getOrCreateWallet(userId: string, session?: ClientSession): Promise<UserWallet>;
+
+  getOrCreateWallet(
+    ownerId: string,
+    ownerType: WalletOwnerType,
+  ): Promise<WalletResponseDto>;
+
+
   creditWallet(
-    params: CreditWalletParams,
-    session?: ClientSession,
-  ): Promise<{ wallet: UserWallet; transaction: WalletTransaction }>;
+    params: CreditWalletDto,
+  ): Promise<{
+    wallet: WalletResponseDto;
+    transaction: WalletTransactionResponseDto;
+  }>;
+
+
   debitWallet(
-    params: DebitWalletParams,
-    session?: ClientSession,
-  ): Promise<{ wallet: UserWallet; transaction: WalletTransaction }>;
+    params: DebitWalletDto,
+  ): Promise<{
+    wallet: WalletResponseDto;
+    transaction: WalletTransactionResponseDto;
+  }>;
+
+
+
+
+
   topUpWallet(
     userId: string,
     amount: number,
-  ): Promise<{ wallet: UserWallet; transaction: WalletTransaction }>;
+  ): Promise<{
+    wallet: WalletResponseDto;
+    transaction: WalletTransactionResponseDto;
+  }>;
+
+
   createTopupCheckoutSession(
     userId: string,
     amount: number,
-  ): Promise<{ checkoutUrl: string; sessionId: string }>;
+  ): Promise<{
+    checkoutUrl: string;
+    sessionId: string;
+  }>;
+
+
   verifyTopupPayment(
     userId: string,
     amount: number,
     sessionId: string,
-  ): Promise<{ wallet: UserWallet; transaction: WalletTransaction }>;
-  getTransactions(userId: string): Promise<WalletTransaction[]>;
+  ): Promise<{
+    wallet: WalletResponseDto;
+    transaction: WalletTransactionResponseDto;
+  }>;
+
+
+  getTransactions(
+    ownerId: string,
+    ownerType: WalletOwnerType,
+  ): Promise<WalletTransactionResponseDto[]>;
+
+
   getTransactionsPaginated(
-    userId: string,
+    ownerId: string,
+    ownerType: WalletOwnerType,
     query?: WalletTransactionsQueryDto,
   ): Promise<PaginatedWalletTransactionsResponseDto>;
+
 }

@@ -1,1 +1,32 @@
 export const MAX_WALLET_BALANCE = 10000;
+export const WALLET_OWNER_TYPE = {
+  USER: "USER",
+  TRAINER: "TRAINER",
+  PLATFORM: "PLATFORM",
+} as const;
+
+export type WalletOwnerType =
+  (typeof WALLET_OWNER_TYPE)[keyof typeof WALLET_OWNER_TYPE];
+
+
+export const WALLET_TRANSACTION_TYPE = {
+  CREDIT: "CREDIT",
+  DEBIT: "DEBIT",
+} as const;
+
+export type WalletTransactionType =
+  (typeof WALLET_TRANSACTION_TYPE)[keyof typeof WALLET_TRANSACTION_TYPE];
+
+
+export const WALLET_TRANSACTION_SOURCE = {
+  BOOKING_REFUND: "BOOKING_REFUND",
+  BOOKING_PAYMENT: "BOOKING_PAYMENT",
+  TRAINER_EARNING: "TRAINER_EARNING",
+  TRAINER_PAYOUT: "TRAINER_PAYOUT",
+  PLATFORM_EARNING: "PLATFORM_EARNING",
+  MANUAL_ADJUSTMENT: "MANUAL_ADJUSTMENT",
+  WALLET_TOPUP: "WALLET_TOPUP",
+} as const;
+
+export type WalletTransactionSource =
+  (typeof WALLET_TRANSACTION_SOURCE)[keyof typeof WALLET_TRANSACTION_SOURCE];

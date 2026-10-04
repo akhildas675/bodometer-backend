@@ -39,6 +39,16 @@ export interface PlatformFinanceSummary {
 
 export interface IFinanceService {
   createSessionEarning(input: CreateSessionEarningInput): Promise<FinancialTransaction>;
+  createRefundTransaction(input: {
+    bookingId: string;
+    trainerId: string;
+    userId?: string;
+    trainerAmount: number;
+    grossAmount: number;
+    currency?: string;
+    paymentId?: string;
+    serviceName?: string;
+  }): Promise<FinancialTransaction>;
   getTrainerFinanceSummary(trainerId: string): Promise<TrainerFinanceSummary>;
   getTrainerTransactions(
     trainerId: string,

@@ -1,16 +1,25 @@
-import { PaginationMetaDto } from "@/dto/common.dto";
-import { UserWallet, WalletTransaction } from "../interface/domain/wallet.interface";
 import {
-  PaginatedWalletTransactionsResponseDto,
-  UserWalletResponseDto,
+  Wallet,
+  WalletTransaction,
+} from "../interface/domain/wallet.interface";
+
+import {
+  WalletResponseDto,
   WalletTransactionResponseDto,
+  PaginatedWalletTransactionsResponseDto,
 } from "../dto/wallet.dto";
 
+import { PaginationMetaDto } from "@/dto/common.dto";
+
 export class WalletMapper {
-  static toWalletResponseDto(wallet: UserWallet): UserWalletResponseDto {
+
+  static toWalletResponseDto(
+    wallet: Wallet,
+  ): WalletResponseDto {
     return {
       id: wallet.id,
-      userId: wallet.userId,
+      ownerId: wallet.ownerId,
+      ownerType: wallet.ownerType,
       balance: wallet.balance,
       currency: wallet.currency,
       createdAt: wallet.createdAt,
@@ -18,26 +27,25 @@ export class WalletMapper {
     };
   }
 
-  static toTransactionResponseDto(tx: WalletTransaction): WalletTransactionResponseDto {
+  static toTransactionResponseDto(
+    transaction: WalletTransaction,
+  ): WalletTransactionResponseDto {
     return {
-      id: tx.id,
-      userId: tx.userId,
-      type: tx.type,
-      source: tx.source,
-      amount: tx.amount,
-      currency: tx.currency,
-      bookingId: tx.bookingId,
-      refundId: tx.refundId,
-      reference: tx.reference,
-      description: tx.description,
-      createdAt: tx.createdAt,
+      id: transaction.id,
+      walletId: transaction.walletId,
+      ownerId: transaction.ownerId,
+      ownerType: transaction.ownerType,
+      type: transaction.type,
+      source: transaction.source,
+      amount: transaction.amount,
+      currency: transaction.currency,
+      bookingId: transaction.bookingId,
+      refundId: transaction.refundId,
+      payoutRequestId: transaction.payoutRequestId,
+      reference: transaction.reference,
+      description: transaction.description,
+      createdAt: transaction.createdAt,
     };
-  }
-
-  static toTransactionResponseDtoList(
-    transactions: WalletTransaction[],
-  ): WalletTransactionResponseDto[] {
-    return transactions.map((tx) => this.toTransactionResponseDto(tx));
   }
 
   static toPaginatedTransactionsResponseDto(
@@ -47,7 +55,10 @@ export class WalletMapper {
     totalDebits: number,
   ): PaginatedWalletTransactionsResponseDto {
     return {
-      transactions: this.toTransactionResponseDtoList(transactions),
+      transactions: transactions.map(
+        (transaction) =>
+          this.toTransactionResponseDto(transaction),
+      ),
       pagination,
       totalCredits,
       totalDebits,

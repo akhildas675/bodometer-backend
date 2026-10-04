@@ -42,7 +42,7 @@ export const COMMISSION_DEFAULTS = {
 
 
 export const PAYOUT_CONFIG = {
-  MINIMUM_PAYOUT_AMOUNT: 1000, // ₹1,000 minimum
+  MINIMUM_PAYOUT_AMOUNT: 100, // ₹100 minimum for testing
   DEFAULT_CURRENCY: "INR",
 } as const;
 

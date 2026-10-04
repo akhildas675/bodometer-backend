@@ -38,6 +38,7 @@ import { INotificationService } from "@/modules/notification/interface/notificat
 import { NOTIFICATION_ENTITY_TYPE, NOTIFICATION_TYPE } from "@/modules/notification/constant/notification.constant";
 
 import { IUserSubscriptionRepository } from "@/modules/subscription/interface/repository.interface/user.subscription.repository.interface";
+import { WALLET_OWNER_TYPE, WALLET_TRANSACTION_SOURCE } from "@/modules/wallet/constants/wallet.constants";
 
 @injectable()
 export class BookingService implements IBookingService {
@@ -170,7 +171,7 @@ export class BookingService implements IBookingService {
     let sessionId: string | undefined;
 
     if (price > 0) {
-      const wallet = await this._walletService.getOrCreateWallet(userId);
+      const wallet = await this._walletService.getOrCreateWallet(userId,WALLET_OWNER_TYPE.USER);
       const chosenMethod = input.paymentMethod || (wallet.balance >= price ? "WALLET" : "ONLINE");
 
       if (chosenMethod === "WALLET") {
@@ -182,9 +183,10 @@ export class BookingService implements IBookingService {
         }
 
         const { transaction } = await this._walletService.debitWallet({
-          userId,
+          ownerId:userId,
+          ownerType:WALLET_OWNER_TYPE.USER,
           amount: price,
-          source: "BOOKING_PAYMENT",
+          source: WALLET_TRANSACTION_SOURCE.BOOKING_PAYMENT,
           bookingId: booking.id,
           description: `Wallet payment for coaching session #${bookingNumber}`,
         });
@@ -207,9 +209,10 @@ export class BookingService implements IBookingService {
         const remainingAmount = price - walletUsed;
 
         const { transaction } = await this._walletService.debitWallet({
-          userId,
+          ownerId:userId,
+          ownerType:WALLET_OWNER_TYPE.USER,
           amount: walletUsed,
-          source: "BOOKING_PAYMENT",
+          source: WALLET_TRANSACTION_SOURCE.BOOKING_PAYMENT,
           bookingId: booking.id,
           description: `Partial wallet payment (₹${walletUsed}) for session #${bookingNumber}`,
         });

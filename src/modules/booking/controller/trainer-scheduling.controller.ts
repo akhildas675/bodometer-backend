@@ -19,6 +19,7 @@ import {
 } from "../dto/trainer-scheduling.dto";
 import { ITrainerSchedulingService } from "../interface/service.interface/trainer-scheduling-service.interface";
 import { IBookingService } from "../interface/service.interface/booking-service.interface";
+import { IBookingLifecycleService } from "../services/booking-lifecycle.service";
 import { CreateBookingDto, VerifyPaymentDto } from "../dto/booking.dto";
 
 @injectable()
@@ -29,6 +30,9 @@ export class TrainerSchedulingController {
 
     @inject(BOOKING_TYPES.BookingService)
     private _bookingService: IBookingService,
+
+    @inject(BOOKING_TYPES.BookingLifecycleService)
+    private _bookingLifecycleService: IBookingLifecycleService,
   ) {}
 
   addUnavailability = (req: AuthRequest, res: Response, next: NextFunction) =>
@@ -484,12 +488,13 @@ export class TrainerSchedulingController {
   ) => {
     try {
       const trainerId = req.user?.id;
+      const filter = (req.query.filter as "upcoming" | "history" | "all") || "all";
 
       if (!trainerId) {
         throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.COMMON.NOT_FOUND);
       }
 
-      const bookings = await this._bookingService.getTrainerBookings(trainerId);
+      const bookings = await this._bookingLifecycleService.getTrainerBookings(trainerId, filter);
 
       new SuccessResponse(
         STATUS.OK,

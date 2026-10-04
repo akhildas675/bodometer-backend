@@ -24,6 +24,9 @@ import {
 } from "../constant/finance.constant";
 import { AppError } from "@/utils/appError";
 import { STATUS } from "@/constants/constant.values.ts/statuscode";
+import { WALLET_TYPES } from "@/modules/wallet/wallet.types";
+import { IWalletService } from "@/modules/wallet/interface/service.interface/wallet-service.interface";
+import { WALLET_OWNER_TYPE } from "@/modules/wallet/constants/wallet.constants";
 
 @injectable()
 export class FinanceService implements IFinanceService {
@@ -33,6 +36,9 @@ export class FinanceService implements IFinanceService {
 
     @inject(FINANCE_TYPES.PayoutRequestRepository)
     private readonly _payoutRepository: IPayoutRequestRepository,
+
+    @inject(WALLET_TYPES.WalletService)
+    private readonly _walletService: IWalletService,
   ) {}
 
   async createSessionEarning(
@@ -187,5 +193,57 @@ export class FinanceService implements IFinanceService {
       fromDate,
       toDate,
     );
+  }
+
+  async createRefundTransaction(
+    input: {
+      bookingId: string;
+      trainerId: string;
+      userId?: string;
+      trainerAmount: number;
+      grossAmount: number;
+      currency?: string;
+      paymentId?: string;
+      serviceName?: string;
+    },
+  ): Promise<FinancialTransaction> {
+    const referenceKey = `REFUND:${input.bookingId}`;
+
+    const existing = await this._transactionRepository.findByReferenceKey(
+      referenceKey,
+    );
+    if (existing) {
+      return existing;
+    }
+
+    try {
+      return await this._transactionRepository.createOne({
+        bookingId: input.bookingId,
+        paymentId: input.paymentId,
+        userId: input.userId,
+        trainerId: input.trainerId,
+        grossAmount: input.grossAmount,
+        trainerAmount: -input.trainerAmount,
+        platformAmount: 0,
+        trainerPercentage: COMMISSION_DEFAULTS.TRAINER_PERCENTAGE,
+        platformPercentage: COMMISSION_DEFAULTS.PLATFORM_PERCENTAGE,
+        currency: input.currency ?? PAYOUT_CONFIG.DEFAULT_CURRENCY,
+        transactionType: TRANSACTION_TYPE.REFUND,
+        status: TRANSACTION_STATUS.COMPLETED,
+        referenceKey,
+        note: `Refund for booking ${input.bookingId}`,
+        serviceName: input.serviceName,
+      });
+    } catch (error: unknown) {
+      const mongoError = error as { code?: number };
+      if (mongoError?.code === 11000) {
+        const raceExisting =
+          await this._transactionRepository.findByReferenceKey(referenceKey);
+        if (raceExisting) {
+          return raceExisting;
+        }
+      }
+      throw error;
+    }
   }
 }

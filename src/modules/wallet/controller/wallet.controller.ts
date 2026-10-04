@@ -1,122 +1,211 @@
 import { inject, injectable } from "inversify";
 import { NextFunction, Response } from "express";
+
 import { AuthRequest } from "@/middleware/authGuard";
 import { SuccessResponse } from "@/utils/success.response";
 import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { AppError } from "@/utils/appError";
+
 import { WALLET_TYPES } from "../wallet.types";
+
 import { IWalletService } from "../interface/service.interface/wallet-service.interface";
-import { WalletTransactionType } from "../interface/domain/wallet.interface";
+
+import {
+  WALLET_OWNER_TYPE,
+} from "../constants/wallet.constants";
+
+import {
+  AddFundsDto,
+  CreateTopupCheckoutDto,
+  VerifyTopupPaymentDto,
+  WalletTransactionsQueryDto,
+} from "../dto/wallet.dto";
+
 
 @injectable()
 export class WalletController {
+
   constructor(
     @inject(WALLET_TYPES.WalletService)
     private _walletService: IWalletService,
   ) {}
 
-  getWallet = async (req: AuthRequest, res: Response, next: NextFunction) => {
+
+  getWallet = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const userId = req.user?.id;
+
       if (!userId) {
-        throw new AppError(STATUS.UNAUTHORIZED, "User authentication required.");
+        throw new AppError(
+          STATUS.UNAUTHORIZED,
+          "User authentication required.",
+        );
       }
 
-      const wallet = await this._walletService.getOrCreateWallet(userId);
-      new SuccessResponse(STATUS.OK, "Wallet balance retrieved successfully.", wallet).send(res);
+      const wallet =
+        await this._walletService.getOrCreateWallet(
+          userId,
+          WALLET_OWNER_TYPE.USER,
+        );
+
+      new SuccessResponse(
+        STATUS.OK,
+        "Wallet balance retrieved successfully.",
+        wallet,
+      ).send(res);
+
     } catch (error) {
       next(error);
     }
   };
 
-  getTransactions = async (req: AuthRequest, res: Response, next: NextFunction) => {
+
+  getTransactions = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const userId = req.user?.id;
+
       if (!userId) {
-        throw new AppError(STATUS.UNAUTHORIZED, "User authentication required.");
+        throw new AppError(
+          STATUS.UNAUTHORIZED,
+          "User authentication required.",
+        );
       }
 
-      const query = {
-        page: req.query.page ? Number(req.query.page) : undefined,
-        limit: req.query.limit ? Number(req.query.limit) : undefined,
-        type: req.query.type as WalletTransactionType | "ALL" | undefined,
-        search: req.query.search as string | undefined,
-        sortBy: req.query.sortBy as "createdAt" | "amount" | undefined,
-        sortOrder: req.query.sortOrder as "asc" | "desc" | undefined,
-      };
+      const query =
+        req.query as WalletTransactionsQueryDto;
 
-      const result = await this._walletService.getTransactionsPaginated(userId, query);
-      new SuccessResponse(STATUS.OK, "Wallet transactions retrieved successfully.", result).send(res);
+      const result =
+        await this._walletService.getTransactionsPaginated(
+          userId,
+          WALLET_OWNER_TYPE.USER,
+          query,
+        );
+
+      new SuccessResponse(
+        STATUS.OK,
+        "Wallet transactions retrieved successfully.",
+        result,
+      ).send(res);
+
     } catch (error) {
       next(error);
     }
   };
 
-  addFunds = async (req: AuthRequest, res: Response, next: NextFunction) => {
+
+  addFunds = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const userId = req.user?.id;
-      const body = req.body as { amount?: unknown };
-      const amount = body.amount;
 
       if (!userId) {
-        throw new AppError(STATUS.UNAUTHORIZED, "User authentication required.");
+        throw new AppError(
+          STATUS.UNAUTHORIZED,
+          "User authentication required.",
+        );
       }
 
-      const numAmount = Number(amount);
-      if (!numAmount || isNaN(numAmount) || numAmount <= 0) {
-        throw new AppError(STATUS.BAD_REQUEST, "Please enter a valid positive amount to add.");
-      }
+      const { amount } =
+        req.body as AddFundsDto;
 
-      const result = await this._walletService.topUpWallet(userId, numAmount);
-      new SuccessResponse(STATUS.OK, "Wallet funds added successfully.", result).send(res);
+      const result =
+        await this._walletService.topUpWallet(
+          userId,
+          amount,
+        );
+
+      new SuccessResponse(
+        STATUS.OK,
+        "Wallet funds added successfully.",
+        result,
+      ).send(res);
+
     } catch (error) {
       next(error);
     }
   };
 
-  createTopupCheckout = async (req: AuthRequest, res: Response, next: NextFunction) => {
+
+  createTopupCheckout = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const userId = req.user?.id;
-      const body = req.body as { amount?: unknown };
-      const amount = body.amount;
 
       if (!userId) {
-        throw new AppError(STATUS.UNAUTHORIZED, "User authentication required.");
+        throw new AppError(
+          STATUS.UNAUTHORIZED,
+          "User authentication required.",
+        );
       }
 
-      const numAmount = Number(amount);
-      if (!numAmount || isNaN(numAmount) || numAmount <= 0) {
-        throw new AppError(STATUS.BAD_REQUEST, "Please enter a valid positive amount.");
-      }
+      const { amount } =
+        req.body as CreateTopupCheckoutDto;
 
-      const result = await this._walletService.createTopupCheckoutSession(userId, numAmount);
-      new SuccessResponse(STATUS.OK, "Top-up payment checkout session created.", result).send(res);
+      const result =
+        await this._walletService.createTopupCheckoutSession(
+          userId,
+          amount,
+        );
+
+      new SuccessResponse(
+        STATUS.OK,
+        "Top-up payment checkout session created.",
+        result,
+      ).send(res);
+
     } catch (error) {
       next(error);
     }
   };
 
-  verifyTopupPayment = async (req: AuthRequest, res: Response, next: NextFunction) => {
+
+  verifyTopupPayment = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const userId = req.user?.id;
-      const body = req.body as { amount?: unknown; sessionId?: string };
-      const { amount, sessionId } = body;
 
       if (!userId) {
-        throw new AppError(STATUS.UNAUTHORIZED, "User authentication required.");
+        throw new AppError(
+          STATUS.UNAUTHORIZED,
+          "User authentication required.",
+        );
       }
 
-      const numAmount = Number(amount);
-      if (!numAmount || isNaN(numAmount) || numAmount <= 0) {
-        throw new AppError(STATUS.BAD_REQUEST, "Invalid top-up amount.");
-      }
+      const {
+        amount,
+        sessionId,
+      } = req.body as VerifyTopupPaymentDto;
 
-      if (!sessionId || typeof sessionId !== "string") {
-        throw new AppError(STATUS.BAD_REQUEST, "Valid sessionId is required.");
-      }
+      const result =
+        await this._walletService.verifyTopupPayment(
+          userId,
+          amount,
+          sessionId,
+        );
 
-      const result = await this._walletService.verifyTopupPayment(userId, numAmount, sessionId);
-      new SuccessResponse(STATUS.OK, "Wallet top-up payment verified successfully.", result).send(res);
+      new SuccessResponse(
+        STATUS.OK,
+        "Wallet top-up payment verified successfully.",
+        result,
+      ).send(res);
+
     } catch (error) {
       next(error);
     }

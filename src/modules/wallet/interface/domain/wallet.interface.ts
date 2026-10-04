@@ -1,29 +1,49 @@
-export type WalletTransactionType = "CREDIT" | "DEBIT";
-export type WalletTransactionSource =
-  | "BOOKING_REFUND"
-  | "BOOKING_PAYMENT"
-  | "MANUAL_ADJUSTMENT"
-  | "WALLET_TOPUP";
+import { WalletOwnerType, WalletTransactionSource, WalletTransactionType } from "../../constants/wallet.constants";
 
-export interface UserWallet {
+
+export interface Wallet {
   id: string;
-  userId: string;
+
+  ownerId: string;
+
+  ownerType: WalletOwnerType;
+
   balance: number;
+
   currency: string;
+
   createdAt?: Date;
+
   updatedAt?: Date;
 }
 
+
 export interface WalletTransaction {
   id: string;
-  userId: string;
+
+  walletId: string;
+
+  ownerId: string;
+
+  ownerType: WalletOwnerType;
+
   type: WalletTransactionType;
+
   source: WalletTransactionSource;
+
   amount: number;
+
   currency: string;
+
   bookingId?: string;
+
   refundId?: string;
+
+  payoutRequestId?: string;
+
   reference?: string;
+
   description?: string;
+
   createdAt?: Date;
 }

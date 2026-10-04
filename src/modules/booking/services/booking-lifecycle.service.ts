@@ -64,6 +64,8 @@ export interface RespondRescheduleInput {
   reason?: string;
 }
 
+export type SessionPhase = "UPCOMING" | "CALL_AVAILABLE" | "IN_PROGRESS" | "ENDED";
+
 export interface EnrichedBooking extends Booking {
   userName?: string;
   userEmail?: string;
@@ -71,6 +73,8 @@ export interface EnrichedBooking extends Booking {
   serviceDuration?: number;
   cancellationDetails?: BookingCancellation | null;
   rescheduleRequest?: BookingRescheduleRequest | null;
+  sessionPhase?: SessionPhase;
+  callAvailableAt?: string;
 }
 
 export interface IBookingLifecycleService {
@@ -475,6 +479,28 @@ export class BookingLifecycleService implements IBookingLifecycleService {
         const cancellationDetails = await this._cancellationRepository.findByBookingId(b.id);
         const rescheduleRequest = await this._rescheduleRepository.findPendingByBookingId(b.id);
 
+        const startMs = new Date(b.startTime).getTime();
+        const endMs = new Date(b.endTime).getTime();
+        const callAvailableMs = startMs - 5 * 60 * 1000;
+        const nowMs = now.getTime();
+
+        let sessionPhase: SessionPhase = "UPCOMING";
+        if (
+          b.status === BOOKING_STATUS.COMPLETED ||
+          b.status === BOOKING_STATUS.CANCELLED ||
+          b.status === BOOKING_STATUS.NO_SHOW ||
+          b.status === BOOKING_STATUS.EXPIRED ||
+          nowMs >= endMs
+        ) {
+          sessionPhase = "ENDED";
+        } else if (nowMs >= startMs) {
+          sessionPhase = "IN_PROGRESS";
+        } else if (nowMs >= callAvailableMs) {
+          sessionPhase = "CALL_AVAILABLE";
+        } else {
+          sessionPhase = "UPCOMING";
+        }
+
         return {
           ...b,
           userName: user?.name || "Client",
@@ -483,6 +509,8 @@ export class BookingLifecycleService implements IBookingLifecycleService {
           serviceDuration: coaching?.durationMinutes || 60,
           cancellationDetails,
           rescheduleRequest,
+          sessionPhase,
+          callAvailableAt: new Date(callAvailableMs).toISOString(),
         };
       }),
     );
@@ -490,8 +518,10 @@ export class BookingLifecycleService implements IBookingLifecycleService {
     if (filter === "upcoming") {
       return enriched.filter(
         (b) =>
-          (b.status === BOOKING_STATUS.CONFIRMED || b.status === BOOKING_STATUS.RESCHEDULE_PENDING || b.status === BOOKING_STATUS.PENDING_PAYMENT) &&
-          new Date(b.startTime) >= now,
+          (b.status === BOOKING_STATUS.CONFIRMED ||
+            b.status === BOOKING_STATUS.RESCHEDULE_PENDING ||
+            b.status === BOOKING_STATUS.PENDING_PAYMENT) &&
+          new Date(b.endTime) >= now,
       );
     }
 
@@ -501,7 +531,8 @@ export class BookingLifecycleService implements IBookingLifecycleService {
           b.status === BOOKING_STATUS.COMPLETED ||
           b.status === BOOKING_STATUS.CANCELLED ||
           b.status === BOOKING_STATUS.NO_SHOW ||
-          new Date(b.startTime) < now,
+          b.status === BOOKING_STATUS.EXPIRED ||
+          new Date(b.endTime) < now,
       );
     }
 
