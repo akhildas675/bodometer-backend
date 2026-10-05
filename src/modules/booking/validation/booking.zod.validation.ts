@@ -33,15 +33,15 @@ export const createSetupSchema = z.object({
     availability: z.object({
       effectiveFrom: z.union([z.string(), z.date()]),
       effectiveUntil: z.union([z.string(), z.date()]),
-      timeZone: z.string().min(1, "Timezone is required"),
-      weeklySchedule: z.array(weeklyScheduleSchema),
+      timeZone: z.string().min(1, "Timezone is required").max(50, "Timezone must not exceed 50 characters"),
+      weeklySchedule: z.array(weeklyScheduleSchema).min(1, "At least one day must be scheduled").max(7, "Cannot schedule more than 7 days"),
       status: z.enum(["ACTIVE", "INACTIVE"]).optional(),
     }),
     settings: z.object({
-      serviceIds: z.array(z.string()),
-      advanceNoticeHours: z.number().min(0),
+      serviceIds: z.array(z.string()).min(1, "At least one service is required").max(50, "Cannot select more than 50 services"),
+      advanceNoticeHours: z.number().min(0).max(72, "Advance notice must not exceed 72 hours"),
       bufferMinutes: z.number().min(20).max(60),
-      maximumBookingPerDay: z.number().min(1),
+      maximumBookingPerDay: z.number().min(1).max(20, "Maximum bookings per day seems unrealistic"),
     }),
     unavailabilities: z
       .array(
@@ -49,10 +49,10 @@ export const createSetupSchema = z.object({
           type: unavailabilityTypeEnum,
           startDate: z.union([z.string(), z.date()]),
           endDate: z.union([z.string(), z.date()]),
-          reason: z.string().optional(),
+          reason: z.string().max(500, "Reason must not exceed 500 characters").optional(),
         }),
       )
-      .optional(),
+      .max(50, "Cannot have more than 50 unavailabilities").optional(),
   }),
 });
 
@@ -60,18 +60,18 @@ export const updateAvailabilitySchema = z.object({
   body: z.object({
     effectiveFrom: z.union([z.string(), z.date()]),
     effectiveUntil: z.union([z.string(), z.date()]),
-    timeZone: z.string().min(1, "Timezone is required"),
-    weeklySchedule: z.array(weeklyScheduleSchema),
+    timeZone: z.string().min(1, "Timezone is required").max(50, "Timezone must not exceed 50 characters"),
+    weeklySchedule: z.array(weeklyScheduleSchema).min(1, "At least one day must be scheduled").max(7, "Cannot schedule more than 7 days"),
     status: z.enum(["ACTIVE", "INACTIVE"]).optional(),
   }),
 });
 
 export const updateBookingSettingsSchema = z.object({
   body: z.object({
-    serviceIds: z.array(z.string()).optional(),
-    advanceNoticeHours: z.number().min(0).optional(),
+    serviceIds: z.array(z.string()).min(1, "At least one service is required").max(50, "Cannot select more than 50 services").optional(),
+    advanceNoticeHours: z.number().min(0).max(72, "Advance notice must not exceed 72 hours").optional(),
     bufferMinutes: z.number().min(20).max(60).optional(),
-    maximumBookingPerDay: z.number().min(1).optional(),
+    maximumBookingPerDay: z.number().min(1).max(20, "Maximum bookings per day seems unrealistic").optional(),
   }),
 });
 
@@ -80,7 +80,7 @@ export const createUnavailabilitySchema = z.object({
     type: unavailabilityTypeEnum,
     startDate: z.union([z.string(), z.date()]),
     endDate: z.union([z.string(), z.date()]),
-    reason: z.string().optional(),
+    reason: z.string().max(500, "Reason must not exceed 500 characters").optional(),
   }),
 });
 
@@ -92,7 +92,7 @@ export const updateUnavailabilitySchema = z.object({
     type: unavailabilityTypeEnum.optional(),
     startDate: z.union([z.string(), z.date()]).optional(),
     endDate: z.union([z.string(), z.date()]).optional(),
-    reason: z.string().optional(),
+    reason: z.string().max(500, "Reason must not exceed 500 characters").optional(),
   }),
 });
 
@@ -105,8 +105,8 @@ export const deleteUnavailabilitySchema = z.object({
 export const createOverrideSchema = z.object({
   body: z.object({
     date: z.union([z.string(), z.date()]),
-    shifts: z.array(shiftSchema),
-    reason: z.string().optional(),
+    shifts: z.array(shiftSchema).min(1, "At least one shift is required").max(10, "Cannot have more than 10 shifts"),
+    reason: z.string().max(500, "Reason must not exceed 500 characters").optional(),
   }),
 });
 
@@ -116,8 +116,8 @@ export const updateOverrideSchema = z.object({
   }),
   body: z.object({
     date: z.union([z.string(), z.date()]).optional(),
-    shifts: z.array(shiftSchema).optional(),
-    reason: z.string().optional(),
+    shifts: z.array(shiftSchema).min(1, "At least one shift is required").max(10, "Cannot have more than 10 shifts").optional(),
+    reason: z.string().max(500, "Reason must not exceed 500 characters").optional(),
     status: z.enum(["ACTIVE", "CANCELLED"]).optional(),
   }),
 });
@@ -185,7 +185,7 @@ export const proposeRescheduleSchema = z.object({
     proposedBufferEndTime: z
       .string()
       .min(1, "proposedBufferEndTime is required"),
-    reason: z.string().optional(),
+    reason: z.string().max(500, "Reason must not exceed 500 characters").optional(),
   }),
 });
 
@@ -195,7 +195,7 @@ export const respondRescheduleSchema = z.object({
   }),
   body: z.object({
     accept: z.boolean(),
-    reason: z.string().optional(),
+    reason: z.string().max(500, "Reason must not exceed 500 characters").optional(),
   }),
 });
 
@@ -205,7 +205,7 @@ export const withdrawRescheduleSchema = z.object({
   }),
   body: z
     .object({
-      reason: z.string().optional(),
+      reason: z.string().max(500, "Reason must not exceed 500 characters").optional(),
     })
     .optional(),
 });

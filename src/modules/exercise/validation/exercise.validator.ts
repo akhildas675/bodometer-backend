@@ -20,15 +20,15 @@ const booleanPreprocessor = (val: unknown) => {
 export const createExerciseSchema = z.object({
 
     body: z.object({
-        title: z.string().min(1, "Exercise title is required"),
-        description: z.string().min(1, "Exercise description is required"),
+        title: z.string().min(1, "Exercise title is required").max(100, "Title must not exceed 100 characters"),
+        description: z.string().min(1, "Exercise description is required").max(1000, "Description must not exceed 1000 characters"),
         difficulty: z.nativeEnum(DIFFICULTY_LEVEL),
-        workoutEnvironments: z.preprocess(jsonArrayPreprocessor, z.array(z.string())),
+        workoutEnvironments: z.preprocess(jsonArrayPreprocessor, z.array(z.string()).max(10, "Cannot select more than 10 workout environments")),
         isCompound: z.preprocess(booleanPreprocessor, z.boolean()),
-        instructions: z.preprocess(jsonArrayPreprocessor, z.array(z.string())),
-        categoryIds: z.preprocess(jsonArrayPreprocessor, z.array(z.string())),
-        targetMuscleIds: z.preprocess(jsonArrayPreprocessor, z.array(z.string())),
-        equipmentIds: z.preprocess(jsonArrayPreprocessor, z.array(z.string())),
+        instructions: z.preprocess(jsonArrayPreprocessor, z.array(z.string()).max(20, "Cannot have more than 20 instructions")),
+        categoryIds: z.preprocess(jsonArrayPreprocessor, z.array(z.string()).max(10, "Cannot select more than 10 categories")),
+        targetMuscleIds: z.preprocess(jsonArrayPreprocessor, z.array(z.string()).max(10, "Cannot select more than 10 target muscles")),
+        equipmentIds: z.preprocess(jsonArrayPreprocessor, z.array(z.string()).max(10, "Cannot select more than 10 equipment items")),
     }),
 
     files: z.object({
@@ -38,14 +38,14 @@ export const createExerciseSchema = z.object({
                 { message: "Only jpeg, png, webp, and gif images are allowed" }
             ),
             size: z.number().max(5 * 1024 * 1024, "Image size must not exceed 5MB"),
-        })).optional(),
+        })).max(5, "Cannot upload more than 5 images").optional(),
         video: z.array(z.object({
             mimetype: z.string().refine(
                 (val) => val.startsWith("video/"),
                 { message: "Only video files are allowed" }
             ),
             size: z.number().max(50 * 1024 * 1024, "Video size must not exceed 50MB"),
-        })).optional(),
+        })).max(1, "Cannot upload more than 1 video").optional(),
     }).optional()
 });
 
@@ -61,15 +61,15 @@ export const updateExerciseSchema = z.object({
         id: z.string().min(1, "Exercise ID is required"),
     }),
     body: z.object({
-        title: z.string().min(1, "Exercise title is required").optional(),
-        description: z.string().min(1, "Exercise description is required").optional(),
+        title: z.string().min(1, "Exercise title is required").max(100, "Title must not exceed 100 characters").optional(),
+        description: z.string().min(1, "Exercise description is required").max(1000, "Description must not exceed 1000 characters").optional(),
         difficulty: z.nativeEnum(DIFFICULTY_LEVEL).optional(),
-        workoutEnvironments: z.preprocess(jsonArrayPreprocessor, z.array(z.string())).optional(),
+        workoutEnvironments: z.preprocess(jsonArrayPreprocessor, z.array(z.string()).max(10, "Cannot select more than 10 workout environments")).optional(),
         isCompound: z.preprocess(booleanPreprocessor, z.boolean()).optional(),
-        instructions: z.preprocess(jsonArrayPreprocessor, z.array(z.string())).optional(),
-        categoryIds: z.preprocess(jsonArrayPreprocessor, z.array(z.string())).optional(),
-        targetMuscleIds: z.preprocess(jsonArrayPreprocessor, z.array(z.string())).optional(),
-        equipmentIds: z.preprocess(jsonArrayPreprocessor, z.array(z.string())).optional(),
+        instructions: z.preprocess(jsonArrayPreprocessor, z.array(z.string()).max(20, "Cannot have more than 20 instructions")).optional(),
+        categoryIds: z.preprocess(jsonArrayPreprocessor, z.array(z.string()).max(10, "Cannot select more than 10 categories")).optional(),
+        targetMuscleIds: z.preprocess(jsonArrayPreprocessor, z.array(z.string()).max(10, "Cannot select more than 10 target muscles")).optional(),
+        equipmentIds: z.preprocess(jsonArrayPreprocessor, z.array(z.string()).max(10, "Cannot select more than 10 equipment items")).optional(),
     }),
 
     files: z.object({
@@ -79,14 +79,14 @@ export const updateExerciseSchema = z.object({
                 { message: "Only jpeg, png, webp, and gif images are allowed" }
             ),
             size: z.number().max(5 * 1024 * 1024, "Image size must not exceed 5MB"),
-        })).optional(),
+        })).max(5, "Cannot upload more than 5 images").optional(),
         video: z.array(z.object({
             mimetype: z.string().refine(
                 (val) => val.startsWith("video/"),
                 { message: "Only video files are allowed" }
             ),
             size: z.number().max(50 * 1024 * 1024, "Video size must not exceed 50MB"),
-        })).optional(),
+        })).max(1, "Cannot upload more than 1 video").optional(),
     }).optional()
 });
 
@@ -94,8 +94,8 @@ export const updateExerciseSchema = z.object({
 export const getAllExercisesSchema = z.object({
     query: z.object({
         page: z.coerce.number().min(1).optional(),
-        limit: z.coerce.number().min(1).optional(),
-        search: z.string().optional(),
+        limit: z.coerce.number().min(1).max(100, "Limit must not exceed 100").optional(),
+        search: z.string().max(100, "Search term too long").optional(),
         difficulty: z.nativeEnum(DIFFICULTY_LEVEL).optional(),
         targetMuscleId: z.string().optional(),
         categoryId: z.string().optional(),

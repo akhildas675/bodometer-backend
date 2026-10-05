@@ -50,7 +50,8 @@ export const sendMessageSchema = z.object({
     content: z
       .string()
       .trim()
-      .min(1, MESSAGES.CHAT.MESSAGE_CONTENT_REQUIRED),
+      .min(1, MESSAGES.CHAT.MESSAGE_CONTENT_REQUIRED)
+      .max(5000, "Message content must not exceed 5000 characters"),
     messageType: z.nativeEnum(CHAT_TYPE, {
       message: MESSAGES.CHAT.INVALID_MESSAGE_TYPE,
     }),
@@ -102,7 +103,8 @@ export const socketSendMessageSchema = z.object({
   content: z
     .string()
     .trim()
-    .min(1, MESSAGES.CHAT.MESSAGE_CONTENT_REQUIRED),
+    .min(1, MESSAGES.CHAT.MESSAGE_CONTENT_REQUIRED)
+    .max(5000, "Message content must not exceed 5000 characters"),
   messageType: z.nativeEnum(CHAT_TYPE, {
     message: MESSAGES.CHAT.INVALID_MESSAGE_TYPE,
   }),

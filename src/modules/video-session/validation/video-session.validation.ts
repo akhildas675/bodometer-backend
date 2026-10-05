@@ -51,8 +51,8 @@ export const claimExpiredRefundSchema = z.object({
 export const getVideoSessionHistorySchema = z.object({
   query: z
     .object({
-      page: z.string().optional(),
-      limit: z.string().optional(),
+      page: z.coerce.number().min(1).optional(),
+      limit: z.coerce.number().min(1).max(100, "Limit must not exceed 100").optional(),
       status: z.string().optional(),
       refundStatus: z.string().optional(),
     })

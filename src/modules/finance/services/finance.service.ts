@@ -26,7 +26,7 @@ import { AppError } from "@/utils/appError";
 import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { WALLET_TYPES } from "@/modules/wallet/wallet.types";
 import { IWalletService } from "@/modules/wallet/interface/service.interface/wallet-service.interface";
-import { WALLET_OWNER_TYPE } from "@/modules/wallet/constants/wallet.constants";
+import { WALLET_OWNER_TYPE as _WALLET_OWNER_TYPE } from "@/modules/wallet/constants/wallet.constants";
 
 @injectable()
 export class FinanceService implements IFinanceService {

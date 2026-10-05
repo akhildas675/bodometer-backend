@@ -5,17 +5,18 @@ import { WorkoutPlanController } from "../controller/workout-plan.controller";
 
 import { ROLE_GUARD } from "../../../constants/constant.values.ts/role.guard";
 import { WORKOUT_PATHS } from "@/constants/routes.constant/workout.paths";
+import { validate } from "@/middleware/validate";
+import {
+  generateWorkoutPlanSchema,
+  markDayCompletedSchema,
+  markExerciseStatusSchema,
+} from "../validation/workout-plan.validation";
 
 // Assuming USER_ROUTES values from user.routes.ts constants
 const workoutPlanRouter = Router();
 
-const workoutPlanController = container.get<WorkoutPlanController>(WORKOUT_PLAN_TYPES.WorkoutPlanController);
-
-
-workoutPlanRouter.post(
-  WORKOUT_PATHS.GENERATE,
-  ROLE_GUARD.USER_GUARD,
-  workoutPlanController.generateWorkout,
+const workoutPlanController = container.get<WorkoutPlanController>(
+  WORKOUT_PLAN_TYPES.WorkoutPlanController,
 );
 
 workoutPlanRouter.get(
@@ -23,16 +24,19 @@ workoutPlanRouter.get(
   ROLE_GUARD.USER_GUARD,
   workoutPlanController.getWorkoutPlans,
 );
-
+workoutPlanRouter.post(
+  WORKOUT_PATHS.GENERATE,
+  validate(generateWorkoutPlanSchema),
+  workoutPlanController.generateWorkout,
+);
 workoutPlanRouter.patch(
   WORKOUT_PATHS.DAY_COMPLETE,
-  ROLE_GUARD.USER_GUARD,
+  validate(markDayCompletedSchema),
   workoutPlanController.markDayCompleted,
 );
-
 workoutPlanRouter.patch(
   WORKOUT_PATHS.EXERCISE_COMPLETE,
-  ROLE_GUARD.USER_GUARD,
+  validate(markExerciseStatusSchema),
   workoutPlanController.markExerciseStatus,
 );
 

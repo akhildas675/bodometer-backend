@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export const createEquipmentSchema = z.object({
     body: z.object({
-        title: z.string().min(1, "Equipment title is required"),
-        description: z.string().min(1, "Equipment description is required"),
+        title: z.string().min(1, "Equipment title is required").max(100, "Title must not exceed 100 characters"),
+        description: z.string().min(1, "Equipment description is required").max(500, "Description must not exceed 500 characters"),
     }),
     file: z.object({
         mimetype: z.string().refine(
@@ -24,8 +24,8 @@ export const equipmentIdParamSchema = z.object({
 export const getAllEquipmentSchema = z.object({
     query: z.object({
         page: z.coerce.number().min(1).optional(),
-        limit: z.coerce.number().min(1).optional(),
-        search: z.string().optional(),
+        limit: z.coerce.number().min(1).max(100, "Limit must not exceed 100").optional(),
+        search: z.string().max(100, "Search term too long").optional(),
     }),
 });
 
@@ -34,8 +34,8 @@ export const updateEquipmentSchema = z.object({
         id: z.string().min(1, "Equipment ID is required"),
     }),
     body: z.object({
-        title: z.string().min(1, "Equipment title is required").optional(),
-        description: z.string().min(1, "Equipment description is required").optional(),
+        title: z.string().min(1, "Equipment title is required").max(100, "Title must not exceed 100 characters").optional(),
+        description: z.string().min(1, "Equipment description is required").max(500, "Description must not exceed 500 characters").optional(),
     }),
     file: z.object({
         mimetype: z.string().refine(

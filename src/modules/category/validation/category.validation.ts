@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export const categoryValidationSchema = z.object({
     body: z.object({
-        name: z.string().min(1, "Category name is required"),
-        description: z.string().min(1, "Category description is required"),
+        name: z.string().min(1, "Category name is required").max(100, "Category name must not exceed 100 characters"),
+        description: z.string().min(1, "Category description is required").max(500, "Category description must not exceed 500 characters"),
         isBlocked: z.boolean().optional(),
         sortBy: z.string().optional(),
         sortOrder: z.enum(["asc", "desc"]).optional(),
@@ -19,8 +19,8 @@ export const categoryValidationSchema = z.object({
 
 export const categoryUpdateSchema = z.object({
     body: z.object({
-        name: z.string().min(1, "Category name is required").optional(),
-        description: z.string().min(1, "Category description is required").optional(),
+        name: z.string().min(1, "Category name is required").max(100, "Category name must not exceed 100 characters").optional(),
+        description: z.string().min(1, "Category description is required").max(500, "Category description must not exceed 500 characters").optional(),
         isBlocked: z.boolean().optional(),
         sortBy: z.string().optional(),
         sortOrder: z.enum(["asc", "desc"]).optional(),

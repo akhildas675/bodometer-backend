@@ -96,10 +96,11 @@ export const createTrainerProfileSchema = z.object({
 
 export const updateTrainerProfileSchema = z.object({
     body: z.object({
-        name: z.string().min(1, "Name is required").optional(),
+        name: z.string().min(1, "Name is required").max(50, "Name must not exceed 50 characters").optional(),
         userName: z
             .string()
             .min(3, "Username must be at least 3 characters")
+            .max(30, "Username must not exceed 30 characters")
             .optional(),
         phoneNumber: z
             .string()
@@ -122,10 +123,10 @@ export const updateTrainerProfileSchema = z.object({
             .min(10, "Bio must be at least 10 characters")
             .max(500, "Bio must not exceed 500 characters")
             .optional(),
-        specializations: z.array(z.string()).optional(),
-        profilePic: z.string().optional(),
-        coverPhoto: z.string().optional(),
-        certifications: z.array(z.string()).optional(),
+        specializations: z.array(z.string()).max(20, "Cannot have more than 20 specializations").optional(),
+        profilePic: z.string().max(500, "Profile pic URL too long").optional(),
+        coverPhoto: z.string().max(500, "Cover photo URL too long").optional(),
+        certifications: z.array(z.string()).max(50, "Cannot have more than 50 certifications").optional(),
     }),
 });
 
@@ -167,8 +168,8 @@ export const uploadTrainerDocumentSchema = z.object({
 export const getTrainersSchema = z.object({
     query: z.object({
         page: z.coerce.number().min(1).optional(),
-        limit: z.coerce.number().min(1).optional(),
-        search: z.string().optional(),
+        limit: z.coerce.number().min(1).max(100, "Limit must not exceed 100").optional(),
+        search: z.string().max(100, "Search term too long").optional(),
         isBlocked: z.coerce.boolean().optional(),
         sortBy: z.string().optional(),
         sortOrder: z.enum(["asc", "desc"]).optional(),
@@ -195,17 +196,18 @@ export const rejectTrainerSchema = z.object({
     body: z.object({
         reason: z
             .string()
-            .min(5, "Rejection reason must be at least 5 characters"),
+            .min(5, "Rejection reason must be at least 5 characters")
+            .max(500, "Rejection reason must not exceed 500 characters"),
     }),
 });
 
 export const getTrainerAppointmentsSchema = z.object({
     query: z.object({
-        search: z.string().optional(),
+        search: z.string().max(100, "Search term too long").optional(),
         sortBy: z.string().optional(),
         sortOrder: z.enum(["asc", "desc"]).optional(),
         page: z.coerce.number().min(1).optional(),
-        limit: z.coerce.number().min(1).optional(),
+        limit: z.coerce.number().min(1).max(100, "Limit must not exceed 100").optional(),
         status: z.string().optional(),
     }),
 });

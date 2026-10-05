@@ -6,10 +6,11 @@ import { z } from "zod";
 
 export const updateUserProfileSchema = z.object({
   body: z.object({
-    name: z.string().min(1, "Name is required").optional(),
+    name: z.string().min(1, "Name is required").max(50, "Name must not exceed 50 characters").optional(),
     userName: z
       .string()
       .min(3, "Username must be at least 3 characters")
+      .max(30, "Username must not exceed 30 characters")
       .optional(),
     phoneNumber: z
       .string()
@@ -97,7 +98,7 @@ export const resendOtpSchema = z.object({
 export const verifyOtpSchema = z.object({
   body: z.object({
     email: z.string().email("Invalid Email address").max(100, "Email too long"),
-    otp: z.string().min(1, "OTP is required"),
+    otp: z.string().min(1, "OTP is required").max(6, "OTP must not exceed 6 digits"),
     purpose: z.enum([
       OTP_PURPOSE.USER_REGISTER,
       OTP_PURPOSE.TRAINER_REGISTER,
@@ -128,6 +129,6 @@ export const resetPasswordSchema = z.object({
 
 export const googleLoginSchema = z.object({
   body: z.object({
-    idToken: z.string().min(1, "Google ID token is required"),
+    idToken: z.string().min(1, "Google ID token is required").max(5000, "ID token is too long"),
   }),
 });

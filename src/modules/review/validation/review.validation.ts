@@ -98,7 +98,7 @@ export const getReviewsQuerySchema = z.object({
       limit: z
         .string()
         .regex(/^\d+$/, "Limit must be a positive number.")
-        .transform(Number)
+        .transform((val) => Math.min(Number(val), 50))
         .optional(),
       sortBy: z.enum(REVIEW_SORT_FIELDS).optional(),
       sortOrder: z.enum(["asc", "desc"]).optional(),
@@ -125,7 +125,7 @@ export const getPublicTrainerReviewsSchema = z.object({
       limit: z
         .string()
         .regex(/^\d+$/, "Limit must be a positive number.")
-        .transform(Number)
+        .transform((val) => Math.min(Number(val), 50))
         .optional(),
       sortBy: z.enum(REVIEW_SORT_FIELDS).optional(),
       sortOrder: z.enum(["asc", "desc"]).optional(),

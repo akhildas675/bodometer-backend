@@ -6,10 +6,10 @@ import { ROLES } from "@/constants/constant.values.ts/roles";
 
 export const updateUserProfileSchema = z.object({
   body: z.object({
-    name: z.string().min(1, "Name is required").optional(),
+    name: z.string().min(1, "Name is required").max(50, "Name must not exceed 50 characters").optional(),
     userName: z
       .string()
-      .min(3, "Username must be at least 3 characters")
+      .min(3, "Username must be at least 3 characters").max(30, "Username must not exceed 30 characters")
       .optional(),
     phoneNumber: z
       .string()
@@ -44,8 +44,8 @@ export const trainerIdParamSchema = z.object({
 
 export const changePasswordSchema = z.object({
   body: z.object({
-    currentPassword: z.string().min(1, "Old password is required"),
-    newPassword: z.string().min(1, "New password is required"),
+    currentPassword: z.string().min(1, "Old password is required").max(50, "Password is too long"),
+    newPassword: z.string().min(8, "New password must be at least 8 characters").max(50, "Password is too long").regex(/[A-Z]/, "Password must contain at least one uppercase letter").regex(/[0-9]/, "Password must contain at least one number").regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character"),
   })
 });
 
@@ -115,11 +115,11 @@ export const onboardingAnswerQuestionIdParamSchema = z.object({
 
 export const bmiCalculationSchema = z.object({
   body: z.object({
-    height: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().positive().optional()),
-    weight: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().positive().optional()),
+    height: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().positive().max(300, "Height seems unrealistic").optional()),
+    weight: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().positive().max(500, "Weight seems unrealistic").optional()),
     unit: z.enum(["metric", "imperial"]),
-    heightFt: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().nonnegative().optional()),
-    heightIn: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().nonnegative().optional()),
+    heightFt: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().nonnegative().max(9, "Height in feet seems unrealistic").optional()),
+    heightIn: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().nonnegative().max(11, "Height in inches seems unrealistic").optional()),
     gender: z.nativeEnum(GENDER, { message: "Invalid gender" }).optional(),
   })
 });
@@ -127,8 +127,8 @@ export const bmiCalculationSchema = z.object({
 export const exerciseQuerySchema = z.object({
   query: z.object({
     page: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().min(1).optional()),
-    limit: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().min(1).optional()),
-    search: z.string().optional(),
+    limit: z.preprocess((val) => (val === "" || val === null ? undefined : val), z.coerce.number().min(1).max(100, "Limit must not exceed 100").optional()),
+    search: z.string().max(100, "Search term too long").optional(),
     difficulty: z.nativeEnum(DIFFICULTY_LEVEL).optional(),
     targetMuscleId: z.string().optional(),
     categoryId: z.string().optional(),
@@ -150,8 +150,8 @@ export const getTrainerSlotsSchema = z.object({
 export const getUsersSchema = z.object({
     query: z.object({
         page: z.coerce.number().min(1).optional(),
-        limit: z.coerce.number().min(1).optional(),
-        search: z.string().optional(),
+        limit: z.coerce.number().min(1).max(100, "Limit must not exceed 100").optional(),
+        search: z.string().max(100, "Search term too long").optional(),
         role: z.enum([ROLES.USER] as [string, ...string[]]).optional(),
         isBlocked: z.coerce.boolean().optional(),
         sortBy: z.string().optional(),

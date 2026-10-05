@@ -50,7 +50,8 @@ export const walletTransactionsQuerySchema =
 export const addFundsSchema = z.object({
   amount: z.coerce
     .number()
-    .positive(),
+    .positive()
+    .max(10000, "Amount must not exceed 10000"),
 });
 
 
@@ -58,7 +59,8 @@ export const createTopupCheckoutSchema =
   z.object({
     amount: z.coerce
       .number()
-      .positive(),
+      .positive()
+      .max(10000, "Amount must not exceed 10000"),
   });
 
 
@@ -66,10 +68,12 @@ export const verifyTopupPaymentSchema =
   z.object({
     amount: z.coerce
       .number()
-      .positive(),
+      .positive()
+      .max(10000, "Amount must not exceed 10000"),
 
     sessionId: z
       .string()
       .trim()
-      .min(1),
+      .min(1)
+      .max(200, "Session ID too long"),
   });
