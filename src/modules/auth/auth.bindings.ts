@@ -2,7 +2,7 @@ import { Container } from "inversify";
 import { AUTH_TYPES } from "./auth.types";import { IAuthService } from "./interface/auth-service.interface";
 import { AuthService } from "./service/auth.services";
 import { IOtpService } from '@/modules/otp/interface/otp-service.interface';
-import { OtpService } from "@/services/otp/otp.services";
+import { OtpService } from "@/modules/otp/service/otp.services";
 import { ISessionService } from "./interface/session-service.interface";
 import { SessionService } from "@/services/session/session.services";
 import { AuthController } from "./controller/auth.controller";

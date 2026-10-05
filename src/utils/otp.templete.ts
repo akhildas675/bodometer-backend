@@ -1,4 +1,4 @@
-import { bodometerEmailLayout } from "../mail.service/emai.templete";
+import { bodometerEmailLayout } from "../services/mail.service/email.templete";
 
 
 export const otpEmailTemplate = (otp: string): string => {
@@ -32,15 +32,7 @@ export const otpEmailTemplate = (otp: string): string => {
         Please do not share this code with anyone.
       </p>
 
-      <div class="notice">
-
-        <p class="notice-text">
-          If you did not request this verification code,
-          you can safely ignore this email. Your account
-          remains secure.
-        </p>
-
-      </div>
+      
 
       <p class="security-text">
         For your security, Bodometer will never ask you

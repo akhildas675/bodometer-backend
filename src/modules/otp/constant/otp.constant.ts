@@ -1,0 +1,11 @@
+export const OTP_CONFIG = {
+  LENGTH: 6,
+
+  OTP_EXPIRY_MINUTES: 5,
+
+  MAX_VERIFY_ATTEMPTS: 5,
+
+  MAX_RESEND_COUNT: 2,
+
+  RESEND_WINDOW_HOURS: 2,
+} as const;
