@@ -8,10 +8,15 @@ import { SessionService } from "@/services/session/session.services";
 import { AuthController } from "./controller/auth.controller";
 import { IMailService } from '@/modules/otp/interface/mail-service.interface';
 import { MailService } from "@/services/mail.service/mail.services";
+import { IOtpRepository } from "../otp/interface/otp-repository.interface";
+import { OtpRepository } from "../otp/repository/otp.repository";
 
 export const loadAuthBindings=(
     container:Container
 )=>{
+
+  container.bind<IOtpRepository>(AUTH_TYPES.OtpRepository)
+  .to(OtpRepository)
   
 
     container.bind<IAuthService>(AUTH_TYPES.AuthService)
