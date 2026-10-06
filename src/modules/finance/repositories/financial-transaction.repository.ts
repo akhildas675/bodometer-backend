@@ -333,7 +333,19 @@ export class FinancialTransactionRepository
       },
     ];
 
-    return FinancialTransactionModel.aggregate<TrainerChartPoint>(pipeline).exec();
+    const rawResults = await FinancialTransactionModel.aggregate<TrainerChartPoint>(pipeline).exec();
+    const dataMap = new Map<string, number>();
+    for (const row of rawResults) {
+      if (row.label) {
+        dataMap.set(row.label, row.earnings);
+      }
+    }
+
+    const buckets = this.generateBuckets(period, from, to);
+    return buckets.map((label) => ({
+      label,
+      earnings: dataMap.get(label) ?? 0,
+    }));
   }
 
   async aggregateAdminChart(
@@ -369,7 +381,81 @@ export class FinancialTransactionRepository
       },
     ];
 
-    return FinancialTransactionModel.aggregate<AdminChartPoint>(pipeline).exec();
+    const rawResults = await FinancialTransactionModel.aggregate<AdminChartPoint>(pipeline).exec();
+    const dataMap = new Map<string, AdminChartPoint>();
+    for (const row of rawResults) {
+      if (row.label) {
+        dataMap.set(row.label, row);
+      }
+    }
+
+    const buckets = this.generateBuckets(period, from, to);
+    return buckets.map((label) => {
+      const item = dataMap.get(label);
+      return {
+        label,
+        grossRevenue: item?.grossRevenue ?? 0,
+        trainerEarnings: item?.trainerEarnings ?? 0,
+        platformEarnings: item?.platformEarnings ?? 0,
+      };
+    });
+  }
+
+  private generateBuckets(period: ChartPeriod, from: Date, to: Date): string[] {
+    const buckets: string[] = [];
+    const current = new Date(from);
+    const end = new Date(to);
+
+    if (period === "daily") {
+      while (current <= end) {
+        buckets.push(current.toISOString().slice(0, 10));
+        current.setUTCDate(current.getUTCDate() + 1);
+      }
+    } else if (period === "weekly") {
+      const seen = new Set<string>();
+      while (current <= end) {
+        const label = this.getIsoWeekLabel(current);
+        if (!seen.has(label)) {
+          seen.add(label);
+          buckets.push(label);
+        }
+        current.setUTCDate(current.getUTCDate() + 7);
+      }
+      const endLabel = this.getIsoWeekLabel(end);
+      if (!seen.has(endLabel)) {
+        seen.add(endLabel);
+        buckets.push(endLabel);
+      }
+    } else {
+      const seen = new Set<string>();
+      while (current <= end) {
+        const yr = current.getUTCFullYear();
+        const mo = String(current.getUTCMonth() + 1).padStart(2, "0");
+        const label = `${yr}-${mo}`;
+        if (!seen.has(label)) {
+          seen.add(label);
+          buckets.push(label);
+        }
+        current.setUTCMonth(current.getUTCMonth() + 1);
+        current.setUTCDate(1);
+      }
+      const endLabel = `${end.getUTCFullYear()}-${String(end.getUTCMonth() + 1).padStart(2, "0")}`;
+      if (!seen.has(endLabel)) {
+        seen.add(endLabel);
+        buckets.push(endLabel);
+      }
+    }
+
+    return buckets;
+  }
+
+  private getIsoWeekLabel(d: Date): string {
+    const target = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+    const dayNum = target.getUTCDay() || 7;
+    target.setUTCDate(target.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil((((target.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+    return `${target.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
   }
 
   private buildLabelExpression(period: ChartPeriod): unknown {

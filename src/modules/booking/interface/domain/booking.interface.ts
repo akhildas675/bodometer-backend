@@ -53,6 +53,10 @@ export interface Booking {
   price: number;
   attendance: BookingAttendance;
   cancellation?: BookingCancellationSummary;
+  cancellationDetails?: unknown;
+  rescheduleRequest?: unknown;
+  sessionPhase?: string;
+  callAvailableAt?: string;
   userName?: string;
   userEmail?: string;
   trainerName?: string;

@@ -22,9 +22,15 @@ export interface VerifyPaymentInput {
   sessionId: string;
 }
 
+export interface RetryPaymentResponse {
+  checkoutUrl: string;
+  sessionId: string;
+}
+
 export interface IBookingService {
   createBooking(input: CreateBookingInput): Promise<CreateBookingResponse>;
   verifyBookingPayment(input: VerifyPaymentInput): Promise<Booking>;
+  retryPayment(bookingId: string, userId: string): Promise<RetryPaymentResponse>;
   getUserBookings(userId: string): Promise<Booking[]>;
   getTrainerBookings(trainerId: string): Promise<Booking[]>;
   getBookingById(bookingId: string): Promise<Booking | null>;

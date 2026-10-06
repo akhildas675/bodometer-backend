@@ -11,8 +11,7 @@ import { Booking, BookingStatus } from "../interface/domain/booking.interface";
 @injectable()
 export class BookingRepository
   extends BaseRepository<Booking, IBooking>
-  implements IBookingRepository
-{
+  implements IBookingRepository {
   constructor() {
     super(BookingModel);
   }
@@ -27,19 +26,19 @@ export class BookingRepository
       serviceId: doc.serviceId.toString(),
       serviceSnapshot: doc.serviceSnapshot
         ? {
-            name: doc.serviceSnapshot.name,
-            durationMinutes: doc.serviceSnapshot.durationMinutes,
-            bookingMode: doc.serviceSnapshot.bookingMode,
-          }
+          name: doc.serviceSnapshot.name,
+          durationMinutes: doc.serviceSnapshot.durationMinutes,
+          bookingMode: doc.serviceSnapshot.bookingMode,
+        }
         : undefined,
       pricing: doc.pricing
         ? {
-            baseAmount: doc.pricing.baseAmount,
-            discountAmount: doc.pricing.discountAmount,
-            serviceFee: doc.pricing.serviceFee,
-            totalAmount: doc.pricing.totalAmount,
-            currency: doc.pricing.currency,
-          }
+          baseAmount: doc.pricing.baseAmount,
+          discountAmount: doc.pricing.discountAmount,
+          serviceFee: doc.pricing.serviceFee,
+          totalAmount: doc.pricing.totalAmount,
+          currency: doc.pricing.currency,
+        }
         : undefined,
       bookingDate: doc.bookingDate,
       startTime: doc.startTime,
@@ -55,10 +54,10 @@ export class BookingRepository
       },
       cancellation: doc.cancellation
         ? {
-            cancelledBy: doc.cancellation.cancelledBy?.toString(),
-            reason: doc.cancellation.reason,
-            cancelledAt: doc.cancellation.cancelledAt,
-          }
+          cancelledBy: doc.cancellation.cancelledBy?.toString(),
+          reason: doc.cancellation.reason,
+          cancelledAt: doc.cancellation.cancelledAt,
+        }
         : undefined,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
@@ -110,10 +109,13 @@ export class BookingRepository
   }
 
   async findByTrainerAndDate(trainerId: string, date: Date): Promise<Booking[]> {
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+    // Build UTC-anchored day boundaries so the query is timezone-stable
+    // regardless of where the server process is running.
+    const y = date.getUTCFullYear();
+    const m = date.getUTCMonth();
+    const d = date.getUTCDate();
+    const startOfDay = new Date(Date.UTC(y, m, d, 0, 0, 0, 0));
+    const endOfDay = new Date(Date.UTC(y, m, d, 23, 59, 59, 999));
 
     const docs = await BookingModel.find({
       trainerId,

@@ -12,4 +12,5 @@ export const BOOKING_PATHS = {
   VERIFY_PAYMENT: "/verify-payment",
   USER_BOOKINGS: "/user/list",
   TRAINER_BOOKINGS: "/trainer/list",
+  RETRY_PAYMENT: "/:id/retry-payment",
 } as const;

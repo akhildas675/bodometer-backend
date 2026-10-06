@@ -528,11 +528,12 @@ export class BookingLifecycleService implements IBookingLifecycleService {
     if (filter === "history") {
       return enriched.filter(
         (b) =>
-          b.status === BOOKING_STATUS.COMPLETED ||
-          b.status === BOOKING_STATUS.CANCELLED ||
-          b.status === BOOKING_STATUS.NO_SHOW ||
-          b.status === BOOKING_STATUS.EXPIRED ||
-          new Date(b.endTime) < now,
+          b.status !== BOOKING_STATUS.PENDING_PAYMENT &&
+          (b.status === BOOKING_STATUS.COMPLETED ||
+            b.status === BOOKING_STATUS.CANCELLED ||
+            b.status === BOOKING_STATUS.NO_SHOW ||
+            b.status === BOOKING_STATUS.EXPIRED ||
+            new Date(b.endTime) < now),
       );
     }
 

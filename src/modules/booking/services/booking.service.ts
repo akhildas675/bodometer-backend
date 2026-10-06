@@ -6,6 +6,8 @@ import { USER_TYPES } from "@/modules/user/user.types";
 
 import { IBookingRepository } from "../interface/repository.interface/booking-repository.interface";
 import { IBookingAuditLogRepository } from "../interface/repository.interface/booking-audit-log-repository.interface";
+import { IBookingCancellationRepository } from "../repositories/booking-cancellation.repository";
+import { IBookingRescheduleRequestRepository } from "../repositories/booking-reschedule-request.repository";
 import { IBookingSlotEngineService } from "../interface/service.interface/booking-slot-engine-service.interface";
 import { IPaymentService } from "@/modules/payment/interface/stripe-service.interface";
 import { ICoachingRepository } from "@/modules/coaching/interface/coaching-repository.interface";
@@ -72,7 +74,13 @@ export class BookingService implements IBookingService {
 
     @inject(SUBSCRIPTION_TYPES.UserSubscriptionRepository)
     private _userSubscriptionRepository: IUserSubscriptionRepository,
-  ) {}
+
+    @inject(BOOKING_TYPES.BookingCancellationRepository)
+    private _cancellationRepository: IBookingCancellationRepository,
+
+    @inject(BOOKING_TYPES.BookingRescheduleRequestRepository)
+    private _rescheduleRepository: IBookingRescheduleRequestRepository,
+  ) { }
 
   async createBooking(input: CreateBookingInput): Promise<CreateBookingResponse> {
     const { userId, trainerId, serviceId, bookingDate, startTime, endTime, bufferEndTime } = input;
@@ -171,7 +179,7 @@ export class BookingService implements IBookingService {
     let sessionId: string | undefined;
 
     if (price > 0) {
-      const wallet = await this._walletService.getOrCreateWallet(userId,WALLET_OWNER_TYPE.USER);
+      const wallet = await this._walletService.getOrCreateWallet(userId, WALLET_OWNER_TYPE.USER);
       const chosenMethod = input.paymentMethod || (wallet.balance >= price ? "WALLET" : "ONLINE");
 
       if (chosenMethod === "WALLET") {
@@ -183,8 +191,8 @@ export class BookingService implements IBookingService {
         }
 
         const { transaction } = await this._walletService.debitWallet({
-          ownerId:userId,
-          ownerType:WALLET_OWNER_TYPE.USER,
+          ownerId: userId,
+          ownerType: WALLET_OWNER_TYPE.USER,
           amount: price,
           source: WALLET_TRANSACTION_SOURCE.BOOKING_PAYMENT,
           bookingId: booking.id,
@@ -209,8 +217,8 @@ export class BookingService implements IBookingService {
         const remainingAmount = price - walletUsed;
 
         const { transaction } = await this._walletService.debitWallet({
-          ownerId:userId,
-          ownerType:WALLET_OWNER_TYPE.USER,
+          ownerId: userId,
+          ownerType: WALLET_OWNER_TYPE.USER,
           amount: walletUsed,
           source: WALLET_TRANSACTION_SOURCE.BOOKING_PAYMENT,
           bookingId: booking.id,
@@ -349,6 +357,46 @@ export class BookingService implements IBookingService {
     return updated;
   }
 
+  async retryPayment(bookingId: string, userId: string): Promise<{ checkoutUrl: string; sessionId: string }> {
+    const booking = await this._bookingRepository.findById(bookingId);
+    if (!booking) {
+      throw new AppError(STATUS.NOT_FOUND, MESSAGES.BOOKING.BOOKING_RECORD_NOT_FOUND);
+    }
+
+    if (booking.userId !== userId) {
+      throw new AppError(STATUS.FORBIDDEN, "You are not authorized to retry payment for this booking.");
+    }
+
+    if (booking.status !== BOOKING_STATUS.PENDING_PAYMENT) {
+      throw new AppError(STATUS.BAD_REQUEST, `Cannot retry payment for a booking with status: ${booking.status}.`);
+    }
+
+    const coachingService = await this._coachingRepository.getCoachingServiceById(booking.serviceId);
+    const serviceName = coachingService?.serviceType || "Coaching Session";
+
+    const frontendBaseUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    try {
+      const checkoutResult = await this._paymentService.createCheckoutSession({
+        planName: serviceName,
+        description: `Retry payment for coaching session #${booking.bookingNumber}`,
+        amount: booking.price,
+        currency: "inr",
+        successUrl: `${frontendBaseUrl}/client/booking/success?bookingId=${booking.id}&session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${frontendBaseUrl}/client/booking/cancel?bookingId=${booking.id}`,
+        metadata: {
+          bookingId: booking.id,
+          userId,
+          trainerId: booking.trainerId,
+        },
+      });
+
+      return { checkoutUrl: checkoutResult.url, sessionId: checkoutResult.sessionId };
+    } catch (stripeErr) {
+      console.error("Stripe Retry Checkout Error:", stripeErr);
+      throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.BOOKING.PAYMENT_CHECKOUT_FAILED);
+    }
+  }
+
   private async resolveTrainerUserId(trainerId: string): Promise<string> {
     const userDoc = await this._userRepository.findById(trainerId);
     if (userDoc) return trainerId;
@@ -362,6 +410,7 @@ export class BookingService implements IBookingService {
   async getUserBookings(userId: string): Promise<Booking[]> {
     const bookings = await this._bookingRepository.findByUserId(userId);
     const trainerMap = new Map<string, { name?: string; email?: string }>();
+    const now = Date.now();
     for (const b of bookings) {
       if (!trainerMap.has(b.trainerId)) {
         let trainerUser = await this._userRepository.findById(b.trainerId);
@@ -380,6 +429,28 @@ export class BookingService implements IBookingService {
         b.trainerName = tInfo.name;
         b.trainerEmail = tInfo.email;
       }
+
+      const startMs = new Date(b.startTime).getTime();
+      const endMs = new Date(b.endTime).getTime();
+      const callAvailableMs = startMs - 5 * 60 * 1000;
+      b.callAvailableAt = new Date(callAvailableMs).toISOString();
+
+      if (
+        b.status === BOOKING_STATUS.COMPLETED ||
+        b.status === BOOKING_STATUS.CANCELLED ||
+        b.status === BOOKING_STATUS.NO_SHOW ||
+        b.status === BOOKING_STATUS.EXPIRED ||
+        now >= endMs
+      ) {
+        b.sessionPhase = "ENDED";
+      } else if (now >= callAvailableMs && now < endMs) {
+        b.sessionPhase = "CALL_AVAILABLE";
+      } else {
+        b.sessionPhase = "UPCOMING";
+      }
+
+      b.cancellationDetails = await this._cancellationRepository.findByBookingId(b.id);
+      b.rescheduleRequest = await this._rescheduleRepository.findPendingByBookingId(b.id);
     }
     return bookings;
   }

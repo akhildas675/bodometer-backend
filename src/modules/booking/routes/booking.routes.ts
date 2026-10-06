@@ -178,6 +178,13 @@ bookingRoute.get(
   trainerSchedulingController.getBookingById,
 );
 
+// Retry Payment Route (for PENDING_PAYMENT bookings)
+bookingRoute.post(
+  BOOKING_PATHS.RETRY_PAYMENT,
+  ROLE_GUARD.USER_GUARD,
+  trainerSchedulingController.retryBookingPayment,
+);
+
 // Cancellation Routes
 bookingRoute.post(
   "/:id/cancel",

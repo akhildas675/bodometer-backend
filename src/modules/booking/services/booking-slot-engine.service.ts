@@ -3,6 +3,7 @@ import { BOOKING_TYPES } from "../booking.types";
 import { USER_TYPES } from "@/modules/user/user.types";
 import { TRAINER_TYPES } from "@/modules/trainer/trainer.types";
 import { COACHING_TYPES } from "@/modules/coaching/coaching.types";
+import { DateTime, IANAZone } from "luxon";
 
 import { ITrainerAvailabilityRepository } from "../interface/repository.interface/trainer.availability-repository.interface";
 import { ITrainerBookingSettingsRepository } from "../interface/repository.interface/trainer-booking.setting-repository.interface";
@@ -25,17 +26,6 @@ import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { BOOKING_STATUS } from "@/constants/constant.values.ts/booking.constant";
 import { validateTrainerEligibility } from "../validation/trainer-scheduling-setup.validation";
 
-function format12Hour(date: Date): string {
-  let hours = date.getHours();
-  const minutes = date.getMinutes();
-  const ampm = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  const strMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
-  const strHours = hours < 10 ? `0${hours}` : `${hours}`;
-  return `${strHours}:${strMinutes} ${ampm}`;
-}
-
 function toYYYYMMDD(dateInput: Date | string): string {
   if (!dateInput) return "";
   if (typeof dateInput === "string") {
@@ -53,6 +43,12 @@ function toYYYYMMDD(dateInput: Date | string): string {
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
+}
+
+/** Resolve and validate trainer IANA timezone, fall back to UTC. */
+function resolveZone(timeZone?: string): string {
+  if (timeZone && IANAZone.isValidZone(timeZone)) return timeZone;
+  return "UTC";
 }
 
 import { IBookingRescheduleRequestRepository } from "../repositories/booking-reschedule-request.repository";
@@ -86,7 +82,7 @@ export class BookingSlotEngineService implements IBookingSlotEngineService {
 
     @inject(COACHING_TYPES.CoachingRepository)
     private _coachingRepository: ICoachingRepository,
-  ) {}
+  ) { }
 
   async calculateAvailableSlots(
     params: GetAvailableSlotsParams,
@@ -105,10 +101,9 @@ export class BookingSlotEngineService implements IBookingSlotEngineService {
       }
     }
 
-    
+
     const targetDateStr = toYYYYMMDD(params.date);
     const [year, month, day] = targetDateStr.split("-").map(Number);
-    const targetDate = new Date(year, month - 1, day, 0, 0, 0, 0);
 
     // eligibility check
     await validateTrainerEligibility(
@@ -164,7 +159,7 @@ export class BookingSlotEngineService implements IBookingSlotEngineService {
     });
 
     if (isLeave) {
-      return []; 
+      return [];
     }
 
     // Check Active Day Override
@@ -181,17 +176,12 @@ export class BookingSlotEngineService implements IBookingSlotEngineService {
     if (dayOverride && dayOverride.shifts.length > 0) {
       shiftsToUse = dayOverride.shifts;
     } else {
-      // Use Weekly Schedule
-      const dayNames = [
-        "SUNDAY",
-        "MONDAY",
-        "TUESDAY",
-        "WEDNESDAY",
-        "THURSDAY",
-        "FRIDAY",
-        "SATURDAY",
-      ];
-      const targetDayName = dayNames[targetDate.getDay()];
+      // Use Weekly Schedule — determine day-of-week in trainer's timezone
+      const trainerZone = resolveZone(availability.timeZone);
+      const targetDayName = DateTime
+        .fromObject({ year, month, day }, { zone: trainerZone })
+        .toFormat("EEEE")
+        .toUpperCase(); // e.g. "MONDAY"
 
       const daySchedule = availability.weeklySchedule.find(
         (ds) =>
@@ -215,8 +205,10 @@ export class BookingSlotEngineService implements IBookingSlotEngineService {
     const advanceNoticeHours = Number(settings.advanceNoticeHours) || 2;
     const maxBookingsPerDay = Number(settings.maximumBookingPerDay) || 8;
 
-    const now = new Date();
-    const minAdvanceTime = new Date(now.getTime() + advanceNoticeHours * 3600 * 1000);
+    // All slot arithmetic happens in the trainer's IANA timezone.
+    const trainerZone = resolveZone(availability.timeZone);
+    const nowUtcMs = Date.now();
+    const minAdvanceUtcMs = nowUtcMs + advanceNoticeHours * 3600 * 1000;
 
     //  Generate Candidate Slots
     const candidateSlots: AvailableSlot[] = [];
@@ -228,36 +220,30 @@ export class BookingSlotEngineService implements IBookingSlotEngineService {
         const currentEndMin = currentStartMin + durationMinutes;
         const currentBufferEndMin = currentEndMin + bufferMinutes;
 
-        const slotStartTime = new Date(targetDate);
-        slotStartTime.setHours(
-          Math.floor(currentStartMin / 60),
-          currentStartMin % 60,
-          0,
-          0,
+        // Build DateTime objects in the trainer's timezone from (year, month, day, hour, minute).
+        // This ensures the slot instant is correct regardless of where the server runs.
+        const slotStart = DateTime.fromObject(
+          { year, month, day, hour: Math.floor(currentStartMin / 60), minute: currentStartMin % 60, second: 0, millisecond: 0 },
+          { zone: trainerZone },
+        );
+        const slotEnd = DateTime.fromObject(
+          { year, month, day, hour: Math.floor(currentEndMin / 60), minute: currentEndMin % 60, second: 0, millisecond: 0 },
+          { zone: trainerZone },
+        );
+        const slotBufferEnd = DateTime.fromObject(
+          { year, month, day, hour: Math.floor(currentBufferEndMin / 60), minute: currentBufferEndMin % 60, second: 0, millisecond: 0 },
+          { zone: trainerZone },
         );
 
-        const slotEndTime = new Date(targetDate);
-        slotEndTime.setHours(
-          Math.floor(currentEndMin / 60),
-          currentEndMin % 60,
-          0,
-          0,
-        );
-
-        const slotBufferEndTime = new Date(targetDate);
-        slotBufferEndTime.setHours(
-          Math.floor(currentBufferEndMin / 60),
-          currentBufferEndMin % 60,
-          0,
-          0,
-        );
-
-        if (slotStartTime >= minAdvanceTime) {
+        if (slotStart.toMillis() >= minAdvanceUtcMs) {
+          // formattedTime is in the trainer's local time (what was intended when shifts were configured)
+          const fmt = (dt: DateTime) =>
+            dt.toFormat("hh:mm a").replace("AM", "AM").replace("PM", "PM");
           candidateSlots.push({
-            startTime: slotStartTime.toISOString(),
-            endTime: slotEndTime.toISOString(),
-            bufferEndTime: slotBufferEndTime.toISOString(),
-            formattedTime: `${format12Hour(slotStartTime)} - ${format12Hour(slotEndTime)}`,
+            startTime: slotStart.toUTC().toISO()!,
+            endTime: slotEnd.toUTC().toISO()!,
+            bufferEndTime: slotBufferEnd.toUTC().toISO()!,
+            formattedTime: `${fmt(slotStart)} - ${fmt(slotEnd)}`,
             startMinute: currentStartMin,
             endMinute: currentEndMin,
           });
@@ -268,8 +254,10 @@ export class BookingSlotEngineService implements IBookingSlotEngineService {
     }
 
     // Existing Non Cancelled Bookings for Trainer & Remove Conflicts
+    // Use a UTC-anchored Date for the repository day-boundary query
+    const queryDate = new Date(Date.UTC(year, month - 1, day));
     const existingBookings =
-      await this._bookingRepository.findByTrainerAndDate(actualUserId, targetDate);
+      await this._bookingRepository.findByTrainerAndDate(actualUserId, queryDate);
 
     // fetch active pending reschedule proposals for trainer
     const pendingReschedules =

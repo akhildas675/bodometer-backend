@@ -505,4 +505,33 @@ export class TrainerSchedulingController {
       next(error);
     }
   };
+
+  retryBookingPayment = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const userId = req.user?.id;
+      const bookingId = req.params.id;
+
+      if (!userId) {
+        throw new AppError(STATUS.UNAUTHORIZED, MESSAGES.COMMON.NOT_FOUND);
+      }
+
+      if (!bookingId) {
+        throw new AppError(STATUS.BAD_REQUEST, "Booking ID is required.");
+      }
+
+      const result = await this._bookingService.retryPayment(bookingId, userId);
+
+      new SuccessResponse(
+        STATUS.OK,
+        "Retry checkout session created. Redirecting to payment.",
+        result,
+      ).send(res);
+    } catch (error: unknown) {
+      next(error);
+    }
+  };
 }

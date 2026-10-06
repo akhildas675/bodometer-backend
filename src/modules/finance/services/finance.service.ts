@@ -147,9 +147,20 @@ export class FinanceService implements IFinanceService {
     from?: Date,
     to?: Date,
   ): Promise<TrainerChartPoint[]> {
-    const toDate = to ?? new Date();
-    const fromDate =
-      from ?? new Date(toDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const toDate = to && !isNaN(to.getTime()) ? to : new Date();
+    let fromDate = from && !isNaN(from.getTime()) ? from : undefined;
+    if (!fromDate) {
+      if (period === "daily") {
+        fromDate = new Date(toDate.getTime() - 29 * 24 * 60 * 60 * 1000);
+      } else if (period === "weekly") {
+        fromDate = new Date(toDate.getTime() - 11 * 7 * 24 * 60 * 60 * 1000);
+      } else {
+        const d = new Date(toDate);
+        d.setUTCMonth(d.getUTCMonth() - 11);
+        d.setUTCDate(1);
+        fromDate = d;
+      }
+    }
     return this._transactionRepository.aggregateTrainerChart(
       trainerId,
       period,
@@ -185,9 +196,20 @@ export class FinanceService implements IFinanceService {
     from?: Date,
     to?: Date,
   ): Promise<AdminChartPoint[]> {
-    const toDate = to ?? new Date();
-    const fromDate =
-      from ?? new Date(toDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const toDate = to && !isNaN(to.getTime()) ? to : new Date();
+    let fromDate = from && !isNaN(from.getTime()) ? from : undefined;
+    if (!fromDate) {
+      if (period === "daily") {
+        fromDate = new Date(toDate.getTime() - 29 * 24 * 60 * 60 * 1000);
+      } else if (period === "weekly") {
+        fromDate = new Date(toDate.getTime() - 11 * 7 * 24 * 60 * 60 * 1000);
+      } else {
+        const d = new Date(toDate);
+        d.setUTCMonth(d.getUTCMonth() - 11);
+        d.setUTCDate(1);
+        fromDate = d;
+      }
+    }
     return this._transactionRepository.aggregateAdminChart(
       period,
       fromDate,
