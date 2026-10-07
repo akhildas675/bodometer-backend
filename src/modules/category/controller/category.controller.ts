@@ -31,6 +31,7 @@ export class CategoryController {
 
       await this._categoryService.createCategory(data);
 
+      
       new SuccessResponse(
         STATUS.CREATED,
         MESSAGES.CATEGORY.CATEGORY_CREATED,
@@ -79,6 +80,8 @@ export class CategoryController {
       }
 
       const result = await this._categoryService.getCategoryById(categoryId);
+      console.log("Category data",result)
+
 
       new SuccessResponse(STATUS.OK, MESSAGES.COMMON.SUCCESS, result).send(res);
     } catch (error: unknown) {
