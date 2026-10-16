@@ -49,11 +49,8 @@ export class TrainerController {
 
   getTrainers = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const query: GetAllTrainersDto = {
-        ...parsePaginationQuery(req)
-      };
-
-      const role = req.user?.role; // Extract user role
+      const query = parsePaginationQuery<GetAllTrainersDto>(req);
+      const role = req.user?.role;
 
       const result = await this._trainerService.getTrainers(query, role);
       new SuccessResponse(
@@ -224,8 +221,6 @@ export class TrainerController {
       }
     }
   };
-
-  //Trainer profile
 
   submitTrainerProfile = async (
     req: AuthRequest,

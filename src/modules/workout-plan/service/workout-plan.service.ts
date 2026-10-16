@@ -63,6 +63,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
   async generateWorkout(userId: string): Promise<WorkoutPlanDetailDto> {
     const hasActiveSub = await this.getActiveSubscription(userId);
     const planType = hasActiveSub ? PLAN_TYPE.PREMIUM : PLAN_TYPE.FREE;
+    
     if (generationLocks.has(userId)) {
       throw new AppError(STATUS.CONFLICT, MESSAGES.WORKOUT_PLAN.GENERATION_CONFLICT);
     }
@@ -72,12 +73,12 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       const onboardingAnswers = await this._answerRepo.getUserAnswers(userId);
       
       if (planType === PLAN_TYPE.PREMIUM) {
-      if (!onboardingAnswers || !onboardingAnswers.completed) {
-        throw new AppError(STATUS.BAD_REQUEST, MESSAGES.WORKOUT_PLAN.ONBOARDING_REQUIRED);
+        if (!onboardingAnswers || !onboardingAnswers.completed) {
+          throw new AppError(STATUS.BAD_REQUEST, MESSAGES.WORKOUT_PLAN.ONBOARDING_REQUIRED);
+        }
       }
-    }
 
-    const { generationStatus } = await this.getWorkoutPlans(userId);
+    const { generationStatus } = await this.getWorkoutPlans(userId, true);
 
     if (!generationStatus.canGenerate) {
       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.WORKOUT_PLAN.GENERATE_LOCKED);
@@ -102,8 +103,6 @@ export class WorkoutPlanService implements IWorkoutPlanService {
     );
 
     const userDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
-    
-    
     const samePlanTypeDocs = userDocs.filter(doc => doc.planType === planType);
     const previousPlansCount = samePlanTypeDocs.length;
 
@@ -125,7 +124,6 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       workoutEnvironments: ex.workoutEnvironments,
     }));
 
-    // Only look at past 4 weeks of the same plan type for history
     const past4Weeks = samePlanTypeDocs.slice(-4).map(week => ({
       weekNumber: week.weekNumber,
       status: week.status,
@@ -217,7 +215,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
           userName: userDoc?.name || "User",
           workoutType: planType === PLAN_TYPE.PREMIUM ? "Premium" : "Free",
         },
-      }).catch((err) => console.error("Notification error:", err));
+      }).catch((err) => console.error(err));
       return result;
     } finally {
       generationLocks.delete(userId);
@@ -237,7 +235,6 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       const activeDoc = userDocs.find(doc => doc.status === WORKOUT_PLAN_STATUS.ACTIVE);
       const now = new Date();
       if (activeDoc && new Date(activeDoc.endDate) < now && !preventAutoGenerate) {
-   
         await this.generateWorkout(userId);
         const allDocs = await this._userWorkoutPlanRepo.findAllByUserId(userId);
         userDocs = allDocs.filter(doc => doc.planType === planType);
@@ -379,7 +376,7 @@ export class WorkoutPlanService implements IWorkoutPlanService {
           userName: userDoc?.name || "User",
           workoutName: day.dayName || `Day ${dayNumber}`,
         },
-      }).catch((err) => console.error("Notification error:", err));
+      }).catch((err) => console.error(err));
     }
 
     const plansResponse = await this.getWorkoutPlans(userId);
@@ -486,7 +483,6 @@ export class WorkoutPlanService implements IWorkoutPlanService {
         }
       }
     } else if (timeframe === TIMEFRAME.WEEKLY) {
-      // Weekly trend
       const weeklyTrends = plans.map(p => {
         const wDays = p.days.filter((d) => d.type === 'workout');
         const wCompleted = wDays.filter((d) => d.status === WORKOUT_DAY_STATUS.COMPLETED).length;
@@ -497,7 +493,6 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       }).reverse().slice(-5);
       trendData.push(...weeklyTrends);
     } else if (timeframe === TIMEFRAME.MONTHLY) {
-      // Monthly trend
       const monthlyMap = new Map<string, { planned: number, completed: number }>();
       for (const plan of plans) {
         if (plan.startDate) {
@@ -517,7 +512,6 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       trendData.push(...monthlyTrends);
     }
 
-    // timeframe
     const now = new Date();
     const today = new Date(now);
     today.setHours(0, 0, 0, 0);
@@ -587,7 +581,6 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       }
     }
 
-    // Active Week Progress
     let currentWeekProgress = 0;
     let todayWorkoutProgress = 0;
     if (activePlan) {
@@ -595,7 +588,6 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       const wCompleted = wDays.filter((d) => d.status === WORKOUT_DAY_STATUS.COMPLETED).length;
       currentWeekProgress = wDays.length > 0 ? Math.round((wCompleted / wDays.length) * 100) : 0;
 
-      // workout
       const todayDate = new Date();
       todayDate.setHours(0, 0, 0, 0);
       let targetDay = activePlan.days.find((d) => {
@@ -617,7 +609,6 @@ export class WorkoutPlanService implements IWorkoutPlanService {
       }
     }
 
-    // Current Streak Calculation
     let currentStreak = 0;
     const allDays = plans.flatMap(p => p.days).filter((d) => d.scheduledDate).sort((a, b) => new Date(b.scheduledDate!).getTime() - new Date(a.scheduledDate!).getTime());
     const todayDate = new Date();

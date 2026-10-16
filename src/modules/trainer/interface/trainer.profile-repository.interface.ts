@@ -12,13 +12,11 @@ export interface ITrainerProfileRepository extends IBaseRepository<
   TrainerProfile,
   ITrainerProfileDocument
 > {
-  // Trainer
   findByUserId(userId: string): Promise<TrainerProfile | null>;
   createProfile(data: Partial<TrainerProfile>): Promise<void>;
   updateToReapply(userId: string, data: ReapplyTrainerData): Promise<void>;
   fetchTrainerStatus(userId: string): Promise<TrainerStatusResponse | null>;
 
-  // Admin
   findAllWithUserPaginated(
     search?: string,
     sortBy?: string,
@@ -43,6 +41,8 @@ export interface ITrainerProfileRepository extends IBaseRepository<
     sortBy?: string,
     sortOrder?: "asc" | "desc",
     specializationId?: string,
+    minExperience?: number,
+    maxExperience?: number,
   ): Promise<{ data: ITrainerWithProfile[]; total: number }>;
 
   getTrainerByIdWithUser(

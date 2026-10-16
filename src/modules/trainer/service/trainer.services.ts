@@ -47,7 +47,6 @@ export class TrainerService implements ITrainerService {
     private _notificationService: INotificationService,
   ) { }
 
-  //Profile
   async fetchTrainer(trainerId: string): Promise<FindTrainerResponseDto> {
     const trainer = await this._userRepository.findById(trainerId);
     if (!trainer) {
@@ -187,7 +186,6 @@ export class TrainerService implements ITrainerService {
     return documentUrl;
   }
 
-  // Trainer Application
   async submitTrainerProfile(userId: string, data: TrainerProfileDto): Promise<void> {
     const existing = await this._trainerProfileRepository.findByUserId(userId);
 
@@ -318,7 +316,6 @@ export class TrainerService implements ITrainerService {
   }
 
 
-  // Admin Methods
   async getTrainers(
     query: GetAllTrainersDto,
     role?: string,
@@ -327,27 +324,16 @@ export class TrainerService implements ITrainerService {
       const page = query.page || 1;
       const limit = query.limit || 10;
 
-      let { data, total } = await this._trainerProfileRepository.getApprovedTrainersPaginated(
+      const { data, total } = await this._trainerProfileRepository.getApprovedTrainersPaginated(
         page,
         limit,
         query.search,
         query.sortBy,
         query.sortOrder,
         query.specializationId,
+        query.minExperience,
+        query.maxExperience,
       );
-
-      // Fallback: If filtered by specialization and no results found, fallback to top approved trainers
-      if (data.length === 0 && query.specializationId) {
-        const fallback = await this._trainerProfileRepository.getApprovedTrainersPaginated(
-          1,
-          limit,
-          query.search,
-          query.sortBy,
-          query.sortOrder,
-        );
-        data = fallback.data;
-        total = fallback.total;
-      }
 
       return {
         data: UserMappers.toListItemDtoArray(data),
@@ -537,100 +523,4 @@ export class TrainerService implements ITrainerService {
 
     return TrainerMapper.toRejectTrainerResponse(updated);
   }
-
-  // // --- TRAINER AVAILABILITY & BOOKINGS ---
-
-  // async createAvailability(trainerId: string, data: CreateAvailabilityDto): Promise<{ message: string; availability: TrainerAvailability }> {
-  //   const startDate = new Date(data.startDate);
-  //   const endDate = new Date(data.endDate);
-  //   startDate.setUTCHours(0, 0, 0, 0);
-  //   endDate.setUTCHours(0, 0, 0, 0);
-
-  //   if (startDate > endDate) {
-  //     throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.START_DATE_AFTER_END);
-  //   }
-
-  //   const diffDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-  //   if (diffDays >= 7) {
-  //     throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.MAX_AVAILABILITY_DAYS);
-  //   }
-
-  //   if (!data.timeWindows || data.timeWindows.length === 0) {
-  //     throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.TIME_WINDOW_REQUIRED);
-  //   }
-  //   if (data.timeWindows.length > 4) {
-  //     throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.MAX_TIME_WINDOWS);
-  //   }
-
-  //   const parseTime = (time: string): number => {
-  //     const [hours, minutes] = time.split(':').map(Number);
-  //     return hours * 60 + minutes;
-  //   };
-
-  //   for (const tw of data.timeWindows) {
-  //     const startMinutes = parseTime(tw.startTime);
-  //     const endMinutes = parseTime(tw.endTime);
-  //     if (startMinutes >= endMinutes) {
-  //       throw new AppError(STATUS.BAD_REQUEST, MESSAGES.TRAINER.START_TIME_AFTER_END);
-  //     }
-  //     if ((endMinutes - startMinutes) < data.sessionDuration) {
-  //       throw new AppError(STATUS.BAD_REQUEST, `Time window ${tw.startTime}-${tw.endTime} is shorter than the session duration.`);
-  //     }
-  //   }
-
-  //   const existingAvailabilities = await this._trainerAvailabilityRepo.findByTrainerId(trainerId);
-  //   const hasOverlap = existingAvailabilities.some(a => {
-  //     if (!a.isActive) return false;
-  //     const aStart = new Date(a.startDate).getTime();
-  //     const aEnd = new Date(a.endDate).getTime();
-  //     const bStart = startDate.getTime();
-  //     const bEnd = endDate.getTime();
-  //     return bStart <= aEnd && bEnd >= aStart;
-  //   });
-
-  //   if (hasOverlap) {
-  //     throw new AppError(STATUS.CONFLICT, MESSAGES.TRAINER.OVERLAPPING_AVAILABILITY_RULE);
-  //   }
-
-  //   const availabilityData = {
-  //     trainerId,
-  //     startDate,
-  //     endDate,
-  //     timeWindows: data.timeWindows,
-  //     sessionDuration: data.sessionDuration,
-  //     isActive: true,
-  //   };
-  //   const availability = await this._trainerAvailabilityRepo.create(availabilityData);
-
-  //   return {
-  //     message: `Availability configured successfully.`,
-  //     availability,
-  //   };
-  // }
-
-  // async getAvailabilities(trainerId: string, query: GetAvailabilitiesQueryDto): Promise<{ data: TrainerAvailability[]; pagination: PaginationMeta }> {
-  //   const page = query.page || 1;
-  //   const limit = query.limit || 10;
-  //   const sortBy = query.sortBy || 'createdAt';
-  //   const sortOrder = query.sortOrder || 'desc';
-  //   const status = query.status;
-
-  //   return this._trainerAvailabilityRepo.findByTrainerIdPaginated(trainerId, page, limit, sortBy, sortOrder, status);
-  // }
-
-  // async updateAvailabilityStatus(trainerId: string, availabilityId: string, data: UpdateAvailabilityDto): Promise<TrainerAvailability> {
-  //   const availability = await this._trainerAvailabilityRepo.findById(availabilityId);
-  //   if (!availability) {
-  //     throw new AppError(STATUS.NOT_FOUND, MESSAGES.TRAINER.AVAILABILITY_NOT_FOUND);
-  //   }
-  //   if (availability.trainerId.toString() !== trainerId) {
-  //     throw new AppError(STATUS.FORBIDDEN, MESSAGES.COMMON.ACCESS_DENIED);
-  //   }
-
-  //   const updated = await this._trainerAvailabilityRepo.updateAvailabilityStatus(availabilityId, data.isActive);
-  //   if (!updated) {
-  //     throw new AppError(STATUS.INTERNAL_ERROR, "Failed to update availability status");
-  //   }
-  //   return updated;
-  // }
 }

@@ -67,6 +67,8 @@ export class UserMappers {
         _id: String(spec._id),
         name: spec.name || "",
       })),
+      rating: (trainer.profile as unknown as { avgRating?: number }).avgRating ?? 0,
+      totalReviews: (trainer.profile as unknown as { totalReviews?: number }).totalReviews ?? 0,
     };
   }
 

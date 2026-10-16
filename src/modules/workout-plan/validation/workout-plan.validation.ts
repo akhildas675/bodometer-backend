@@ -24,14 +24,5 @@ export const workoutPlanIdParamSchema = z.object({
 });
 
 export const generateWorkoutPlanSchema = z.object({
-  body: z.object({
-    fitnessGoal: z.string().min(1, "Fitness goal is required").max(50, "Fitness goal must not exceed 50 characters"),
-    fitnessLevel: z.string().min(1, "Fitness level is required").max(50, "Fitness level must not exceed 50 characters"),
-    workoutDaysPerWeek: z.number().min(1, "Must workout at least 1 day per week").max(7, "Cannot workout more than 7 days per week"),
-    preferredWorkoutTime: z.string().max(50, "Preferred workout time must not exceed 50 characters").optional(),
-    workoutEnvironment: z.string().max(50, "Workout environment must not exceed 50 characters").optional(),
-    equipmentAvailable: z.array(z.string()).max(20, "Cannot have more than 20 equipment items").optional(),
-    targetMuscles: z.array(z.string()).max(10, "Cannot target more than 10 muscle groups").optional(),
-    workoutDurationMinutes: z.number().min(5, "Workout duration must be at least 5 minutes").max(180, "Workout duration must not exceed 3 hours").optional(),
-  }),
+  body: z.object({}).optional(),
 });

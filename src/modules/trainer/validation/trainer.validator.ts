@@ -171,9 +171,28 @@ export const getTrainersSchema = z.object({
         limit: z.coerce.number().min(1).max(100, "Limit must not exceed 100").optional(),
         search: z.string().max(100, "Search term too long").optional(),
         isBlocked: z.coerce.boolean().optional(),
-        sortBy: z.string().optional(),
+        sortBy: z.enum([
+            "name",
+            "email",
+            "isBlocked",
+            "experienceInYears",
+            "experience",
+            "createdAt",
+            "latest",
+            "rating",
+        ]).optional(),
         sortOrder: z.enum(["asc", "desc"]).optional(),
-    }),
+        specializationId: z.string().optional(),
+        specialization: z.string().optional(),
+        minExperience: z.coerce.number().min(0, "Experience must be non-negative").max(50, "Experience seems too high").optional(),
+        maxExperience: z.coerce.number().min(0, "Experience must be non-negative").max(50, "Experience seems too high").optional(),
+        minRating: z.coerce.number().min(0, "Rating must be non-negative").max(5, "Rating cannot exceed 5").optional(),
+    }).refine((data) => {
+        if (data.minExperience !== undefined && data.maxExperience !== undefined) {
+            return data.minExperience <= data.maxExperience;
+        }
+        return true;
+    }, { message: "minExperience cannot be greater than maxExperience" }),
 });
 
 

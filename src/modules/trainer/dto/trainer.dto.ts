@@ -126,6 +126,8 @@ export interface TrainerListItemDto {
   coverPhoto: string;
   bio: string;
   specializations: { _id: string; name: string }[];
+  rating?: number;
+  totalReviews?: number;
 }
 
 export type TrainerListResponseDto = PaginatedResponseDto<TrainerListItemDto>;
@@ -154,6 +156,10 @@ export interface TrainerDetailDto {
 export interface GetAllTrainersDto extends PaginationQueryDto {
   isBlocked?: boolean;
   specializationId?: string;
+  specialization?: string;
+  minExperience?: number;
+  maxExperience?: number;
+  minRating?: number;
 }
 
 export type GetAllTrainersResponseDto = BaseUserResponseDto;

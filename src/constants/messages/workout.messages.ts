@@ -27,7 +27,7 @@ export const WORKOUT_MESSAGES = {
     EXERCISE_NOT_FOUND: "Exercise not found.",
     EXERCISE_IN_PROGRESS: "Another exercise is currently in progress. Please complete or pause it first.",
     GENERATION_CONFLICT: "A workout plan is already being generated for you. Please wait.",
-    ONBOARDING_REQUIRED: "Please complete onboarding before generating a workout plan.",
+    ONBOARDING_REQUIRED: "Premium users must complete onboarding before generating a workout plan. Please complete your fitness profile first.",
     PREMIUM_REQUIRED: "Workout tracking is only available for Premium plans."
   },
 

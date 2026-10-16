@@ -17,6 +17,8 @@ import {
 } from "@/modules/trainer/model/trainer-profile.model";
 import { BaseRepository } from '@/modules/base/repository/base.repository';
 import { IUserDocument } from "@/modules/auth/model/user.model";
+import { CategoryModel } from "@/modules/category/models/category.model";
+import { REVIEW_STATUS } from "@/modules/review/constant/review.constant";
 import { injectable } from "inversify";
 
 @injectable()
@@ -44,7 +46,6 @@ export default class TrainerProfileRepository
     };
   }
 
-  // Trainer own profile
   async findByUserId(userId: string): Promise<TrainerProfile | null> {
     return this.findOne({ userId });
   }
@@ -91,7 +92,6 @@ export default class TrainerProfileRepository
       rejectionReason: profile.rejectionReason ?? null,
     };
   }
-  //Admin: paginated list with user info
   async findAllWithUserPaginated(
     search?: string,
     sortBy?: string,
@@ -182,7 +182,6 @@ export default class TrainerProfileRepository
     };
   }
 
-  // get single profile with populated user
   async findByIdWithUser(
     profileId: string,
   ): Promise<ITrainerWithProfile | null> {
@@ -218,7 +217,6 @@ export default class TrainerProfileRepository
     };
   }
 
-  // admin: update verification status
   async updateVerificationStatus(
     profileId: string,
     status: string,
@@ -245,16 +243,48 @@ export default class TrainerProfileRepository
     sortBy?: string,
     sortOrder?: "asc" | "desc",
     specializationId?: string,
+    minExperience?: number,
+    maxExperience?: number,
+    minRating?: number,
   ): Promise<{ data: ITrainerWithProfile[]; total: number }> {
-    const skip = (page - 1) * limit;
+    const pageNum = Math.max(1, Number(page) || 1);
+    const limitNum = Math.max(1, Number(limit) || 10);
+    const skip = (pageNum - 1) * limitNum;
 
-    const matchStage: Record<string, string | mongoose.Types.ObjectId> = {
+    const matchStage: Record<string, unknown> = {
       verificationStatus: VERIFICATION_STATUS.APPROVED,
     };
-    if (specializationId && mongoose.Types.ObjectId.isValid(specializationId)) {
-      matchStage.specializations = new mongoose.Types.ObjectId(
-        specializationId,
-      );
+
+    if (specializationId) {
+      if (mongoose.Types.ObjectId.isValid(specializationId)) {
+        matchStage.specializations = new mongoose.Types.ObjectId(specializationId);
+      } else {
+        const escaped = specializationId.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const matchingCategories = await CategoryModel.find({
+          name: { $regex: new RegExp(`^${escaped}$`, "i") },
+        }).select("_id");
+
+        if (matchingCategories.length > 0) {
+          matchStage.specializations = {
+            $in: matchingCategories.map((c) => c._id),
+          };
+        } else {
+          return { data: [], total: 0 };
+        }
+      }
+    }
+
+    if (minExperience !== undefined || maxExperience !== undefined) {
+      const expFilter: Record<string, number> = {};
+      if (minExperience !== undefined && !isNaN(Number(minExperience))) {
+        expFilter.$gte = Number(minExperience);
+      }
+      if (maxExperience !== undefined && !isNaN(Number(maxExperience))) {
+        expFilter.$lte = Number(maxExperience);
+      }
+      if (Object.keys(expFilter).length > 0) {
+        matchStage.experienceInYears = expFilter;
+      }
     }
 
     const pipeline: PipelineStage[] = [
@@ -269,6 +299,11 @@ export default class TrainerProfileRepository
       },
       { $unwind: "$userId" },
       {
+        $match: {
+          "userId.isBlocked": { $ne: true },
+        },
+      },
+      {
         $lookup: {
           from: "categories",
           localField: "specializations",
@@ -276,22 +311,100 @@ export default class TrainerProfileRepository
           as: "specializations",
         },
       },
+      {
+        $lookup: {
+          from: "reviews",
+          let: { trainerUserId: "$userId._id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$trainerId", "$$trainerUserId"] },
+                    { $eq: ["$status", REVIEW_STATUS.ACTIVE] },
+                  ],
+                },
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                avgRating: { $avg: "$rating" },
+                totalReviews: { $sum: 1 },
+              },
+            },
+          ],
+          as: "ratingSummary",
+        },
+      },
+      {
+        $addFields: {
+          avgRating: {
+            $ifNull: [
+              { $round: [{ $arrayElemAt: ["$ratingSummary.avgRating", 0] }, 1] },
+              0,
+            ],
+          },
+          totalReviews: {
+            $ifNull: [{ $arrayElemAt: ["$ratingSummary.totalReviews", 0] }, 0],
+          },
+        },
+      },
     ];
 
-    if (search) {
+    if (search && search.trim()) {
+      const escaped = search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       pipeline.push({
         $match: {
           $or: [
-            { "userId.name": { $regex: search, $options: "i" } },
-            { bio: { $regex: search, $options: "i" } },
+            { "userId.name": { $regex: escaped, $options: "i" } },
+            { bio: { $regex: escaped, $options: "i" } },
+            { "specializations.name": { $regex: escaped, $options: "i" } },
           ],
         },
       });
     }
 
-    if (sortBy) {
-      const sortField = sortBy === "name" ? "userId.name" : sortBy;
-      pipeline.push({ $sort: { [sortField]: sortOrder === "desc" ? -1 : 1 } });
+    if (minRating !== undefined && !isNaN(Number(minRating)) && Number(minRating) > 0) {
+      pipeline.push({
+        $match: {
+          avgRating: { $gte: Number(minRating) },
+        },
+      });
+    }
+
+    if (sortBy === "rating") {
+      const order = sortOrder === "asc" ? 1 : -1;
+      pipeline.push({
+        $sort: {
+          avgRating: order,
+          totalReviews: order,
+          createdAt: -1,
+        },
+      });
+    } else if (sortBy === "experienceInYears" || sortBy === "experience") {
+      const order = sortOrder === "desc" ? -1 : 1;
+      pipeline.push({
+        $sort: {
+          experienceInYears: order,
+          createdAt: -1,
+        },
+      });
+    } else if (sortBy === "name") {
+      const order = sortOrder === "desc" ? -1 : 1;
+      pipeline.push({
+        $sort: {
+          "userId.name": order,
+          createdAt: -1,
+        },
+      });
+    } else if (sortBy === "createdAt" || sortBy === "latest") {
+      const order = sortOrder === "asc" ? 1 : -1;
+      pipeline.push({
+        $sort: {
+          createdAt: order,
+        },
+      });
     } else {
       pipeline.push({ $sort: { createdAt: -1 } });
     }
@@ -302,19 +415,25 @@ export default class TrainerProfileRepository
     );
     const total = countResult[0]?.total || 0;
 
-    pipeline.push({ $skip: skip }, { $limit: limit });
+    pipeline.push({ $skip: skip }, { $limit: limitNum });
 
     const profiles = await TrainerProfileModel.aggregate<
-      ITrainerProfileDocument & { userId: IUserDocument }
+      ITrainerProfileDocument & {
+        userId: IUserDocument;
+        avgRating?: number;
+        totalReviews?: number;
+      }
     >(pipeline);
 
-    const data: ITrainerWithProfile[] = profiles.map((profile: ITrainerProfileDocument & { userId: IUserDocument }) => {
-      const { userId, ...profileData } = profile;
+    const data: ITrainerWithProfile[] = profiles.map((profile) => {
+      const { userId, avgRating, totalReviews, ...profileData } = profile;
       return {
         user: userId,
         profile: {
           ...profileData,
           userId: userId._id,
+          avgRating: avgRating ?? 0,
+          totalReviews: totalReviews ?? 0,
         } as unknown as ITrainerProfileDocument,
       };
     });
