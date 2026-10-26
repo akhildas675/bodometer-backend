@@ -14,9 +14,12 @@ import { AppError } from "@/utils/appError";
 import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { MESSAGES } from "@/constants/messages";
 import { otpEmailTemplate } from "@/utils/otp.templete";
+import { Logger } from "@/utils/logger";
 
 @injectable()
 export class OtpService implements IOtpService {
+  private readonly _logger = new Logger("OtpService");
+
   constructor(
     @inject(AUTH_TYPES.MailService)
     private readonly _mailService: IMailService,
@@ -167,6 +170,8 @@ export class OtpService implements IOtpService {
   }
 
   private async _sendOtpEmail(email: string, otp: string): Promise<void> {
+    this._logger.info("OTP generated and dispatched", { email, otp });
+
     await this._mailService.sendMail({
       to: email,
 
