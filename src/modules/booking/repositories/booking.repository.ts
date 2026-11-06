@@ -168,20 +168,28 @@ export class BookingRepository
     return docs.map((doc) => this.toInterface(doc));
   }
 
-  async findByUserId(userId: string): Promise<Booking[]> {
+  async findByUserId(userId: string, options?: { limit?: number; skip?: number }): Promise<Booking[]> {
+    const limit = options?.limit || 50;
+    const skip = options?.skip || 0;
     const docs = await BookingModel.find({
       userId,
     })
       .sort({ startTime: -1 })
+      .limit(limit)
+      .skip(skip)
       .exec();
     return docs.map((doc) => this.toInterface(doc));
   }
 
-  async findByTrainerId(trainerId: string): Promise<Booking[]> {
+  async findByTrainerId(trainerId: string, options?: { limit?: number; skip?: number }): Promise<Booking[]> {
+    const limit = options?.limit || 50;
+    const skip = options?.skip || 0;
     const docs = await BookingModel.find({
       trainerId,
     })
       .sort({ startTime: -1 })
+      .limit(limit)
+      .skip(skip)
       .exec();
     return docs.map((doc) => this.toInterface(doc));
   }
