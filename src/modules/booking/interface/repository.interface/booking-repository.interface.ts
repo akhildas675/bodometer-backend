@@ -20,8 +20,8 @@ export interface IBookingRepository {
     bufferEndTime: Date,
     excludeBookingId?: string
   ): Promise<Booking[]>;
-  findByUserId(userId: string): Promise<Booking[]>;
-  findByTrainerId(trainerId: string): Promise<Booking[]>;
+  findByUserId(userId: string, options?: { limit?: number; skip?: number }): Promise<Booking[]>;
+  findByTrainerId(trainerId: string, options?: { limit?: number; skip?: number }): Promise<Booking[]>;
   updateStatus(
     id: string,
     status: BookingStatus,
