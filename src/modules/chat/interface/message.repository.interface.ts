@@ -5,7 +5,7 @@ export interface IMessageRepository {
 
   findById(id: string): Promise<Message | null>;
 
-  findByConversation(conversationId: string): Promise<Message[]>;
+  findByConversation(conversationId: string, options?: { limit?: number; skip?: number }): Promise<Message[]>;
 
   countByConversation(conversationId: string): Promise<number>;
 

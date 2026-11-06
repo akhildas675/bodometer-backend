@@ -3,7 +3,7 @@ dotenv.config();
 
 import http from "http";
 
-import app from "./app";
+import app, { setServer } from "./app";
 import { connectDB } from "./config/db";
 import { AppError } from "./utils/appError";
 import { MESSAGES } from "./constants/messages";
@@ -30,6 +30,9 @@ async function start() {
     const httpServer = http.createServer(app);
 
     initializeSocket(httpServer);
+
+    // Set server reference for graceful shutdown
+    setServer(httpServer);
 
     httpServer.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`);

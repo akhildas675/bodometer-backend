@@ -60,12 +60,18 @@ export default class MessageRepository
 
   async findByConversation(
     conversationId: string,
+    options?: { limit?: number; skip?: number }
   ): Promise<Message[]> {
+    const limit = options?.limit || 50;
+    const skip = options?.skip || 0;
     const messages = await MessageModel.find({
       conversationId: new mongoose.Types.ObjectId(
         conversationId,
       ),
-    }).sort({ createdAt: 1 });
+    })
+      .sort({ createdAt: 1 })
+      .limit(limit)
+      .skip(skip);
 
     return messages.map((message) =>
       this.toInterface(message),
