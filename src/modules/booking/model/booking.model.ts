@@ -98,4 +98,10 @@ const BookingSchema = new Schema<IBooking>(
   },
 );
 
+// Compound indexes for critical query patterns
+BookingSchema.index({ trainerId: 1, status: 1, bookingDate: -1 });
+BookingSchema.index({ userId: 1, status: 1, bookingDate: -1 });
+BookingSchema.index({ trainerId: 1, startTime: 1, bufferEndTime: 1, status: 1 });
+BookingSchema.index({ userId: 1, startTime: 1, bufferEndTime: 1, status: 1 });
+
 export const BookingModel = mongoose.model<IBooking>("Booking", BookingSchema);
