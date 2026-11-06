@@ -409,21 +409,41 @@ export class BookingService implements IBookingService {
 
   async getUserBookings(userId: string): Promise<Booking[]> {
     const bookings = await this._bookingRepository.findByUserId(userId);
-    const trainerMap = new Map<string, { name?: string; email?: string }>();
     const now = Date.now();
-    for (const b of bookings) {
-      if (!trainerMap.has(b.trainerId)) {
-        let trainerUser = await this._userRepository.findById(b.trainerId);
-        if (!trainerUser) {
-          const profile = await this._trainerProfileRepository.findById(b.trainerId);
-          if (profile && profile.userId) {
-            trainerUser = await this._userRepository.findById(profile.userId.toString());
-          }
-        }
-        if (trainerUser) {
-          trainerMap.set(b.trainerId, { name: trainerUser.name, email: trainerUser.email });
-        }
+
+    // Batch load all unique trainer IDs
+    const trainerIds = [...new Set(bookings.map(b => b.trainerId))];
+    const trainers = await this._userRepository.findMany({ _id: { $in: trainerIds } });
+    const trainerMap = new Map(trainers.map(t => [t.id, { name: t.name, email: t.email }]));
+
+    // For trainers not found in users, check profiles
+    const missingTrainerIds = trainerIds.filter(id => !trainerMap.has(id));
+    if (missingTrainerIds.length > 0) {
+      const profiles = await this._trainerProfileRepository.findMany({ _id: { $in: missingTrainerIds } });
+      const profileUserIds = profiles
+        .filter(p => p.userId)
+        .map(p => p.userId.toString());
+      
+      if (profileUserIds.length > 0) {
+        const profileUsers = await this._userRepository.findMany({ _id: { $in: profileUserIds } });
+        profileUsers.forEach(u => {
+          trainerMap.set(u.id, { name: u.name, email: u.email });
+        });
       }
+    }
+
+    // Batch load cancellation details and reschedule requests
+    const bookingIds = bookings.map(b => b.id);
+    const [cancellations, rescheduleRequests] = await Promise.all([
+      this._cancellationRepository.findByBookingIds(bookingIds),
+      this._rescheduleRepository.findPendingByBookingIds(bookingIds),
+    ]);
+
+    const cancellationMap = new Map(cancellations.map(c => [c.bookingId, c]));
+    const rescheduleMap = new Map(rescheduleRequests.map(r => [r.bookingId, r]));
+
+    // Process bookings with batch-loaded data
+    for (const b of bookings) {
       const tInfo = trainerMap.get(b.trainerId);
       if (tInfo) {
         b.trainerName = tInfo.name;
@@ -449,8 +469,8 @@ export class BookingService implements IBookingService {
         b.sessionPhase = "UPCOMING";
       }
 
-      b.cancellationDetails = await this._cancellationRepository.findByBookingId(b.id);
-      b.rescheduleRequest = await this._rescheduleRepository.findPendingByBookingId(b.id);
+      b.cancellationDetails = cancellationMap.get(b.id);
+      b.rescheduleRequest = rescheduleMap.get(b.id);
     }
     return bookings;
   }
@@ -459,12 +479,13 @@ export class BookingService implements IBookingService {
     const actualTrainerId = await this.resolveTrainerUserId(trainerId);
     const bookings = await this._bookingRepository.findByTrainerId(actualTrainerId);
 
-    const userMap = new Map<string, { name?: string; email?: string }>();
+    // Batch load all unique user IDs
+    const userIds = [...new Set(bookings.map(b => b.userId))];
+    const users = await this._userRepository.findMany({ _id: { $in: userIds } });
+    const userMap = new Map(users.map(u => [u.id, { name: u.name, email: u.email }]));
+
+    // Process bookings with batch-loaded data
     for (const b of bookings) {
-      if (!userMap.has(b.userId)) {
-        const u = await this._userRepository.findById(b.userId);
-        if (u) userMap.set(b.userId, { name: u.name, email: u.email });
-      }
       const uInfo = userMap.get(b.userId);
       if (uInfo) {
         b.userName = uInfo.name;

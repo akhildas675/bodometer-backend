@@ -8,6 +8,7 @@ export interface IBookingRescheduleRequestRepository {
   createOne(request: Partial<BookingRescheduleRequest>): Promise<BookingRescheduleRequest>;
   findById(id: string): Promise<BookingRescheduleRequest | null>;
   findPendingByBookingId(bookingId: string): Promise<BookingRescheduleRequest | null>;
+  findPendingByBookingIds(bookingIds: string[]): Promise<BookingRescheduleRequest[]>;
   findPendingByTrainerId(trainerId: string): Promise<BookingRescheduleRequest[]>;
   findPendingByUserId(userId: string): Promise<BookingRescheduleRequest[]>;
   updateStatus(
@@ -54,6 +55,11 @@ export class BookingRescheduleRequestRepository implements IBookingRescheduleReq
   async findPendingByBookingId(bookingId: string): Promise<BookingRescheduleRequest | null> {
     const doc = await BookingRescheduleRequestModel.findOne({ bookingId, status: "PENDING" });
     return doc ? this.mapDoc(doc) : null;
+  }
+
+  async findPendingByBookingIds(bookingIds: string[]): Promise<BookingRescheduleRequest[]> {
+    const docs = await BookingRescheduleRequestModel.find({ bookingId: { $in: bookingIds }, status: "PENDING" });
+    return docs.map((doc) => this.mapDoc(doc));
   }
 
   async findPendingByTrainerId(trainerId: string): Promise<BookingRescheduleRequest[]> {

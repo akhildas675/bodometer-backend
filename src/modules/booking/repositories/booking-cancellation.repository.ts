@@ -5,6 +5,7 @@ import { BookingCancellationModel } from "../model/booking-cancellation.model";
 export interface IBookingCancellationRepository {
   createOne(cancellation: Partial<BookingCancellation>): Promise<BookingCancellation>;
   findByBookingId(bookingId: string): Promise<BookingCancellation | null>;
+  findByBookingIds(bookingIds: string[]): Promise<BookingCancellation[]>;
 }
 
 @injectable()
@@ -46,5 +47,24 @@ export class BookingCancellationRepository implements IBookingCancellationReposi
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     };
+  }
+
+  async findByBookingIds(bookingIds: string[]): Promise<BookingCancellation[]> {
+    const docs = await BookingCancellationModel.find({ bookingId: { $in: bookingIds } });
+    return docs.map(doc => ({
+      id: doc._id.toString(),
+      bookingId: doc.bookingId.toString(),
+      cancelledBy: doc.cancelledBy,
+      cancelledByUserId: doc.cancelledByUserId.toString(),
+      reasonCode: doc.reasonCode,
+      reason: doc.reason,
+      cancelledAt: doc.cancelledAt,
+      refundEligible: doc.refundEligible,
+      refundPercentage: doc.refundPercentage,
+      refundAmount: doc.refundAmount,
+      policySnapshot: doc.policySnapshot,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    }));
   }
 }
