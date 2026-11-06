@@ -45,6 +45,10 @@ const TrainerAvailabilityOverrideSchema =
     { timestamps: true },
   );
 
+// Compound indexes for critical query patterns
+TrainerAvailabilityOverrideSchema.index({ trainerId: 1, date: 1, status: 1 });
+TrainerAvailabilityOverrideSchema.index({ trainerId: 1, status: 1 });
+
 export const TrainerAvailabilityOverrideModel =
   mongoose.model<ITrainerAvailabilityOverride>(
     "TrainerAvailabilityOverride",

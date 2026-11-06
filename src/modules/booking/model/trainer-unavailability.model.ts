@@ -33,6 +33,10 @@ const TrainerUnavailabilitySchema = new Schema<ITrainerUnavailability>(
   { timestamps: true },
 );
 
+// Compound indexes for critical query patterns
+TrainerUnavailabilitySchema.index({ trainerId: 1, status: 1 });
+TrainerUnavailabilitySchema.index({ trainerId: 1, startDate: 1, endDate: 1, status: 1 });
+
 export const TrainerUnavailabilityModel =
   mongoose.model<ITrainerUnavailability>(
     "TrainerUnavailability",
