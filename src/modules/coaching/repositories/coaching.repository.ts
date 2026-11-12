@@ -20,6 +20,7 @@ export default class CoachingRepository extends BaseRepository<Coaching, ICoachi
             price: doc.price,
             bookingMode: doc.bookingMode,
             isActive: doc.isActive,
+            maxParticipants: doc.maxParticipants ?? 1,
 
         }
     }

@@ -1,7 +1,8 @@
 import { injectable } from "inversify";
-import { ClientSession } from "mongoose";
+import { ClientSession, Types } from "mongoose";
 import { BaseRepository } from "@/modules/base/repository/base.repository";
 import { IBooking, BookingModel } from "../model/booking.model";
+import { BookingSlotSessionModel } from "../model/booking-slot-session.model";
 import {
   CreateBookingData,
   IBookingRepository,
@@ -241,6 +242,95 @@ export class BookingRepository
       { new: true, runValidators: true, session },
     ).exec();
 
+    return doc ? this.toInterface(doc) : null;
+  }
+
+  async reserveSlotSpot(
+    trainerId: string,
+    serviceId: string,
+    startTime: Date,
+    endTime: Date,
+    capacity: number,
+  ): Promise<boolean> {
+    const filter = {
+      trainerId: new Types.ObjectId(trainerId),
+      serviceId: new Types.ObjectId(serviceId),
+      startTime,
+      status: "ACTIVE",
+      $expr: { $lt: ["$bookedCount", "$capacity"] },
+    };
+
+    const updated = await BookingSlotSessionModel.findOneAndUpdate(
+      filter,
+      { $inc: { bookedCount: 1 }, $set: { capacity, endTime } },
+      { new: true },
+    ).exec();
+
+    if (updated) return true;
+
+    try {
+      await BookingSlotSessionModel.create({
+        trainerId,
+        serviceId,
+        startTime,
+        endTime,
+        capacity,
+        bookedCount: 1,
+        status: "ACTIVE",
+      });
+      return true;
+    } catch (error) {
+      if ((error as { code?: number }).code === 11000) {
+        const retry = await BookingSlotSessionModel.findOneAndUpdate(
+          filter,
+          { $inc: { bookedCount: 1 }, $set: { capacity, endTime } },
+          { new: true },
+        ).exec();
+        return Boolean(retry);
+      }
+      throw error;
+    }
+  }
+
+  async releaseSlotSpot(
+    trainerId: string,
+    serviceId: string,
+    startTime: Date,
+  ): Promise<void> {
+    await BookingSlotSessionModel.updateOne(
+      {
+        trainerId: new Types.ObjectId(trainerId),
+        serviceId: new Types.ObjectId(serviceId),
+        startTime,
+        bookedCount: { $gt: 0 },
+      },
+      { $inc: { bookedCount: -1 } },
+    ).exec();
+  }
+
+  async findStalePendingPayments(cutoff: Date): Promise<Booking[]> {
+    const docs = await BookingModel.find({
+      status: "PENDING_PAYMENT",
+      createdAt: { $lt: cutoff },
+    }).exec();
+    return docs.map((doc) => this.toInterface(doc));
+  }
+
+  async expirePendingBooking(id: string): Promise<Booking | null> {
+    const doc = await BookingModel.findOneAndUpdate(
+      { _id: id, status: "PENDING_PAYMENT" },
+      { $set: { status: "EXPIRED" } },
+      { new: true },
+    ).exec();
+    return doc ? this.toInterface(doc) : null;
+  }
+
+  async confirmPendingPayment(id: string, paymentId: string): Promise<Booking | null> {
+    const doc = await BookingModel.findOneAndUpdate(
+      { _id: id, status: "PENDING_PAYMENT" },
+      { $set: { status: "CONFIRMED", paymentId } },
+      { new: true },
+    ).exec();
     return doc ? this.toInterface(doc) : null;
   }
 }

@@ -35,4 +35,5 @@ export interface IBookingService {
   getTrainerBookings(trainerId: string): Promise<Booking[]>;
   getBookingById(bookingId: string): Promise<Booking | null>;
   cancelBooking(bookingId: string, userId: string, reason?: string): Promise<Booking>;
+  expireStalePendingBookings(): Promise<number>;
 }

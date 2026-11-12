@@ -8,6 +8,7 @@ export const coachingValidationSchema = z.object({
     price: z.number().min(0, "Price must be a positive number").max(10000, "Price seems unrealistic"),
     bookingMode: z.string().min(1, "Booking mode is required").max(50, "Booking mode must not exceed 50 characters"),
     isActive: z.boolean().optional(),
+    maxParticipants: z.number().int().min(1, "Max participants must be at least 1").max(100, "Max participants must not exceed 100").optional(),
   }),
 });
 
@@ -19,6 +20,7 @@ export const coachingUpdateSchema = z.object({
     price: z.number().min(0, "Price must be a positive number").max(10000, "Price seems unrealistic").optional(),
     bookingMode: z.string().max(50, "Booking mode must not exceed 50 characters").optional(),
     isActive: z.boolean().optional(),
+    maxParticipants: z.number().int().min(1, "Max participants must be at least 1").max(100, "Max participants must not exceed 100").optional(),
   }),
 });
 

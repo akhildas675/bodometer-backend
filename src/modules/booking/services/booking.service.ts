@@ -25,6 +25,8 @@ import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { MESSAGES } from "@/constants/messages";
 import { AUDIT_LOG_ACTION, BOOKING_STATUS } from "@/constants/constant.values.ts/booking.constant";
 
+const PENDING_PAYMENT_HOLD_MS = 15 * 60 * 1000;
+
 function generateBookingNumber(): string {
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const rand = Math.floor(1000 + Math.random() * 9000);
@@ -142,21 +144,48 @@ export class BookingService implements IBookingService {
 
     const price = Number(coachingService.price) || 0;
     const bookingNumber = generateBookingNumber();
+    const maxParticipants = Math.max(1, Number(coachingService.maxParticipants) || 1);
+    const slotStart = new Date(startTime);
+    const slotEnd = new Date(endTime);
 
-    // 3. Create Booking Document (Status: PENDING)
-    const booking = await this._bookingRepository.createOne({
-      bookingNumber,
-      trainerId: actualTrainerUserId,
-      userId,
+    // 3. Atomically reserve a spot in the slot session before creating the booking
+    const spotReserved = await this._bookingRepository.reserveSlotSpot(
+      actualTrainerUserId,
       serviceId,
-      bookingDate: new Date(bookingDate),
-      startTime: new Date(startTime),
-      endTime: new Date(endTime),
-      bufferEndTime: new Date(bufferEndTime),
-      status: BOOKING_STATUS.PENDING_PAYMENT,
-      price,
-      attendance: { status: "PENDING" },
-    });
+      slotStart,
+      slotEnd,
+      maxParticipants,
+    );
+
+    if (!spotReserved) {
+      throw new AppError(
+        STATUS.CONFLICT,
+        MESSAGES.BOOKING.SLOT_UNAVAILABLE,
+      );
+    }
+
+    // 4. Create Booking Document (Status: PENDING_PAYMENT)
+    let booking: Booking;
+    try {
+      booking = await this._bookingRepository.createOne({
+        bookingNumber,
+        trainerId: actualTrainerUserId,
+        userId,
+        serviceId,
+        bookingDate: new Date(bookingDate),
+        startTime: slotStart,
+        endTime: slotEnd,
+        bufferEndTime: new Date(bufferEndTime),
+        status: BOOKING_STATUS.PENDING_PAYMENT,
+        price,
+        attendance: { status: "PENDING" },
+      });
+    } catch (err) {
+      await this._bookingRepository
+        .releaseSlotSpot(actualTrainerUserId, serviceId, slotStart)
+        .catch(() => undefined);
+      throw err;
+    }
 
     // 4. Create Audit Log Entry
     await this._auditLogRepository.createOne({
@@ -247,6 +276,9 @@ export class BookingService implements IBookingService {
         } catch (stripeErr) {
           console.error("Stripe Checkout Initialization Error:", stripeErr);
           await this._bookingRepository.updateStatus(booking.id, BOOKING_STATUS.CANCELLED);
+          await this._bookingRepository
+            .releaseSlotSpot(actualTrainerUserId, serviceId, slotStart)
+            .catch(() => undefined);
           throw new AppError(
             STATUS.INTERNAL_ERROR,
             MESSAGES.BOOKING.PAYMENT_CHECKOUT_FAILED,
@@ -275,6 +307,9 @@ export class BookingService implements IBookingService {
         } catch (stripeErr) {
           console.error("Stripe Checkout Initialization Error:", stripeErr);
           await this._bookingRepository.updateStatus(booking.id, BOOKING_STATUS.CANCELLED);
+          await this._bookingRepository
+            .releaseSlotSpot(actualTrainerUserId, serviceId, slotStart)
+            .catch(() => undefined);
           throw new AppError(
             STATUS.INTERNAL_ERROR,
             MESSAGES.BOOKING.PAYMENT_CHECKOUT_FAILED,
@@ -303,14 +338,35 @@ export class BookingService implements IBookingService {
       return booking;
     }
 
-    const updated = await this._bookingRepository.updateStatus(
+    if (booking.status !== BOOKING_STATUS.PENDING_PAYMENT) {
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        `Cannot confirm payment for a booking with status: ${booking.status}.`,
+      );
+    }
+
+    if (this.isPaymentHoldExpired(booking)) {
+      await this.expireHoldAndReleaseSpot(booking);
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        "Payment window has expired for this booking. The slot has been released.",
+      );
+    }
+
+    const updated = await this._bookingRepository.confirmPendingPayment(
       bookingId,
-      BOOKING_STATUS.CONFIRMED,
       sessionId,
     );
 
     if (!updated) {
-      throw new AppError(STATUS.INTERNAL_ERROR, MESSAGES.BOOKING.FAILED_TO_CONFIRM);
+      const current = await this._bookingRepository.findById(bookingId);
+      if (current?.status === BOOKING_STATUS.CONFIRMED) {
+        return current;
+      }
+      throw new AppError(
+        STATUS.CONFLICT,
+        "Booking is no longer awaiting payment.",
+      );
     }
 
     await this._auditLogRepository.createOne({
@@ -369,6 +425,14 @@ export class BookingService implements IBookingService {
 
     if (booking.status !== BOOKING_STATUS.PENDING_PAYMENT) {
       throw new AppError(STATUS.BAD_REQUEST, `Cannot retry payment for a booking with status: ${booking.status}.`);
+    }
+
+    if (this.isPaymentHoldExpired(booking)) {
+      await this.expireHoldAndReleaseSpot(booking);
+      throw new AppError(
+        STATUS.BAD_REQUEST,
+        "Payment window has expired for this booking. Please book the slot again.",
+      );
     }
 
     const coachingService = await this._coachingRepository.getCoachingServiceById(booking.serviceId);
@@ -489,6 +553,8 @@ export class BookingService implements IBookingService {
       return booking;
     }
 
+    const previousStatus = booking.status;
+
     const updated = await this._bookingRepository.updateById(bookingId, {
       status: BOOKING_STATUS.CANCELLED,
       cancellation: {
@@ -510,6 +576,51 @@ export class BookingService implements IBookingService {
       newValue: { status: BOOKING_STATUS.CANCELLED, reason },
     });
 
+    if (
+      previousStatus === BOOKING_STATUS.PENDING_PAYMENT ||
+      previousStatus === BOOKING_STATUS.CONFIRMED ||
+      previousStatus === BOOKING_STATUS.RESCHEDULE_PENDING
+    ) {
+      await this._bookingRepository
+        .releaseSlotSpot(booking.trainerId, booking.serviceId, new Date(booking.startTime))
+        .catch((err) => console.error("Failed to release slot spot on cancel:", err));
+    }
+
     return updated;
+  }
+
+  private isPaymentHoldExpired(booking: Booking): boolean {
+    if (!booking.createdAt) return false;
+    return Date.now() - new Date(booking.createdAt).getTime() > PENDING_PAYMENT_HOLD_MS;
+  }
+
+  private async expireHoldAndReleaseSpot(booking: Booking): Promise<void> {
+    await this._bookingRepository.expirePendingBooking(booking.id);
+    await this._bookingRepository
+      .releaseSlotSpot(booking.trainerId, booking.serviceId, new Date(booking.startTime))
+      .catch((err) => console.error("Failed to release slot spot on expiry:", err));
+  }
+
+  async expireStalePendingBookings(): Promise<number> {
+    const cutoff = new Date(Date.now() - PENDING_PAYMENT_HOLD_MS);
+    const staleBookings = await this._bookingRepository.findStalePendingPayments(cutoff);
+
+    let expiredCount = 0;
+    for (const booking of staleBookings) {
+      const expired = await this._bookingRepository.expirePendingBooking(booking.id);
+      if (!expired) continue;
+
+      await this._bookingRepository
+        .releaseSlotSpot(booking.trainerId, booking.serviceId, new Date(booking.startTime))
+        .catch((err) => console.error("Failed to release slot spot on expiry:", err));
+
+      expiredCount += 1;
+    }
+
+    if (expiredCount > 0) {
+      console.log(`Expired ${expiredCount} stale pending-payment booking(s).`);
+    }
+
+    return expiredCount;
   }
 }

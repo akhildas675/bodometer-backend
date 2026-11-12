@@ -42,4 +42,19 @@ export interface IBookingRepository {
     status?: BookingStatus,
     session?: ClientSession
   ): Promise<Booking | null>;
+  reserveSlotSpot(
+    trainerId: string,
+    serviceId: string,
+    startTime: Date,
+    endTime: Date,
+    capacity: number
+  ): Promise<boolean>;
+  releaseSlotSpot(
+    trainerId: string,
+    serviceId: string,
+    startTime: Date
+  ): Promise<void>;
+  findStalePendingPayments(cutoff: Date): Promise<Booking[]>;
+  expirePendingBooking(id: string): Promise<Booking | null>;
+  confirmPendingPayment(id: string, paymentId: string): Promise<Booking | null>;
 }

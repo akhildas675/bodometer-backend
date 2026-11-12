@@ -12,6 +12,7 @@ export class CoachingMapper {
             price: coaching.price,
             bookingMode: coaching.bookingMode,
             isActive: coaching.isActive ?? false,
+            maxParticipants: coaching.maxParticipants ?? 1,
         };
     }
 

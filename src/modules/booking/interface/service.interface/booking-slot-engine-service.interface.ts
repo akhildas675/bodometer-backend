@@ -5,6 +5,7 @@ export interface AvailableSlot {
   formattedTime: string; // e.g., "09:00 AM - 10:00 AM"
   startMinute: number;
   endMinute: number;
+  spotsRemaining?: number;
 }
 
 export interface GetAvailableSlotsParams {

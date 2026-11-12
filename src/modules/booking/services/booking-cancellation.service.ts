@@ -214,6 +214,10 @@ export class BookingCancellationService implements IBookingCancellationService {
       await session.commitTransaction();
       await session.endSession();
 
+      await this._bookingRepository
+        .releaseSlotSpot(booking.trainerId, booking.serviceId, new Date(booking.startTime))
+        .catch((err) => console.error("Failed to release slot spot on cancel:", err));
+
       return {
         booking: updatedBooking || booking,
         cancellation,
@@ -356,6 +360,10 @@ export class BookingCancellationService implements IBookingCancellationService {
 
       await session.commitTransaction();
       await session.endSession();
+
+      await this._bookingRepository
+        .releaseSlotSpot(booking.trainerId, booking.serviceId, new Date(booking.startTime))
+        .catch((err) => console.error("Failed to release slot spot on cancel:", err));
 
       return {
         booking: updatedBooking || booking,

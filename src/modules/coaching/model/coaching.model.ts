@@ -10,7 +10,8 @@ export interface ICoaching extends Document {
     durationMinutes: CoachingDuration;
     price: number;
     bookingMode: BookingMode;
-    isActive:boolean
+    isActive:boolean;
+    maxParticipants: number;
 }
 
 const CoachingSchema = new Schema<ICoaching>(
@@ -48,6 +49,13 @@ bookingMode: {
 isActive: {
     type: Boolean,
     default:true,
+},
+
+maxParticipants: {
+    type: Number,
+    default: 1,
+    min: 1,
+    max: 100,
 },
     },{timestamps:true}
 )
