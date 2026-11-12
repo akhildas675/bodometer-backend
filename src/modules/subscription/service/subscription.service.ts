@@ -837,6 +837,9 @@ export class SubscriptionService implements ISubscriptionService {
         },
       });
 
+      // Invalidate active subscription cache
+      await del(CACHE_KEYS.ACTIVE_SUBSCRIPTION(userId));
+
       return { checkoutUrl: null, directSuccess: true };
     }
 
@@ -858,6 +861,7 @@ export class SubscriptionService implements ISubscriptionService {
       },
     });
 
+    // Note: Cache will be invalidated in verifyPaymentAndSave when payment completes
     return { checkoutUrl: result.url };
   }
 }
