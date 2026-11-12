@@ -35,13 +35,18 @@ export function getRedisClient(): Redis {
   return redisClient;
 }
 
+function isReady(): boolean {
+  return redisClient?.status === "ready";
+}
+
 // Helper functions for common operations
 export async function get(key: string): Promise<string | null> {
-  const client = getRedisClient();
-  return client.get(key);
+  if (!isReady()) return null;
+  return getRedisClient().get(key);
 }
 
 export async function set(key: string, value: string, ttlSeconds?: number): Promise<void> {
+  if (!isReady()) return;
   const client = getRedisClient();
   if (ttlSeconds) {
     await client.setex(key, ttlSeconds, value);
@@ -51,11 +56,12 @@ export async function set(key: string, value: string, ttlSeconds?: number): Prom
 }
 
 export async function del(key: string): Promise<void> {
-  const client = getRedisClient();
-  await client.del(key);
+  if (!isReady()) return;
+  await getRedisClient().del(key);
 }
 
 export async function delPattern(pattern: string): Promise<void> {
+  if (!isReady()) return;
   const client = getRedisClient();
   const keys = await client.keys(pattern);
   if (keys.length > 0) {
@@ -64,12 +70,12 @@ export async function delPattern(pattern: string): Promise<void> {
 }
 
 export async function exists(key: string): Promise<boolean> {
-  const client = getRedisClient();
-  const result = await client.exists(key);
+  if (!isReady()) return false;
+  const result = await getRedisClient().exists(key);
   return result === 1;
 }
 
 export async function expire(key: string, ttlSeconds: number): Promise<void> {
-  const client = getRedisClient();
-  await client.expire(key, ttlSeconds);
+  if (!isReady()) return;
+  await getRedisClient().expire(key, ttlSeconds);
 }
