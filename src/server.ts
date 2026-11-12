@@ -5,6 +5,7 @@ import http from "http";
 
 import app from "./app";
 import { connectDB } from "./config/db";
+import { connectRedis } from "./config/redis";
 import { AppError } from "./utils/appError";
 import { MESSAGES } from "./constants/messages";
 import logger from "./config/logger.config";
@@ -26,6 +27,8 @@ const mongoUri: string = MONGO_URI;
 async function start() {
   try {
     await connectDB(mongoUri);
+
+    connectRedis();
 
     const httpServer = http.createServer(app);
 
