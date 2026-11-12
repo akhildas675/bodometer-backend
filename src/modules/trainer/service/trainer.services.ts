@@ -334,11 +334,11 @@ export class TrainerService implements ITrainerService {
 
       // Build cache key from query parameters
       const cacheKey = `trainers:list:${page}:${limit}:${query.search || ""}:${query.sortBy || ""}:${query.sortOrder || ""}:${query.specializationId || ""}:${query.minExperience || ""}:${query.maxExperience || ""}`;
-      
+
       // Check cache first
       const cached = await get(cacheKey);
       if (cached) {
-        return JSON.parse(cached);
+        return JSON.parse(cached) as PaginatedResponseDto<TrainerListItemDto | GetAllTrainersResponseDto>;
       }
 
       const { data, total } = await this._trainerProfileRepository.getApprovedTrainersPaginated(

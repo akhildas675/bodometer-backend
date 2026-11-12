@@ -21,7 +21,7 @@ import { inject, injectable } from "inversify";
 import { CATEGORY_TYPES } from "../category.types";
 import { Role, ROLES } from "@/constants/constant.values.ts/roles";
 
-import { get, set, del, delPattern } from "@/config/redis";
+import { get, set, delPattern } from "@/config/redis";
 
 const CATEGORY_CACHE_TTL = 3600; // 1 hour
 const CATEGORY_CACHE_KEYS = {
@@ -68,7 +68,7 @@ export class CategoryService implements ICategoryService {
     const cacheKey = CATEGORY_CACHE_KEYS.BY_ID(id);
     const cached = await get(cacheKey);
     if (cached) {
-      return JSON.parse(cached);
+      return JSON.parse(cached) as CategoryDetailDto;
     }
 
     const category = await this._categoryRepository.getCategoryById(id);
@@ -150,7 +150,7 @@ export class CategoryService implements ICategoryService {
     if (cacheKey) {
       const cached = await get(cacheKey);
       if (cached) {
-        return JSON.parse(cached);
+        return JSON.parse(cached) as GetAllCategoriesResponseDto;
       }
     }
 

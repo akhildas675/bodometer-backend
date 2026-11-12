@@ -210,7 +210,7 @@ export class SubscriptionService implements ISubscriptionService {
     const cacheKey = CACHE_KEYS.SUBSCRIPTION_PLAN_BY_ID(subscriptionPlanId);
     const cached = await get(cacheKey);
     if (cached) {
-      return JSON.parse(cached);
+      return JSON.parse(cached) as GetSubscriptionPlanByIdResponseDto;
     }
 
     const plan =
@@ -292,7 +292,7 @@ export class SubscriptionService implements ISubscriptionService {
     if (cacheKey) {
       const cached = await get(cacheKey);
       if (cached) {
-        return JSON.parse(cached);
+        return JSON.parse(cached) as GetAllSubscriptionPlansResponseDto;
       }
     }
 
@@ -589,7 +589,7 @@ export class SubscriptionService implements ISubscriptionService {
     const cacheKey = CACHE_KEYS.ACTIVE_SUBSCRIPTION(userId);
     const cached = await get(cacheKey);
     if (cached) {
-      const parsed = JSON.parse(cached);
+      const parsed = JSON.parse(cached) as ActiveSubscriptionDto | null;
       if (parsed === null) return null;
       return parsed;
     }
