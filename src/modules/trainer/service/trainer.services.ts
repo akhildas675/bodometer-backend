@@ -34,6 +34,10 @@ import { NOTIFICATION_TYPES } from "@/modules/notification/notification.types";
 import { INotificationService } from "@/modules/notification/interface/notification-service.interface";
 import { NOTIFICATION_ENTITY_TYPE, NOTIFICATION_TYPE } from "@/modules/notification/constant/notification.constant";
 
+import { get, set, delPattern } from "@/config/redis";
+
+const TRAINER_CACHE_TTL = 300; // 5 minutes
+
 @injectable()
 export class TrainerService implements ITrainerService {
   constructor(
@@ -115,6 +119,10 @@ export class TrainerService implements ITrainerService {
     }
 
     const profile = await this._trainerProfileRepository.findByUserId(trainerId);
+    
+    // Invalidate all trainer list caches when profile is updated
+    await delPattern("trainers:list:*");
+    
     return TrainerMapper.toProfileResponse(updatedUser, profile);
   }
 
@@ -324,6 +332,15 @@ export class TrainerService implements ITrainerService {
       const page = query.page || 1;
       const limit = query.limit || 10;
 
+      // Build cache key from query parameters
+      const cacheKey = `trainers:list:${page}:${limit}:${query.search || ""}:${query.sortBy || ""}:${query.sortOrder || ""}:${query.specializationId || ""}:${query.minExperience || ""}:${query.maxExperience || ""}`;
+      
+      // Check cache first
+      const cached = await get(cacheKey);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+
       const { data, total } = await this._trainerProfileRepository.getApprovedTrainersPaginated(
         page,
         limit,
@@ -335,7 +352,7 @@ export class TrainerService implements ITrainerService {
         query.maxExperience,
       );
 
-      return {
+      const result = {
         data: UserMappers.toListItemDtoArray(data),
         pagination: {
           currentPage: page,
@@ -346,6 +363,11 @@ export class TrainerService implements ITrainerService {
           hasPreviousPage: page > 1,
         },
       };
+
+      // Cache the result for 5 minutes
+      await set(cacheKey, JSON.stringify(result), TRAINER_CACHE_TTL);
+
+      return result;
     }
 
     const { data, pagination } = await this._userRepository.findByRolePaginated(
@@ -476,6 +498,9 @@ export class TrainerService implements ITrainerService {
       },
     }).catch((err) => console.error("Notification error:", err));
 
+    // Invalidate all trainer list caches
+    await delPattern("trainers:list:*");
+
     return TrainerMapper.toApproveTrainerResponse(updated);
   }
 
@@ -520,6 +545,9 @@ export class TrainerService implements ITrainerService {
         userName: userDoc?.name || "Trainer",
       },
     }).catch((err) => console.error("Notification error:", err));
+
+    // Invalidate all trainer list caches
+    await delPattern("trainers:list:*");
 
     return TrainerMapper.toRejectTrainerResponse(updated);
   }
