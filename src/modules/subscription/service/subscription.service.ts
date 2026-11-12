@@ -49,6 +49,20 @@ import { NOTIFICATION_TYPES } from "@/modules/notification/notification.types";
 import { INotificationService } from "@/modules/notification/interface/notification-service.interface";
 import { NOTIFICATION_ENTITY_TYPE, NOTIFICATION_TYPE } from "@/modules/notification/constant/notification.constant";
 
+import { get, set, del } from "@/config/redis";
+
+const CACHE_KEYS = {
+  SUBSCRIPTION_PLANS: "subscription:plans",
+  ACTIVE_SUBSCRIPTION: (userId: string) => `subscription:active:${userId}`,
+  SUBSCRIPTION_PLAN_BY_ID: (planId: string) => `subscription:plan:${planId}`,
+};
+
+const CACHE_TTL = {
+  PLANS: 3600, // 1 hour
+  ACTIVE_SUB: 300, // 5 minutes
+  PLAN_BY_ID: 3600, // 1 hour
+};
+
 @injectable()
 export class SubscriptionService implements ISubscriptionService {
   constructor(
@@ -186,11 +200,19 @@ export class SubscriptionService implements ISubscriptionService {
   async createSubscriptionPlan(data: CreateSubscriptionPlanDto): Promise<void> {
     const planData = data as SubscriptionPlan;
     await this._subscriptionPlanRepository.createSubscriptionPlan(planData);
+    // Invalidate plans cache
+    await del(CACHE_KEYS.SUBSCRIPTION_PLANS);
   }
 
   async getSubscriptionPlanById(
     subscriptionPlanId: string,
   ): Promise<GetSubscriptionPlanByIdResponseDto> {
+    const cacheKey = CACHE_KEYS.SUBSCRIPTION_PLAN_BY_ID(subscriptionPlanId);
+    const cached = await get(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+
     const plan =
       await this._subscriptionPlanRepository.getSubscriptionPlanById(
         subscriptionPlanId,
@@ -201,7 +223,10 @@ export class SubscriptionService implements ISubscriptionService {
         MESSAGES.SUBSCRIPTION_PLAN.NOT_FOUND,
       );
     }
-    return SubscriptionMapper.toPlanByIdResponseDto(plan);
+    
+    const result = SubscriptionMapper.toPlanByIdResponseDto(plan);
+    await set(cacheKey, JSON.stringify(result), CACHE_TTL.PLAN_BY_ID);
+    return result;
   }
 
   async updateSubscriptionPlan(
@@ -222,6 +247,11 @@ export class SubscriptionService implements ISubscriptionService {
         MESSAGES.SUBSCRIPTION_PLAN.SUBSCRIPTION_PLAN_UPDATE_FAILED,
       );
     }
+    // Invalidate caches
+    await Promise.all([
+      del(CACHE_KEYS.SUBSCRIPTION_PLANS),
+      del(CACHE_KEYS.SUBSCRIPTION_PLAN_BY_ID(subscriptionPlanId)),
+    ]);
   }
 
   async toggleSubscriptionPlanStatus(
@@ -237,6 +267,11 @@ export class SubscriptionService implements ISubscriptionService {
         MESSAGES.SUBSCRIPTION_PLAN.SUBSCRIPTION_PLAN_TOGGLE_FAILED,
       );
     }
+    // Invalidate caches
+    await Promise.all([
+      del(CACHE_KEYS.SUBSCRIPTION_PLANS),
+      del(CACHE_KEYS.SUBSCRIPTION_PLAN_BY_ID(subscriptionPlanId)),
+    ]);
     return {
       plan: SubscriptionMapper.toPlanDto(updated),
     };
@@ -252,13 +287,29 @@ export class SubscriptionService implements ISubscriptionService {
       planQuery.isActive = true;
     }
 
+    // Check cache for user plans (active only)
+    const cacheKey = role === ROLES.USER ? CACHE_KEYS.SUBSCRIPTION_PLANS : null;
+    if (cacheKey) {
+      const cached = await get(cacheKey);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    }
+
     const { data, pagination } =
       await this._subscriptionPlanRepository.getSubscriptionPlans(planQuery);
 
-    return {
+    const result = {
       data: SubscriptionMapper.toPlanDtoList(data),
       pagination,
     };
+
+    // Cache user plans for 1 hour
+    if (cacheKey) {
+      await set(cacheKey, JSON.stringify(result), CACHE_TTL.PLANS);
+    }
+
+    return result;
   }
 
   async getAllSubscriptionTransactions(
@@ -444,6 +495,9 @@ export class SubscriptionService implements ISubscriptionService {
         })
         .catch((err) => console.error("Notification error:", err));
 
+      // Invalidate active subscription cache
+      await del(CACHE_KEYS.ACTIVE_SUBSCRIPTION(userId));
+
       return {
         subscriptionId: subIdToUpdate,
         subscriptionPlanId,
@@ -515,6 +569,9 @@ export class SubscriptionService implements ISubscriptionService {
       },
     }).catch((err) => console.error("Notification error:", err));
 
+    // Invalidate active subscription cache
+    await del(CACHE_KEYS.ACTIVE_SUBSCRIPTION(userId));
+
     return {
       subscriptionId: String(userSubscription._id),
       subscriptionPlanId,
@@ -529,11 +586,23 @@ export class SubscriptionService implements ISubscriptionService {
   async getActiveSubscription(
     userId: string,
   ): Promise<ActiveSubscriptionDto | null> {
+    const cacheKey = CACHE_KEYS.ACTIVE_SUBSCRIPTION(userId);
+    const cached = await get(cacheKey);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed === null) return null;
+      return parsed;
+    }
+
     const sub =
       await this._userSubscriptionTransactionRepository.findActiveByUserId(
         userId,
       );
-    if (!sub) return null;
+    if (!sub) {
+      // Cache null result for 5 minutes
+      await set(cacheKey, JSON.stringify(null), CACHE_TTL.ACTIVE_SUB);
+      return null;
+    }
 
     const plan = sub.subscriptionPlanId as unknown as {
       _id: { toString(): string } | string;
@@ -547,7 +616,7 @@ export class SubscriptionService implements ISubscriptionService {
       ),
     );
 
-    return {
+    const result = {
       subscriptionId: sub._id?.toString() ?? "",
       subscriptionPlanId: plan?._id ? plan._id.toString() : "",
       planName: plan?.name ?? "Unknown",
@@ -556,6 +625,9 @@ export class SubscriptionService implements ISubscriptionService {
       status: sub.status,
       daysRemaining,
     };
+
+    await set(cacheKey, JSON.stringify(result), CACHE_TTL.ACTIVE_SUB);
+    return result;
   }
 
   async getUserTransactions(
