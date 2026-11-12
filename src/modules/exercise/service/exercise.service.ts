@@ -9,6 +9,8 @@ import { EXERCISE_TYPES } from "../exercise.types";
 import { ExerciseMapper } from "../mapper/exercise.mapper";
 import { Exercise } from '@/modules/exercise/interface/exercise.interface';
 import { IS3Service } from '@/modules/s3/interface/s3-service.interface';
+import { get, set, del, delPattern } from "@/config/redis";
+import logger from "@/utils/logger";
 import {
     CreateExerciseDto,
     ExerciseDto,
@@ -62,22 +64,75 @@ export class ExerciseService implements IExerciseService {
         };
 
         await this._exerciseRepository.createExercise(exerciseData);
+
+        // Invalidate exercise caches
+        try {
+            await delPattern('exercise:all:*');
+            logger.info('Exercise caches invalidated after create');
+        } catch (error) {
+            logger.error({ error }, 'Exercise cache invalidation error');
+        }
     }
 
     async getAllExercises(query: ExerciseQueryDto): Promise<GetAllExercisesResponseDto> {
+        // Check cache first
+        const cacheKey = `exercise:all:${JSON.stringify(query)}`;
+        try {
+            const cached = await get(cacheKey);
+            if (cached) {
+                logger.info('Exercise list cache hit');
+                return JSON.parse(cached) as GetAllExercisesResponseDto;
+            }
+        } catch (error) {
+            logger.error({ error }, 'Exercise cache read error');
+        }
+
         const { data, pagination } = await this._exerciseRepository.getAllExercises(query);
-        return {
+        const result: GetAllExercisesResponseDto = {
             data: ExerciseMapper.toExerciseDtoList(data),
             pagination,
         };
+
+        // Cache for 1 hour
+        try {
+            await set(cacheKey, JSON.stringify(result), 3600);
+            logger.info('Exercise list cached');
+        } catch (error) {
+            logger.error({ error }, 'Exercise cache write error');
+        }
+
+        return result;
     }
 
     async getExerciseById(exerciseId: string): Promise<ExerciseDto> {
+        // Check cache first
+        const cacheKey = `exercise:byId:${exerciseId}`;
+        try {
+            const cached = await get(cacheKey);
+            if (cached) {
+                logger.info('Exercise by ID cache hit');
+                return JSON.parse(cached) as ExerciseDto;
+            }
+        } catch (error) {
+            logger.error({ error }, 'Exercise cache read error');
+        }
+
         const exercise = await this._exerciseRepository.getExerciseById(exerciseId);
         if (!exercise) {
             throw new AppError(STATUS.NOT_FOUND, MESSAGES.EXERCISE.NOT_FOUND);
         }
-        return ExerciseMapper.toExerciseDto(exercise);
+
+        const result = ExerciseMapper.toExerciseDto(exercise);
+
+        // Cache for 1 hour
+        try {
+            await set(cacheKey, JSON.stringify(result), 3600);
+            logger.info('Exercise by ID cached');
+        } catch (error) {
+            logger.error({ error }, 'Exercise cache write error');
+        }
+
+        return result;
     }
 
     async updateExercise(exerciseId: string, data: UpdateExerciseDto): Promise<void> {
@@ -112,6 +167,15 @@ export class ExerciseService implements IExerciseService {
         }
 
         await this._exerciseRepository.updateExercise(exerciseId, updateData);
+
+        // Invalidate exercise caches
+        try {
+            await delPattern('exercise:all:*');
+            await del(`exercise:byId:${exerciseId}`);
+            logger.info('Exercise caches invalidated after update');
+        } catch (error) {
+            logger.error({ error }, 'Exercise cache invalidation error');
+        }
     }
 
     async toggleExerciseStatus(exerciseId: string): Promise<ToggleExerciseStatusResponseDto> {
@@ -119,6 +183,16 @@ export class ExerciseService implements IExerciseService {
         if (!exercise) {
             throw new AppError(STATUS.NOT_FOUND, MESSAGES.EXERCISE.NOT_FOUND);
         }
+
+        // Invalidate exercise caches
+        try {
+            await delPattern('exercise:all:*');
+            await del(`exercise:byId:${exerciseId}`);
+            logger.info('Exercise caches invalidated after status toggle');
+        } catch (error) {
+            logger.error({ error }, 'Exercise cache invalidation error');
+        }
+
         return {
             message: exercise.isActive
                 ? MESSAGES.EXERCISE.UNBLOCKED
