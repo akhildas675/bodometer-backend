@@ -9,7 +9,6 @@ export interface Coaching{
     price:number,
     bookingMode:BookingMode,
     isActive:boolean,
-    maxParticipants:number,
 }
 
 export interface CoachingQuery{
@@ -34,5 +33,4 @@ export interface UpdateCoaching{
     price?:number,
     bookingMode?:BookingMode,
     isActive?:boolean,
-    maxParticipants?:number,
 }

@@ -36,4 +36,5 @@ export interface IBookingService {
   getBookingById(bookingId: string): Promise<Booking | null>;
   cancelBooking(bookingId: string, userId: string, reason?: string): Promise<Booking>;
   expireStalePendingBookings(): Promise<number>;
+  handleBookingPaymentWebhook(rawBody: Buffer, signature: string): Promise<void>;
 }

@@ -1,5 +1,5 @@
 import { inject, injectable } from "inversify";
-import { NextFunction, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
 import { AuthRequest } from "@/middleware/authGuard";
 import { SuccessResponse } from "@/utils/success.response";
@@ -453,6 +453,32 @@ export class TrainerSchedulingController {
         "Booking payment verified and confirmed.",
         booking,
       ).send(res);
+    } catch (error: unknown) {
+      next(error);
+    }
+  };
+
+  handleStripeWebhook = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const signature = req.headers["stripe-signature"];
+      if (typeof signature !== "string" || !signature) {
+        throw new AppError(
+          STATUS.BAD_REQUEST,
+          "Missing stripe-signature header.",
+        );
+      }
+
+      const rawBody = Buffer.isBuffer(req.body)
+        ? req.body
+        : Buffer.from(JSON.stringify(req.body ?? {}));
+
+      await this._bookingService.handleBookingPaymentWebhook(rawBody, signature);
+
+      res.status(STATUS.OK).json({ received: true });
     } catch (error: unknown) {
       next(error);
     }

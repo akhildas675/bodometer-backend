@@ -5,7 +5,8 @@ export type BookingStatus =
   | "CANCELLED"
   | "COMPLETED"
   | "NO_SHOW"
-  | "EXPIRED";
+  | "EXPIRED"
+  | "PAYMENT_FAILED";
 
 export type AttendanceStatus = "PENDING" | "ATTENDED" | "MISSED";
 
@@ -50,6 +51,8 @@ export interface Booking {
   bufferEndTime: Date;
   status: BookingStatus;
   paymentId?: string;
+  holdToken?: string;
+  holdExpiresAt?: Date;
   price: number;
   attendance: BookingAttendance;
   cancellation?: BookingCancellationSummary;

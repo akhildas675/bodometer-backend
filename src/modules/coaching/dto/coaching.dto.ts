@@ -8,8 +8,7 @@ export interface CreateCoachingDto{
     durationMinutes:CoachingDuration,
     price:number,
     bookingMode:BookingMode,
-    isActive:boolean,
-    maxParticipants:number
+    isActive:boolean
 
 }
 
@@ -29,8 +28,7 @@ export interface CoachingDetailDto{
     durationMinutes:CoachingDuration,
     price:number,
     bookingMode:BookingMode,
-    isActive:boolean,
-    maxParticipants:number
+    isActive:boolean
 }
 
 export interface GetAllCoachingResponseDto{
@@ -46,6 +44,5 @@ export interface UpdateCoachingDto{
     durationMinutes?:CoachingDuration,
     price?:number,
     bookingMode?:BookingMode,
-    isActive?:boolean,
-    maxParticipants?:number
+    isActive?:boolean
 }

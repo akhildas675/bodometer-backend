@@ -23,9 +23,9 @@ import { Booking } from "../interface/domain/booking.interface";
 import { AppError } from "@/utils/appError";
 import { STATUS } from "@/constants/constant.values.ts/statuscode";
 import { MESSAGES } from "@/constants/messages";
-import { AUDIT_LOG_ACTION, BOOKING_STATUS } from "@/constants/constant.values.ts/booking.constant";
-
-const PENDING_PAYMENT_HOLD_MS = 15 * 60 * 1000;
+import { AUDIT_LOG_ACTION, BOOKING_STATUS, SLOT_HOLD_MS } from "@/constants/constant.values.ts/booking.constant";
+import { randomUUID } from "crypto";
+import { IBookingRefundService } from "../interface/service.interface/booking-refund-service.interface";
 
 function generateBookingNumber(): string {
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
@@ -82,6 +82,9 @@ export class BookingService implements IBookingService {
 
     @inject(BOOKING_TYPES.BookingRescheduleRequestRepository)
     private _rescheduleRepository: IBookingRescheduleRequestRepository,
+
+    @inject(BOOKING_TYPES.BookingRefundService)
+    private _refundService: IBookingRefundService,
   ) { }
 
   async createBooking(input: CreateBookingInput): Promise<CreateBookingResponse> {
@@ -144,20 +147,24 @@ export class BookingService implements IBookingService {
 
     const price = Number(coachingService.price) || 0;
     const bookingNumber = generateBookingNumber();
-    const maxParticipants = Math.max(1, Number(coachingService.maxParticipants) || 1);
     const slotStart = new Date(startTime);
     const slotEnd = new Date(endTime);
+    const holdToken = randomUUID();
+    const holdExpiresAt = new Date(Date.now() + SLOT_HOLD_MS);
 
-    // 3. Atomically reserve a spot in the slot session before creating the booking
-    const spotReserved = await this._bookingRepository.reserveSlotSpot(
-      actualTrainerUserId,
+    // 3. Atomically acquire the slot hold before creating the booking.
+    //    Only one user can hold a slot at a time; expired holds are re-acquirable.
+    const holdAcquired = await this._bookingRepository.acquireSlotHold({
+      trainerId: actualTrainerUserId,
       serviceId,
-      slotStart,
-      slotEnd,
-      maxParticipants,
-    );
+      startTime: slotStart,
+      endTime: slotEnd,
+      userId,
+      holdToken,
+      holdExpiresAt,
+    });
 
-    if (!spotReserved) {
+    if (!holdAcquired) {
       throw new AppError(
         STATUS.CONFLICT,
         MESSAGES.BOOKING.SLOT_UNAVAILABLE,
@@ -178,11 +185,24 @@ export class BookingService implements IBookingService {
         bufferEndTime: new Date(bufferEndTime),
         status: BOOKING_STATUS.PENDING_PAYMENT,
         price,
+        holdToken,
+        holdExpiresAt,
         attendance: { status: "PENDING" },
       });
+      await this._bookingRepository.attachBookingToSlot(
+        actualTrainerUserId,
+        serviceId,
+        slotStart,
+        booking.id,
+      );
     } catch (err) {
       await this._bookingRepository
-        .releaseSlotSpot(actualTrainerUserId, serviceId, slotStart)
+        .releaseSlotHold({
+          trainerId: actualTrainerUserId,
+          serviceId,
+          startTime: slotStart,
+          holdToken,
+        })
         .catch(() => undefined);
       throw err;
     }
@@ -232,6 +252,17 @@ export class BookingService implements IBookingService {
         booking.status = BOOKING_STATUS.CONFIRMED;
         booking.paymentId = transaction.id;
 
+        const slotConfirmed = await this._bookingRepository.confirmSlotHold({
+          trainerId: actualTrainerUserId,
+          serviceId,
+          startTime: slotStart,
+          holdToken,
+          bookingId: booking.id,
+        });
+        if (!slotConfirmed) {
+          console.error(`Slot hold confirm failed for booking ${booking.id}`);
+        }
+
         await this._auditLogRepository.createOne({
           bookingId: booking.id,
           action: AUDIT_LOG_ACTION.STATUS_CHANGED,
@@ -277,7 +308,12 @@ export class BookingService implements IBookingService {
           console.error("Stripe Checkout Initialization Error:", stripeErr);
           await this._bookingRepository.updateStatus(booking.id, BOOKING_STATUS.CANCELLED);
           await this._bookingRepository
-            .releaseSlotSpot(actualTrainerUserId, serviceId, slotStart)
+            .releaseSlotHold({
+              trainerId: actualTrainerUserId,
+              serviceId,
+              startTime: slotStart,
+              holdToken,
+            })
             .catch(() => undefined);
           throw new AppError(
             STATUS.INTERNAL_ERROR,
@@ -308,7 +344,12 @@ export class BookingService implements IBookingService {
           console.error("Stripe Checkout Initialization Error:", stripeErr);
           await this._bookingRepository.updateStatus(booking.id, BOOKING_STATUS.CANCELLED);
           await this._bookingRepository
-            .releaseSlotSpot(actualTrainerUserId, serviceId, slotStart)
+            .releaseSlotHold({
+              trainerId: actualTrainerUserId,
+              serviceId,
+              startTime: slotStart,
+              holdToken,
+            })
             .catch(() => undefined);
           throw new AppError(
             STATUS.INTERNAL_ERROR,
@@ -321,6 +362,14 @@ export class BookingService implements IBookingService {
       await this._bookingRepository.updateStatus(booking.id, BOOKING_STATUS.CONFIRMED, "FREE");
       booking.status = BOOKING_STATUS.CONFIRMED;
       booking.paymentId = "FREE";
+
+      await this._bookingRepository.confirmSlotHold({
+        trainerId: actualTrainerUserId,
+        serviceId,
+        startTime: slotStart,
+        holdToken,
+        bookingId: booking.id,
+      }).catch((err) => console.error("Slot hold confirm failed:", err));
     }
 
     return { booking, checkoutUrl, sessionId };
@@ -346,10 +395,12 @@ export class BookingService implements IBookingService {
     }
 
     if (this.isPaymentHoldExpired(booking)) {
-      await this.expireHoldAndReleaseSpot(booking);
+      // Payment arrived after the hold expired — the slot may already belong
+      // to another user. Do not confirm; flag for refund instead.
+      await this.markPaymentFailedAndRelease(booking, sessionId);
       throw new AppError(
-        STATUS.BAD_REQUEST,
-        "Payment window has expired for this booking. The slot has been released.",
+        STATUS.CONFLICT,
+        "Payment was received after the booking hold expired and the slot was released. A refund has been initiated.",
       );
     }
 
@@ -366,6 +417,28 @@ export class BookingService implements IBookingService {
       throw new AppError(
         STATUS.CONFLICT,
         "Booking is no longer awaiting payment.",
+      );
+    }
+
+    // Mark the slot lock as BOOKED. If the hold was meanwhile released and
+    // re-acquired by another user, this fails — the paid booking cannot be
+    // fulfilled and must be refunded instead of confirmed.
+    const slotToken = booking.holdToken || "";
+    const slotConfirmed = slotToken
+      ? await this._bookingRepository.confirmSlotHold({
+        trainerId: booking.trainerId,
+        serviceId: booking.serviceId,
+        startTime: new Date(booking.startTime),
+        holdToken: slotToken,
+        bookingId: booking.id,
+      })
+      : false;
+
+    if (!slotConfirmed) {
+      await this.markPaymentFailedAndRelease(updated, sessionId);
+      throw new AppError(
+        STATUS.CONFLICT,
+        "Payment was received after the slot was released to another user. A refund has been initiated.",
       );
     }
 
@@ -582,37 +655,174 @@ export class BookingService implements IBookingService {
       previousStatus === BOOKING_STATUS.RESCHEDULE_PENDING
     ) {
       await this._bookingRepository
-        .releaseSlotSpot(booking.trainerId, booking.serviceId, new Date(booking.startTime))
-        .catch((err) => console.error("Failed to release slot spot on cancel:", err));
+        .releaseSlotHold({
+          trainerId: booking.trainerId,
+          serviceId: booking.serviceId,
+          startTime: new Date(booking.startTime),
+          holdToken: booking.holdToken,
+          bookingId: booking.id,
+        })
+        .catch((err) => console.error("Failed to release slot hold on cancel:", err));
     }
 
     return updated;
   }
 
   private isPaymentHoldExpired(booking: Booking): boolean {
-    if (!booking.createdAt) return false;
-    return Date.now() - new Date(booking.createdAt).getTime() > PENDING_PAYMENT_HOLD_MS;
+    const expiryMs = booking.holdExpiresAt
+      ? new Date(booking.holdExpiresAt).getTime()
+      : booking.createdAt
+        ? new Date(booking.createdAt).getTime() + SLOT_HOLD_MS
+        : 0;
+    return expiryMs > 0 && Date.now() > expiryMs;
   }
 
   private async expireHoldAndReleaseSpot(booking: Booking): Promise<void> {
     await this._bookingRepository.expirePendingBooking(booking.id);
     await this._bookingRepository
-      .releaseSlotSpot(booking.trainerId, booking.serviceId, new Date(booking.startTime))
-      .catch((err) => console.error("Failed to release slot spot on expiry:", err));
+      .releaseSlotHold({
+        trainerId: booking.trainerId,
+        serviceId: booking.serviceId,
+        startTime: new Date(booking.startTime),
+        holdToken: booking.holdToken,
+        bookingId: booking.id,
+      })
+      .catch((err) => console.error("Failed to release slot hold on expiry:", err));
+  }
+
+  private async markPaymentFailedAndRelease(
+    booking: Booking,
+    paymentId?: string,
+  ): Promise<void> {
+    await this._bookingRepository.updateById(booking.id, {
+      status: BOOKING_STATUS.PAYMENT_FAILED,
+      ...(paymentId ? { paymentId } : {}),
+    });
+
+    await this._bookingRepository
+      .releaseSlotHold({
+        trainerId: booking.trainerId,
+        serviceId: booking.serviceId,
+        startTime: new Date(booking.startTime),
+        holdToken: booking.holdToken,
+        bookingId: booking.id,
+      })
+      .catch((err) => console.error("Failed to release slot hold on payment failure:", err));
+
+    await this._auditLogRepository.createOne({
+      bookingId: booking.id,
+      action: AUDIT_LOG_ACTION.STATUS_CHANGED,
+      performedBy: booking.userId,
+      oldValue: { status: booking.status },
+      newValue: { status: BOOKING_STATUS.PAYMENT_FAILED, paymentId },
+      reason: "Payment received after the booking hold expired; refund initiated",
+    }).catch((err) => console.error("Audit log error:", err));
+
+    if (booking.price > 0) {
+      try {
+        const refund = await this._refundService.createRefundRecord({
+          bookingId: booking.id,
+          paymentId: paymentId || booking.paymentId,
+          userId: booking.userId,
+          trainerId: booking.trainerId,
+          amount: booking.price,
+          currency: "inr",
+          reason: "Late payment received after slot hold expired",
+          triggeredBy: "SYSTEM",
+        });
+        // processRefund looks up the refund by bookingId internally
+        await this._refundService.processRefund(booking.id).catch((err) =>
+          console.error("Refund processing error:", err),
+        );
+        void refund;
+      } catch (err) {
+        console.error("Failed to create refund record for late payment:", err);
+      }
+    }
+  }
+
+  async handleBookingPaymentWebhook(rawBody: Buffer, signature: string): Promise<void> {
+    let event;
+    try {
+      event = this._paymentService.constructWebhookEvent(rawBody, signature);
+    } catch {
+      throw new AppError(STATUS.BAD_REQUEST, "Invalid Stripe webhook signature.");
+    }
+
+    if (event.type !== "checkout.session.completed") {
+      return;
+    }
+
+    const session = event.data as {
+      id?: string;
+      payment_status?: string;
+      amount_total?: number;
+      currency?: string;
+      metadata?: Record<string, string>;
+    };
+
+    if (session.payment_status !== "paid") {
+      return;
+    }
+
+    const bookingId = session.metadata?.bookingId;
+    if (!bookingId) {
+      console.warn("Stripe webhook missing bookingId metadata");
+      return;
+    }
+
+    const booking = await this._bookingRepository.findById(bookingId);
+    if (!booking) {
+      console.warn(`Stripe webhook for unknown booking ${bookingId}`);
+      return;
+    }
+
+    // Verify amount and currency match the booking before confirming
+    if (session.amount_total !== undefined) {
+      const expectedCents = Math.round(Number(booking.price) * 100);
+      if (session.amount_total !== expectedCents) {
+        console.warn(
+          `Stripe webhook amount mismatch for booking ${bookingId}: got ${session.amount_total}, expected ${expectedCents}`,
+        );
+        return;
+      }
+    }
+    if (session.currency && session.currency !== "inr") {
+      console.warn(`Stripe webhook currency mismatch for booking ${bookingId}: ${session.currency}`);
+      return;
+    }
+
+    try {
+      await this.verifyBookingPayment({ bookingId, sessionId: session.id || "" });
+    } catch (err) {
+      // Expired/reassigned holds are already handled inside verifyBookingPayment
+      // (booking marked PAYMENT_FAILED + refund created). Log and ack so Stripe
+      // does not retry a permanently unfulfillable payment.
+      console.warn(`Booking webhook could not confirm booking ${bookingId}:`, err);
+    }
   }
 
   async expireStalePendingBookings(): Promise<number> {
-    const cutoff = new Date(Date.now() - PENDING_PAYMENT_HOLD_MS);
+    const cutoff = new Date(Date.now() - SLOT_HOLD_MS);
     const staleBookings = await this._bookingRepository.findStalePendingPayments(cutoff);
 
     let expiredCount = 0;
     for (const booking of staleBookings) {
+      if (booking.holdExpiresAt && new Date(booking.holdExpiresAt).getTime() > Date.now()) {
+        continue;
+      }
       const expired = await this._bookingRepository.expirePendingBooking(booking.id);
       if (!expired) continue;
 
       await this._bookingRepository
-        .releaseSlotSpot(booking.trainerId, booking.serviceId, new Date(booking.startTime))
-        .catch((err) => console.error("Failed to release slot spot on expiry:", err));
+        .releaseSlotHold({
+          trainerId: booking.trainerId,
+          serviceId: booking.serviceId,
+          startTime: new Date(booking.startTime),
+          holdToken: booking.holdToken,
+          bookingId: booking.id,
+        })
+        .catch((err) => console.error("Failed to release slot hold on expiry:", err));
 
       expiredCount += 1;
     }

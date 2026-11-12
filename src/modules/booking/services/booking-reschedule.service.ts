@@ -3,8 +3,7 @@ import mongoose from "mongoose";
 import { BOOKING_TYPES } from "../booking.types";
 import { USER_TYPES } from "@/modules/user/user.types";
 import { TRAINER_TYPES } from "@/modules/trainer/trainer.types";
-import { COACHING_TYPES } from "@/modules/coaching/coaching.types";
-import { ICoachingRepository } from "@/modules/coaching/interface/coaching-repository.interface";
+import { randomUUID } from "crypto";
 
 import { IBookingRepository } from "../interface/repository.interface/booking-repository.interface";
 import { IBookingAuditLogRepository } from "../interface/repository.interface/booking-audit-log-repository.interface";
@@ -31,6 +30,7 @@ import {
   MS_PER_HOUR,
   RESCHEDULE_EXPIRY_HOURS,
   RESCHEDULE_STATUS,
+  SLOT_HOLD_MS,
 } from "@/constants/constant.values.ts/booking.constant";
 
 @injectable()
@@ -53,9 +53,6 @@ export class BookingRescheduleService implements IBookingRescheduleService {
 
     @inject(TRAINER_TYPES.TrainerProfileRepository)
     private _trainerProfileRepository: ITrainerProfileRepository,
-
-    @inject(COACHING_TYPES.CoachingRepository)
-    private _coachingRepository: ICoachingRepository,
   ) {}
 
   private async resolveTrainerUserId(trainerId: string): Promise<string> {
@@ -150,66 +147,60 @@ export class BookingRescheduleService implements IBookingRescheduleService {
       const proposedStartMs = new Date(request.proposedStartTime).getTime();
       const proposedEndMs = new Date(request.proposedEndTime).getTime();
 
-      const coachingService = await this._coachingRepository.getCoachingServiceById(booking.serviceId);
-      const maxParticipants = Math.max(1, Number(coachingService?.maxParticipants) || 1);
-      const pendingHoldMs = 15 * 60 * 1000;
+      const pendingHoldMs = SLOT_HOLD_MS;
 
       const existingBookings = await this._bookingRepository.findByTrainerAndDate(
         booking.trainerId,
         request.proposedStartTime,
       );
 
-      // Bookings on the exact same service+startTime share capacity;
-      // any other overlapping booking blocks the proposed slot.
-      let sameSessionCount = 0;
-      let hasConflict = false;
-
-      for (const b of existingBookings) {
-        if (b.id === booking.id) continue;
+      // One-to-one rule: any active overlapping booking blocks the proposed slot.
+      const hasConflict = existingBookings.some((b) => {
+        if (b.id === booking.id) return false;
         if (
           b.status === BOOKING_STATUS.CANCELLED ||
           b.status === BOOKING_STATUS.NO_SHOW ||
-          b.status === BOOKING_STATUS.EXPIRED
+          b.status === BOOKING_STATUS.EXPIRED ||
+          b.status === BOOKING_STATUS.PAYMENT_FAILED
         ) {
-          continue;
+          return false;
         }
-        if (b.status === BOOKING_STATUS.PENDING_PAYMENT && b.createdAt) {
-          if (Date.now() - new Date(b.createdAt).getTime() > pendingHoldMs) continue;
+        if (b.status === BOOKING_STATUS.PENDING_PAYMENT) {
+          const holdExpiry = b.holdExpiresAt
+            ? new Date(b.holdExpiresAt).getTime()
+            : b.createdAt
+              ? new Date(b.createdAt).getTime() + pendingHoldMs
+              : 0;
+          if (holdExpiry > 0 && Date.now() > holdExpiry) return false;
         }
 
         const bStart = new Date(b.startTime).getTime();
         const bBufferEnd = new Date(b.bufferEndTime).getTime();
-        if (!(proposedStartMs < bBufferEnd && proposedEndMs > bStart)) continue;
+        return proposedStartMs < bBufferEnd && proposedEndMs > bStart;
+      });
 
-        const isSameSession =
-          b.serviceId === booking.serviceId &&
-          new Date(b.startTime).getTime() === proposedStartMs;
-
-        if (isSameSession) {
-          sameSessionCount += 1;
-        } else {
-          hasConflict = true;
-          break;
-        }
-      }
-
-      if (hasConflict || sameSessionCount >= maxParticipants) {
+      if (hasConflict) {
         throw new AppError(
           STATUS.CONFLICT,
           MESSAGES.RESCHEDULE.RESCHEDULE_CONFLICT,
         );
       }
 
-      // Atomically reserve a spot at the proposed time before moving the booking
-      const newSpotReserved = await this._bookingRepository.reserveSlotSpot(
-        booking.trainerId,
-        booking.serviceId,
-        request.proposedStartTime,
-        request.proposedEndTime,
-        maxParticipants,
-      );
+      // Atomically acquire a hold at the proposed time before moving the booking
+      const rescheduleHoldToken = randomUUID();
+      const rescheduleHoldExpiresAt = new Date(Date.now() + SLOT_HOLD_MS);
 
-      if (!newSpotReserved) {
+      const holdAcquired = await this._bookingRepository.acquireSlotHold({
+        trainerId: booking.trainerId,
+        serviceId: booking.serviceId,
+        startTime: request.proposedStartTime,
+        endTime: request.proposedEndTime,
+        userId: booking.userId,
+        holdToken: rescheduleHoldToken,
+        holdExpiresAt: rescheduleHoldExpiresAt,
+      });
+
+      if (!holdAcquired) {
         throw new AppError(
           STATUS.CONFLICT,
           MESSAGES.RESCHEDULE.RESCHEDULE_CONFLICT,
@@ -253,17 +244,37 @@ export class BookingRescheduleService implements IBookingRescheduleService {
         await session.commitTransaction();
         await session.endSession();
 
-        // Move the slot-session counter from the old time to the new time
+        // Confirm the new slot hold, then release the old slot
         await this._bookingRepository
-          .releaseSlotSpot(booking.trainerId, booking.serviceId, oldStartTime)
-          .catch((err) => console.error("Failed to release old slot spot on reschedule:", err));
+          .confirmSlotHold({
+            trainerId: booking.trainerId,
+            serviceId: booking.serviceId,
+            startTime: request.proposedStartTime,
+            holdToken: rescheduleHoldToken,
+            bookingId: booking.id,
+          })
+          .catch((err) => console.error("Failed to confirm rescheduled slot hold:", err));
+
+        await this._bookingRepository
+          .releaseSlotHold({
+            trainerId: booking.trainerId,
+            serviceId: booking.serviceId,
+            startTime: oldStartTime,
+            bookingId: booking.id,
+          })
+          .catch((err) => console.error("Failed to release old slot hold on reschedule:", err));
 
         return { request: updatedRequest || request, booking: updatedBooking || booking };
       } catch (err) {
         await session.abortTransaction();
         await session.endSession();
         await this._bookingRepository
-          .releaseSlotSpot(booking.trainerId, booking.serviceId, request.proposedStartTime)
+          .releaseSlotHold({
+            trainerId: booking.trainerId,
+            serviceId: booking.serviceId,
+            startTime: request.proposedStartTime,
+            holdToken: rescheduleHoldToken,
+          })
           .catch(() => undefined);
         throw err;
       }

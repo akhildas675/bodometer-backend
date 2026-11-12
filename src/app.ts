@@ -26,6 +26,11 @@ app.use(
   express.raw({ type: "application/json" }),
 );
 
+app.use(
+  "/api/booking/webhook",
+  express.raw({ type: "application/json" }),
+);
+
 app.use(express.json());
 
 //routes

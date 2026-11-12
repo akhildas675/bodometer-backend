@@ -1,13 +1,17 @@
 import mongoose, { Document, Schema } from "mongoose";
 
+export type SlotLockStatus = "AVAILABLE" | "HELD" | "BOOKED";
+
 export interface IBookingSlotSession extends Document {
   trainerId: mongoose.Types.ObjectId;
   serviceId: mongoose.Types.ObjectId;
   startTime: Date;
   endTime: Date;
-  capacity: number;
-  bookedCount: number;
-  status: "ACTIVE" | "CLOSED";
+  status: SlotLockStatus;
+  heldBy?: mongoose.Types.ObjectId;
+  holdToken?: string;
+  holdExpiresAt?: Date;
+  bookingId?: mongoose.Types.ObjectId;
 }
 
 const BookingSlotSessionSchema = new Schema<IBookingSlotSession>(
@@ -16,13 +20,15 @@ const BookingSlotSessionSchema = new Schema<IBookingSlotSession>(
     serviceId: { type: Schema.Types.ObjectId, ref: "Coaching", required: true },
     startTime: { type: Date, required: true },
     endTime: { type: Date, required: true },
-    capacity: { type: Number, required: true, min: 1 },
-    bookedCount: { type: Number, default: 0, min: 0 },
     status: {
       type: String,
-      enum: ["ACTIVE", "CLOSED"],
-      default: "ACTIVE",
+      enum: ["AVAILABLE", "HELD", "BOOKED"],
+      default: "AVAILABLE",
     },
+    heldBy: { type: Schema.Types.ObjectId, ref: "User" },
+    holdToken: { type: String },
+    holdExpiresAt: { type: Date },
+    bookingId: { type: Schema.Types.ObjectId, ref: "Booking" },
   },
   { timestamps: true },
 );

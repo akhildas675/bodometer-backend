@@ -178,6 +178,12 @@ bookingRoute.get(
   trainerSchedulingController.getBookingById,
 );
 
+// Stripe payment webhook (no auth — verified via signature)
+bookingRoute.post(
+  "/webhook",
+  trainerSchedulingController.handleStripeWebhook,
+);
+
 // Retry Payment Route (for PENDING_PAYMENT bookings)
 bookingRoute.post(
   BOOKING_PATHS.RETRY_PAYMENT,

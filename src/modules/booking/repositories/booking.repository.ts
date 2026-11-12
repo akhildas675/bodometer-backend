@@ -47,6 +47,8 @@ export class BookingRepository
       bufferEndTime: doc.bufferEndTime,
       status: doc.status as BookingStatus,
       paymentId: doc.paymentId,
+      holdToken: doc.holdToken,
+      holdExpiresAt: doc.holdExpiresAt,
       price: doc.price,
       attendance: {
         status: doc.attendance?.status || "PENDING",
@@ -90,6 +92,8 @@ export class BookingRepository
       bufferEndTime: data.bufferEndTime,
       status: data.status || "PENDING_PAYMENT",
       paymentId: data.paymentId || "",
+      holdToken: data.holdToken,
+      holdExpiresAt: data.holdExpiresAt,
       price: data.price,
       attendance: data.attendance || { status: "PENDING" },
       cancellation: data.cancellation,
@@ -245,24 +249,48 @@ export class BookingRepository
     return doc ? this.toInterface(doc) : null;
   }
 
-  async reserveSlotSpot(
-    trainerId: string,
-    serviceId: string,
-    startTime: Date,
-    endTime: Date,
-    capacity: number,
-  ): Promise<boolean> {
+  async acquireSlotHold(input: {
+    trainerId: string;
+    serviceId: string;
+    startTime: Date;
+    endTime: Date;
+    userId: string;
+    holdToken: string;
+    holdExpiresAt: Date;
+  }): Promise<boolean> {
+    const { trainerId, serviceId, startTime, endTime, userId, holdToken, holdExpiresAt } = input;
+    const now = new Date();
+
     const filter = {
       trainerId: new Types.ObjectId(trainerId),
       serviceId: new Types.ObjectId(serviceId),
       startTime,
-      status: "ACTIVE",
-      $expr: { $lt: ["$bookedCount", "$capacity"] },
+      $or: [
+        { status: "AVAILABLE" },
+        {
+          status: "HELD",
+          $or: [
+            { holdExpiresAt: { $lte: now } },
+            { holdExpiresAt: { $exists: false } },
+          ],
+        },
+      ],
+    };
+
+    const update = {
+      $set: {
+        status: "HELD",
+        heldBy: new Types.ObjectId(userId),
+        holdToken,
+        holdExpiresAt,
+        endTime,
+      },
+      $unset: { bookingId: "" },
     };
 
     const updated = await BookingSlotSessionModel.findOneAndUpdate(
       filter,
-      { $inc: { bookedCount: 1 }, $set: { capacity, endTime } },
+      update,
       { new: true },
     ).exec();
 
@@ -274,16 +302,17 @@ export class BookingRepository
         serviceId,
         startTime,
         endTime,
-        capacity,
-        bookedCount: 1,
-        status: "ACTIVE",
+        status: "HELD",
+        heldBy: userId,
+        holdToken,
+        holdExpiresAt,
       });
       return true;
     } catch (error) {
       if ((error as { code?: number }).code === 11000) {
         const retry = await BookingSlotSessionModel.findOneAndUpdate(
           filter,
-          { $inc: { bookedCount: 1 }, $set: { capacity, endTime } },
+          update,
           { new: true },
         ).exec();
         return Boolean(retry);
@@ -292,19 +321,82 @@ export class BookingRepository
     }
   }
 
-  async releaseSlotSpot(
+  async attachBookingToSlot(
     trainerId: string,
     serviceId: string,
     startTime: Date,
+    bookingId: string,
   ): Promise<void> {
     await BookingSlotSessionModel.updateOne(
       {
         trainerId: new Types.ObjectId(trainerId),
         serviceId: new Types.ObjectId(serviceId),
         startTime,
-        bookedCount: { $gt: 0 },
       },
-      { $inc: { bookedCount: -1 } },
+      { $set: { bookingId: new Types.ObjectId(bookingId) } },
+    ).exec();
+  }
+
+  async confirmSlotHold(input: {
+    trainerId: string;
+    serviceId: string;
+    startTime: Date;
+    holdToken: string;
+    bookingId: string;
+  }): Promise<boolean> {
+    const { trainerId, serviceId, startTime, holdToken, bookingId } = input;
+
+    const updated = await BookingSlotSessionModel.findOneAndUpdate(
+      {
+        trainerId: new Types.ObjectId(trainerId),
+        serviceId: new Types.ObjectId(serviceId),
+        startTime,
+        status: "HELD",
+        holdToken,
+      },
+      {
+        $set: {
+          status: "BOOKED",
+          bookingId: new Types.ObjectId(bookingId),
+        },
+      },
+      { new: true },
+    ).exec();
+
+    return Boolean(updated);
+  }
+
+  async releaseSlotHold(input: {
+    trainerId: string;
+    serviceId: string;
+    startTime: Date;
+    holdToken?: string;
+    bookingId?: string;
+  }): Promise<void> {
+    const { trainerId, serviceId, startTime, holdToken, bookingId } = input;
+
+    const identifierFilter: Record<string, unknown>[] = [];
+    if (holdToken) identifierFilter.push({ holdToken });
+    if (bookingId) identifierFilter.push({ bookingId: new Types.ObjectId(bookingId) });
+    if (identifierFilter.length === 0) return;
+
+    await BookingSlotSessionModel.updateOne(
+      {
+        trainerId: new Types.ObjectId(trainerId),
+        serviceId: new Types.ObjectId(serviceId),
+        startTime,
+        status: { $in: ["HELD", "BOOKED"] },
+        $or: identifierFilter,
+      },
+      {
+        $set: { status: "AVAILABLE" },
+        $unset: {
+          heldBy: "",
+          holdToken: "",
+          holdExpiresAt: "",
+          bookingId: "",
+        },
+      },
     ).exec();
   }
 

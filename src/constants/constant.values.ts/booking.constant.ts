@@ -13,6 +13,7 @@ export const BOOKING_STATUS = {
   CANCELLED_BY_USER: "CANCELLED_BY_USER",
   EXPIRED: "EXPIRED",
   NO_SHOW: "NO_SHOW",
+  PAYMENT_FAILED: "PAYMENT_FAILED",
 } as const;
 
 export type BookingStatus = typeof BOOKING_STATUS[keyof typeof BOOKING_STATUS];
@@ -153,3 +154,4 @@ export const CANCELLATION_NOTICE_HOURS = {
 
 export const RESCHEDULE_EXPIRY_HOURS = 24;
 export const MS_PER_HOUR = 3600000;
+export const SLOT_HOLD_MS = 5 * 60 * 1000;

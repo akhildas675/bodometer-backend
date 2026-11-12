@@ -23,7 +23,7 @@ import {
 } from "../interface/service.interface/booking-slot-engine-service.interface";
 import { AppError } from "@/utils/appError";
 import { STATUS } from "@/constants/constant.values.ts/statuscode";
-import { BOOKING_STATUS } from "@/constants/constant.values.ts/booking.constant";
+import { BOOKING_STATUS, SLOT_HOLD_MS } from "@/constants/constant.values.ts/booking.constant";
 import { validateTrainerEligibility } from "../validation/trainer-scheduling-setup.validation";
 
 function toYYYYMMDD(dateInput: Date | string): string {
@@ -263,21 +263,23 @@ export class BookingSlotEngineService implements IBookingSlotEngineService {
     const pendingReschedules =
       await this._rescheduleRepository.findPendingByTrainerId(actualUserId);
 
-    const pendingHoldMs = 15 * 60 * 1000;
-    const maxParticipants = Math.max(1, Number(coachingService.maxParticipants) || 1);
-
     const isSlotBlockingBooking = (b: (typeof existingBookings)[number]): boolean => {
       if (
         b.status === BOOKING_STATUS.CANCELLED ||
         b.status === BOOKING_STATUS.NO_SHOW ||
-        b.status === BOOKING_STATUS.EXPIRED
+        b.status === BOOKING_STATUS.EXPIRED ||
+        b.status === BOOKING_STATUS.PAYMENT_FAILED
       ) {
         return false;
       }
 
       if (b.status === BOOKING_STATUS.PENDING_PAYMENT) {
-        const createdAt = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        if (Date.now() - createdAt > pendingHoldMs) {
+        const holdExpiryMs = b.holdExpiresAt
+          ? new Date(b.holdExpiresAt).getTime()
+          : b.createdAt
+            ? new Date(b.createdAt).getTime() + SLOT_HOLD_MS
+            : 0;
+        if (holdExpiryMs > 0 && Date.now() > holdExpiryMs) {
           return false;
         }
       }
@@ -285,54 +287,33 @@ export class BookingSlotEngineService implements IBookingSlotEngineService {
       return true;
     };
 
-    const slotsWithCapacity = candidateSlots
-      .map((slot): AvailableSlot | null => {
-        const slotStart = new Date(slot.startTime).getTime();
-        const slotBufferEnd = new Date(slot.bufferEndTime).getTime();
+    const availableSlots = candidateSlots.filter((slot) => {
+      const slotStart = new Date(slot.startTime).getTime();
+      const slotBufferEnd = new Date(slot.bufferEndTime).getTime();
 
-        // Bookings on the exact same service+startTime share capacity;
-        // any other overlapping booking blocks the slot entirely.
-        let sameSessionCount = 0;
-        let hasBookingConflict = false;
+      // One-to-one rule: any active overlapping booking blocks the slot
+      const hasBookingConflict = existingBookings.some((b) => {
+        if (!isSlotBlockingBooking(b)) return false;
 
-        for (const b of existingBookings) {
-          if (!isSlotBlockingBooking(b)) continue;
+        const bStart = new Date(b.startTime).getTime();
+        const bBufferEnd = new Date(b.bufferEndTime).getTime();
 
-          const bStart = new Date(b.startTime).getTime();
-          const bBufferEnd = new Date(b.bufferEndTime).getTime();
-          if (!(slotStart < bBufferEnd && slotBufferEnd > bStart)) continue;
+        return slotStart < bBufferEnd && slotBufferEnd > bStart;
+      });
 
-          const isSameSession =
-            b.serviceId === serviceId &&
-            new Date(b.startTime).getTime() === slotStart;
+      if (hasBookingConflict) return false;
 
-          if (isSameSession) {
-            sameSessionCount += 1;
-          } else {
-            hasBookingConflict = true;
-            break;
-          }
-        }
+      // conflict with pending reschedule proposed times
+      const hasRescheduleConflict = pendingReschedules.some((r) => {
+        if (r.status !== "PENDING") return false;
+        const pStart = new Date(r.proposedStartTime).getTime();
+        const pBufferEnd = new Date(r.proposedBufferEndTime || r.proposedEndTime).getTime();
 
-        if (hasBookingConflict) return null;
+        return slotStart < pBufferEnd && slotBufferEnd > pStart;
+      });
 
-        // conflict with pending reschedule proposed times
-        const hasRescheduleConflict = pendingReschedules.some((r) => {
-          if (r.status !== "PENDING") return false;
-          const pStart = new Date(r.proposedStartTime).getTime();
-          const pBufferEnd = new Date(r.proposedBufferEndTime || r.proposedEndTime).getTime();
-
-          return slotStart < pBufferEnd && slotBufferEnd > pStart;
-        });
-
-        if (hasRescheduleConflict) return null;
-
-        const spotsRemaining = maxParticipants - sameSessionCount;
-        if (spotsRemaining <= 0) return null;
-
-        return { ...slot, spotsRemaining };
-      })
-      .filter((slot): slot is AvailableSlot => slot !== null);
+      return !hasRescheduleConflict;
+    });
 
     // Enforce Daily Max Capacity Limit
     const activeBookingCount = existingBookings.filter(
@@ -344,7 +325,7 @@ export class BookingSlotEngineService implements IBookingSlotEngineService {
       return [];
     }
 
-    return slotsWithCapacity.slice(0, remainingCapacity);
+    return availableSlots.slice(0, remainingCapacity);
   }
 
   async calculateAvailableDatesOverview(
