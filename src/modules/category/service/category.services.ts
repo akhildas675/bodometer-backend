@@ -21,6 +21,14 @@ import { inject, injectable } from "inversify";
 import { CATEGORY_TYPES } from "../category.types";
 import { Role, ROLES } from "@/constants/constant.values.ts/roles";
 
+import { get, set, del, delPattern } from "@/config/redis";
+
+const CATEGORY_CACHE_TTL = 3600; // 1 hour
+const CATEGORY_CACHE_KEYS = {
+  ALL: "categories:all",
+  BY_ID: (id: string) => `categories:byId:${id}`,
+};
+
 @injectable()
 
 export class CategoryService implements ICategoryService {
@@ -49,17 +57,28 @@ export class CategoryService implements ICategoryService {
     };
 
     await this._categoryRepository.createCategory(categoryData);
+    
+    // Invalidate all category caches
+    await delPattern("categories:*");
   }
 
 
 
   async getCategoryById(id: string): Promise<CategoryDetailDto> {
+    const cacheKey = CATEGORY_CACHE_KEYS.BY_ID(id);
+    const cached = await get(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+
     const category = await this._categoryRepository.getCategoryById(id);
 
     if (!category)
       throw new AppError(STATUS.NOT_FOUND, MESSAGES.ADMIN.CATEGORY_NOT_FOUND);
 
-    return CategoryMapper.toCategoryDetailDto(category);
+    const result = CategoryMapper.toCategoryDetailDto(category);
+    await set(cacheKey, JSON.stringify(result), CATEGORY_CACHE_TTL);
+    return result;
   }
 
   async updateCategory(data: UpdateCategoryDto): Promise<void> {
@@ -109,6 +128,9 @@ export class CategoryService implements ICategoryService {
       data.categoryId,
       categoryData,
     );
+    
+    // Invalidate all category caches
+    await delPattern("categories:*");
   }
 
   async getAllCategories(
@@ -123,10 +145,26 @@ export class CategoryService implements ICategoryService {
     repositoryQuery.isActive = true;
   }
 
+    // Check cache first (only for non-admin users)
+    const cacheKey = role !== ROLES.ADMIN ? CATEGORY_CACHE_KEYS.ALL : null;
+    if (cacheKey) {
+      const cached = await get(cacheKey);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    }
+
     const { data, pagination } =
       await this._categoryRepository.getAllCategories(repositoryQuery);
 
-    return { data: CategoryMapper.toCategoryResponseDtoList(data), pagination };
+    const result = { data: CategoryMapper.toCategoryResponseDtoList(data), pagination };
+
+    // Cache the result for non-admin users
+    if (cacheKey) {
+      await set(cacheKey, JSON.stringify(result), CATEGORY_CACHE_TTL);
+    }
+
+    return result;
   }
 
   async toggleCategoryStatus(
@@ -150,6 +188,10 @@ export class CategoryService implements ICategoryService {
         MESSAGES.CATEGORY.CATEGORY_UPDATE_FAILED,
       );
     }
+    
+    // Invalidate all category caches
+    await delPattern("categories:*");
+    
     return CategoryMapper.toCategoryResponseDto(updated);
   }
 }
