@@ -2,8 +2,14 @@ import Redis from "ioredis";
 import logger from "./logger.config";
 
 let redisClient: Redis;
+let lastLoggedStatus = "";
 
 export function connectRedis() {
+  if (process.env.REDIS_ENABLED === "false") {
+    logger.warn("Redis disabled via REDIS_ENABLED=false — caching helpers will no-op");
+    return;
+  }
+
   redisClient = new Redis({
     host: process.env.REDIS_HOST || "localhost",
     port: parseInt(process.env.REDIS_PORT || "6379"),
@@ -22,7 +28,11 @@ export function connectRedis() {
   });
 
   redisClient.on("error", (err) => {
-    logger.error({ err }, "Redis client error");
+    // Log once per connection-state change instead of on every retry attempt
+    if (redisClient.status !== lastLoggedStatus) {
+      lastLoggedStatus = redisClient.status;
+      logger.error({ err, status: redisClient.status }, "Redis client error");
+    }
   });
 
   return redisClient;
