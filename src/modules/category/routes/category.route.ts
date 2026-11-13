@@ -30,7 +30,7 @@ categoryRoute.put(
 
 categoryRoute.get(
   CATEGORY_PATHS.BY_ID,
-  ROLE_GUARD.ALL_GUARDS,
+  ROLE_GUARD.OPTIONAL_AUTH,
   categoryController.getCategoryById,
 );
 

@@ -40,13 +40,13 @@ exerciseRoute.put(
 
 exerciseRoute.get(
     EXERCISE_PATH.BY_ID,
-    ROLE_GUARD.ALL_GUARDS,
+    ROLE_GUARD.OPTIONAL_AUTH,
     exerciseController.getExerciseById,
 );
 
 exerciseRoute.get(
     EXERCISE_PATH.ROOT,
-    ROLE_GUARD.ALL_GUARDS,
+    ROLE_GUARD.OPTIONAL_AUTH,
     validate(getAllExercisesSchema),
     exerciseController.getAllExercises,
 );
